@@ -1,18 +1,16 @@
 {
-  "overview": "Dr. Arman Kabir's Care is a comprehensive bilingual (English/Bangla) Patient Management and Doctor Portal for clinics and individual practitioners. It supports full outpatient and inpatient workflows with role-based dashboards for Consultants, Medical Officers, Interns, Nurses, Staff, and Patients. Features include prescription writing with clinical intelligence alerts, daily SOAP progress notes, handover system, appointment scheduling, drug reminder tracking, audit trail, and a public landing page for patient-facing appointment booking.",
+  "overview": "Dr. Arman Kabir's Care is a comprehensive bilingual (English/Bangla) Patient Management and Doctor Portal App for clinics and individual practitioners. It supports outpatient and inpatient workflows with role-based dashboards, clinical intelligence alerts, prescriptions, daily progress notes, handover management, appointment scheduling, and full audit trail — all synced across devices in real time.",
   "features": [
-    "Role-based dashboards (Consultant, MO, Intern, Nurse, Staff, Patient)",
-    "Full outpatient and inpatient clinical workflows",
-    "Prescription & EMR with drug interaction and allergy alerts",
-    "Daily SOAP progress notes for admitted patients",
-    "Shift handover system with audible alerts",
-    "Appointment booking with conflict detection and walk-in support",
-    "Drug reminder system with missed dose escalation",
-    "Patient portal with complaints, vitals, and chat",
-    "Audit log with CSV/PDF export",
-    "Public landing page with appointment booking and emergency WhatsApp",
-    "Offline-first with cloud sync across all devices",
-    "PWA installable on Android and iPad"
+    "Role-based dashboards for Consultant, MO, Intern, Nurse, Staff, and Admin",
+    "Full prescription & EMR with clinical intelligence and drug interaction warnings",
+    "Intern draft prescriptions with MO/Consultant approval workflow",
+    "Handover system with shift auto-detection, task carry-forward, and legal acknowledgment",
+    "Daily progress SOAP notes with auto-generated assessment and Plan→Prescription sync",
+    "Appointment booking with conflict detection and walk-in queue support",
+    "Patient portal with chat, drug reminders, vitals submission, and read receipts",
+    "Full audit trail with CSV/PDF export",
+    "AI diagnosis suggestions with confidence levels and audit logging",
+    "Real-time sync across devices with conflict resolution and sync status indicator"
   ],
   "category": "healthcare",
   "tags": [
@@ -21,11 +19,11 @@
     "emr",
     "prescription",
     "clinical",
-    "bilingual",
     "bangla",
+    "bilingual",
     "hospital",
     "doctor-portal",
     "pwa"
   ],
-  "last_updated": "2026-04-20T03:44:51.595Z"
+  "last_updated": "2026-04-21T16:01:24.265Z"
 }

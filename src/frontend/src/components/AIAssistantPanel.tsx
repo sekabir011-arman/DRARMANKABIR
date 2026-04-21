@@ -3,6 +3,8 @@
  * Provides: (a) Summarize Patient, (b) Suggest Diagnosis, (c) Auto-draft SOAP,
  *           (d) Analyze Lab Report (PDF/image upload + value parsing + alerts).
  * All outputs are clearly labeled "AI-Suggested — Requires Doctor Review".
+ * Confidence indicators added for all suggestions.
+ * Accepted AI suggestions are logged to the audit trail.
  */
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -12,6 +14,7 @@ import {
   AlertTriangle,
   Bot,
   Brain,
+  Check,
   ClipboardList,
   Copy,
   FileText,
@@ -22,6 +25,8 @@ import {
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { appendAuditLog } from "../hooks/useEmailAuth";
+import { useEmailAuth } from "../hooks/useEmailAuth";
 import { checkExtendedClinicalAlerts } from "../lib/clinicalIntelligence";
 import type { ExtendedAlertInput } from "../types";
 import type { Patient, Prescription, Visit } from "../types";
@@ -34,6 +39,54 @@ interface Props {
   onClose: () => void;
   /** Called with treatment protocol text to populate the active prescription form */
   onApplyTreatment?: (text: string) => void;
+}
+
+// ── Confidence helpers ─────────────────────────────────────────────────────────
+
+interface ConfidenceBadgeProps {
+  confidence: number | null;
+}
+
+function ConfidenceBadge({ confidence }: ConfidenceBadgeProps) {
+  if (confidence === null) {
+    return (
+      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground border border-border">
+        Confidence: N/A
+      </span>
+    );
+  }
+  if (confidence > 80) {
+    return (
+      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-green-100 text-green-800 border border-green-300">
+        ✓ High Confidence ({confidence}%)
+      </span>
+    );
+  }
+  if (confidence >= 60) {
+    return (
+      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-yellow-100 text-yellow-800 border border-yellow-300">
+        ~ Medium Confidence ({confidence}%)
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-orange-100 text-orange-800 border border-orange-300">
+      ⚠ Low Confidence ({confidence}%)
+    </span>
+  );
+}
+
+function LowConfidenceWarning({ confidence }: { confidence: number | null }) {
+  if (confidence === null || confidence >= 60) return null;
+  return (
+    <div className="flex items-start gap-1.5 rounded-lg bg-yellow-50 border border-yellow-300 px-3 py-2 mt-1">
+      <AlertTriangle className="w-3.5 h-3.5 text-yellow-600 mt-0.5 shrink-0" />
+      <p className="text-[11px] text-yellow-700 font-medium leading-snug">
+        Low confidence — verify with clinical examination before acting on this
+        suggestion
+      </p>
+    </div>
+  );
 }
 
 // ── Internal pattern matching for diagnosis suggestions ───────────────────────
@@ -106,21 +159,35 @@ const SYMPTOM_DIAGNOSIS_MAP: Array<{
   },
 ];
 
-function suggestDiagnosesByText(text: string): string[] {
+/** Returns diagnoses with their confidence scores (0–100) based on symptom matching */
+function suggestDiagnosesByText(
+  text: string,
+): Array<{ dx: string; confidence: number }> {
   const lower = text.toLowerCase();
-  const scores: Record<string, number> = {};
+  const scores: Record<string, { score: number; totalKeywords: number }> = {};
   for (const entry of SYMPTOM_DIAGNOSIS_MAP) {
     const matched = entry.keywords.filter((kw) => lower.includes(kw));
     if (matched.length > 0) {
       for (const dx of entry.diagnoses) {
-        scores[dx] = (scores[dx] || 0) + matched.length;
+        if (!scores[dx]) {
+          scores[dx] = { score: 0, totalKeywords: entry.keywords.length };
+        }
+        scores[dx].score += matched.length;
+        scores[dx].totalKeywords = Math.max(
+          scores[dx].totalKeywords,
+          entry.keywords.length,
+        );
       }
     }
   }
   return Object.entries(scores)
-    .sort((a, b) => b[1] - a[1])
+    .sort((a, b) => b[1].score - a[1].score)
     .slice(0, 5)
-    .map(([dx]) => dx);
+    .map(([dx, { score, totalKeywords }]) => ({
+      dx,
+      // confidence = (matching keywords / total keywords in entry) * 100, capped at 95
+      confidence: Math.min(95, Math.round((score / totalKeywords) * 100)),
+    }));
 }
 
 function generatePatientSummary(
@@ -210,6 +277,8 @@ interface LabAnalysisResult {
   differentialDiagnosis: string[];
   investigationPlan: string[];
   treatmentProtocol: string;
+  /** Confidence for the primary diagnosis suggestion (0–100) */
+  confidence: number;
 }
 
 const LAB_PATTERNS: Array<{
@@ -293,7 +362,6 @@ function parseLabText(text: string): ParsedLabValue[] {
       const rawVal = match[1] ?? match[2] ?? match[3] ?? "";
       const value = Number.parseFloat(rawVal);
       if (Number.isNaN(value)) continue;
-      // Check for ↑ / H (high) or ↓ / L (low) markers near the match
       const idx = match.index ?? 0;
       const context = text.slice(idx, idx + match[0].length + 5);
       let flag: ParsedLabValue["flag"] = "normal";
@@ -320,7 +388,6 @@ function buildAnalysisFromParsedValues(
     map[v.key] = v.value;
   }
 
-  // Build ExtendedAlertInput from parsed values
   const alertInput: ExtendedAlertInput = {
     labs: {
       creatinine: map.creatinine,
@@ -333,11 +400,13 @@ function buildAnalysisFromParsedValues(
   };
   const alerts = checkExtendedClinicalAlerts(alertInput);
 
-  // Diagnosis suggestion
   let diagnosisSuggestion = "Review values with clinical context";
   const differential: string[] = [];
   const investigations: string[] = [];
   let treatment = "Manage as per clinical findings. Consult treating doctor.";
+  // Track how many abnormal values drove the suggestion for confidence
+  let abnormalValueCount = 0;
+  const totalValueCount = values.length;
 
   if (map.hemoglobin !== undefined) {
     if (map.hemoglobin < 7) {
@@ -357,6 +426,7 @@ function buildAnalysisFromParsedValues(
       );
       treatment =
         "IV iron or blood transfusion depending on severity; investigate underlying cause; recheck Hb in 2–4 weeks";
+      abnormalValueCount++;
     } else if (map.hemoglobin < 11.5) {
       diagnosisSuggestion = `Anemia (Hb: ${map.hemoglobin} g/dL) — consider iron deficiency or chronic disease`;
       differential.push(
@@ -374,6 +444,7 @@ function buildAnalysisFromParsedValues(
       );
       treatment =
         "Iron supplementation 200mg elemental iron/day, dietary advice (leafy greens, red meat); recheck Hb in 4 weeks";
+      abnormalValueCount++;
     }
   }
 
@@ -394,6 +465,7 @@ function buildAnalysisFromParsedValues(
     );
     treatment +=
       "; Hold nephrotoxins, IV fluids if prerenal; nephrology consult if severe";
+    abnormalValueCount++;
   }
 
   if (map.glucose !== undefined) {
@@ -401,6 +473,7 @@ function buildAnalysisFromParsedValues(
       diagnosisSuggestion += `; Hypoglycemia (${map.glucose} mg/dL) — immediate treatment required`;
       treatment =
         "Dextrose 50% 50ml IV bolus if unconscious, or oral glucose 15–20g if conscious; recheck in 15 min";
+      abnormalValueCount++;
     } else if (map.glucose > 250) {
       diagnosisSuggestion += `; Hyperglycemia (${map.glucose} mg/dL) — review diabetes management`;
       investigations.push(
@@ -409,10 +482,10 @@ function buildAnalysisFromParsedValues(
         "Arterial blood gas if acidosis suspected",
       );
       treatment += "; Review insulin/OHA regimen; ensure adequate hydration";
+      abnormalValueCount++;
     }
   }
 
-  // Add alert-driven suggestions
   for (const alert of alerts.filter(
     (a) => a.severity === "critical" || a.severity === "warning",
   )) {
@@ -428,12 +501,22 @@ function buildAnalysisFromParsedValues(
       "Repeat basic metabolic panel in 48h if any borderline values",
     );
 
+  // Confidence: based on how many values support the suggestion vs total provided
+  const confidence =
+    totalValueCount > 0
+      ? Math.min(
+          95,
+          Math.round((abnormalValueCount / totalValueCount) * 100 + 40),
+        )
+      : 45;
+
   return {
     parsedValues: values,
     diagnosisSuggestion,
     differentialDiagnosis: differential,
     investigationPlan: investigations,
     treatmentProtocol: treatment,
+    confidence,
   };
 }
 
@@ -447,9 +530,14 @@ export default function AIAssistantPanel({
   onClose,
   onApplyTreatment,
 }: Props) {
+  const { currentDoctor } = useEmailAuth();
+
   const [symptomText, setSymptomText] = useState("");
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<
+    Array<{ dx: string; confidence: number }>
+  >([]);
   const [isThinking, setIsThinking] = useState(false);
+  const [acceptedDx, setAcceptedDx] = useState<Set<string>>(new Set());
 
   // Lab report state
   const [labPreviewUrl, setLabPreviewUrl] = useState<string | null>(null);
@@ -472,18 +560,51 @@ export default function AIAssistantPanel({
   );
   const soapDraft = generateSOAPDraft(latestVitals, latestVisit);
 
+  // ── Audit helpers ──────────────────────────────────────────────────────────
+
+  function logAISuggestionAccepted(
+    fieldName: "diagnosis" | "plan" | "differential_diagnosis",
+    suggestionText: string,
+    confidence: number | null,
+  ) {
+    const userEmail = currentDoctor?.email ?? "unknown";
+    const userRole = currentDoctor?.role ?? "doctor";
+    appendAuditLog({
+      timestamp: new Date().toISOString(),
+      userRole: userRole as "admin",
+      userName: currentDoctor?.name ?? userEmail,
+      action: `AI suggestion accepted — ${fieldName} — confidence: ${confidence !== null ? `${confidence}%` : "N/A"} — "${suggestionText.slice(0, 80)}${suggestionText.length > 80 ? "…" : ""}"`,
+      target: `Patient: ${patient.fullName} (ID: ${patient.id})`,
+    });
+  }
+
+  // ── Handlers ───────────────────────────────────────────────────────────────
+
   function handleSuggestDiagnosis() {
     if (!symptomText.trim()) return;
     setIsThinking(true);
+    setAcceptedDx(new Set());
     setTimeout(() => {
       const results = suggestDiagnosesByText(symptomText);
       setSuggestions(
         results.length
           ? results
-          : ["No pattern matched — enter more symptoms for better suggestions"],
+          : [
+              {
+                dx: "No pattern matched — enter more symptoms for better suggestions",
+                confidence: 0,
+              },
+            ],
       );
       setIsThinking(false);
     }, 800);
+  }
+
+  function handleAcceptDiagnosis(dx: string, confidence: number) {
+    if (acceptedDx.has(dx)) return;
+    setAcceptedDx((prev) => new Set([...prev, dx]));
+    logAISuggestionAccepted("diagnosis", dx, confidence);
+    toast.success(`Diagnosis "${dx}" accepted and logged to audit trail`);
   }
 
   function copyText(text: string, label: string) {
@@ -494,7 +615,7 @@ export default function AIAssistantPanel({
   }
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
+    const file = e?.target.files?.[0];
     if (!file) return;
     if (file.type.startsWith("image/")) {
       const url = URL.createObjectURL(file);
@@ -529,6 +650,33 @@ export default function AIAssistantPanel({
       setLabAnalysis(analysis);
       setIsAnalyzing(false);
     }, 1000);
+  }
+
+  function handleAcceptLabDiagnosis() {
+    if (!labAnalysis) return;
+    logAISuggestionAccepted(
+      "diagnosis",
+      labAnalysis.diagnosisSuggestion,
+      labAnalysis.confidence,
+    );
+    toast.success("Lab diagnosis accepted and logged to audit trail");
+  }
+
+  function handleAcceptLabPlan() {
+    if (!labAnalysis) return;
+    logAISuggestionAccepted(
+      "plan",
+      labAnalysis.treatmentProtocol,
+      labAnalysis.confidence,
+    );
+    if (onApplyTreatment) {
+      onApplyTreatment(labAnalysis.treatmentProtocol);
+      toast.success(
+        "Treatment protocol applied to prescription & logged to audit trail",
+      );
+    } else {
+      toast.success("Treatment plan accepted and logged to audit trail");
+    }
   }
 
   const flagColor = (flag: ParsedLabValue["flag"]) => {
@@ -652,15 +800,41 @@ export default function AIAssistantPanel({
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                   Suggestions (Offline Analysis)
                 </p>
-                {suggestions.map((dx, i) => (
-                  <div
-                    key={dx}
-                    className="flex items-center gap-2 bg-violet-50 border border-violet-100 rounded-lg px-3 py-2"
-                  >
-                    <span className="text-xs font-bold text-violet-500 w-5">
-                      {i + 1}.
-                    </span>
-                    <span className="flex-1 text-sm text-foreground">{dx}</span>
+                {suggestions.map((item, i) => (
+                  <div key={item.dx} className="space-y-1">
+                    <div className="flex items-start gap-2 bg-violet-50 border border-violet-100 rounded-lg px-3 py-2">
+                      <span className="text-xs font-bold text-violet-500 w-5 mt-0.5 shrink-0">
+                        {i + 1}.
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-foreground leading-snug mb-1">
+                          {item.dx}
+                        </p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <ConfidenceBadge confidence={item.confidence} />
+                          {!acceptedDx.has(item.dx) && item.confidence > 0 && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleAcceptDiagnosis(item.dx, item.confidence)
+                              }
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-violet-600 text-white hover:bg-violet-700 transition-colors"
+                              data-ocid={`ai_assistant.accept_dx_button.${i + 1}`}
+                            >
+                              <Check className="w-2.5 h-2.5" />
+                              Accept
+                            </button>
+                          )}
+                          {acceptedDx.has(item.dx) && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-green-100 text-green-800">
+                              <Check className="w-2.5 h-2.5" />
+                              Accepted
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <LowConfidenceWarning confidence={item.confidence} />
                   </div>
                 ))}
                 <p className="text-[10px] text-muted-foreground italic">
@@ -674,12 +848,22 @@ export default function AIAssistantPanel({
           {/* SOAP Draft Tab */}
           <TabsContent value="soap" className="p-4 space-y-3 mt-0">
             <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-              <p className="text-xs font-bold text-indigo-700 uppercase tracking-wide mb-2">
-                Auto-draft SOAP Note
-              </p>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold text-indigo-700 uppercase tracking-wide">
+                  Auto-draft SOAP Note
+                </p>
+                <ConfidenceBadge confidence={null} />
+              </div>
               <pre className="text-sm text-foreground leading-relaxed whitespace-pre-wrap font-sans">
                 {soapDraft}
               </pre>
+            </div>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 flex items-start gap-1.5">
+              <AlertTriangle className="w-3.5 h-3.5 text-yellow-600 mt-0.5 shrink-0" />
+              <p className="text-[11px] text-yellow-700 font-medium leading-snug">
+                Auto-generated text is a starting point only — review and
+                confirm before saving to the patient record.
+              </p>
             </div>
             <Button
               size="sm"
@@ -691,9 +875,6 @@ export default function AIAssistantPanel({
               <Copy className="w-3.5 h-3.5" />
               Copy SOAP Note
             </Button>
-            <p className="text-[10px] text-muted-foreground italic text-center">
-              Edit before saving to the patient record.
-            </p>
           </TabsContent>
 
           {/* Lab Report Tab */}
@@ -817,15 +998,29 @@ export default function AIAssistantPanel({
 
                   {/* Diagnosis Suggestion */}
                   <div className="bg-violet-50 border border-violet-200 rounded-xl p-3">
-                    <p className="text-xs font-bold text-violet-700 uppercase tracking-wide mb-1.5 flex items-center gap-1">
-                      <Brain className="w-3 h-3" /> Diagnosis Suggestion
-                    </p>
-                    <p className="text-xs text-foreground leading-relaxed">
+                    <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1">
+                      <p className="text-xs font-bold text-violet-700 uppercase tracking-wide flex items-center gap-1">
+                        <Brain className="w-3 h-3" /> Diagnosis Suggestion
+                      </p>
+                      <ConfidenceBadge confidence={labAnalysis.confidence} />
+                    </div>
+                    <p className="text-xs text-foreground leading-relaxed mb-2">
                       {labAnalysis.diagnosisSuggestion}
                     </p>
+                    <LowConfidenceWarning confidence={labAnalysis.confidence} />
                     <p className="text-[10px] text-amber-600 mt-1.5 font-medium">
                       ⚠️ AI Suggested — Requires Doctor Review
                     </p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full mt-2 gap-1.5 h-7 text-[11px] border-violet-300 text-violet-700 hover:bg-violet-50"
+                      onClick={handleAcceptLabDiagnosis}
+                      data-ocid="ai_assistant.lab.accept_diagnosis_button"
+                    >
+                      <Check className="w-3 h-3" />
+                      Accept Diagnosis (logged to audit)
+                    </Button>
                   </div>
 
                   {/* Differential Diagnosis */}
@@ -876,34 +1071,31 @@ export default function AIAssistantPanel({
 
                   {/* Treatment Protocol */}
                   <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
-                    <p className="text-xs font-bold text-emerald-700 uppercase tracking-wide mb-1.5">
-                      Treatment Protocol
-                    </p>
-                    <p className="text-xs text-foreground leading-relaxed whitespace-pre-line">
+                    <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1">
+                      <p className="text-xs font-bold text-emerald-700 uppercase tracking-wide">
+                        Treatment Protocol
+                      </p>
+                      <ConfidenceBadge confidence={labAnalysis.confidence} />
+                    </div>
+                    <p className="text-xs text-foreground leading-relaxed whitespace-pre-line mb-2">
                       {labAnalysis.treatmentProtocol}
                     </p>
+                    <LowConfidenceWarning confidence={labAnalysis.confidence} />
                     <p className="text-[10px] text-amber-600 mt-1.5 font-medium">
                       ⚠️ AI Suggested — Requires Doctor Review
                     </p>
-                  </div>
-
-                  {/* Apply to Prescription */}
-                  {onApplyTreatment && (
                     <Button
                       size="sm"
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 gap-2"
-                      onClick={() => {
-                        onApplyTreatment(labAnalysis.treatmentProtocol);
-                        toast.success(
-                          "Treatment protocol copied to prescription form",
-                        );
-                      }}
+                      className="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 gap-2"
+                      onClick={handleAcceptLabPlan}
                       data-ocid="ai_assistant.lab.apply_button"
                     >
                       <Copy className="w-3.5 h-3.5" />
-                      Apply to Prescription
+                      {onApplyTreatment
+                        ? "Apply to Prescription (logged to audit)"
+                        : "Accept Plan (logged to audit)"}
                     </Button>
-                  )}
+                  </div>
 
                   {/* Alerts from alert engine */}
                   {checkExtendedClinicalAlerts({

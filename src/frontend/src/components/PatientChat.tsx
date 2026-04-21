@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { format } from "date-fns";
-import { MessageCircle, Send, X } from "lucide-react";
+import { format, formatDistanceToNow } from "date-fns";
+import { CheckCheck, Eye, MessageCircle, Send, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 export interface ChatMessage {
@@ -11,6 +11,9 @@ export interface ChatMessage {
   senderName: string;
   text: string;
   timestamp: string;
+  /** Filled when a doctor/admin views the message */
+  seenAt?: string;
+  seenBy?: string;
 }
 
 interface PatientChatProps {
@@ -39,6 +42,33 @@ function saveMessages(patientId: bigint, msgs: ChatMessage[]) {
   localStorage.setItem(getChatKey(patientId), JSON.stringify(msgs));
 }
 
+/** Mark all unread patient messages as seen by the doctor/admin */
+function markPatientMessagesSeen(
+  patientId: bigint,
+  seenBy: string,
+): ChatMessage[] {
+  const msgs = loadMessages(patientId);
+  const now = new Date().toISOString();
+  let changed = false;
+  const updated = msgs.map((m) => {
+    if (m.senderRole === "patient" && !m.seenAt) {
+      changed = true;
+      return { ...m, seenAt: now, seenBy };
+    }
+    return m;
+  });
+  if (changed) saveMessages(patientId, updated);
+  return updated;
+}
+
+function seenAgo(seenAt: string): string {
+  try {
+    return formatDistanceToNow(new Date(seenAt), { addSuffix: true });
+  } catch {
+    return "Seen";
+  }
+}
+
 export default function PatientChat({
   patientId,
   currentRole,
@@ -46,11 +76,33 @@ export default function PatientChat({
   floating = false,
   onClose,
 }: PatientChatProps) {
+  const isDoctor = currentRole === "doctor" || currentRole === "admin";
+
   const [messages, setMessages] = useState<ChatMessage[]>(() =>
-    loadMessages(patientId),
+    isDoctor
+      ? markPatientMessagesSeen(patientId, currentUserName)
+      : loadMessages(patientId),
   );
   const [text, setText] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // When doctor opens chat, mark patient messages as seen
+  // biome-ignore lint/correctness/useExhaustiveDependencies: run when doctor opens chat for this patient
+  useEffect(() => {
+    if (isDoctor) {
+      const updated = markPatientMessagesSeen(patientId, currentUserName);
+      setMessages(updated);
+    }
+  }, [patientId, isDoctor]);
+
+  // Patient side: poll every 5s to pick up "seenAt" updates written by the doctor
+  useEffect(() => {
+    if (isDoctor) return;
+    const iv = setInterval(() => {
+      setMessages(loadMessages(patientId));
+    }, 5000);
+    return () => clearInterval(iv);
+  }, [patientId, isDoctor]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentional scroll on message change
   useEffect(() => {
@@ -73,8 +125,6 @@ export default function PatientChat({
     saveMessages(patientId, updated);
     setText("");
   }
-
-  const isDoctor = currentRole === "doctor" || currentRole === "admin";
 
   const inner = (
     <div className="flex flex-col h-full">
@@ -113,10 +163,13 @@ export default function PatientChat({
               const isOwn = isDoctor
                 ? msg.senderRole === "doctor" || msg.senderRole === "admin"
                 : msg.senderRole === "patient";
+              // Patient sees "Seen" indicator on their own messages
+              const showSeen =
+                !isDoctor && msg.senderRole === "patient" && msg.seenAt;
               return (
                 <div
                   key={msg.id}
-                  className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
+                  className={`flex flex-col ${isOwn ? "items-end" : "items-start"}`}
                   data-ocid="patient_chat.row"
                 >
                   <div
@@ -140,6 +193,19 @@ export default function PatientChat({
                       {format(new Date(msg.timestamp), "h:mm a")}
                     </p>
                   </div>
+                  {/* Seen receipt — only shown to patient on their own messages */}
+                  {showSeen && (
+                    <div
+                      className="flex items-center gap-1 mt-0.5 px-1"
+                      data-ocid="patient_chat.seen_indicator"
+                    >
+                      <CheckCheck className="w-3 h-3 text-teal-500" />
+                      <Eye className="w-3 h-3 text-teal-500" />
+                      <span className="text-[10px] text-teal-600 font-medium">
+                        Seen {seenAgo(msg.seenAt!)}
+                      </span>
+                    </div>
+                  )}
                 </div>
               );
             })}

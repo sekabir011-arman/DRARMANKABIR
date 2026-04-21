@@ -19,6 +19,7 @@ export type AlertType = { 'AKI' : null } |
   { 'Sepsis' : null } |
   { 'DrugInteraction' : null } |
   { 'Hypoxia' : null } |
+  { 'MissedDoseEscalation' : null } |
   { 'AllergyContraindication' : null };
 export interface Appointment {
   'id' : string,
@@ -240,6 +241,32 @@ export interface Medication {
   'instructions' : string,
   'frequency' : string,
 }
+export interface MedicationAdministration {
+  'id' : bigint,
+  'status' : MedicationAdministrationStatus,
+  'medicationName' : string,
+  'patientId' : bigint,
+  'scheduledTime' : bigint,
+  'dose' : string,
+  'createdAt' : bigint,
+  'recordedBy' : string,
+  'recordedByRole' : string,
+  'administeredAt' : [] | [bigint],
+  'missedReason' : [] | [string],
+}
+export type MedicationAdministrationStatus = { 'Given' : null } |
+  { 'Delayed' : null } |
+  { 'NotGiven' : null };
+export interface Medication__1 {
+  'duration' : string,
+  'dose' : string,
+  'name' : string,
+  'prnCondition' : [] | [string],
+  'instructions' : [] | [string],
+  'frequency' : string,
+  'isPRN' : boolean,
+  'route' : string,
+}
 export type NoteType = { 'SOAP' : null } |
   { 'Nursing' : null } |
   { 'DailyProgress' : null } |
@@ -315,6 +342,25 @@ export interface Prescription {
   'medications' : Array<Medication>,
   'notes' : [] | [string],
   'visitId' : [] | [bigint],
+}
+export interface Prescription__1 {
+  'id' : bigint,
+  'isDeleted' : boolean,
+  'patientId' : bigint,
+  'followUpCreatesAppointment' : boolean,
+  'authorId' : Principal,
+  'createdAt' : bigint,
+  'authorName' : string,
+  'authorRole' : StaffRole,
+  'diagnoses' : Array<string>,
+  'isDraft' : boolean,
+  'isFinalized' : boolean,
+  'updatedAt' : bigint,
+  'medications' : Array<Medication__1>,
+  'advice' : Array<string>,
+  'versionInfo' : VersionedRecord,
+  'encounterId' : [] | [bigint],
+  'followUpDate' : [] | [bigint],
 }
 export type QueueStatus = { 'serving' : null } |
   { 'skipped' : null } |
@@ -404,6 +450,11 @@ export interface _SERVICE {
     { 'ok' : ClinicalAlert } |
       { 'err' : string }
   >,
+  'acknowledgeHandover' : ActorMethod<
+    [bigint],
+    { 'ok' : HandoverEntry } |
+      { 'err' : string }
+  >,
   'acknowledgeObservationCorrection' : ActorMethod<
     [bigint, string, string],
     { 'ok' : Observation } |
@@ -476,6 +527,20 @@ export interface _SERVICE {
     { 'ok' : ClinicalNote } |
       { 'err' : string }
   >,
+  'createClinicalPrescription' : ActorMethod<
+    [
+      bigint,
+      [] | [bigint],
+      Array<Medication__1>,
+      Array<string>,
+      Array<string>,
+      [] | [bigint],
+      boolean,
+      boolean,
+    ],
+    { 'ok' : Prescription__1 } |
+      { 'err' : string }
+  >,
   'createDailyProgressNote' : ActorMethod<
     [
       bigint,
@@ -513,6 +578,11 @@ export interface _SERVICE {
   'createEncounter' : ActorMethod<
     [bigint, EncounterType, [] | [string]],
     { 'ok' : Encounter } |
+      { 'err' : string }
+  >,
+  'createFollowUpAppointment' : ActorMethod<
+    [bigint, bigint, bigint, string, string],
+    { 'ok' : Appointment } |
       { 'err' : string }
   >,
   'createHandover' : ActorMethod<
@@ -644,6 +714,16 @@ export interface _SERVICE {
     { 'ok' : ClinicalAlert } |
       { 'err' : string }
   >,
+  'finalizeClinicalPrescription' : ActorMethod<
+    [bigint],
+    { 'ok' : Prescription__1 } |
+      { 'err' : string }
+  >,
+  'finalizeNote' : ActorMethod<
+    [bigint],
+    { 'ok' : ClinicalNote } |
+      { 'err' : string }
+  >,
   'getActiveAlerts' : ActorMethod<[bigint], Array<ClinicalAlert>>,
   'getActiveOrdersByPatient' : ActorMethod<[bigint], Array<ClinicalOrder>>,
   'getAlertsByPatient' : ActorMethod<[bigint], Array<ClinicalAlert>>,
@@ -687,6 +767,14 @@ export interface _SERVICE {
     [bigint, NoteType],
     Array<ClinicalNote>
   >,
+  'getClinicalPrescriptionsAwaitingApproval' : ActorMethod<
+    [],
+    Array<Prescription__1>
+  >,
+  'getClinicalPrescriptionsByPatient' : ActorMethod<
+    [bigint],
+    Array<Prescription__1>
+  >,
   'getCurrentUser' : ActorMethod<[], CurrentUser>,
   'getDailyProgressNotesByPatientId' : ActorMethod<
     [bigint],
@@ -703,6 +791,11 @@ export interface _SERVICE {
   'getHandoversByPatientId' : ActorMethod<[bigint], Array<HandoverEntry>>,
   'getLastSyncTime' : ActorMethod<[string], [] | [bigint]>,
   'getLastSyncTimestamp' : ActorMethod<[], bigint>,
+  'getMedicationAdministrationsByPatient' : ActorMethod<
+    [bigint],
+    Array<MedicationAdministration>
+  >,
+  'getNotesAwaitingApproval' : ActorMethod<[], Array<ClinicalNote>>,
   'getObservationsByPatient' : ActorMethod<[bigint], Array<Observation>>,
   'getObservationsByType' : ActorMethod<
     [bigint, ObservationType],
@@ -739,9 +832,26 @@ export interface _SERVICE {
     { 'ok' : string } |
       { 'err' : string }
   >,
+  'recordAISuggestionAccepted' : ActorMethod<
+    [bigint, string, string, number],
+    undefined
+  >,
   'recordDeviceSync' : ActorMethod<
     [string, bigint],
     { 'ok' : SyncRecord } |
+      { 'err' : string }
+  >,
+  'recordMedicationAdministration' : ActorMethod<
+    [
+      bigint,
+      string,
+      string,
+      bigint,
+      [] | [bigint],
+      MedicationAdministrationStatus,
+      [] | [string],
+    ],
+    { 'ok' : MedicationAdministration } |
       { 'err' : string }
   >,
   'resolveAlert' : ActorMethod<

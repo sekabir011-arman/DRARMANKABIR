@@ -1,4 +1,5 @@
-// Version: 1.0.0
+// Version: 3.0.0
+type AlertSeverity__916534360 = {#Critical; #Info; #Warning};
 type AlertSeverity__963005291 = {#Critical; #Info; #Warning};
 type AlertType__122072705 =
   {
@@ -8,6 +9,7 @@ type AlertType__122072705 =
     #DrugInteraction;
     #Hypotension;
     #Hypoxia;
+    #MissedDoseEscalation;
     #Sepsis
   };
 type AppointmentStatus__755026031 =
@@ -32,6 +34,7 @@ type Appointment__139380045 =
     timeSlot : ?Text;
     updatedAt : Int
   };
+type Appointment__650046734 = Appointment__139380045;
 type AuditEntry__24563336 =
   {
     afterValue : Text;
@@ -47,6 +50,8 @@ type AuditEntry__24563336 =
     ipAddress : ?Text;
     reason : ?Text
   };
+type AuditEntry__84391529 = AuditEntry__24563336;
+type BedRecord__537183677 = BedRecord__90428469;
 type BedRecord__90428469 =
   {
     admissionDate : ?Int;
@@ -95,6 +100,8 @@ type ClinicalNote__118286836 =
     previousVersionIds : [Nat];
     versionInfo : VersionedRecord__27047174
   };
+type ClinicalNote__578538312 = ClinicalNote__118286836;
+type ClinicalOrder__735278006 = ClinicalOrder__887323512;
 type ClinicalOrder__887323512 =
   {
     code : Text;
@@ -113,6 +120,7 @@ type ClinicalOrder__887323512 =
     status : OrderStatus__838615098;
     versionInfo : VersionedRecord__27047174
   };
+type DailyProgressNote__334269378 = DailyProgressNote__515584449;
 type DailyProgressNote__515584449 =
   {
     activeComplaints : [Text];
@@ -143,6 +151,7 @@ type DailyProgressNote__515584449 =
 type DailyProgressType__979730859 = {#emergency; #evening; #morning};
 type Data__791452850<K, V> =
   {var count : Nat__490723111; kvs : [var ?(K, V)]};
+type DiagnosisTemplate__530597014 = DiagnosisTemplate__883104078;
 type DiagnosisTemplate__883104078 =
   {
     createdAt : Int;
@@ -160,6 +169,7 @@ type DiagnosisTemplate__883104078 =
 type EncounterStatus__434457795 =
   {#Cancelled; #Completed; #InProgress; #Planned};
 type EncounterType__715502745 = {#Emergency; #FollowUp; #IPD; #OPD};
+type Encounter__129661065 = Encounter__298641220;
 type Encounter__298641220 =
   {
     encounterId : Text;
@@ -211,6 +221,7 @@ type HandoverEntry__487905025 =
     vitalsSummary : ?Text;
     ward : ?Text
   };
+type HandoverEntry__877212482 = HandoverEntry__487905025;
 type HandoverShift__718289696 = {#evening; #morning; #night};
 type HandoverStatus__763248425 = {#draft; #submitted};
 type Int__270357528 = Int__616954475;
@@ -222,6 +233,33 @@ type Map__158565046<K, V> = Map__297112838<K, V>;
 type Map__297112838<K, V> =
   {var root : Node__46230540<K, V>; var size : Nat__490723111};
 type Map__605269027<K, V> = Map__158565046<K, V>;
+type MedicationAdministrationStatus__873860857 =
+  {#Delayed; #Given; #NotGiven};
+type MedicationAdministration__900116004 =
+  {
+    administeredAt : ?Int;
+    createdAt : Int;
+    dose : Text;
+    id : Nat;
+    medicationName : Text;
+    missedReason : ?Text;
+    patientId : Nat;
+    recordedBy : Text;
+    recordedByRole : Text;
+    scheduledTime : Int;
+    status : MedicationAdministrationStatus__873860857
+  };
+type Medication__1016968868 =
+  {
+    dose : Text;
+    duration : Text;
+    frequency : Text;
+    instructions : ?Text;
+    isPRN : Bool;
+    name : Text;
+    prnCondition : ?Text;
+    route : Text
+  };
 type Medication__77603812 =
   {
     dose : Text;
@@ -259,6 +297,33 @@ type Observation__633753642 =
     value : Text;
     versionInfo : VersionedRecord__27047174
   };
+type Observation__995468332 = Observation__633753642;
+type OldAlertType__19258128 =
+  {
+    #AKI;
+    #AllergyContraindication;
+    #CriticalLab;
+    #DrugInteraction;
+    #Hypotension;
+    #Hypoxia;
+    #Sepsis
+  };
+type OldClinicalAlert__641462877 =
+  {
+    acknowledgedAt : ?Int;
+    acknowledgedBy : ?Principal;
+    alertType : OldAlertType__19258128;
+    details : ?Text;
+    id : Nat;
+    isAcknowledged : Bool;
+    isResolved : Bool;
+    message : Text;
+    patientId : Nat;
+    resolvedAt : ?Int;
+    severity : AlertSeverity__916534360;
+    triggeredAt : Int;
+    triggeredBy : Text
+  };
 type OrderStatus__838615098 =
   {#Cancelled; #Completed; #InProgress; #Pending; #Requested};
 type OrderType__605123120 =
@@ -285,6 +350,26 @@ type Patient__823362798 =
     phone : ?Text;
     updatedAt : Time__900049286;
     weight : ?Float
+  };
+type Prescription__317112238 =
+  {
+    advice : [Text];
+    authorId : Principal;
+    authorName : Text;
+    authorRole : StaffRole__87656655;
+    createdAt : Int;
+    diagnoses : [Text];
+    encounterId : ?Nat;
+    followUpCreatesAppointment : Bool;
+    followUpDate : ?Int;
+    id : Nat;
+    isDeleted : Bool;
+    isDraft : Bool;
+    isFinalized : Bool;
+    medications : [Medication__1016968868];
+    patientId : Nat;
+    updatedAt : Int;
+    versionInfo : VersionedRecord__27047174
   };
 type Prescription__847157722 =
   {
@@ -313,6 +398,7 @@ type SerialQueueEntry__257017409 =
     status : QueueStatus__1020443397;
     updatedAt : Int
   };
+type SerialQueueEntry__946654301 = SerialQueueEntry__257017409;
 type StaffRole__87656655 =
   {
     #admin;
@@ -324,6 +410,7 @@ type StaffRole__87656655 =
     #patient;
     #staff
   };
+type SyncRecord__650374247 = SyncRecord__825211546;
 type SyncRecord__825211546 =
   {
     deviceId : Text;
@@ -371,7 +458,63 @@ type VitalSigns__681997343 =
     respiratoryRate : ?Text;
     temperature : ?Text
   };
-actor {
+actor ({
+  stable accessControlState :
+    {
+      var adminAssigned : Bool;
+      userRoles : Map__605269027<Principal, UserRole__587919431>
+    };
+  in clinicalEngineState :
+    {
+      var alertIdCounter : Nat;
+      alerts : Map__605269027<Nat, OldClinicalAlert__641462877>;
+      appointments : Map__605269027<Text, Appointment__650046734>;
+      auditEntries : Map__605269027<Nat, AuditEntry__84391529>;
+      var auditIdCounter : Nat;
+      var bedIdCounter : Nat;
+      beds : Map__605269027<Nat, BedRecord__537183677>;
+      var dailyProgressNoteIdCounter : Nat;
+      dailyProgressNotes : Map__605269027<Nat, DailyProgressNote__334269378>;
+      var diagnosisTemplateIdCounter : Nat;
+      diagnosisTemplates : Map__605269027<Nat, DiagnosisTemplate__530597014>;
+      var encounterIdCounter : Nat;
+      encounters : Map__605269027<Nat, Encounter__129661065>;
+      var handoverIdCounter : Nat;
+      handovers : Map__605269027<Nat, HandoverEntry__877212482>;
+      var noteIdCounter : Nat;
+      notes : Map__605269027<Nat, ClinicalNote__578538312>;
+      var observationIdCounter : Nat;
+      observations : Map__605269027<Nat, Observation__995468332>;
+      var orderIdCounter : Nat;
+      orders : Map__605269027<Nat, ClinicalOrder__735278006>;
+      queueEntries : Map__605269027<Text, SerialQueueEntry__946654301>;
+      var syncRecordIdCounter : Nat;
+      syncRecords : Map__605269027<Text, SyncRecord__650374247>
+    };
+  stable var patientIdCounter : Nat;
+  stable patients :
+    {
+      var root : Node__46230540<Nat, Patient__823362798>;
+      var size : Nat__490723111
+    };
+  stable var prescriptionIdCounter : Nat;
+  stable prescriptions :
+    {
+      var root : Node__46230540<Nat, Prescription__847157722>;
+      var size : Nat__490723111
+    };
+  stable userProfiles :
+    {
+      var root : Node__46230540<Principal, UserProfile__491224006>;
+      var size : Nat__490723111
+    };
+  stable var visitIdCounter : Nat;
+  stable visits :
+    {
+      var root : Node__46230540<Nat, Visit__635288371>;
+      var size : Nat__490723111
+    }
+}, {
   stable accessControlState :
     {
       var adminAssigned : Bool;
@@ -394,12 +537,17 @@ actor {
       encounters : Map__605269027<Nat, Encounter__298641220>;
       var handoverIdCounter : Nat;
       handovers : Map__605269027<Nat, HandoverEntry__487905025>;
+      var medicationAdministrationIdCounter : Nat;
+      medicationAdministrations :
+        Map__605269027<Nat, MedicationAdministration__900116004>;
       var noteIdCounter : Nat;
       notes : Map__605269027<Nat, ClinicalNote__118286836>;
       var observationIdCounter : Nat;
       observations : Map__605269027<Nat, Observation__633753642>;
       var orderIdCounter : Nat;
       orders : Map__605269027<Nat, ClinicalOrder__887323512>;
+      var prescriptionIdCounter : Nat;
+      prescriptions : Map__605269027<Nat, Prescription__317112238>;
       queueEntries : Map__605269027<Text, SerialQueueEntry__257017409>;
       var syncRecordIdCounter : Nat;
       syncRecords : Map__605269027<Text, SyncRecord__825211546>
@@ -427,4 +575,4 @@ actor {
       var root : Node__46230540<Nat, Visit__635288371>;
       var size : Nat__490723111
     }
-};
+}) ;

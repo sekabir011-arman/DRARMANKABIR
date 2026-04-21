@@ -28,6 +28,17 @@ function cmToFeetInches(cm: number): string {
   return `${feet}'${inches}"`;
 }
 
+export function calculateAge(dob: string): number | null {
+  if (!dob) return null;
+  const birth = new Date(dob);
+  if (Number.isNaN(birth.getTime())) return null;
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  return age >= 0 ? age : null;
+}
+
 function feetInchesToCm(str: string): number | null {
   const match = str.match(/(\d+)['\s]*(?:ft)?['\s]*(\d*)["\s]*(?:in)?/i);
   if (!match) return null;
@@ -335,6 +346,11 @@ export default function PatientForm({
               if (e.target.value) set("ageInput", "");
             }}
           />
+          {form.dateOfBirth && calculateAge(form.dateOfBirth) !== null && (
+            <p className="text-xs text-teal-700 font-semibold mt-1">
+              Age: {calculateAge(form.dateOfBirth)} years
+            </p>
+          )}
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="ageInput">

@@ -15,6 +15,7 @@ import { useEmailAuth } from "@/hooks/useEmailAuth";
 import { getDoctorEmail, loadFromStorage } from "@/hooks/useQueries";
 import {
   Activity,
+  CheckCircle,
   Heart,
   HelpCircle,
   Loader2,
@@ -25,7 +26,7 @@ import {
   Wind,
   X,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import CardiovascularExam from "./CardiovascularExam";
 import GastrointestinalExam from "./GastrointestinalExam";
@@ -36,6 +37,34 @@ import PreviousInvestigationTable, {
 } from "./PreviousInvestigationTable";
 import QuestionStepper from "./QuestionStepper";
 import RespiratoryExam from "./RespiratoryExam";
+
+// ─── Examination Quick-fill Templates ─────────────────────────────────────────
+
+type ExamTemplateRow = { finding: string; value: string };
+
+const EXAM_TEMPLATES: Record<string, ExamTemplateRow[]> = {
+  Cardiology: [
+    { finding: "Heart Rate", value: "Normal" },
+    { finding: "JVP", value: "Normal" },
+    { finding: "Heart Sounds", value: "S1+S2+0" },
+    { finding: "Precordial", value: "No thrill, no heave, apex normal" },
+    { finding: "Peripheral Pulses", value: "Equal bilaterally" },
+  ],
+  Respiratory: [
+    { finding: "Breath Sounds", value: "Vesicular" },
+    { finding: "Crackles", value: "None" },
+    { finding: "Wheeze", value: "None" },
+    { finding: "Respiratory Rate", value: "Normal" },
+    { finding: "Chest Expansion", value: "Equal" },
+  ],
+  GI: [
+    { finding: "Bowel Sounds", value: "Present" },
+    { finding: "Palpation", value: "Soft" },
+    { finding: "Liver Edge", value: "Not palpable" },
+    { finding: "Spleen", value: "Not palpable" },
+    { finding: "Tenderness", value: "None" },
+  ],
+};
 
 // ─── Data constants ───────────────────────────────────────────────────────────
 
@@ -768,6 +797,15 @@ export default function VisitForm({
     Record<string, unknown>
   >({});
 
+  // ─── Provisional / Final Diagnosis state ─────────────────────────────────
+  const [diagnosisStatus, setDiagnosisStatus] = useState<
+    "provisional" | "final"
+  >("provisional");
+
+  // ─── Autosave state ───────────────────────────────────────────────────────
+  const [autosavedAt, setAutosavedAt] = useState<Date | null>(null);
+  const autosaveKeyRef = useRef<string>("");
+
   const [showSurgicalQuestions, setShowSurgicalQuestions] = useState(false);
   const [showPersonalQuestions, setShowPersonalQuestions] = useState(false);
   const [showFamilyQuestions, setShowFamilyQuestions] = useState(false);
@@ -827,6 +865,96 @@ export default function VisitForm({
   const [editedComplaintQuestions, setEditedComplaintQuestions] = useState<
     Record<string, Record<number, { q?: string; options?: string[] }>>
   >({});
+
+  // ─── Autosave setup (after all state is declared) ─────────────────────────
+
+  // Build the autosave key and restore any saved draft on first render
+  // biome-ignore lint/correctness/useExhaustiveDependencies: mount-only effect
+  useEffect(() => {
+    const email = getDoctorEmail();
+    const id = patientId?.toString() || "new";
+    autosaveKeyRef.current = `visitFormAutosave_${id}_${email}`;
+
+    try {
+      const raw = localStorage.getItem(autosaveKeyRef.current);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as Record<string, unknown>;
+      if (saved.formData) setFormData(saved.formData as VisitFormData);
+      if (saved.visitType) setVisitType(saved.visitType as string);
+      if (saved.selectedComplaints)
+        setSelectedComplaints(saved.selectedComplaints as string[]);
+      if (saved.complaintAnswers)
+        setComplaintAnswers(saved.complaintAnswers as Record<string, string[]>);
+      if (saved.systemReviewAnswers)
+        setSystemReviewAnswers(
+          saved.systemReviewAnswers as Record<string, string[]>,
+        );
+      if (saved.medicalHistory)
+        setMedicalHistory(saved.medicalHistory as Record<string, string>);
+      if (saved.generalExamFindings)
+        setGeneralExamFindings(
+          saved.generalExamFindings as Record<string, string>,
+        );
+      if (saved.diagnosisStatus)
+        setDiagnosisStatus(saved.diagnosisStatus as "provisional" | "final");
+      if (saved.surgicalHistoryAnswers)
+        setSurgicalHistoryAnswers(saved.surgicalHistoryAnswers as string[]);
+      if (saved.personalHistoryAnswers)
+        setPersonalHistoryAnswers(saved.personalHistoryAnswers as string[]);
+      if (saved.familyHistoryAnswers)
+        setFamilyHistoryAnswers(saved.familyHistoryAnswers as string[]);
+      if (saved.allergyAnswers)
+        setAllergyAnswers(saved.allergyAnswers as string[]);
+      if (saved.epiSchedule)
+        setEpiSchedule(saved.epiSchedule as "yes" | "no" | "");
+      if (saved.autosavedAt)
+        setAutosavedAt(new Date(saved.autosavedAt as string));
+    } catch {
+      // ignore restore errors
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 60-second autosave
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional stable interval with broad state snapshot
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!autosaveKeyRef.current) return;
+      try {
+        const snapshot = {
+          formData,
+          visitType,
+          selectedComplaints,
+          complaintAnswers,
+          systemReviewAnswers,
+          medicalHistory,
+          generalExamFindings,
+          diagnosisStatus,
+          surgicalHistoryAnswers,
+          personalHistoryAnswers,
+          familyHistoryAnswers,
+          allergyAnswers,
+          epiSchedule,
+          autosavedAt: new Date().toISOString(),
+        };
+        localStorage.setItem(autosaveKeyRef.current, JSON.stringify(snapshot));
+        setAutosavedAt(new Date());
+      } catch {
+        // ignore storage errors
+      }
+    }, 60_000);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    formData,
+    visitType,
+    selectedComplaints,
+    complaintAnswers,
+    systemReviewAnswers,
+    medicalHistory,
+    generalExamFindings,
+    diagnosisStatus,
+  ]);
 
   // ─── Role / permissions ───────────────────────────────────────────────────
 
@@ -914,6 +1042,36 @@ export default function VisitForm({
       ...prev,
       [finding]: prev[finding] === status ? "" : status,
     }));
+  };
+
+  // ─── Examination Templates ────────────────────────────────────────────────
+
+  const [templateExamRows, setTemplateExamRows] = useState<ExamTemplateRow[]>(
+    [],
+  );
+
+  const applyExamTemplate = (templateName: string) => {
+    const rows = EXAM_TEMPLATES[templateName] || [];
+    setTemplateExamRows((prev) => {
+      // Append only rows not already present (by finding name)
+      const existingFindings = new Set(prev.map((r) => r.finding));
+      const newRows = rows.filter((r) => !existingFindings.has(r.finding));
+      return [...prev, ...newRows];
+    });
+  };
+
+  const updateTemplateRow = (
+    idx: number,
+    field: keyof ExamTemplateRow,
+    value: string,
+  ) => {
+    setTemplateExamRows((prev) =>
+      prev.map((r, i) => (i === idx ? { ...r, [field]: value } : r)),
+    );
+  };
+
+  const removeTemplateRow = (idx: number) => {
+    setTemplateExamRows((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const addHistoryQuestion = (sectionKey: string) => {
@@ -1376,8 +1534,15 @@ export default function VisitForm({
         salientFeatures: formData.salient_features || "",
         otherMedicalHistory:
           (formData as Record<string, unknown>).other_medical_history || "",
+        diagnosisStatus,
+        templateExamRows,
       };
       localStorage.setItem(extendedKey, JSON.stringify(extendedData));
+      // Clear autosave entry on successful manual save
+      if (autosaveKeyRef.current) {
+        localStorage.removeItem(autosaveKeyRef.current);
+        setAutosavedAt(null);
+      }
     } catch {
       // ignore storage errors
     }
@@ -2488,6 +2653,99 @@ export default function VisitForm({
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {/* Quick-fill specialty templates */}
+          <div className="mb-4 space-y-2">
+            <p className="text-xs font-semibold text-teal-700 uppercase tracking-wide">
+              Quick-fill Templates
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {Object.keys(EXAM_TEMPLATES).map((tName) => (
+                <Button
+                  key={tName}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs border-teal-400 text-teal-700 hover:bg-teal-50"
+                  onClick={() => applyExamTemplate(tName)}
+                  data-ocid={`exam_template.${tName.toLowerCase()}_button`}
+                >
+                  + {tName}
+                </Button>
+              ))}
+            </div>
+            {/* Template rows table */}
+            {templateExamRows.length > 0 && (
+              <div className="mt-3 border border-teal-200 rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-teal-50">
+                    <tr>
+                      <th className="text-left px-3 py-2 font-semibold text-teal-800 w-2/5">
+                        Finding
+                      </th>
+                      <th className="text-left px-3 py-2 font-semibold text-teal-800">
+                        Value / Description
+                      </th>
+                      <th className="w-10" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {templateExamRows.map((row, idx) => (
+                      <tr
+                        key={`${row.finding}-${idx}`}
+                        className="border-t border-teal-100 hover:bg-teal-50/50"
+                      >
+                        <td className="px-2 py-1">
+                          <input
+                            className="w-full bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-teal-400 rounded px-1 py-0.5 text-sm font-medium text-slate-800"
+                            value={row.finding}
+                            onChange={(e) =>
+                              updateTemplateRow(idx, "finding", e.target.value)
+                            }
+                          />
+                        </td>
+                        <td className="px-2 py-1">
+                          <input
+                            className="w-full bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-teal-400 rounded px-1 py-0.5 text-sm text-slate-700"
+                            value={row.value}
+                            onChange={(e) =>
+                              updateTemplateRow(idx, "value", e.target.value)
+                            }
+                          />
+                        </td>
+                        <td className="px-1 py-1 text-center">
+                          <button
+                            type="button"
+                            onClick={() => removeTemplateRow(idx)}
+                            className="text-rose-400 hover:text-rose-600 p-1 rounded"
+                            aria-label="Remove row"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="px-3 py-2 bg-teal-50 border-t border-teal-100 flex justify-end">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs text-teal-600"
+                    onClick={() =>
+                      setTemplateExamRows((prev) => [
+                        ...prev,
+                        { finding: "", value: "" },
+                      ])
+                    }
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    Add Row
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
           <Tabs defaultValue="cardiovascular">
             <TabsList className="flex flex-wrap w-full gap-1 h-auto">
               <TabsTrigger
@@ -2630,7 +2888,18 @@ export default function VisitForm({
       <Card className="border-teal-200 bg-teal-50/30">
         <CardHeader className="pb-3 bg-teal-600 rounded-t-xl">
           <CardTitle className="text-base font-medium flex items-center justify-between text-white">
-            <span>Diagnosis / রোগ নির্ণয়</span>
+            <span className="flex items-center gap-2">
+              Diagnosis / রোগ নির্ণয়
+              {diagnosisStatus === "provisional" ? (
+                <Badge className="bg-yellow-400 text-yellow-900 border-0 text-xs font-semibold">
+                  Provisional
+                </Badge>
+              ) : (
+                <Badge className="bg-green-400 text-green-900 border-0 text-xs font-semibold">
+                  ✓ Final
+                </Badge>
+              )}
+            </span>
             <Button
               type="button"
               variant="outline"
@@ -2656,16 +2925,71 @@ export default function VisitForm({
             </Button>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-3 space-y-3">
+          {/* Provisional warning banner */}
+          {diagnosisStatus === "provisional" && formData.diagnosis?.trim() && (
+            <div
+              className="flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-yellow-50 border border-yellow-300 rounded-lg px-4 py-3"
+              data-ocid="diagnosis.provisional_warning"
+            >
+              <span className="text-yellow-800 text-sm flex-1">
+                ⚠ Diagnosis is still marked as <strong>Provisional</strong> —
+                please confirm as Final before writing prescription.
+              </span>
+              <Button
+                type="button"
+                size="sm"
+                className="shrink-0 bg-green-600 hover:bg-green-700 text-white h-8 text-xs"
+                onClick={() => setDiagnosisStatus("final")}
+                data-ocid="diagnosis.mark_final_button"
+              >
+                ✓ Mark as Final
+              </Button>
+            </div>
+          )}
+          {diagnosisStatus === "final" && formData.diagnosis?.trim() && (
+            <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-4 py-2">
+              <span className="text-green-700 text-sm font-semibold">
+                ✓ Final Diagnosis Confirmed
+              </span>
+              <button
+                type="button"
+                className="ml-auto text-xs text-green-600 underline"
+                onClick={() => setDiagnosisStatus("provisional")}
+              >
+                Revert to Provisional
+              </button>
+            </div>
+          )}
           <Textarea
             id="diagnosis"
             value={formData.diagnosis || ""}
-            onChange={(e) => handleChange("diagnosis", e.target.value)}
+            onChange={(e) => {
+              handleChange("diagnosis", e.target.value);
+              // Reset to provisional when diagnosis text changes
+              if (diagnosisStatus === "final")
+                setDiagnosisStatus("provisional");
+            }}
             placeholder="Enter diagnosis here, or click AI Generate..."
             rows={3}
             className="bg-slate-50 text-sm"
             data-ocid="diagnosis.textarea"
           />
+          {/* Mark Final button also shown below textarea when no text yet */}
+          {diagnosisStatus === "provisional" && (
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-8 text-xs border-green-400 text-green-700 hover:bg-green-50"
+                onClick={() => setDiagnosisStatus("final")}
+                data-ocid="diagnosis.confirm_button"
+              >
+                ✓ Confirm Final Diagnosis
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -2792,6 +3116,18 @@ export default function VisitForm({
           />
         </CardContent>
       </Card>
+
+      {/* Autosave indicator */}
+      {autosavedAt && (
+        <p className="text-xs text-muted-foreground text-right pr-1">
+          <CheckCircle className="h-3 w-3 inline mr-1 text-green-500" />
+          Autosaved at{" "}
+          {autosavedAt.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </p>
+      )}
 
       {/* Sticky Save Bar — mobile/tablet */}
       <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-card border-t shadow-2xl px-4 py-3">

@@ -413,8 +413,25 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
     const registry = loadRegistry();
     const idx = registry.findIndex((d) => d.id === id);
     if (idx >= 0) {
+      const before = JSON.stringify(registry[idx]);
       registry[idx] = { ...registry[idx], status: "rejected" };
       saveRegistry(registry);
+      appendAuditLog({
+        timestamp: new Date().toISOString(),
+        userRole: "admin",
+        userName: "Admin",
+        action: "SOFT_DELETE — Account rejected",
+        target: registry[idx].name,
+      });
+      // Detailed before/after for medico-legal trail
+      const detailed = {
+        timestamp: new Date().toISOString(),
+        userRole: "admin" as const,
+        userName: "Admin",
+        action: "Account status changed to rejected (SOFT_DELETE)",
+        target: `before: ${before} | after: status=rejected`,
+      };
+      appendAuditLog(detailed);
     }
   }, []);
 
@@ -651,8 +668,16 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
     const registry = loadPatientRegistry();
     const idx = registry.findIndex((p) => p.id === id);
     if (idx >= 0) {
+      const before = JSON.stringify(registry[idx]);
       registry[idx] = { ...registry[idx], status: "rejected" };
       savePatientRegistry(registry);
+      appendAuditLog({
+        timestamp: new Date().toISOString(),
+        userRole: "admin",
+        userName: "Admin",
+        action: "SOFT_DELETE — Patient account rejected",
+        target: `Patient: ${registry[idx].name} | before: ${before} | after: status=rejected`,
+      });
     }
   }, []);
 

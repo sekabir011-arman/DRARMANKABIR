@@ -489,6 +489,110 @@ function WalkInModal({ open, onClose, onAdd }: WalkInModalProps) {
   );
 }
 
+// ── Health Tip Slideshow (fallback when video fails) ─────────────────────────
+
+const SLIDESHOW_TIPS = [
+  {
+    text: "Wash your hands for at least 20 seconds to prevent infections",
+    bg: "from-blue-900 to-blue-800",
+    icon: "🧼",
+  },
+  {
+    text: "Drink 8 glasses of water daily to stay hydrated",
+    bg: "from-cyan-900 to-cyan-800",
+    icon: "💧",
+  },
+  {
+    text: "Regular exercise for 30 minutes daily improves heart health",
+    bg: "from-teal-900 to-teal-800",
+    icon: "🏃",
+  },
+  {
+    text: "Blood pressure check recommended every 6 months",
+    bg: "from-purple-900 to-purple-800",
+    icon: "❤️",
+  },
+  {
+    text: "Diabetes screening is advised for adults over 40",
+    bg: "from-green-900 to-green-800",
+    icon: "🔬",
+  },
+  {
+    text: "Adequate sleep (7-8 hours) strengthens your immune system",
+    bg: "from-indigo-900 to-indigo-800",
+    icon: "😴",
+  },
+  {
+    text: "Avoid self-medication — consult your doctor before taking new drugs",
+    bg: "from-rose-900 to-rose-800",
+    icon: "💊",
+  },
+  {
+    text: "Regular eye checkups recommended every 2 years",
+    bg: "from-amber-900 to-amber-800",
+    icon: "👁️",
+  },
+  {
+    text: "Take all prescribed antibiotics as directed — do not stop early",
+    bg: "from-orange-900 to-orange-800",
+    icon: "⚕️",
+  },
+  {
+    text: "Vaccinations protect you and your community — stay up to date",
+    bg: "from-emerald-900 to-emerald-800",
+    icon: "💉",
+  },
+];
+
+function HealthTipSlideshow() {
+  const [idx, setIdx] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setIdx((i) => (i + 1) % SLIDESHOW_TIPS.length);
+        setVisible(true);
+      }, 500);
+    }, 5000);
+    return () => clearInterval(iv);
+  }, []);
+
+  const tip = SLIDESHOW_TIPS[idx];
+
+  return (
+    <div
+      className={`flex-1 flex flex-col items-center justify-center p-8 bg-gradient-to-br ${tip.bg} transition-all duration-500`}
+      data-ocid="serial_display.health_slideshow"
+    >
+      <div
+        className={`text-center transition-opacity duration-500 ${visible ? "opacity-100" : "opacity-0"}`}
+      >
+        <div className="text-6xl mb-6">{tip.icon}</div>
+        <p className="text-white text-xl sm:text-2xl font-semibold leading-relaxed max-w-xs mx-auto">
+          {tip.text}
+        </p>
+        <div className="mt-8 text-gray-400 text-sm">
+          <p className="font-semibold text-gray-300">
+            Dr. Arman Kabir&apos;s Care
+          </p>
+          <p className="text-xs mt-1">Health Education Series</p>
+        </div>
+        {/* Progress dots */}
+        <div className="flex items-center justify-center gap-1.5 mt-6">
+          {SLIDESHOW_TIPS.map((t, i) => (
+            <div
+              key={t.text.slice(0, 10)}
+              className={`w-1.5 h-1.5 rounded-full transition-all ${i === idx ? "bg-white w-3" : "bg-white/30"}`}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 
 function SerialDisplayInner() {
@@ -499,6 +603,7 @@ function SerialDisplayInner() {
   const [showVideoPanel, setShowVideoPanel] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string>(() => resolveVideoUrl());
+  const [videoLoadError, setVideoLoadError] = useState(false);
   const [showWalkIn, setShowWalkIn] = useState(false);
   const allowWalkIn = canAddWalkIn();
   const prevNowServingIdRef = useRef<string | null>(null);
@@ -548,6 +653,7 @@ function SerialDisplayInner() {
       bc.onmessage = (e: MessageEvent<{ videoUrl: string | null }>) => {
         const newUrl = e.data?.videoUrl;
         setVideoUrl(newUrl ? toDisplayEmbedUrl(newUrl) : DEFAULT_VIDEO_URL);
+        setVideoLoadError(false); // reset error on new URL
       };
       return () => bc.close();
     } catch {
@@ -1055,17 +1161,22 @@ function SerialDisplayInner() {
                 </span>
               </div>
 
-              {/* Video embed — uses doctor's custom URL or the default health education playlist */}
-              <div className="flex-1 relative bg-black">
-                <iframe
-                  key={videoUrl}
-                  src={videoUrl}
-                  title="Health Education"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="absolute inset-0 w-full h-full border-0"
-                  loading="lazy"
-                />
+              {/* Video embed — falls back to health tip slideshow on error */}
+              <div className="flex-1 relative bg-black flex flex-col">
+                {!videoLoadError ? (
+                  <iframe
+                    key={videoUrl}
+                    src={videoUrl}
+                    title="Health Education"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="absolute inset-0 w-full h-full border-0"
+                    loading="lazy"
+                    onError={() => setVideoLoadError(true)}
+                  />
+                ) : (
+                  <HealthTipSlideshow />
+                )}
               </div>
 
               {/* Health tip ticker */}

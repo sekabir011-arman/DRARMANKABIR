@@ -24,6 +24,7 @@ export interface MedAdminRecord {
   recordedBy: string;
   recordedByRole: string;
   date: string; // YYYY-MM-DD
+  reason?: string; // reason for not_given
 }
 
 export interface MissedDoseEscalation {
@@ -319,6 +320,9 @@ export default function NurseDueMeds({
 }: NurseDueMedsProps) {
   const [dueMeds, setDueMeds] = useState<DueMedRow[]>([]);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  /** State for the "Not Given" reason dialog */
+  const [notGivenRow, setNotGivenRow] = useState<DueMedRow | null>(null);
+  const [notGivenReason, setNotGivenReason] = useState("");
 
   const today = new Date().toISOString().split("T")[0];
   const nowHour = new Date().getHours();
@@ -398,6 +402,7 @@ export default function NurseDueMeds({
   function recordStatus(
     row: DueMedRow,
     status: "given" | "not_given" | "delayed",
+    reason?: string,
   ) {
     const record: MedAdminRecord = {
       id: `${row.patientId}-${row.drugName}-${row.scheduledTime}-${today}`,
@@ -412,6 +417,7 @@ export default function NurseDueMeds({
       recordedBy: currentUserName,
       recordedByRole: currentUserRole,
       date: today,
+      ...(reason ? { reason } : {}),
     };
     saveMedAdminRecord(record);
 
@@ -582,10 +588,13 @@ export default function NurseDueMeds({
                           size="sm"
                           variant="outline"
                           className="h-7 px-2 text-xs border-red-300 text-red-700 hover:bg-red-50"
-                          onClick={() => recordStatus(row, "not_given")}
+                          onClick={() => {
+                            setNotGivenRow(row);
+                            setNotGivenReason("");
+                          }}
                           data-ocid={`nurse_due_meds.not_given_button.${row.reminderId}`}
                         >
-                          ❌
+                          ❌ Not Given
                         </Button>
                       </div>
                     )}
@@ -596,6 +605,60 @@ export default function NurseDueMeds({
           </div>
         ))}
       </div>
+
+      {/* Not Given Reason Dialog */}
+      {notGivenRow && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-5 space-y-4">
+            <h3 className="font-bold text-red-800 flex items-center gap-2 text-sm">
+              <XCircle className="w-4 h-4 text-red-600" />
+              Reason for Not Giving —{" "}
+              <span className="text-gray-700">{notGivenRow.drugName}</span>
+            </h3>
+            <select
+              value={notGivenReason}
+              onChange={(e) => setNotGivenReason(e.target.value)}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-300"
+              data-ocid="nurse_due_meds.not_given_reason_select"
+            >
+              <option value="">— Select a reason —</option>
+              <option value="Patient Refused">Patient Refused</option>
+              <option value="Out for Imaging">Out for Imaging</option>
+              <option value="Drug Unavailable">Drug Unavailable</option>
+              <option value="Other">Other</option>
+            </select>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setNotGivenRow(null);
+                  setNotGivenReason("");
+                }}
+                data-ocid="nurse_due_meds.not_given_cancel_button"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                disabled={!notGivenReason}
+                onClick={() => {
+                  if (notGivenRow && notGivenReason) {
+                    recordStatus(notGivenRow, "not_given", notGivenReason);
+                    setNotGivenRow(null);
+                    setNotGivenReason("");
+                  }
+                }}
+                data-ocid="nurse_due_meds.not_given_confirm_button"
+              >
+                Confirm Not Given
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

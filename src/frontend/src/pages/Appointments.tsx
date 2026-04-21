@@ -1589,6 +1589,15 @@ function AdmittedPatientsTab() {
   const [receiptTarget, setReceiptTarget] = useState<AppointmentEntry | null>(
     null,
   );
+  // Conflict check state for admitted track
+  const [admSlotAvailability, setAdmSlotAvailability] =
+    useState<SlotAvailability>("unknown");
+  const [admConflictInfo, setAdmConflictInfo] = useState<ConflictInfo | null>(
+    null,
+  );
+  const [admShowConflictWarning, setAdmShowConflictWarning] = useState(false);
+  const [admPendingSave, setAdmPendingSave] = useState(false);
+
   const { currentDoctor } = useEmailAuth();
   const isDoctor =
     !currentDoctor ||
@@ -1643,6 +1652,8 @@ function AdmittedPatientsTab() {
     setLookupQuery("");
     setLookupMsg("");
     setEditTarget(null);
+    setAdmSlotAvailability("unknown");
+    setAdmConflictInfo(null);
     setAddOpen(true);
   }
 
@@ -1662,7 +1673,33 @@ function AdmittedPatientsTab() {
     setLookupQuery(appt.registerNumber || "");
     setLookupMsg("");
     setEditTarget(appt);
+    setAdmSlotAvailability("unknown");
+    setAdmConflictInfo(null);
     setAddOpen(true);
+  }
+
+  /** Check admitted slot conflict (uses visitTime field if present, date otherwise) */
+  function checkAdmittedSlotConflict(date: string, doctor: string) {
+    if (!date || !doctor) {
+      setAdmSlotAvailability("unknown");
+      setAdmConflictInfo(null);
+      return;
+    }
+    // For admitted track — conflict is same doctor + same date (no time granularity needed unless visitTime set)
+    const conflict = checkSlotConflict(
+      appointments.filter((a) => a.appointmentType === "admitted"),
+      date,
+      "12:00", // default noon for date-only check
+      doctor,
+      editTarget?.id,
+    );
+    if (conflict) {
+      setAdmSlotAvailability("conflict");
+      setAdmConflictInfo(conflict);
+    } else {
+      setAdmSlotAvailability("available");
+      setAdmConflictInfo(null);
+    }
   }
 
   function saveAppointment() {
@@ -1674,7 +1711,20 @@ function AdmittedPatientsTab() {
       toast.error("Please select an admission date");
       return;
     }
+    // Conflict check — show warning if conflict and not yet acknowledged
+    if (
+      admSlotAvailability === "conflict" &&
+      admConflictInfo &&
+      !admPendingSave
+    ) {
+      setAdmShowConflictWarning(true);
+      return;
+    }
+    _doAdmSave();
+    setAdmPendingSave(false);
+  }
 
+  function _doAdmSave() {
     const currentAll = loadAppointments();
     const serial = getOrAssignSerial(
       currentAll,
@@ -2242,9 +2292,11 @@ function AdmittedPatientsTab() {
               <Input
                 type="date"
                 value={form.admissionDate}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, admissionDate: e.target.value }))
-                }
+                onChange={(e) => {
+                  const newDate = e.target.value;
+                  setForm((f) => ({ ...f, admissionDate: newDate }));
+                  checkAdmittedSlotConflict(newDate, form.doctor);
+                }}
                 data-ocid="admitted_appt.input"
               />
             </div>
@@ -2287,7 +2339,10 @@ function AdmittedPatientsTab() {
               <Label>Doctor</Label>
               <Select
                 value={form.doctor}
-                onValueChange={(v) => setForm((f) => ({ ...f, doctor: v }))}
+                onValueChange={(v) => {
+                  setForm((f) => ({ ...f, doctor: v }));
+                  checkAdmittedSlotConflict(form.admissionDate, v);
+                }}
               >
                 <SelectTrigger data-ocid="admitted_appt.select">
                   <SelectValue placeholder="Select doctor (optional)" />
@@ -2348,6 +2403,62 @@ function AdmittedPatientsTab() {
               data-ocid="admitted_appt.submit_button"
             >
               {editTarget ? "Save Changes" : "Add Admission"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Admitted Conflict Warning Dialog */}
+      <Dialog
+        open={admShowConflictWarning}
+        onOpenChange={(o) => {
+          if (!o) setAdmShowConflictWarning(false);
+        }}
+      >
+        <DialogContent
+          className="sm:max-w-sm"
+          data-ocid="admitted_appt.conflict_dialog"
+        >
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-amber-700">
+              <AlertCircle className="w-5 h-5" />
+              Admission Scheduling Conflict
+            </DialogTitle>
+          </DialogHeader>
+          {admConflictInfo && (
+            <p className="text-sm text-muted-foreground">
+              <span className="font-semibold text-foreground">
+                {admConflictInfo.doctorName}
+              </span>{" "}
+              already has an admitted patient scheduled around{" "}
+              <span className="font-semibold text-amber-700">
+                {admConflictInfo.conflictingTime}
+              </span>{" "}
+              for{" "}
+              <span className="font-semibold text-foreground">
+                {admConflictInfo.conflictingPatient}
+              </span>
+              . Please choose a different date or proceed anyway.
+            </p>
+          )}
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setAdmShowConflictWarning(false)}
+              data-ocid="admitted_appt.conflict_choose_time_button"
+            >
+              Choose Different Date
+            </Button>
+            <Button
+              className="bg-amber-600 hover:bg-amber-700 text-white"
+              onClick={() => {
+                setAdmShowConflictWarning(false);
+                setAdmPendingSave(true);
+                _doAdmSave();
+              }}
+              data-ocid="admitted_appt.conflict_book_anyway_button"
+            >
+              Proceed Anyway
             </Button>
           </DialogFooter>
         </DialogContent>

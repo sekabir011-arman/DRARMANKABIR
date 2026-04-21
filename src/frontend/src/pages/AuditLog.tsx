@@ -64,6 +64,7 @@ const ROLE_COLORS: Record<string, string> = {
 
 const ENTITY_TYPES = [
   "All",
+  "AI Suggestion",
   "Patient",
   "Visit",
   "Prescription",
@@ -330,7 +331,12 @@ export default function AuditLog() {
   const filteredLegacy = useMemo(() => {
     return legacyLogs.filter((log) => {
       if (roleFilter !== "All" && log.userRole !== roleFilter) return false;
-      if (entityFilter !== "All") return false;
+      // "AI Suggestion" filter — match legacy log entries with AI suggestion actions
+      if (entityFilter === "AI Suggestion") {
+        if (!log.action.toLowerCase().includes("ai suggestion")) return false;
+      } else if (entityFilter !== "All") {
+        return false;
+      }
       if (search) {
         const q = search.toLowerCase();
         if (

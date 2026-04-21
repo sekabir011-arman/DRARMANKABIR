@@ -58,6 +58,8 @@ interface RxDrug {
   routeBn?: string;
   route?: string;
   name?: string;
+  isPrn?: boolean;
+  prnCondition?: string;
 }
 
 interface ClinicalSnapshot {
@@ -163,21 +165,52 @@ function PrescriptionHeader({
       </div>
     );
   }
+  // Chamber fallback — read full doctor profile from localStorage
+  const getDoctorProfileFallback = () => {
+    try {
+      const sessionId = localStorage.getItem("medicare_current_doctor");
+      if (sessionId) {
+        const registry = JSON.parse(
+          localStorage.getItem("medicare_doctors_registry") || "[]",
+        ) as Array<{ id: string; email: string }>;
+        const doc = registry.find((d) => d.id === sessionId);
+        if (doc?.email) {
+          const profile = JSON.parse(
+            localStorage.getItem(`doctor_profile_${doc.email}`) || "null",
+          );
+          if (profile) return profile;
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+    return null;
+  };
+  const profile = getDoctorProfileFallback();
   return (
-    <div className="border-b pb-2 mb-3">
+    <div className="border-b pb-3 mb-3">
       <div className="flex justify-between items-start">
         <div>
-          <h2 className="font-bold text-base">Dr. Arman Kabir (ZOSID)</h2>
-          <p className="text-sm text-gray-600">
-            MBBS (D.U.) | Emergency Medical Officer
+          <h2 className="font-bold text-base">
+            {profile?.name ?? "Dr. Arman Kabir (ZOSID)"}
+          </h2>
+          <p className="text-sm text-gray-600 font-medium">
+            {profile?.degrees ??
+              profile?.designation ??
+              "MBBS (D.U.) | Emergency Medical Officer"}
           </p>
+          {profile?.posts && (
+            <p className="text-xs text-gray-500">{profile.posts}</p>
+          )}
           <p className="text-sm text-gray-600">
-            Dr. Sirajul Islam Medical College Hospital
+            {profile?.chamber ??
+              profile?.chamberAddress ??
+              "Dr. Sirajul Islam Medical College Hospital"}
           </p>
         </div>
         <div className="text-right text-sm text-gray-600">
-          <p>Reg. no. A-105224</p>
-          <p>Mob: 01751959262 / 01984587802</p>
+          {profile?.regNo && <p>Reg. no. {profile.regNo}</p>}
+          <p>Mob: {profile?.phone ?? "01751959262 / 01984587802"}</p>
         </div>
       </div>
     </div>
@@ -881,7 +914,7 @@ export default function PrescriptionPad({
               <div className="space-y-2">
                 {drugs.map((d, i) => (
                   <div key={`drug-${d.drugName}-${i}`} className="leading-snug">
-                    <div className="text-sm font-medium">
+                    <div className="text-sm font-medium flex items-center gap-1 flex-wrap">
                       {i + 1}.{" "}
                       <span className="text-indigo-600">{d.drugForm}</span>{" "}
                       {d.brandName ? (
@@ -897,17 +930,31 @@ export default function PrescriptionPad({
                         d.drugName || d.name
                       )}{" "}
                       <span>{d.dose}</span>
+                      {d.isPrn && (
+                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-300 font-semibold ml-1">
+                          PRN
+                        </span>
+                      )}
                     </div>
                     <div className="text-xs text-gray-500 pl-4">
-                      {[
-                        d.frequencyBn || d.frequency,
-                        d.durationBn || d.duration
-                          ? `– ${d.durationBn || d.duration}`
-                          : "",
-                        d.instructionBn || d.instructions,
-                      ]
-                        .filter(Boolean)
-                        .join("  ")}
+                      {d.isPrn ? (
+                        <span className="italic text-purple-600">
+                          PRN
+                          {d.prnCondition
+                            ? ` — ${d.prnCondition}`
+                            : " (as needed)"}
+                        </span>
+                      ) : (
+                        [
+                          d.frequencyBn || d.frequency,
+                          d.durationBn || d.duration
+                            ? `– ${d.durationBn || d.duration}`
+                            : "",
+                          d.instructionBn || d.instructions,
+                        ]
+                          .filter(Boolean)
+                          .join("  ")
+                      )}
                       {(d.specialInstructionBn || d.specialInstruction) && (
                         <span className="text-orange-600 ml-1">
                           · {d.specialInstructionBn || d.specialInstruction}

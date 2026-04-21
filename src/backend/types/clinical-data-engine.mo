@@ -153,6 +153,59 @@ module {
     ipAddress : ?Text;
   };
 
+  // ─── Medication ────────────────────────────────────────────────────────────
+
+  public type Medication = {
+    name : Text;
+    dose : Text;
+    route : Text;
+    frequency : Text;
+    duration : Text;
+    instructions : ?Text;
+    isPRN : Bool;
+    prnCondition : ?Text;   // e.g. "if fever > 38°C"
+  };
+
+  // ─── Medication Administration Record ──────────────────────────────────────
+
+  public type MedicationAdministrationStatus = { #Given; #NotGiven; #Delayed };
+
+  public type MedicationAdministration = {
+    id : Nat;
+    medicationName : Text;
+    patientId : Nat;
+    dose : Text;
+    scheduledTime : Int;
+    administeredAt : ?Int;
+    status : MedicationAdministrationStatus;
+    missedReason : ?Text;
+    recordedBy : Text;
+    recordedByRole : Text;
+    createdAt : Int;
+  };
+
+  // ─── Prescription ───────────────────────────────────────────────────────────
+
+  public type Prescription = {
+    id : Nat;
+    patientId : Nat;
+    encounterId : ?Nat;
+    medications : [Medication];
+    diagnoses : [Text];
+    advice : [Text];
+    followUpDate : ?Int;
+    followUpCreatesAppointment : Bool;
+    isDraft : Bool;
+    isFinalized : Bool;
+    authorId : Principal;
+    authorName : Text;
+    authorRole : StaffRole;
+    createdAt : Int;
+    updatedAt : Int;
+    versionInfo : VersionedRecord;
+    isDeleted : Bool;
+  };
+
   // ─── Clinical Alert ────────────────────────────────────────────────────────
 
   public type AlertType = {
@@ -163,6 +216,7 @@ module {
     #DrugInteraction;
     #AllergyContraindication;
     #CriticalLab;
+    #MissedDoseEscalation;
   };
 
   public type AlertSeverity = { #Critical; #Warning; #Info };

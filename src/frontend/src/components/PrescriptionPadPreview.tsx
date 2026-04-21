@@ -39,6 +39,8 @@ interface RxDrug {
   specialInstructionBn?: string;
   name?: string;
   form?: string;
+  isPrn?: boolean;
+  prnCondition?: string;
 }
 
 interface ClinicalSummary {
@@ -142,12 +144,14 @@ function HeaderBlock({
       );
     }
     return (
-      <div className="border-b pb-2 mb-3">
+      <div className="border-b pb-3 mb-3">
         <div className="flex justify-between items-start">
           <div>
             <h2 className="font-bold text-base">{textData.doctorName}</h2>
             {textData.degrees && (
-              <p className="text-sm text-gray-600">{textData.degrees}</p>
+              <p className="text-sm text-gray-600 font-medium">
+                {textData.degrees}
+              </p>
             )}
             {textData.chamberAddress && (
               <p className="text-sm text-gray-600">{textData.chamberAddress}</p>
@@ -163,12 +167,35 @@ function HeaderBlock({
     );
   }
 
-  // Fallback to doctor info
+  // Dynamic fallback — read from localStorage doctor profile
+  const getDoctorProfile = () => {
+    try {
+      const sessionId = localStorage.getItem("medicare_current_doctor");
+      if (sessionId) {
+        const registry = JSON.parse(
+          localStorage.getItem("medicare_doctors_registry") || "[]",
+        ) as Array<{ id: string; email: string }>;
+        const doc = registry.find((d) => d.id === sessionId);
+        if (doc?.email) {
+          const profile = JSON.parse(
+            localStorage.getItem(`doctor_profile_${doc.email}`) || "null",
+          );
+          if (profile) return profile;
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+    return fallbackDoctorInfo;
+  };
+  const profile = getDoctorProfile();
+
   if (headerType === "hospital") {
     return (
       <div className="border-b pb-2 mb-3 text-center">
         <h2 className="font-bold text-base">
-          {fallbackDoctorInfo?.hospitalName ??
+          {profile?.hospitalName ??
+            fallbackDoctorInfo?.hospitalName ??
             "Dr. Sirajul Islam Medical College Hospital"}
         </h2>
         <p className="text-sm text-gray-600">Dept. of General Surgery</p>
@@ -176,24 +203,41 @@ function HeaderBlock({
     );
   }
   return (
-    <div className="border-b pb-2 mb-3">
+    <div className="border-b pb-3 mb-3">
       <div className="flex justify-between items-start">
         <div>
           <h2 className="font-bold text-base">
-            {fallbackDoctorInfo?.name ?? "Dr. Arman Kabir (ZOSID)"}
+            {profile?.name ??
+              fallbackDoctorInfo?.name ??
+              "Dr. Arman Kabir (ZOSID)"}
           </h2>
-          <p className="text-sm text-gray-600">
-            {fallbackDoctorInfo?.degrees ??
+          <p className="text-sm text-gray-600 font-medium">
+            {profile?.degrees ??
+              profile?.designation ??
+              fallbackDoctorInfo?.degrees ??
               "MBBS (D.U.) | Emergency Medical Officer"}
           </p>
+          {profile?.posts && (
+            <p className="text-xs text-gray-500">{profile.posts}</p>
+          )}
           <p className="text-sm text-gray-600">
-            {fallbackDoctorInfo?.chamber ??
+            {profile?.chamber ??
+              profile?.chamberAddress ??
+              fallbackDoctorInfo?.chamber ??
               "Dr. Sirajul Islam Medical College Hospital"}
           </p>
         </div>
         <div className="text-right text-sm text-gray-600">
-          <p>Reg. no. A-105224</p>
-          <p>Mob: 01751959262 / 01984587802</p>
+          {profile?.regNo && <p>Reg. no. {profile.regNo}</p>}
+          {!profile?.regNo && !fallbackDoctorInfo?.regNo && (
+            <p>Reg. no. A-105224</p>
+          )}
+          <p>
+            Mob:{" "}
+            {profile?.phone ??
+              fallbackDoctorInfo?.phone ??
+              "01751959262 / 01984587802"}
+          </p>
         </div>
       </div>
     </div>
@@ -942,7 +986,7 @@ export default function PrescriptionPadPreview({
                 <div className="space-y-2">
                   {drugs.map((d, i) => (
                     <div key={d.id || i} className="leading-snug">
-                      <div className="text-sm font-medium">
+                      <div className="text-sm font-medium flex items-center gap-1 flex-wrap">
                         {i + 1}.{" "}
                         <span className="text-indigo-600">{d.drugForm}</span>{" "}
                         {d.brandName ? (
@@ -960,17 +1004,31 @@ export default function PrescriptionPadPreview({
                           d.drugName
                         )}{" "}
                         <span>{d.dose}</span>
+                        {d.isPrn && (
+                          <span className="text-xs px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-300 font-semibold ml-1">
+                            PRN
+                          </span>
+                        )}
                       </div>
                       <div className="text-xs text-gray-500 pl-4">
-                        {[
-                          d.frequencyBn || d.frequency,
-                          d.durationBn || d.duration
-                            ? `– ${d.durationBn || d.duration}`
-                            : "",
-                          d.instructionBn || d.instructions,
-                        ]
-                          .filter(Boolean)
-                          .join("  ")}
+                        {d.isPrn ? (
+                          <span className="italic text-purple-600">
+                            PRN
+                            {d.prnCondition
+                              ? ` — ${d.prnCondition}`
+                              : " (as needed)"}
+                          </span>
+                        ) : (
+                          [
+                            d.frequencyBn || d.frequency,
+                            d.durationBn || d.duration
+                              ? `– ${d.durationBn || d.duration}`
+                              : "",
+                            d.instructionBn || d.instructions,
+                          ]
+                            .filter(Boolean)
+                            .join("  ")
+                        )}
                         {(d.specialInstructionBn || d.specialInstruction) && (
                           <span className="text-orange-600 ml-1">
                             · {d.specialInstructionBn || d.specialInstruction}

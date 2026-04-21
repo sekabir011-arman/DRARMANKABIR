@@ -18,8 +18,11 @@ import {
   AlertTriangle,
   BookOpen,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
   Edit2,
   FileText,
+  History,
   Lock,
   LockOpen,
   MessageSquare,
@@ -41,11 +44,13 @@ export interface AdmissionHistoryRecord {
   id: string;
   patientId: string;
   admittedOn: string; // ISO
+  dischargedOn?: string; // ISO — set when patient is discharged
   admittedBy: string;
   admittedByRole: StaffRole;
   hospitalName: string;
   ward: string;
   bed: string;
+  consultantAssigned?: string; // name of assigned consultant
 
   // Clinical fields
   chiefComplaints: Array<{
@@ -237,6 +242,13 @@ export default function AdmissionHistory({
   const [showChangeInput, setShowChangeInput] = useState<
     Record<string, boolean>
   >({});
+  const [prevAdmissionsExpanded, setPrevAdmissionsExpanded] = useState(false);
+
+  // ── Previous admissions: records from all patients sharing same register number
+  // or simply all records where status is complete AND patient is now OPD
+  const previousAdmissions = records.filter(
+    (r) => r.status === "complete" && !!r.dischargedOn,
+  );
 
   // Determine if the viewer can create/see this
   const canCreate =
@@ -539,6 +551,99 @@ export default function AdmissionHistory({
           <p className="text-xs text-gray-400">
             Create one to document this admission.
           </p>
+        </div>
+      )}
+
+      {/* ── Previous Admissions (Reverse Flow: Discharged → OPD patients) ── */}
+      {previousAdmissions.length > 0 && (
+        <div className="bg-teal-50 border border-teal-200 rounded-xl overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setPrevAdmissionsExpanded((v) => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 hover:bg-teal-100 transition-colors"
+            data-ocid="admission_history.previous_admissions.toggle"
+          >
+            <div className="flex items-center gap-2">
+              <History className="w-4 h-4 text-teal-600" />
+              <span className="font-semibold text-teal-800 text-sm">
+                Previous Admissions
+              </span>
+              <span className="text-xs bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-semibold">
+                {previousAdmissions.length} record
+                {previousAdmissions.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+            {prevAdmissionsExpanded ? (
+              <ChevronUp className="w-4 h-4 text-teal-500 shrink-0" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-teal-500 shrink-0" />
+            )}
+          </button>
+          {prevAdmissionsExpanded && (
+            <div className="px-4 pb-4 space-y-2 border-t border-teal-200">
+              <p className="text-xs text-teal-600 mt-3">
+                This patient was previously admitted. Their inpatient history is
+                preserved below for clinical reference.
+              </p>
+              {previousAdmissions.map((r, idx) => (
+                <div
+                  key={r.id}
+                  className="bg-white border border-teal-200 rounded-xl p-4 space-y-2"
+                  data-ocid={`admission_history.prev_admission.${idx + 1}`}
+                >
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <User className="w-3.5 h-3.5 text-teal-600" />
+                        <span className="text-sm font-semibold text-gray-800">
+                          Admitted:{" "}
+                          {format(new Date(r.admittedOn), "d MMM yyyy")}
+                        </span>
+                        {r.dischargedOn && (
+                          <>
+                            <span className="text-gray-400">→</span>
+                            <span className="text-sm font-semibold text-gray-800">
+                              Discharged:{" "}
+                              {format(new Date(r.dischargedOn), "d MMM yyyy")}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3 flex-wrap text-xs text-gray-500">
+                        {r.hospitalName && <span>📍 {r.hospitalName}</span>}
+                        {r.ward && <span>Ward: {r.ward}</span>}
+                        {r.bed && <span>Bed: {r.bed}</span>}
+                        {r.consultantAssigned && (
+                          <span>Consultant: {r.consultantAssigned}</span>
+                        )}
+                      </div>
+                    </div>
+                    <Badge className="bg-teal-100 text-teal-700 border border-teal-200 text-xs gap-1 shrink-0">
+                      <Lock className="w-3 h-3" /> Archived
+                    </Badge>
+                  </div>
+                  {r.provisionalDiagnosis && (
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg px-3 py-2">
+                      <p className="text-xs font-bold text-purple-700 mb-1">
+                        Diagnosis
+                      </p>
+                      <p className="text-sm text-gray-700">
+                        {r.provisionalDiagnosis}
+                      </p>
+                    </div>
+                  )}
+                  {r.approvedBy && (
+                    <p className="text-xs text-gray-400">
+                      ✅ Approved by {r.approvedBy} ·{" "}
+                      {r.approvedAt
+                        ? format(new Date(r.approvedAt), "d MMM yyyy")
+                        : "—"}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

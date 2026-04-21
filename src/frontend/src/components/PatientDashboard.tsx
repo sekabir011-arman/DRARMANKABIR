@@ -2172,7 +2172,28 @@ export default function PatientDashboardInner({
     all.push(sub);
     saveSubmissions(all);
     setSubmissions(loadSubmissions());
-    toast.success("Submitted! Awaiting doctor approval.");
+
+    // Role-specific confirmation messages
+    if (type === "vitals") {
+      toast.success(
+        "✓ Vitals submitted — your doctor will review this shortly",
+        {
+          duration: 5000,
+        },
+      );
+    } else if (type === "complaint") {
+      toast.success("✓ Submitted — your doctor will review this", {
+        duration: 5000,
+      });
+    } else if (type === "investigation") {
+      toast.success(
+        "📋 Submitted for approval — your doctor will review before it appears in your record",
+        { duration: 6000 },
+      );
+    } else {
+      toast.success("Submitted! Awaiting doctor approval.");
+    }
+
     setShowSubmitPanel(false);
     setComplaint("");
     setVitalFields({
@@ -3751,7 +3772,11 @@ export default function PatientDashboardInner({
                             <Badge
                               className={`text-xs border-0 ${sub.status === "pending" ? "bg-amber-100 text-amber-700" : sub.status === "approved" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
                             >
-                              {sub.status}
+                              {sub.status === "pending"
+                                ? "✓ Submitted — Pending Review"
+                                : sub.status === "approved"
+                                  ? "Approved"
+                                  : "Rejected"}
                             </Badge>
                           </td>
                           <td className="py-2.5 px-3">

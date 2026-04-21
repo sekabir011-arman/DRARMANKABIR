@@ -7,13 +7,17 @@ import {
   ArrowRight,
   BedDouble,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
   ClipboardList,
+  Clock,
+  Eye,
   FileText,
   Loader2,
   PlusCircle,
   Users,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useEmailAuth } from "../../hooks/useEmailAuth";
 import type { Patient } from "../../types";
 
@@ -21,6 +25,15 @@ interface LocalPatient extends Patient {
   bedNumber?: string;
   ward?: string;
   isAdmitted?: boolean;
+}
+
+interface DraftApprovalItem {
+  id: string;
+  patientName: string;
+  patientId: string;
+  internName: string;
+  diagnosis: string;
+  createdAt: string;
 }
 
 function loadAllPatients(): LocalPatient[] {
@@ -47,9 +60,8 @@ function isAdmitted(p: LocalPatient) {
   );
 }
 
-function getPendingDrafts() {
-  const results: Array<{ id: string; patientName: string; createdAt: string }> =
-    [];
+function loadPendingDrafts(): DraftApprovalItem[] {
+  const results: DraftApprovalItem[] = [];
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
     if (!k?.startsWith("prescriptions_")) continue;
@@ -58,10 +70,16 @@ function getPendingDrafts() {
         Record<string, unknown>
       >;
       for (const rx of arr) {
-        if (rx.status === "draft_awaiting_approval") {
+        if (
+          rx.status === "draft_awaiting_approval" ||
+          (rx.isDraft === true && rx.internRole === true)
+        ) {
           results.push({
             id: String(rx.id ?? ""),
             patientName: String(rx.patientName ?? "Unknown"),
+            patientId: String(rx.patientId ?? ""),
+            internName: String(rx.createdByName ?? rx.authorName ?? "Intern"),
+            diagnosis: String(rx.diagnosis ?? "—"),
             createdAt: String(rx.createdAt ?? ""),
           });
         }
@@ -92,10 +110,22 @@ export default function MedicalOfficerDashboard() {
   const { currentDoctor } = useEmailAuth();
   const navigate = useNavigate();
   const [patientFilter, setPatientFilter] = useState<"all" | "admitted">("all");
+  const [draftsExpanded, setDraftsExpanded] = useState(false);
 
   const allPatients = useMemo(loadAllPatients, []);
-  const pendingDrafts = useMemo(getPendingDrafts, []);
   const recentActivity = useMemo(getRecentActivity, []);
+
+  const [pendingDrafts, setPendingDrafts] = useState<DraftApprovalItem[]>(() =>
+    loadPendingDrafts(),
+  );
+
+  // Refresh drafts every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPendingDrafts(loadPendingDrafts());
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, []);
 
   const admittedPatients = allPatients.filter(isAdmitted);
   const opdPatients = allPatients.filter((p) => !isAdmitted(p));
@@ -167,8 +197,15 @@ export default function MedicalOfficerDashboard() {
         </Card>
         <Card className="border-0 shadow-sm">
           <CardContent className="pt-5 pb-4 px-5 flex items-center gap-4">
-            <div className="w-11 h-11 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
-              <FileText className="w-5 h-5" />
+            <div className="relative w-11 h-11">
+              <div className="w-11 h-11 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+                <FileText className="w-5 h-5" />
+              </div>
+              {pendingDrafts.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center leading-none">
+                  {pendingDrafts.length}
+                </span>
+              )}
             </div>
             <div>
               <p className="text-2xl font-bold text-foreground leading-none">
@@ -192,7 +229,6 @@ export default function MedicalOfficerDashboard() {
               </h2>
             </div>
             <div className="flex items-center gap-1">
-              {/* Filter tabs */}
               <div className="flex border border-border rounded-lg overflow-hidden text-xs">
                 <button
                   type="button"
@@ -305,59 +341,92 @@ export default function MedicalOfficerDashboard() {
 
         {/* Right column */}
         <div className="space-y-4">
-          {/* Pending drafts */}
-          <Card className="border-amber-200">
+          {/* Pending drafts — collapsible with badge */}
+          <Card
+            className={
+              pendingDrafts.length > 0 ? "border-red-300" : "border-amber-200"
+            }
+          >
             <CardHeader className="pb-3 pt-4 px-5">
-              <div className="flex items-center gap-2">
-                <ClipboardList className="w-4 h-4 text-amber-600" />
-                <h2 className="font-semibold text-foreground text-sm">
-                  Prescriptions Awaiting Approval
-                </h2>
-                {pendingDrafts.length > 0 && (
-                  <Badge className="ml-auto bg-amber-100 text-amber-800 border-amber-200 text-xs">
-                    {pendingDrafts.length}
-                  </Badge>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="px-5 pb-4">
-              {pendingDrafts.length === 0 ? (
-                <div
-                  className="flex items-center gap-2 text-emerald-600 py-2"
-                  data-ocid="mo.drafts.empty_state"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <p className="text-sm">All prescriptions approved</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {pendingDrafts.slice(0, 4).map((d) => (
-                    <div
-                      key={d.id}
-                      className="flex items-center gap-2 bg-amber-50 rounded-lg px-3 py-2"
+              <button
+                type="button"
+                className="w-full flex items-center justify-between gap-2"
+                onClick={() => {
+                  setDraftsExpanded((v) => !v);
+                  if (!draftsExpanded) setPendingDrafts(loadPendingDrafts());
+                }}
+                data-ocid="mo.pending_approvals.toggle"
+              >
+                <div className="flex items-center gap-2">
+                  <ClipboardList className="w-4 h-4 text-amber-600" />
+                  <h2 className="font-semibold text-foreground text-sm">
+                    Prescriptions Awaiting Approval
+                  </h2>
+                  {pendingDrafts.length > 0 && (
+                    <span
+                      className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-600 text-white text-[10px] font-bold leading-none"
+                      data-ocid="mo.pending_approvals.badge"
                     >
-                      <Loader2 className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">
-                          {d.patientName}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {d.createdAt
-                            ? new Date(d.createdAt).toLocaleDateString()
-                            : "—"}
-                        </p>
-                      </div>
-                      <Badge
-                        variant="outline"
-                        className="text-[10px] border-amber-300 text-amber-700 shrink-0"
-                      >
-                        Draft
-                      </Badge>
-                    </div>
-                  ))}
+                      {pendingDrafts.length}
+                    </span>
+                  )}
                 </div>
-              )}
-            </CardContent>
+                {draftsExpanded ? (
+                  <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                )}
+              </button>
+            </CardHeader>
+            {draftsExpanded && (
+              <CardContent className="px-5 pb-4">
+                {pendingDrafts.length === 0 ? (
+                  <div
+                    className="flex items-center gap-2 text-emerald-600 py-2"
+                    data-ocid="mo.drafts.empty_state"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <p className="text-sm">All prescriptions approved</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {pendingDrafts.slice(0, 5).map((d, idx) => (
+                      <div
+                        key={d.id}
+                        className="flex items-center gap-2 bg-red-50 rounded-lg px-3 py-2 border border-red-200"
+                        data-ocid={`mo.pending_approval.item.${idx + 1}`}
+                      >
+                        <Loader2 className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">
+                            {d.patientName}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            By {d.internName} ·{" "}
+                            {d.createdAt
+                              ? new Date(d.createdAt).toLocaleDateString()
+                              : "—"}
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          className="h-7 px-2 text-xs bg-red-600 hover:bg-red-700 text-white gap-1 shrink-0"
+                          onClick={() =>
+                            navigate({
+                              to: "/PatientProfile",
+                              search: { id: d.patientId },
+                            })
+                          }
+                          data-ocid={`mo.pending_approval.review.${idx + 1}`}
+                        >
+                          <Eye className="w-3 h-3" /> Review
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            )}
           </Card>
 
           {/* Recent activity */}
@@ -389,6 +458,13 @@ export default function MedicalOfficerDashboard() {
                         {entry.userName}
                       </span>
                       <span className="shrink-0">{entry.action}</span>
+                      <span className="ml-auto shrink-0 flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {new Date(entry.timestamp).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
                     </div>
                   ))}
                 </div>

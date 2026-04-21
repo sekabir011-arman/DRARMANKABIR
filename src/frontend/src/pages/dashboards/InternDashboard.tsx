@@ -8,6 +8,7 @@ import {
   ClipboardCheck,
   ClipboardList,
   FileText,
+  InfoIcon,
   Loader2,
   Users,
 } from "lucide-react";
@@ -48,6 +49,7 @@ function isAdmitted(p: LocalPatient) {
 interface DraftItem {
   id: string;
   patientName: string;
+  patientId: string;
   diagnosis: string;
   createdAt: string;
   type: "prescription" | "note";
@@ -70,6 +72,7 @@ function loadMyDrafts(doctorEmail: string): DraftItem[] {
           results.push({
             id: String(rx.id ?? ""),
             patientName: String(rx.patientName ?? "Unknown"),
+            patientId: String(rx.patientId ?? ""),
             diagnosis: String(rx.diagnosis ?? "—"),
             createdAt: String(rx.createdAt ?? ""),
             type: "prescription",
@@ -126,16 +129,37 @@ export default function InternDashboard() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {myDrafts.length > 0 && (
-            <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-xs px-3 py-1">
-              {myDrafts.length} Awaiting Review
-            </Badge>
-          )}
           <Badge className="bg-sky-100 text-sky-800 border-sky-200 text-xs px-3 py-1">
             Intern Doctor
           </Badge>
         </div>
       </div>
+
+      {/* Blue info banner for own pending drafts */}
+      {myDrafts.length > 0 && (
+        <div
+          className="flex items-center gap-3 bg-blue-50 border border-blue-300 rounded-xl px-4 py-3"
+          data-ocid="intern.drafts_awaiting.banner"
+        >
+          <InfoIcon className="w-5 h-5 text-blue-600 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-blue-800">
+              {myDrafts.length} prescription
+              {myDrafts.length > 1 ? "s" : ""} awaiting MO / Consultant review
+            </p>
+            <p className="text-xs text-blue-600 mt-0.5">
+              Your draft prescriptions are saved and visible to the supervising
+              doctor. They will be activated after approval.
+            </p>
+          </div>
+          <span
+            className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-600 text-white text-sm font-bold shrink-0"
+            data-ocid="intern.drafts_awaiting.badge"
+          >
+            {myDrafts.length}
+          </span>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -167,8 +191,15 @@ export default function InternDashboard() {
         </Card>
         <Card className="border-0 shadow-sm">
           <CardContent className="pt-5 pb-4 px-5 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
-              <Loader2 className="w-4 h-4" />
+            <div className="relative w-10 h-10">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+                <Loader2 className="w-4 h-4" />
+              </div>
+              {myDrafts.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-blue-600 text-white text-[9px] font-bold flex items-center justify-center leading-none">
+                  {myDrafts.length}
+                </span>
+              )}
             </div>
             <div>
               <p className="text-xl font-bold text-foreground leading-none">
@@ -304,9 +335,12 @@ export default function InternDashboard() {
                   My Drafts — Awaiting Review
                 </h2>
                 {myDrafts.length > 0 && (
-                  <Badge className="ml-auto bg-amber-600 text-white text-xs">
+                  <span
+                    className="ml-auto inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-bold"
+                    data-ocid="intern.my_drafts.badge"
+                  >
                     {myDrafts.length}
-                  </Badge>
+                  </span>
                 )}
               </div>
             </CardHeader>
@@ -320,10 +354,18 @@ export default function InternDashboard() {
                 </p>
               ) : (
                 <div className="space-y-2">
-                  {myDrafts.map((d) => (
-                    <div
+                  {myDrafts.map((d, idx) => (
+                    <button
                       key={d.id}
-                      className="bg-card border border-amber-200 rounded-lg px-3 py-2.5"
+                      type="button"
+                      onClick={() =>
+                        navigate({
+                          to: "/PatientProfile",
+                          search: { id: d.patientId },
+                        })
+                      }
+                      className="w-full bg-card border border-amber-200 rounded-lg px-3 py-2.5 text-left hover:bg-amber-50 transition-colors"
+                      data-ocid={`intern.draft_item.${idx + 1}`}
                     >
                       <div className="flex items-center justify-between gap-2">
                         <p className="font-medium text-sm text-foreground truncate">
@@ -344,7 +386,7 @@ export default function InternDashboard() {
                           ? new Date(d.createdAt).toLocaleDateString()
                           : "—"}
                       </p>
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}

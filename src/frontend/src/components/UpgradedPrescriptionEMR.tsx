@@ -177,6 +177,10 @@ interface RxDrug {
   frequencyBn: string;
   specialInstruction: string;
   specialInstructionBn: string;
+  /** PRN (as-needed) — skips scheduled reminders */
+  isPrn?: boolean;
+  /** Condition for PRN: e.g. "if fever > 38°C" */
+  prnCondition?: string;
 }
 
 const DRUG_FORMS = ["Tab.", "Cap.", "Syp.", "Inj.", "Inf.", "Supp.", ""];
@@ -685,6 +689,9 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
   const [drugFrequencyBn, setDrugFrequencyBn] = useState("");
   const [drugSpecialInstruction, setDrugSpecialInstruction] = useState("");
   const [drugSpecialInstructionBn, setDrugSpecialInstructionBn] = useState("");
+  // PRN (as-needed) state
+  const [drugIsPrn, setDrugIsPrn] = useState(false);
+  const [drugPrnCondition, setDrugPrnCondition] = useState("");
 
   // Treatment template
   const [treatmentQuery, setTreatmentQuery] = useState("");
@@ -971,6 +978,8 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
     setDrugFrequencyBn(drug.frequencyBn || "");
     setDrugSpecialInstruction(drug.specialInstruction || "");
     setDrugSpecialInstructionBn(drug.specialInstructionBn || "");
+    setDrugIsPrn(drug.isPrn ?? false);
+    setDrugPrnCondition(drug.prnCondition || "");
     setEditingDrugId(drug.id);
     // Scroll to medication form
     setTimeout(() => {
@@ -1002,6 +1011,8 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
                 frequencyBn: drugFrequencyBn,
                 specialInstruction: drugSpecialInstruction,
                 specialInstructionBn: drugSpecialInstructionBn,
+                isPrn: drugIsPrn,
+                prnCondition: drugIsPrn ? drugPrnCondition : "",
               }
             : d,
         ),
@@ -1018,6 +1029,8 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
       setDrugFrequencyBn("");
       setDrugSpecialInstruction("");
       setDrugSpecialInstructionBn("");
+      setDrugIsPrn(false);
+      setDrugPrnCondition("");
       return;
     }
     const newDrug: RxDrug = {
@@ -1037,6 +1050,8 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
       frequencyBn: drugFrequencyBn,
       specialInstruction: drugSpecialInstruction,
       specialInstructionBn: drugSpecialInstructionBn,
+      isPrn: drugIsPrn,
+      prnCondition: drugIsPrn ? drugPrnCondition : "",
     };
     setRxDrugs((prev) => [...prev, newDrug]);
     setDrugName("");
@@ -1050,6 +1065,8 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
     setDrugFrequencyBn("");
     setDrugSpecialInstruction("");
     setDrugSpecialInstructionBn("");
+    setDrugIsPrn(false);
+    setDrugPrnCondition("");
   }
 
   function deleteDrug(id: string) {
@@ -1103,8 +1120,10 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
     const medications: Medication[] = rxDrugs.map((d) => ({
       name: `${d.drugForm ? `${d.drugForm} ` : ""}${d.drugName}${d.brandName ? ` (${d.brandName})` : ""}`,
       dose: d.dose,
-      frequency: d.frequencyBn || d.frequency || d.durationBn || d.duration,
-      duration: d.durationBn || d.duration,
+      frequency: d.isPrn
+        ? `PRN${d.prnCondition ? ` — ${d.prnCondition}` : ""}`
+        : d.frequencyBn || d.frequency || d.durationBn || d.duration,
+      duration: d.isPrn ? "" : d.durationBn || d.duration,
       instructions:
         d.instructionBn ||
         d.instructions ||
@@ -1120,6 +1139,8 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
       instructionsBn: d.instructionBn,
       specialInstruction: d.specialInstruction,
       specialInstructionBn: d.specialInstructionBn,
+      isPrn: d.isPrn ? "true" : "false",
+      prnCondition: d.prnCondition || "",
     }));
 
     // Intern draft-lock: show modal instead of saving as active
@@ -1182,6 +1203,7 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
       labelTimestamp,
       headerType,
       status,
+      finalizedAt: status === "active" ? new Date().toISOString() : undefined,
       diagnosis:
         diagnoses.length > 0 ? diagnoses.join(" + ") : diagnosis || undefined,
       drugs: rxDrugs,
@@ -1246,9 +1268,10 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
     localStorage.setItem(snapshotKey, JSON.stringify(existing));
     localStorage.removeItem(DRAFT_KEY);
 
-    // Auto-populate drug reminders (only for active prescriptions)
+    // Auto-populate drug reminders (only for active, non-PRN prescriptions)
     if (status === "active") {
-      autoPopulateDrugReminders(patientId, medications, snapId);
+      const nonPrnMeds = medications.filter((m) => m.isPrn !== "true");
+      autoPopulateDrugReminders(patientId, nonPrnMeds, snapId);
     }
 
     // Auto-create follow-up appointment if follow-up date is set
@@ -1392,6 +1415,37 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
                     type === "hospital" ? hospitalHeaderImg : chamberHeaderImg;
                   return (
                     <div key={type} className="border rounded-lg p-3 space-y-2">
+                      <div className="flex items-center gap-3 mb-3 py-2 px-3 rounded-lg border border-dashed border-purple-300 bg-purple-50/50">
+                        <label className="flex items-center gap-2 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={drugIsPrn}
+                            onChange={(e) => setDrugIsPrn(e.target.checked)}
+                            className="w-4 h-4 accent-purple-600"
+                            data-ocid="rx.drug_prn.toggle"
+                          />
+                          <span className="text-sm font-semibold text-purple-700">
+                            PRN (as-needed)
+                          </span>
+                        </label>
+                        {drugIsPrn && (
+                          <input
+                            className={`flex-1 border rounded px-2 py-1 text-sm border-purple-300 ${dark ? "bg-gray-800 text-white" : "bg-white"}`}
+                            value={drugPrnCondition}
+                            onChange={(e) =>
+                              setDrugPrnCondition(e.target.value)
+                            }
+                            placeholder="Condition: e.g. if fever > 38°C"
+                            data-ocid="rx.drug_prn_condition.input"
+                          />
+                        )}
+                        {drugIsPrn && (
+                          <span className="text-xs text-purple-500 italic shrink-0">
+                            No reminder bell
+                          </span>
+                        )}
+                      </div>
+
                       <div className="flex items-center gap-2">
                         {type === "hospital" ? (
                           <Hospital className="w-4 h-4 text-blue-600" />
@@ -2211,6 +2265,53 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
                     placeholder="500mg"
                     data-ocid="rx.drug_dose.input"
                   />
+                  {/* Child dose calculator inline */}
+                  {(Number(age) < 12 || weight) &&
+                    drugName &&
+                    drugDose &&
+                    (() => {
+                      const CHILD_DOSE_TABLE: Record<string, number> = {
+                        paracetamol: 15,
+                        acetaminophen: 15,
+                        ibuprofen: 10,
+                        naproxen: 10,
+                        amoxicillin: 25,
+                        amoxycillin: 25,
+                        metronidazole: 7.5,
+                        flagyl: 7.5,
+                      };
+                      const wt = Number.parseFloat(weight || "0");
+                      if (!wt) return null;
+                      const dNameLower = drugName.toLowerCase();
+                      const mgPerKg =
+                        Object.entries(CHILD_DOSE_TABLE).find(([key]) =>
+                          dNameLower.includes(key),
+                        )?.[1] ?? 10;
+                      const maxSafe = wt * mgPerKg;
+                      const enteredNum = Number.parseFloat(
+                        drugDose.replace(/[^0-9.]/g, ""),
+                      );
+                      const isOver =
+                        !Number.isNaN(enteredNum) && enteredNum > maxSafe;
+                      return (
+                        <div
+                          className={`mt-1 px-2 py-1 rounded text-xs border ${isOver ? "bg-red-50 border-red-300 text-red-700" : "bg-emerald-50 border-emerald-200 text-emerald-700"}`}
+                        >
+                          {isOver ? (
+                            <span>
+                              ⚠️ <strong>Dose may exceed safe limit</strong> —
+                              Max safe: <strong>{maxSafe}mg</strong> ({mgPerKg}
+                              mg/kg × {wt}kg)
+                            </span>
+                          ) : (
+                            <span>
+                              ✓ Max safe dose: <strong>{maxSafe}mg</strong> (
+                              {mgPerKg}mg/kg × {wt}kg)
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })()}
                 </div>
                 <div>
                   <span className="text-sm text-muted-foreground">
@@ -2815,6 +2916,7 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
                   investigation={investigation}
                   adviceNewInv={adviceNewInv}
                   followUpDate={followUpDate}
+                  isInternDraft={isIntern}
                 />
               )}
             </div>
@@ -3732,24 +3834,41 @@ function DrugRow({
         </span>
       </td>
       <td className={cellCls}>
-        {drug.brandName ? (
-          <div>
-            <strong className="text-amber-700">{drug.brandName}</strong>
-            <br />
-            <span className="text-gray-500 text-sm">{drug.drugName}</span>
-          </div>
-        ) : drug.nameType === "brand" ? (
-          <strong>{drug.drugName}</strong>
-        ) : (
-          <span>{drug.drugName}</span>
-        )}
+        <div className="flex items-center gap-1 flex-wrap">
+          {drug.brandName ? (
+            <div>
+              <strong className="text-amber-700">{drug.brandName}</strong>
+              <br />
+              <span className="text-gray-500 text-sm">{drug.drugName}</span>
+            </div>
+          ) : drug.nameType === "brand" ? (
+            <strong>{drug.drugName}</strong>
+          ) : (
+            <span>{drug.drugName}</span>
+          )}
+          {drug.isPrn && (
+            <span className="text-xs px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-300 font-semibold whitespace-nowrap">
+              PRN
+            </span>
+          )}
+        </div>
       </td>
       <td className={cellCls}>{drug.dose}</td>
       <td className={cellCls}>
         <span className="text-teal-700">{drug.routeBn || drug.route}</span>
       </td>
-      <td className={cellCls}>{drug.frequencyBn || drug.frequency}</td>
-      <td className={cellCls}>{drug.durationBn || drug.duration}</td>
+      <td className={cellCls}>
+        {drug.isPrn ? (
+          <span className="italic text-purple-600 text-xs">
+            PRN{drug.prnCondition ? ` — ${drug.prnCondition}` : ""}
+          </span>
+        ) : (
+          drug.frequencyBn || drug.frequency
+        )}
+      </td>
+      <td className={cellCls}>
+        {drug.isPrn ? "—" : drug.durationBn || drug.duration}
+      </td>
       <td className={cellCls}>{drug.instructionBn || drug.instructions}</td>
       <td className={cellCls}>
         {drug.specialInstructionBn || drug.specialInstruction}
@@ -3804,6 +3923,8 @@ function PrescriptionPreview({
   investigation,
   adviceNewInv,
   followUpDate,
+  finalizedAt,
+  isInternDraft,
 }: {
   withHeader: boolean;
   headerType: PrescriptionHeaderType;
@@ -3832,6 +3953,8 @@ function PrescriptionPreview({
   investigation: string;
   adviceNewInv: string;
   followUpDate?: string;
+  finalizedAt?: string;
+  isInternDraft?: boolean;
 }) {
   const printId = "rx-preview-print";
 
@@ -3943,23 +4066,52 @@ function PrescriptionPreview({
       className="border border-t-0 border-gray-200 bg-white p-4 text-sm"
       data-ocid="rx.preview.panel"
     >
-      <div className="flex justify-end gap-2 mb-2">
-        <button
-          type="button"
-          onClick={() => handlePrint()}
-          className="flex items-center gap-1 text-sm px-3 py-1 bg-teal-600 text-white rounded hover:bg-teal-700"
-          data-ocid="rx.print.button"
-        >
-          <Printer className="w-3.5 h-3.5" /> Print
-        </button>
-        <button
-          type="button"
-          onClick={() => handlePrint(true)}
-          className="flex items-center gap-1 text-sm px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-          data-ocid="rx.download.button"
-        >
-          <Download className="w-3.5 h-3.5" /> Save PDF
-        </button>
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+        {/* Finalization badge */}
+        {finalizedAt && !isInternDraft && (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-400 text-emerald-800">
+            <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+            <div>
+              <span className="font-bold text-sm">
+                ✅ Saved &amp; Finalized
+              </span>
+              <span className="ml-2 text-xs text-emerald-600">
+                {new Date(finalizedAt).toLocaleString("en-GB", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+            </div>
+          </div>
+        )}
+        {isInternDraft && (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-400 text-amber-800">
+            <span className="font-bold text-sm">
+              📋 Draft – Awaiting Approval
+            </span>
+          </div>
+        )}
+        <div className="flex gap-2 ml-auto">
+          <button
+            type="button"
+            onClick={() => handlePrint()}
+            className="flex items-center gap-1 text-sm px-3 py-1 bg-teal-600 text-white rounded hover:bg-teal-700"
+            data-ocid="rx.print.button"
+          >
+            <Printer className="w-3.5 h-3.5" /> Print
+          </button>
+          <button
+            type="button"
+            onClick={() => handlePrint(true)}
+            className="flex items-center gap-1 text-sm px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+            data-ocid="rx.download.button"
+          >
+            <Download className="w-3.5 h-3.5" /> Save PDF
+          </button>
+        </div>
       </div>
       <div
         id={printId}
@@ -3986,20 +4138,24 @@ function PrescriptionPreview({
             ) : (
               <div className="flex justify-between items-start">
                 <div>
-                  <h2 className="font-bold text-base">
+                  <h2 className="font-bold text-lg">
                     {doctorInfo?.name ?? "Dr. Arman Kabir (ZOSID)"}
                   </h2>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 font-medium">
                     {doctorInfo?.degrees ??
                       "MBBS (D.U.) | Emergency Medical Officer"}
                   </p>
+                  {doctorInfo?.posts && (
+                    <p className="text-xs text-gray-500">{doctorInfo.posts}</p>
+                  )}
                   <p className="text-sm text-gray-600">
                     {doctorInfo?.chamber ?? "সেন্চুরি আর্কেড মার্কেট, মগবাজার, ঢাকা"}
                   </p>
                 </div>
                 <div className="text-right text-sm text-gray-600">
-                  <p>Reg. no. A-105224</p>
-                  <p>Mob: 01751959262</p>
+                  {doctorInfo?.regNo && <p>Reg. no. {doctorInfo.regNo}</p>}
+                  {!doctorInfo?.regNo && <p>Reg. no. A-105224</p>}
+                  <p>Mob: {doctorInfo?.phone ?? "01751959262"}</p>
                 </div>
               </div>
             )}
@@ -4152,7 +4308,7 @@ function PrescriptionPreview({
                 {drugs.map((d, i) => (
                   <div key={d.id} className="leading-snug">
                     {/* Line 1: number, form, drug name, dose */}
-                    <div className="text-sm font-medium">
+                    <div className="text-sm font-medium flex items-center gap-1 flex-wrap">
                       {i + 1}.{" "}
                       <span className="text-indigo-600">{d.drugForm}</span>{" "}
                       {d.brandName ? (
@@ -4170,19 +4326,33 @@ function PrescriptionPreview({
                         d.drugName
                       )}{" "}
                       <span>{d.dose}</span>
+                      {d.isPrn && (
+                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-300 font-semibold ml-1">
+                          PRN
+                        </span>
+                      )}
                     </div>
-                    {/* Line 2: route, frequency, duration, instructions */}
+                    {/* Line 2: route, frequency/PRN condition, duration, instructions */}
                     <div className="text-xs text-gray-500 pl-4">
-                      {[
-                        d.routeBn || d.route,
-                        d.frequencyBn || d.frequency,
-                        d.durationBn || d.duration
-                          ? `–${d.durationBn || d.duration}`
-                          : "",
-                        d.instructionBn || d.instructions,
-                      ]
-                        .filter(Boolean)
-                        .join("  ")}
+                      {d.isPrn ? (
+                        <span className="italic text-purple-600">
+                          PRN
+                          {d.prnCondition
+                            ? ` — ${d.prnCondition}`
+                            : " (as needed)"}
+                        </span>
+                      ) : (
+                        [
+                          d.routeBn || d.route,
+                          d.frequencyBn || d.frequency,
+                          d.durationBn || d.duration
+                            ? `–${d.durationBn || d.duration}`
+                            : "",
+                          d.instructionBn || d.instructions,
+                        ]
+                          .filter(Boolean)
+                          .join("  ")
+                      )}
                       {(d.specialInstructionBn || d.specialInstruction) && (
                         <span className="text-orange-600 ml-1">
                           · {d.specialInstructionBn || d.specialInstruction}

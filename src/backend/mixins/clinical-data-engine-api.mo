@@ -842,4 +842,159 @@ mixin (
     });
   };
 
+  // ─── Medication Administration API ─────────────────────────────────────────
+
+  public shared ({ caller }) func recordMedicationAdministration(
+    patientId : Nat,
+    medicationName : Text,
+    dose : Text,
+    scheduledTime : Int,
+    administeredAt : ?Int,
+    status : Types.MedicationAdministrationStatus,
+    missedReason : ?Text,
+  ) : async { #ok : Types.MedicationAdministration; #err : Text } {
+    let role = getCallerRole(caller);
+    if (not Lib.isClinician(role)) {
+      return #err("Unauthorized: only clinicians can record medication administration");
+    };
+    let record = Lib.recordMedicationAdministration(
+      engineState,
+      patientId, medicationName, dose, scheduledTime,
+      administeredAt, status, missedReason,
+      caller.toText(), debug_show(role),
+    );
+    #ok(record);
+  };
+
+  public query ({ caller }) func getMedicationAdministrationsByPatient(
+    patientId : Nat
+  ) : async [Types.MedicationAdministration] {
+    let role = getCallerRole(caller);
+    if (not Lib.isClinician(role)) { return [] };
+    Lib.getMedicationAdministrationsByPatient(engineState, patientId);
+  };
+
+  // ─── Prescription API (clinical engine — richer type with PRN, follow-up, finalization) ────
+
+  public shared ({ caller }) func createClinicalPrescription(
+    patientId : Nat,
+    encounterId : ?Nat,
+    medications : [Types.Medication],
+    diagnoses : [Text],
+    advice : [Text],
+    followUpDate : ?Int,
+    followUpCreatesAppointment : Bool,
+    isDraft : Bool,
+  ) : async { #ok : Types.Prescription; #err : Text } {
+    let role = getCallerRole(caller);
+    if (not Lib.isClinician(role)) {
+      return #err("Unauthorized: only clinicians can create prescriptions");
+    };
+    let prescription = Lib.createPrescription(
+      engineState, caller, caller.toText(), role,
+      patientId, encounterId, medications, diagnoses, advice,
+      followUpDate, followUpCreatesAppointment, isDraft,
+    );
+    #ok(prescription);
+  };
+
+  public shared ({ caller }) func finalizeClinicalPrescription(
+    id : Nat
+  ) : async { #ok : Types.Prescription; #err : Text } {
+    let role = getCallerRole(caller);
+    if (not Lib.canFinalizeClinicalNote(role)) {
+      return #err("Unauthorized: role cannot finalize prescriptions");
+    };
+    let prescription = Lib.finalizePrescription(engineState, caller, caller.toText(), role, id);
+    #ok(prescription);
+  };
+
+  public query ({ caller }) func getClinicalPrescriptionsByPatient(
+    patientId : Nat
+  ) : async [Types.Prescription] {
+    Lib.getPrescriptionsByPatient(engineState, patientId);
+  };
+
+  public query ({ caller }) func getClinicalPrescriptionsAwaitingApproval() : async [Types.Prescription] {
+    let role = getCallerRole(caller);
+    switch (role) {
+      case (#admin or #doctor or #consultant_doctor or #medical_officer) {
+        Lib.getPrescriptionsAwaitingApproval(engineState);
+      };
+      case (_) { [] };
+    };
+  };
+
+  // ─── Follow-up Appointment API ─────────────────────────────────────────────
+
+  public shared ({ caller }) func createFollowUpAppointment(
+    prescriptionId : Nat,
+    followUpDate : Int,
+    patientId : Nat,
+    patientName : Text,
+    doctorEmail : Text,
+  ) : async { #ok : Types.Appointment; #err : Text } {
+    let role = getCallerRole(caller);
+    if (not Lib.isClinician(role)) {
+      return #err("Unauthorized: only clinicians can create follow-up appointments");
+    };
+    Lib.createFollowUpAppointment(
+      engineState, caller, role, caller.toText(),
+      prescriptionId, followUpDate, patientId, patientName, doctorEmail,
+    );
+  };
+
+  // ─── AI Suggestion Audit API ───────────────────────────────────────────────
+
+  public shared ({ caller }) func recordAISuggestionAccepted(
+    patientId : Nat,
+    suggestionType : Text,
+    suggestionText : Text,
+    confidence : Float,
+  ) : async () {
+    let role = getCallerRole(caller);
+    if (not Lib.isClinician(role)) { return };
+    Lib.recordAISuggestionAccepted(
+      engineState,
+      patientId, suggestionType, suggestionText, confidence,
+      caller.toText(), role, caller,
+    );
+  };
+
+  // ─── Intern Draft Approval API ─────────────────────────────────────────────
+
+  public query ({ caller }) func getNotesAwaitingApproval() : async [Types.ClinicalNote] {
+    let role = getCallerRole(caller);
+    switch (role) {
+      case (#admin or #doctor or #consultant_doctor or #medical_officer) {
+        Lib.getNotesAwaitingApproval(engineState);
+      };
+      case (_) { [] };
+    };
+  };
+
+  public shared ({ caller }) func finalizeNote(
+    id : Nat
+  ) : async { #ok : Types.ClinicalNote; #err : Text } {
+    let role = getCallerRole(caller);
+    if (not Lib.canFinalizeClinicalNote(role)) {
+      return #err("Unauthorized: role cannot finalize notes");
+    };
+    let note = Lib.finalizeNote(engineState, caller, caller.toText(), role, id);
+    #ok(note);
+  };
+
+  // ─── Handover Acknowledgment API ───────────────────────────────────────────
+
+  public shared ({ caller }) func acknowledgeHandover(
+    id : Nat
+  ) : async { #ok : Types.HandoverEntry; #err : Text } {
+    let role = getCallerRole(caller);
+    if (not Lib.isClinician(role)) {
+      return #err("Unauthorized: only clinicians can acknowledge handovers");
+    };
+    let entry = Lib.acknowledgeHandover(engineState, caller, caller.toText(), role, id);
+    #ok(entry);
+  };
+
 };

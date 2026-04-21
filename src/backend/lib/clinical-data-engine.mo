@@ -4,6 +4,7 @@ import Time "mo:core/Time";
 import Principal "mo:core/Principal";
 import Nat "mo:core/Nat";
 import Int "mo:core/Int";
+import Order "mo:core/Order";
 
 import Types "../types/clinical-data-engine";
 
@@ -25,6 +26,8 @@ module {
     queueEntries : Map.Map<Text, Types.SerialQueueEntry>;
     handovers : Map.Map<Nat, Types.HandoverEntry>;
     dailyProgressNotes : Map.Map<Nat, Types.DailyProgressNote>;
+    medicationAdministrations : Map.Map<Nat, Types.MedicationAdministration>;
+    prescriptions : Map.Map<Nat, Types.Prescription>;
     var encounterIdCounter : Nat;
     var observationIdCounter : Nat;
     var orderIdCounter : Nat;
@@ -36,6 +39,8 @@ module {
     var syncRecordIdCounter : Nat;
     var handoverIdCounter : Nat;
     var dailyProgressNoteIdCounter : Nat;
+    var medicationAdministrationIdCounter : Nat;
+    var prescriptionIdCounter : Nat;
   };
 
   public func initState() : EngineState {
@@ -53,6 +58,8 @@ module {
       queueEntries = Map.empty<Text, Types.SerialQueueEntry>();
       handovers = Map.empty<Nat, Types.HandoverEntry>();
       dailyProgressNotes = Map.empty<Nat, Types.DailyProgressNote>();
+      medicationAdministrations = Map.empty<Nat, Types.MedicationAdministration>();
+      prescriptions = Map.empty<Nat, Types.Prescription>();
       var encounterIdCounter = 1;
       var observationIdCounter = 1;
       var orderIdCounter = 1;
@@ -64,6 +71,8 @@ module {
       var syncRecordIdCounter = 1;
       var handoverIdCounter = 1;
       var dailyProgressNoteIdCounter = 1;
+      var medicationAdministrationIdCounter = 1;
+      var prescriptionIdCounter = 1;
     };
   };
 
@@ -612,6 +621,7 @@ module {
       isDeleted = true; // soft-deleted archive
     };
     state.notes.add(archiveId, archivedNote);
+    addAudit(state, "ClinicalNote", archiveId, "archived", ?existing.content, "archived", caller, callerName, callerRole, changeReason);
 
     // Create the new version with chain link to previous
     let prevIds = existing.previousVersionIds.concat([archiveId]);
@@ -1731,6 +1741,323 @@ module {
     };
     state.dailyProgressNotes.add(id, updated);
     addAudit(state, "DailyProgressNote", id, "updated", null, assessmentText, caller, callerName, callerRole, changeReason);
+    updated;
+  };
+
+  // ─── Medication Administration Logic ───────────────────────────────────────
+
+  // Records a medication administration event (Given / NotGiven / Delayed).
+  // When the same medication is marked NotGiven twice consecutively for a patient,
+  // a #MissedDoseEscalation #Critical alert is automatically raised.
+
+  public func recordMedicationAdministration(
+    state : EngineState,
+    patientId : Nat,
+    medicationName : Text,
+    dose : Text,
+    scheduledTime : Int,
+    administeredAt : ?Int,
+    status : Types.MedicationAdministrationStatus,
+    missedReason : ?Text,
+    recordedBy : Text,
+    recordedByRole : Text,
+  ) : Types.MedicationAdministration {
+    let id = state.medicationAdministrationIdCounter;
+    state.medicationAdministrationIdCounter += 1;
+    let now = Time.now();
+    let record : Types.MedicationAdministration = {
+      id;
+      medicationName;
+      patientId;
+      dose;
+      scheduledTime;
+      administeredAt;
+      status;
+      missedReason;
+      recordedBy;
+      recordedByRole;
+      createdAt = now;
+    };
+    state.medicationAdministrations.add(id, record);
+
+    // Consecutive-miss escalation check (only for #NotGiven)
+    switch (status) {
+      case (#NotGiven) {
+        // Count how many of the last N records for this patient+medication are NotGiven
+        let recent = state.medicationAdministrations.values()
+          .filter(func (r : Types.MedicationAdministration) : Bool {
+            r.patientId == patientId and r.medicationName == medicationName
+          })
+          .toArray()
+          .sort(func (a : Types.MedicationAdministration, b : Types.MedicationAdministration) : Order.Order {
+            Int.compare(b.createdAt, a.createdAt)
+          });
+        // Check if the 2 most recent (including this one) are both NotGiven
+        var consecutiveMisses = 0;
+        var idx = 0;
+        while (idx < recent.size() and consecutiveMisses < 2) {
+          switch (recent[idx].status) {
+            case (#NotGiven) { consecutiveMisses += 1 };
+            case (_) { idx := recent.size() }; // break on non-miss
+          };
+          idx += 1;
+        };
+        if (consecutiveMisses >= 2) {
+          let alertId = state.alertIdCounter;
+          state.alertIdCounter += 1;
+          state.alerts.add(alertId, {
+            id = alertId;
+            patientId;
+            alertType = #MissedDoseEscalation;
+            severity = #Critical;
+            message = "MISSED DOSE ESCALATION: " # medicationName # " missed " # consecutiveMisses.toText() # " consecutive time(s) for patient ID " # patientId.toText() # " — immediate review required";
+            details = ?("Recorded by: " # recordedBy # " (" # recordedByRole # ") at " # now.toText());
+            triggeredAt = now;
+            triggeredBy = "Auto-detection: Consecutive missed doses";
+            isAcknowledged = false;
+            acknowledgedBy = null;
+            acknowledgedAt = null;
+            isResolved = false;
+            resolvedAt = null;
+          });
+        };
+      };
+      case (_) {};
+    };
+
+    record;
+  };
+
+  public func getMedicationAdministrationsByPatient(
+    state : EngineState,
+    patientId : Nat,
+  ) : [Types.MedicationAdministration] {
+    state.medicationAdministrations.values()
+      .filter(func (r) { r.patientId == patientId })
+      .toArray();
+  };
+
+  // ─── Prescription Logic ────────────────────────────────────────────────────
+
+  public func createPrescription(
+    state : EngineState,
+    caller : Principal,
+    callerName : Text,
+    callerRole : Types.StaffRole,
+    patientId : Nat,
+    encounterId : ?Nat,
+    medications : [Types.Medication],
+    diagnoses : [Text],
+    advice : [Text],
+    followUpDate : ?Int,
+    followUpCreatesAppointment : Bool,
+    isDraft : Bool,
+  ) : Types.Prescription {
+    // Interns can only save drafts
+    if (callerRole == #intern_doctor and not isDraft) {
+      Runtime.trap("Unauthorized: Intern doctors can only create draft prescriptions");
+    };
+    let id = state.prescriptionIdCounter;
+    state.prescriptionIdCounter += 1;
+    let versionInfo = makeVersionedRecord(1, caller, callerName, callerRole, null);
+    let now = Time.now();
+    let prescription : Types.Prescription = {
+      id;
+      patientId;
+      encounterId;
+      medications;
+      diagnoses;
+      advice;
+      followUpDate;
+      followUpCreatesAppointment;
+      isDraft;
+      isFinalized = not isDraft;
+      authorId = caller;
+      authorName = callerName;
+      authorRole = callerRole;
+      createdAt = now;
+      updatedAt = now;
+      versionInfo;
+      isDeleted = false;
+    };
+    state.prescriptions.add(id, prescription);
+    addAudit(state, "Prescription", id, "created", null, debug_show(isDraft), caller, callerName, callerRole, null);
+    prescription;
+  };
+
+  public func finalizePrescription(
+    state : EngineState,
+    caller : Principal,
+    callerName : Text,
+    callerRole : Types.StaffRole,
+    id : Nat,
+  ) : Types.Prescription {
+    if (not canFinalizeClinicalNote(callerRole)) {
+      Runtime.trap("Unauthorized: role cannot finalize prescriptions");
+    };
+    let existing = switch (state.prescriptions.get(id)) {
+      case (null) { Runtime.trap("Prescription not found") };
+      case (?p) { p };
+    };
+    let newVersion = makeVersionedRecord(existing.versionInfo.version + 1, caller, callerName, callerRole, ?"finalized");
+    let updated : Types.Prescription = {
+      existing with
+      isDraft = false;
+      isFinalized = true;
+      updatedAt = Time.now();
+      versionInfo = newVersion;
+    };
+    state.prescriptions.add(id, updated);
+    addAudit(state, "Prescription", id, "finalized", ?"draft", "finalized", caller, callerName, callerRole, null);
+    updated;
+  };
+
+  public func getPrescriptionsByPatient(
+    state : EngineState,
+    patientId : Nat,
+  ) : [Types.Prescription] {
+    state.prescriptions.values().filter(func (p) {
+      p.patientId == patientId and not p.isDeleted
+    }).toArray();
+  };
+
+  public func getPrescriptionsAwaitingApproval(state : EngineState) : [Types.Prescription] {
+    state.prescriptions.values().filter(func (p) {
+      p.isDraft and p.authorRole == #intern_doctor and not p.isDeleted
+    }).toArray();
+  };
+
+  // Creates a follow-up appointment from a prescription follow-up date.
+  // Returns the appointment record or an error.
+
+  public func createFollowUpAppointment(
+    state : EngineState,
+    caller : Principal,
+    callerRole : Types.StaffRole,
+    callerEmail : Text,
+    prescriptionId : Nat,
+    followUpDate : Int,
+    patientId : Nat,
+    patientName : Text,
+    doctorEmail : Text,
+  ) : { #ok : Types.Appointment; #err : Text } {
+    if (callerRole != #admin and callerEmail != doctorEmail) {
+      return #err("Unauthorized: can only create follow-up appointments for your own patients");
+    };
+    let apptId = "FOLLOWUP-" # prescriptionId.toText() # "-" # patientId.toText();
+    let now = Time.now();
+    // followUpDate is a nanosecond timestamp; convert to YYYY-MM-DD Text for Appointment.date
+    // We store the raw timestamp in timeSlot notes and use a placeholder date string
+    let appt : Types.Appointment = {
+      id = apptId;
+      patientId = ?patientId;
+      patientName;
+      registerNumber = null;
+      phone = null;
+      appointmentType = #chamber;
+      chamberName = null;
+      hospitalName = null;
+      date = "followup-" # followUpDate.toText();
+      timeSlot = null;
+      status = #pending;
+      doctorEmail;
+      serialNumber = null;
+      notes = ?("Auto-created follow-up from prescription #" # prescriptionId.toText());
+      createdAt = now;
+      updatedAt = now;
+    };
+    state.appointments.add(apptId, appt);
+    #ok(appt);
+  };
+
+  // ─── AI Suggestion Audit ───────────────────────────────────────────────────
+
+  // Records an "Accepted AI suggestion" audit event so AI-assisted decisions
+  // are traceable in the medico-legal audit trail.
+
+  public func recordAISuggestionAccepted(
+    state : EngineState,
+    patientId : Nat,
+    suggestionType : Text,
+    suggestionText : Text,
+    confidence : Float,
+    doctorEmail : Text,
+    doctorRole : Types.StaffRole,
+    doctorPrincipal : Principal,
+  ) {
+    let afterValue = "{\"type\":\"" # suggestionType # "\",\"text\":\"" # suggestionText # "\",\"confidence\":" # confidence.toText() # "}";
+    addAudit(
+      state,
+      "ai_suggestion",
+      patientId,
+      "AI_SUGGESTION_ACCEPTED",
+      ?"",
+      afterValue,
+      doctorPrincipal,
+      doctorEmail,
+      doctorRole,
+      ?("AI suggestion accepted — type: " # suggestionType),
+    );
+  };
+
+  // ─── Notes Awaiting Approval (intern drafts) ───────────────────────────────
+
+  public func getNotesAwaitingApproval(state : EngineState) : [Types.ClinicalNote] {
+    state.notes.values().filter(func (n) {
+      n.isDraft and n.authorRole == #intern_doctor and not n.isDeleted
+    }).toArray();
+  };
+
+  // Flip isDraft=false on a note — requires MO/Consultant/Admin.
+  public func finalizeNote(
+    state : EngineState,
+    caller : Principal,
+    callerName : Text,
+    callerRole : Types.StaffRole,
+    id : Nat,
+  ) : Types.ClinicalNote {
+    if (not canFinalizeClinicalNote(callerRole)) {
+      Runtime.trap("Unauthorized: role cannot finalize notes");
+    };
+    let existing = switch (state.notes.get(id)) {
+      case (null) { Runtime.trap("Clinical note not found") };
+      case (?n) { n };
+    };
+    let newVersion = makeVersionedRecord(existing.versionInfo.version + 1, caller, callerName, callerRole, ?"approved");
+    let updated : Types.ClinicalNote = {
+      existing with
+      isDraft = false;
+      versionInfo = newVersion;
+    };
+    state.notes.add(id, updated);
+    addAudit(state, "ClinicalNote", id, "isDraft", ?"true", "false", caller, callerName, callerRole, ?("Approved by " # callerName));
+    updated;
+  };
+
+  // ─── Handover Acknowledgment ───────────────────────────────────────────────
+
+  public func acknowledgeHandover(
+    state : EngineState,
+    caller : Principal,
+    callerName : Text,
+    callerRole : Types.StaffRole,
+    id : Nat,
+  ) : Types.HandoverEntry {
+    let existing = switch (state.handovers.get(id)) {
+      case (null) { Runtime.trap("Handover not found") };
+      case (?h) { h };
+    };
+    let newVersion = makeVersionedRecord(existing.versionInfo.version + 1, caller, callerName, callerRole, ?"acknowledged");
+    let updated : Types.HandoverEntry = {
+      existing with
+      takenByName = ?callerName;
+      takenByRole = ?callerRole;
+      takenByPrincipal = ?caller;
+      updatedAt = Time.now();
+      versionInfo = newVersion;
+    };
+    state.handovers.add(id, updated);
+    addAudit(state, "Handover", id, "acknowledged", null, callerName, caller, callerName, callerRole, null);
     updated;
   };
 

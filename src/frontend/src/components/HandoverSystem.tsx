@@ -72,6 +72,10 @@ export interface PendingTask {
   orderedBy: string;
   dateOrdered: string;
   status: string;
+  /** Set when a task is carried over from a previous shift */
+  carriedOver?: boolean;
+  originalShift?: string;
+  originalDate?: string;
 }
 
 export interface ConsultantComment {
@@ -529,8 +533,18 @@ function PendingTasksEditor({
       {tasks.map((task, i) => (
         <div
           key={task.id}
-          className={`grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto_auto] gap-2 items-center rounded-lg border px-3 py-2 ${typeColors[task.taskType]}`}
+          className={`grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto_auto] gap-2 items-center rounded-lg border px-3 py-2 ${typeColors[task.taskType]} ${(task as PendingTask).carriedOver ? "border-l-4 border-l-orange-500" : ""}`}
         >
+          {(task as PendingTask).carriedOver && (
+            <div className="col-span-full flex items-center gap-1 text-[10px] font-bold text-orange-700 mb-1">
+              <span>🔄 CARRIED OVER</span>
+              {(task as PendingTask).originalShift && (
+                <span className="font-normal text-orange-600">
+                  from {(task as PendingTask).originalShift} shift
+                </span>
+              )}
+            </div>
+          )}
           <Input
             value={task.taskName}
             onChange={(e) => update(i, { taskName: e.target.value })}
@@ -784,8 +798,52 @@ function HandoverForm({
   const [actionItems, setActionItems] = useState<ActionItem[]>(
     existingDoc?.actionItems ?? [],
   );
+  // Carry over unfinished tasks from the most recent submitted handover
+  const carriedOverTasks = useMemo((): PendingTask[] => {
+    if (existingDoc) return []; // Don't carry over when editing an existing doc
+    const allDocs = loadDocs(patientId);
+    // Find the last submitted handover (most recent)
+    const lastSubmitted = allDocs
+      .filter((d) => d.status === "submitted")
+      .sort(
+        (a, b) =>
+          new Date(b.submittedAt ?? b.createdAt).getTime() -
+          new Date(a.submittedAt ?? a.createdAt).getTime(),
+      )[0];
+    if (!lastSubmitted) return [];
+    const now = new Date();
+    return lastSubmitted.pendingTasks
+      .filter((t) => t.status !== "Completed" && t.status !== "Done")
+      .map((t): PendingTask => {
+        const originalDate =
+          t.dateOrdered ??
+          t.originalDate ??
+          lastSubmitted.createdAt.split("T")[0];
+        const ageMs = now.getTime() - new Date(originalDate).getTime();
+        const ageDays = Math.round(ageMs / (1000 * 60 * 60 * 24));
+        const ageLabel =
+          ageDays === 0
+            ? "today"
+            : ageDays === 1
+              ? "1 day ago"
+              : `${ageDays} days ago`;
+        return {
+          ...t,
+          id: `carried_${t.id}`,
+          status: `Carried Over (from ${lastSubmitted.shiftLabel} shift, ${ageLabel})`,
+          carriedOver: true,
+          originalShift: lastSubmitted.shiftLabel,
+          originalDate,
+        };
+      });
+  }, [patientId, existingDoc]);
+
   const [pendingTasks, setPendingTasks] = useState<PendingTask[]>(
-    existingDoc?.pendingTasks ?? [...pendingInvNames, ...medPendingTasks],
+    existingDoc?.pendingTasks ?? [
+      ...carriedOverTasks,
+      ...pendingInvNames,
+      ...medPendingTasks,
+    ],
   );
 
   const [handoverToName, setHandoverToName] = useState(
@@ -1983,6 +2041,11 @@ function DocView({
                         >
                           <td className="py-2 pr-3 font-medium text-gray-800">
                             {task.taskName}
+                            {task.carriedOver && (
+                              <span className="ml-1.5 text-[10px] font-bold text-orange-600 bg-orange-50 border border-orange-200 rounded px-1">
+                                🔄 Carried Over
+                              </span>
+                            )}
                           </td>
                           <td className="py-2 pr-3">
                             <span
@@ -2171,14 +2234,45 @@ function DocView({
                         const all = loadDocs(doc.patientId);
                         const idx = all.findIndex((d) => d.id === doc.id);
                         if (idx >= 0 && all[idx].takenBy) {
+                          const acknowledgedAt = new Date().toISOString();
                           all[idx].takenBy = {
                             ...all[idx].takenBy!,
-                            acknowledgedAt: new Date().toISOString(),
+                            acknowledgedAt,
                             acknowledgedBy: currentUser.email,
                             acknowledgedByName: currentUser.name,
                             acknowledgedRole: currentUser.role,
                           };
                           saveDocs(doc.patientId, all);
+                          // Write audit log entry
+                          try {
+                            const auditKey = "medicare_audit_log";
+                            const auditLog = JSON.parse(
+                              localStorage.getItem(auditKey) ?? "[]",
+                            ) as Array<{
+                              id: string;
+                              action: string;
+                              entityType: string;
+                              entityId: string;
+                              performedBy: string;
+                              performedByRole: string;
+                              timestamp: string;
+                              details: string;
+                            }>;
+                            auditLog.unshift({
+                              id: `audit_${Date.now().toString(36)}`,
+                              action: "handover_acknowledged",
+                              entityType: "handover",
+                              entityId: doc.id,
+                              performedBy: currentUser.name,
+                              performedByRole: currentUser.role,
+                              timestamp: acknowledgedAt,
+                              details: `Handover received by ${currentUser.name} (${currentUser.role}) for patient ${doc.patientName} — Shift: ${doc.shiftLabel} ${doc.shiftStart}–${doc.shiftEnd}`,
+                            });
+                            localStorage.setItem(
+                              auditKey,
+                              JSON.stringify(auditLog.slice(0, 500)),
+                            );
+                          } catch {}
                           toast.success("Handover acknowledged ✓");
                           onSaved();
                         }

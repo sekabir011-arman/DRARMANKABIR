@@ -67,6 +67,10 @@ export interface Medication {
   instructionsBn?: string;
   specialInstruction?: string;
   specialInstructionBn?: string;
+  /** PRN (as-needed) drug — bypasses scheduled reminders */
+  isPrn?: string; // "true" | "false" stored as string for index signature compat
+  /** Condition for PRN drug, e.g. "if fever > 38°C" */
+  prnCondition?: string;
   [key: string]: string | undefined;
 }
 
@@ -599,6 +603,8 @@ export interface PrescriptionRecord {
   approvalComment?: string;
   approvedBy?: string;
   approvedAt?: string;
+  /** Finalization timestamp for active (non-draft) prescriptions */
+  finalizedAt?: string;
   /** Legacy prescription id link (from original Prescription.id) */
   linkedPrescriptionId?: string;
 }

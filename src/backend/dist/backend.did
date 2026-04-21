@@ -98,6 +98,26 @@ type QueueStatus =
    skipped;
    waiting;
  };
+type Prescription__1 = 
+ record {
+   advice: vec text;
+   authorId: principal;
+   authorName: text;
+   authorRole: StaffRole;
+   createdAt: int;
+   diagnoses: vec text;
+   encounterId: opt nat;
+   followUpCreatesAppointment: bool;
+   followUpDate: opt int;
+   id: nat;
+   isDeleted: bool;
+   isDraft: bool;
+   isFinalized: bool;
+   medications: vec Medication__1;
+   patientId: nat;
+   updatedAt: int;
+   versionInfo: VersionedRecord;
+ };
 type Prescription = 
  record {
    createdAt: Time;
@@ -194,6 +214,37 @@ type NoteType =
    Handover;
    Nursing;
    SOAP;
+ };
+type Medication__1 = 
+ record {
+   dose: text;
+   duration: text;
+   frequency: text;
+   instructions: opt text;
+   isPRN: bool;
+   name: text;
+   prnCondition: opt text;
+   route: text;
+ };
+type MedicationAdministrationStatus = 
+ variant {
+   Delayed;
+   Given;
+   NotGiven;
+ };
+type MedicationAdministration = 
+ record {
+   administeredAt: opt int;
+   createdAt: int;
+   dose: text;
+   id: nat;
+   medicationName: text;
+   missedReason: opt text;
+   patientId: nat;
+   recordedBy: text;
+   recordedByRole: text;
+   scheduledTime: int;
+   status: MedicationAdministrationStatus;
  };
 type Medication = 
  record {
@@ -466,6 +517,7 @@ type AlertType =
    DrugInteraction;
    Hypotension;
    Hypoxia;
+   MissedDoseEscalation;
    Sepsis;
  };
 type AlertSeverity = 
@@ -480,6 +532,10 @@ service : {
                                     err: text;
                                     ok: ClinicalAlert;
                                   });
+  acknowledgeHandover: (id: nat) -> (variant {
+                                       err: text;
+                                       ok: HandoverEntry;
+                                     });
   acknowledgeObservationCorrection: (id: nat, newValue: text, reason:
    text) -> (variant {
                err: text;
@@ -539,6 +595,13 @@ service : {
       err: text;
       ok: ClinicalNote;
     });
+  createClinicalPrescription: (patientId: nat, encounterId: opt nat,
+   medications: vec Medication__1, diagnoses: vec text, advice: vec text,
+   followUpDate: opt int, followUpCreatesAppointment: bool, isDraft: 
+   bool) -> (variant {
+               err: text;
+               ok: Prescription__1;
+             });
   createDailyProgressNote: (patientId: nat, encounterId: opt nat,
    progressType: DailyProgressType, noteDate: text, subjectiveComplaints:
    vec text, systemReview: opt text, objectiveVitals: opt text, intakeOutput:
@@ -561,6 +624,12 @@ service : {
                                   err: text;
                                   ok: Encounter;
                                 });
+  createFollowUpAppointment: (prescriptionId: nat, followUpDate: int,
+   patientId: nat, patientName: text, doctorEmail: text) ->
+   (variant {
+      err: text;
+      ok: Appointment;
+    });
   createHandover: (patientId: nat, shift: HandoverShift, shiftStartTime: 
    int, shiftEndTime: int, patientName: text, registerNumber: opt text, ward:
    opt text, bedNumber: opt text, diagnosis: opt text, dayOfStay: opt nat,
@@ -623,6 +692,15 @@ service : {
                                 err: text;
                                 ok: ClinicalAlert;
                               });
+  finalizeClinicalPrescription: (id: nat) ->
+   (variant {
+      err: text;
+      ok: Prescription__1;
+    });
+  finalizeNote: (id: nat) -> (variant {
+                                err: text;
+                                ok: ClinicalNote;
+                              });
   getActiveAlerts: (patientId: nat) -> (vec ClinicalAlert) query;
   getActiveOrdersByPatient: (patientId: nat) -> (vec ClinicalOrder) query;
   getAlertsByPatient: (patientId: nat) -> (vec ClinicalAlert) query;
@@ -666,6 +744,9 @@ service : {
   getClinicalNotesByPatient: (patientId: nat) -> (vec ClinicalNote) query;
   getClinicalNotesByType: (patientId: nat, noteType: NoteType) ->
    (vec ClinicalNote) query;
+  getClinicalPrescriptionsAwaitingApproval: () -> (vec Prescription__1) query;
+  getClinicalPrescriptionsByPatient: (patientId: nat) ->
+   (vec Prescription__1) query;
   getCurrentUser: () -> (CurrentUser);
   getDailyProgressNotesByPatientId: (patientId: nat) ->
    (vec DailyProgressNote) query;
@@ -680,6 +761,9 @@ service : {
   getHandoversByPatientId: (patientId: nat) -> (vec HandoverEntry) query;
   getLastSyncTime: (deviceId: text) -> (opt int) query;
   getLastSyncTimestamp: () -> (int) query;
+  getMedicationAdministrationsByPatient: (patientId: nat) ->
+   (vec MedicationAdministration) query;
+  getNotesAwaitingApproval: () -> (vec ClinicalNote) query;
   getObservationsByPatient: (patientId: nat) -> (vec Observation) query;
   getObservationsByType: (patientId: nat, observationType:
    ObservationType) -> (vec Observation) query;
@@ -715,10 +799,19 @@ service : {
       err: text;
       ok: text;
     });
+  recordAISuggestionAccepted: (patientId: nat, suggestionType: text,
+   suggestionText: text, confidence: float64) -> ();
   recordDeviceSync: (deviceId: text, pendingChanges: nat) ->
    (variant {
       err: text;
       ok: SyncRecord;
+    });
+  recordMedicationAdministration: (patientId: nat, medicationName: text,
+   dose: text, scheduledTime: int, administeredAt: opt int, status:
+   MedicationAdministrationStatus, missedReason: opt text) ->
+   (variant {
+      err: text;
+      ok: MedicationAdministration;
     });
   resolveAlert: (id: nat) -> (variant {
                                 err: text;

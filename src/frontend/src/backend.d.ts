@@ -7,12 +7,8 @@ export interface None {
     __kind__: "None";
 }
 export type Option<T> = Some<T> | None;
-export interface Medication {
-    duration: string;
-    dose: string;
+export interface UserProfile {
     name: string;
-    instructions: string;
-    frequency: string;
 }
 export interface DailyProgressNote {
     id: bigint;
@@ -41,6 +37,16 @@ export interface DailyProgressNote {
     investigations: Array<string>;
 }
 export type Time = bigint;
+export interface Medication__1 {
+    duration: string;
+    dose: string;
+    name: string;
+    prnCondition?: string;
+    instructions?: string;
+    frequency: string;
+    isPRN: boolean;
+    route: string;
+}
 export interface ClinicalAlert {
     id: bigint;
     alertType: AlertType;
@@ -161,12 +167,58 @@ export interface SyncRecord {
     lastSyncAt: bigint;
     lastEntityId?: bigint;
 }
+export interface Prescription__1 {
+    id: bigint;
+    isDeleted: boolean;
+    patientId: bigint;
+    followUpCreatesAppointment: boolean;
+    authorId: Principal;
+    createdAt: bigint;
+    authorName: string;
+    authorRole: StaffRole;
+    diagnoses: Array<string>;
+    isDraft: boolean;
+    isFinalized: boolean;
+    updatedAt: bigint;
+    medications: Array<Medication__1>;
+    advice: Array<string>;
+    versionInfo: VersionedRecord;
+    encounterId?: bigint;
+    followUpDate?: bigint;
+}
 export interface VitalSigns {
     respiratoryRate?: string;
     temperature?: string;
     bloodPressure?: string;
     oxygenSaturation?: string;
     pulse?: string;
+}
+export interface MedicationAdministration {
+    id: bigint;
+    status: MedicationAdministrationStatus;
+    medicationName: string;
+    patientId: bigint;
+    scheduledTime: bigint;
+    dose: string;
+    createdAt: bigint;
+    recordedBy: string;
+    recordedByRole: string;
+    administeredAt?: bigint;
+    missedReason?: string;
+}
+export interface Visit {
+    id: bigint;
+    vitalSigns: VitalSigns;
+    patientId: bigint;
+    createdAt: Time;
+    visitDate: Time;
+    visitType: VisitType;
+    diagnosis?: string;
+    updatedAt: Time;
+    historyOfPresentIllness?: string;
+    notes?: string;
+    physicalExamination?: string;
+    chiefComplaint: string;
 }
 export interface HandoverEntry {
     id: bigint;
@@ -201,20 +253,6 @@ export interface HandoverEntry {
     versionInfo: VersionedRecord;
     shiftStartTime: bigint;
     actionableItems: Array<string>;
-}
-export interface Visit {
-    id: bigint;
-    vitalSigns: VitalSigns;
-    patientId: bigint;
-    createdAt: Time;
-    visitDate: Time;
-    visitType: VisitType;
-    diagnosis?: string;
-    updatedAt: Time;
-    historyOfPresentIllness?: string;
-    notes?: string;
-    physicalExamination?: string;
-    chiefComplaint: string;
 }
 export interface DiagnosisTemplate {
     id: bigint;
@@ -316,8 +354,12 @@ export interface UpdatedData {
     timestamp: bigint;
     patients: Array<bigint>;
 }
-export interface UserProfile {
+export interface Medication {
+    duration: string;
+    dose: string;
     name: string;
+    instructions: string;
+    frequency: string;
 }
 export enum AlertSeverity {
     Info = "Info",
@@ -331,6 +373,7 @@ export enum AlertType {
     Sepsis = "Sepsis",
     DrugInteraction = "DrugInteraction",
     Hypoxia = "Hypoxia",
+    MissedDoseEscalation = "MissedDoseEscalation",
     AllergyContraindication = "AllergyContraindication"
 }
 export enum AppointmentStatus {
@@ -378,6 +421,11 @@ export enum HandoverShift {
 export enum HandoverStatus {
     submitted = "submitted",
     draft = "draft"
+}
+export enum MedicationAdministrationStatus {
+    Given = "Given",
+    Delayed = "Delayed",
+    NotGiven = "NotGiven"
 }
 export enum NoteType {
     SOAP = "SOAP",
@@ -441,6 +489,13 @@ export interface backendInterface {
     acknowledgeAlert(id: bigint): Promise<{
         __kind__: "ok";
         ok: ClinicalAlert;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    acknowledgeHandover(id: bigint): Promise<{
+        __kind__: "ok";
+        ok: HandoverEntry;
     } | {
         __kind__: "err";
         err: string;
@@ -514,6 +569,13 @@ export interface backendInterface {
         __kind__: "err";
         err: string;
     }>;
+    createClinicalPrescription(patientId: bigint, encounterId: bigint | null, medications: Array<Medication__1>, diagnoses: Array<string>, advice: Array<string>, followUpDate: bigint | null, followUpCreatesAppointment: boolean, isDraft: boolean): Promise<{
+        __kind__: "ok";
+        ok: Prescription__1;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     createDailyProgressNote(patientId: bigint, encounterId: bigint | null, progressType: DailyProgressType, noteDate: string, subjectiveComplaints: Array<string>, systemReview: string | null, objectiveVitals: string | null, intakeOutput: string | null, drainMonitoring: string | null, investigations: Array<string>, assessmentText: string, planText: string, activeComplaints: Array<string>, activeDiagnoses: Array<string>, isDraft: boolean): Promise<{
         __kind__: "ok";
         ok: DailyProgressNote;
@@ -531,6 +593,13 @@ export interface backendInterface {
     createEncounter(patientId: bigint, encounterType: EncounterType, locationNotes: string | null): Promise<{
         __kind__: "ok";
         ok: Encounter;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    createFollowUpAppointment(prescriptionId: bigint, followUpDate: bigint, patientId: bigint, patientName: string, doctorEmail: string): Promise<{
+        __kind__: "ok";
+        ok: Appointment;
     } | {
         __kind__: "err";
         err: string;
@@ -597,6 +666,20 @@ export interface backendInterface {
         __kind__: "err";
         err: string;
     }>;
+    finalizeClinicalPrescription(id: bigint): Promise<{
+        __kind__: "ok";
+        ok: Prescription__1;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    finalizeNote(id: bigint): Promise<{
+        __kind__: "ok";
+        ok: ClinicalNote;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getActiveAlerts(patientId: bigint): Promise<Array<ClinicalAlert>>;
     getActiveOrdersByPatient(patientId: bigint): Promise<Array<ClinicalOrder>>;
     getAlertsByPatient(patientId: bigint): Promise<Array<ClinicalAlert>>;
@@ -645,6 +728,8 @@ export interface backendInterface {
     getCallerUserRole(): Promise<UserRole>;
     getClinicalNotesByPatient(patientId: bigint): Promise<Array<ClinicalNote>>;
     getClinicalNotesByType(patientId: bigint, noteType: NoteType): Promise<Array<ClinicalNote>>;
+    getClinicalPrescriptionsAwaitingApproval(): Promise<Array<Prescription__1>>;
+    getClinicalPrescriptionsByPatient(patientId: bigint): Promise<Array<Prescription__1>>;
     getCurrentUser(): Promise<CurrentUser>;
     getDailyProgressNotesByPatientId(patientId: bigint): Promise<Array<DailyProgressNote>>;
     getDiagnosisTemplate(id: bigint): Promise<DiagnosisTemplate | null>;
@@ -660,6 +745,8 @@ export interface backendInterface {
     getHandoversByPatientId(patientId: bigint): Promise<Array<HandoverEntry>>;
     getLastSyncTime(deviceId: string): Promise<bigint | null>;
     getLastSyncTimestamp(): Promise<bigint>;
+    getMedicationAdministrationsByPatient(patientId: bigint): Promise<Array<MedicationAdministration>>;
+    getNotesAwaitingApproval(): Promise<Array<ClinicalNote>>;
     getObservationsByPatient(patientId: bigint): Promise<Array<Observation>>;
     getObservationsByType(patientId: bigint, observationType: ObservationType): Promise<Array<Observation>>;
     getOccupiedBeds(): Promise<Array<BedRecord>>;
@@ -701,9 +788,17 @@ export interface backendInterface {
         __kind__: "err";
         err: string;
     }>;
+    recordAISuggestionAccepted(patientId: bigint, suggestionType: string, suggestionText: string, confidence: number): Promise<void>;
     recordDeviceSync(deviceId: string, pendingChanges: bigint): Promise<{
         __kind__: "ok";
         ok: SyncRecord;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    recordMedicationAdministration(patientId: bigint, medicationName: string, dose: string, scheduledTime: bigint, administeredAt: bigint | null, status: MedicationAdministrationStatus, missedReason: string | null): Promise<{
+        __kind__: "ok";
+        ok: MedicationAdministration;
     } | {
         __kind__: "err";
         err: string;

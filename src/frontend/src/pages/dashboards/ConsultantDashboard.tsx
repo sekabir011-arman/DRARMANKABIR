@@ -9,14 +9,17 @@ import {
   BedDouble,
   Bell,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
   ClipboardList,
   Clock,
+  Eye,
   FileText,
   Pill,
   Stethoscope,
   Users,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   type MissedDoseEscalation,
   acknowledgeEscalation,
@@ -30,6 +33,15 @@ interface LocalPatient extends Patient {
   bedNumber?: string;
   ward?: string;
   isAdmitted?: boolean;
+}
+
+interface DraftApprovalItem {
+  id: string;
+  patientName: string;
+  patientId: string;
+  internName: string;
+  diagnosis: string;
+  createdAt: string;
 }
 
 function loadAllPatients(): LocalPatient[] {
@@ -62,6 +74,35 @@ function getAlertSeverity(
       return "warning";
   } catch {}
   return "stable";
+}
+
+function loadPendingDrafts(): DraftApprovalItem[] {
+  const results: DraftApprovalItem[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (!k?.startsWith("prescriptions_")) continue;
+    try {
+      const arr = JSON.parse(localStorage.getItem(k) || "[]") as Array<
+        Record<string, unknown>
+      >;
+      for (const rx of arr) {
+        if (
+          rx.status === "draft_awaiting_approval" ||
+          (rx.isDraft === true && rx.internRole === true)
+        ) {
+          results.push({
+            id: String(rx.id ?? ""),
+            patientName: String(rx.patientName ?? "Unknown"),
+            patientId: String(rx.patientId ?? ""),
+            internName: String(rx.createdByName ?? rx.authorName ?? "Intern"),
+            diagnosis: String(rx.diagnosis ?? "—"),
+            createdAt: String(rx.createdAt ?? ""),
+          });
+        }
+      }
+    } catch {}
+  }
+  return results.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
 function getRecentPrescriptions() {
@@ -141,7 +182,6 @@ export default function ConsultantDashboard() {
   const criticalPatients = admittedPatients.filter(
     (p) => getAlertSeverity(p) === "critical",
   );
-  const recentRx = useMemo(getRecentPrescriptions, []);
 
   const today = new Date().toISOString().split("T")[0];
   const opdToday = opdPatients.filter((p) => {
@@ -149,14 +189,29 @@ export default function ConsultantDashboard() {
     return created.startsWith(today);
   }).length;
 
-  const pendingRx = recentRx.filter(
-    (r) => r.status === "draft_awaiting_approval",
-  ).length;
+  // ── Pending Drafts Panel ─────────────────────────────────────────────────
+  const [pendingDrafts, setPendingDrafts] = useState<DraftApprovalItem[]>(() =>
+    loadPendingDrafts(),
+  );
+  const [draftsExpanded, setDraftsExpanded] = useState(false);
 
-  // Medication escalation alerts
+  // Refresh drafts every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPendingDrafts(loadPendingDrafts());
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // ── Medication escalation alerts ──────────────────────────────────────────
   const [escalations, setEscalations] = useState<MissedDoseEscalation[]>(() =>
     loadEscalations().filter((e) => !e.acknowledged),
   );
+
+  const recentRx = useMemo(getRecentPrescriptions, []);
+  const pendingRx = recentRx.filter(
+    (r) => r.status === "draft_awaiting_approval",
+  ).length;
 
   function handleAcknowledge(patientId: string, drugName: string) {
     acknowledgeEscalation(patientId, drugName);
@@ -214,6 +269,101 @@ export default function ConsultantDashboard() {
           color="bg-red-100 text-red-700"
         />
       </div>
+
+      {/* ── Pending Intern Draft Approvals Panel ── */}
+      <Card
+        className={`${pendingDrafts.length > 0 ? "border-red-300 bg-red-50/30" : "border-border"}`}
+        data-ocid="consultant.pending_approvals.panel"
+      >
+        <CardHeader className="pb-3 pt-4 px-5">
+          <button
+            type="button"
+            className="w-full flex items-center justify-between gap-2"
+            onClick={() => {
+              setDraftsExpanded((v) => !v);
+              if (!draftsExpanded) setPendingDrafts(loadPendingDrafts());
+            }}
+            data-ocid="consultant.pending_approvals.toggle"
+          >
+            <div className="flex items-center gap-2">
+              <ClipboardList className="w-4 h-4 text-red-600" />
+              <h2 className="font-semibold text-foreground text-sm">
+                Pending Approvals — Intern Drafts
+              </h2>
+              {pendingDrafts.length > 0 && (
+                <span
+                  className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-600 text-white text-[10px] font-bold leading-none"
+                  data-ocid="consultant.pending_approvals.badge"
+                >
+                  {pendingDrafts.length}
+                </span>
+              )}
+            </div>
+            {draftsExpanded ? (
+              <ChevronUp className="w-4 h-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            )}
+          </button>
+        </CardHeader>
+
+        {draftsExpanded && (
+          <CardContent className="px-5 pb-4">
+            {pendingDrafts.length === 0 ? (
+              <div
+                className="flex items-center gap-2 text-emerald-600 py-2"
+                data-ocid="consultant.pending_approvals.empty_state"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <p className="text-sm">All prescriptions approved</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {pendingDrafts.map((d, idx) => (
+                  <div
+                    key={d.id}
+                    className="flex items-center gap-3 bg-white border border-red-200 rounded-xl px-4 py-3"
+                    data-ocid={`consultant.pending_approval.item.${idx + 1}`}
+                  >
+                    <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                      <FileText className="w-4 h-4 text-red-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm text-foreground truncate">
+                        {d.patientName}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        By {d.internName} · {d.diagnosis}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {d.createdAt
+                          ? new Date(d.createdAt).toLocaleDateString()
+                          : "—"}
+                      </span>
+                      <Button
+                        size="sm"
+                        className="h-7 px-3 text-xs bg-red-600 hover:bg-red-700 text-white gap-1"
+                        onClick={() =>
+                          navigate({
+                            to: "/PatientProfile",
+                            search: { id: d.patientId },
+                          })
+                        }
+                        data-ocid={`consultant.pending_approval.review.${idx + 1}`}
+                      >
+                        <Eye className="w-3 h-3" /> Review
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        )}
+      </Card>
 
       {/* Critical Alerts */}
       {criticalPatients.length > 0 && (
@@ -339,13 +489,6 @@ export default function ConsultantDashboard() {
             </div>
           </CardContent>
         </Card>
-      )}
-
-      {/* Stats badge on Bell stat card — show escalation count */}
-      {escalations.length > 0 && (
-        <div className="sr-only" aria-live="polite">
-          {escalations.length} unacknowledged medication missed-dose alerts
-        </div>
       )}
 
       {/* Patient Tabs */}
