@@ -205,8 +205,59 @@ interface RxDrug {
   /** Discontinuation reason (set when drug is removed from active prescription) */
   discontinuationReason?: string;
   /** Unix timestamp when drug was discontinued */
+  /** Unix timestamp when drug was discontinued */
   discontinuedAt?: number;
+  /** Controlled/narcotic drug flag — triggers legal justification requirement */
+  isControlled?: boolean;
 }
+
+// ─── Drug interaction pairs (module-level for component access) ──────────────
+const DRUG_INTERACTION_PAIRS: Array<{ drugs: string[]; message: string }> = [
+  {
+    drugs: ["warfarin", "aspirin"],
+    message:
+      "Warfarin + Aspirin: Increased bleeding risk. Monitor INR closely.",
+  },
+  {
+    drugs: ["metformin", "contrast", "iodine"],
+    message:
+      "Metformin + Contrast/Iodine: Risk of contrast-induced nephropathy and lactic acidosis. Hold Metformin.",
+  },
+  {
+    drugs: [
+      "ace",
+      "ramipril",
+      "lisinopril",
+      "enalapril",
+      "spironolactone",
+      "eplerenone",
+    ],
+    message:
+      "ACE Inhibitor + K+ sparing diuretic: Risk of hyperkalemia. Monitor potassium levels.",
+  },
+  {
+    drugs: ["ciprofloxacin", "antacid", "aluminium", "magnesium"],
+    message:
+      "Ciprofloxacin + Antacids: Antacids reduce ciprofloxacin absorption. Give 2 hours apart.",
+  },
+  {
+    drugs: ["ssri", "fluoxetine", "sertraline", "tramadol"],
+    message:
+      "SSRI + Tramadol: Risk of serotonin syndrome. Monitor for agitation, tremor, tachycardia.",
+  },
+  {
+    drugs: [
+      "nsaid",
+      "ibuprofen",
+      "naproxen",
+      "diclofenac",
+      "warfarin",
+      "heparin",
+      "anticoagulant",
+    ],
+    message: "NSAID + Anticoagulant: Significantly increased bleeding risk.",
+  },
+];
 
 const DRUG_FORMS = ["Tab.", "Cap.", "Syp.", "Inj.", "Inf.", "Supp.", ""];
 
@@ -1220,9 +1271,17 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
     setDiscDialogDrugName("");
   }
 
-  function updateDrug(id: string, field: keyof RxDrug, value: string) {
+  function updateDrug(
+    id: string,
+    field: keyof RxDrug,
+    value: string | boolean,
+  ) {
+    const coerced: string | boolean =
+      typeof value === "string" && (value === "true" || value === "false")
+        ? value === "true"
+        : value;
     setRxDrugs((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, [field]: value } : d)),
+      prev.map((d) => (d.id === id ? { ...d, [field]: coerced } : d)),
     );
   }
 
@@ -2631,28 +2690,84 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
                       </tr>
                     </thead>
                     <tbody>
-                      {rxDrugs.map((drug, idx) => (
-                        <DrugRow
-                          key={drug.id}
-                          drug={drug}
-                          index={idx}
-                          dark={dark}
-                          isEditing={editingDrugId === drug.id}
-                          onEdit={() => {
-                            if (editingDrugId === drug.id) {
-                              setEditingDrugId(null);
-                            } else {
-                              loadDrugForEditing(drug);
+                      {rxDrugs.map((drug, idx) => {
+                        const allergyMatch = checkDrugAllergyMatch(
+                          drug.drugName,
+                          unifiedAllergies,
+                        );
+                        const hasInteraction = DRUG_INTERACTION_PAIRS.some(
+                          (pair) => {
+                            const allText = rxDrugs
+                              .map((d) =>
+                                `${d.drugName} ${d.brandName}`.toLowerCase(),
+                              )
+                              .join(" ");
+                            const matched = pair.drugs.filter((d) =>
+                              allText.includes(d),
+                            );
+                            if (matched.length < 2) return false;
+                            const thisDrugText =
+                              `${drug.drugName} ${drug.brandName}`.toLowerCase();
+                            return pair.drugs.some((d) =>
+                              thisDrugText.includes(d),
+                            );
+                          },
+                        );
+                        return (
+                          <DrugRow
+                            key={drug.id}
+                            drug={drug}
+                            index={idx}
+                            dark={dark}
+                            isEditing={editingDrugId === drug.id}
+                            allergyMatch={allergyMatch}
+                            hasInteraction={hasInteraction}
+                            onEdit={() => {
+                              if (editingDrugId === drug.id) {
+                                setEditingDrugId(null);
+                              } else {
+                                loadDrugForEditing(drug);
+                              }
+                            }}
+                            onDelete={() => deleteDrug(drug.id)}
+                            onUpdate={(field, val) =>
+                              updateDrug(drug.id, field, val)
                             }
-                          }}
-                          onDelete={() => deleteDrug(drug.id)}
-                          onUpdate={(field, val) =>
-                            updateDrug(drug.id, field, val)
-                          }
-                        />
-                      ))}
+                          />
+                        );
+                      })}
                     </tbody>
                   </table>
+                </div>
+              )}
+              {/* Color legend — hidden when printing */}
+              {rxDrugs.length > 0 && (
+                <div
+                  className="mt-2 flex flex-wrap gap-2 text-xs print:hidden"
+                  data-ocid="rx.drug_legend.panel"
+                >
+                  <span className="flex items-center gap-1">
+                    <span className="inline-block w-3 h-3 rounded-sm bg-red-100 border-l-2 border-red-600" />
+                    <span className="text-muted-foreground">Allergy alert</span>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="inline-block w-3 h-3 rounded-sm bg-red-50 border-l-2 border-red-500" />
+                    <span className="text-muted-foreground">
+                      Controlled drug
+                    </span>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="inline-block w-3 h-3 rounded-sm bg-amber-50 border-l-2 border-amber-500" />
+                    <span className="text-muted-foreground">
+                      Interaction warning
+                    </span>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="inline-block w-3 h-3 rounded-sm bg-blue-50 border-l-2 border-blue-300" />
+                    <span className="text-muted-foreground">
+                      PRN / as needed
+                    </span>
+                  </span>
                 </div>
               )}
             </div>
@@ -4055,54 +4170,6 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
   );
 }
 
-// ─── Clinical Intelligence ────────────────────────────────────────────────────
-const DRUG_INTERACTION_PAIRS: Array<{ drugs: string[]; message: string }> = [
-  {
-    drugs: ["warfarin", "aspirin"],
-    message:
-      "Warfarin + Aspirin: Increased bleeding risk. Monitor INR closely.",
-  },
-  {
-    drugs: ["metformin", "contrast", "iodine"],
-    message:
-      "Metformin + Contrast/Iodine: Risk of contrast-induced nephropathy and lactic acidosis. Hold Metformin.",
-  },
-  {
-    drugs: [
-      "ace",
-      "ramipril",
-      "lisinopril",
-      "enalapril",
-      "spironolactone",
-      "eplerenone",
-    ],
-    message:
-      "ACE Inhibitor + K+ sparing diuretic: Risk of hyperkalemia. Monitor potassium levels.",
-  },
-  {
-    drugs: ["ciprofloxacin", "antacid", "aluminium", "magnesium"],
-    message:
-      "Ciprofloxacin + Antacids: Antacids reduce ciprofloxacin absorption. Give 2 hours apart.",
-  },
-  {
-    drugs: ["ssri", "fluoxetine", "sertraline", "tramadol"],
-    message:
-      "SSRI + Tramadol: Risk of serotonin syndrome. Monitor for agitation, tremor, tachycardia.",
-  },
-  {
-    drugs: [
-      "nsaid",
-      "ibuprofen",
-      "naproxen",
-      "diclofenac",
-      "warfarin",
-      "heparin",
-      "anticoagulant",
-    ],
-    message: "NSAID + Anticoagulant: Significantly increased bleeding risk.",
-  },
-];
-
 const CKD_DOSE_DRUGS = [
   "metformin",
   "nsaid",
@@ -4270,6 +4337,8 @@ function DrugRow({
   index,
   dark,
   isEditing,
+  allergyMatch,
+  hasInteraction,
   onEdit,
   onDelete,
   onUpdate,
@@ -4278,10 +4347,23 @@ function DrugRow({
   index: number;
   dark: boolean;
   isEditing: boolean;
+  allergyMatch: string | null;
+  hasInteraction: boolean;
   onEdit: () => void;
   onDelete: () => void;
-  onUpdate: (field: keyof RxDrug, val: string) => void;
+  onUpdate: (field: keyof RxDrug, val: string | boolean) => void;
 }) {
+  // Row risk priority: allergy > controlled > interaction > PRN > normal
+  const rowClass = allergyMatch
+    ? "bg-red-100 border-l-4 border-red-600 drug-row-allergy"
+    : drug.isControlled
+      ? "bg-red-50 border-l-4 border-red-500 drug-row-controlled"
+      : hasInteraction
+        ? "bg-amber-50 border-l-4 border-amber-500 drug-row-interaction"
+        : drug.isPrn
+          ? "bg-blue-50 border-l-[3px] border-blue-300 drug-row-prn"
+          : "";
+
   const cellCls = `px-1 py-1 align-top ${
     dark ? "border-gray-700" : "border-gray-100"
   } border-b`;
@@ -4291,7 +4373,7 @@ function DrugRow({
 
   if (isEditing) {
     return (
-      <tr data-ocid={`rx.drug.row.${index + 1}`}>
+      <tr className={rowClass} data-ocid={`rx.drug.row.${index + 1}`}>
         <td className={cellCls}>{index + 1}</td>
         <td className={cellCls}>
           <select
@@ -4320,6 +4402,15 @@ function DrugRow({
               onChange={(e) => onUpdate("brandName", e.target.value)}
               placeholder="Brand"
             />
+            <label className="flex items-center gap-1 text-xs text-red-700 cursor-pointer mt-0.5">
+              <input
+                type="checkbox"
+                checked={drug.isControlled ?? false}
+                onChange={(e) => onUpdate("isControlled", e.target.checked)}
+                className="accent-red-600"
+              />
+              Controlled drug
+            </label>
           </div>
         </td>
         <td className={cellCls}>
@@ -4385,7 +4476,7 @@ function DrugRow({
     );
   }
   return (
-    <tr data-ocid={`rx.drug.row.${index + 1}`}>
+    <tr className={rowClass} data-ocid={`rx.drug.row.${index + 1}`}>
       <td className={cellCls}>{index + 1}</td>
       <td className={cellCls}>
         <span className="text-sm font-medium text-indigo-700 bg-indigo-50 rounded px-1">
@@ -4393,23 +4484,44 @@ function DrugRow({
         </span>
       </td>
       <td className={cellCls}>
-        <div className="flex items-center gap-1 flex-wrap">
-          {drug.brandName ? (
-            <div>
-              <strong className="text-amber-700">{drug.brandName}</strong>
-              <br />
-              <span className="text-gray-500 text-sm">{drug.drugName}</span>
-            </div>
-          ) : drug.nameType === "brand" ? (
-            <strong>{drug.drugName}</strong>
-          ) : (
-            <span>{drug.drugName}</span>
-          )}
-          {drug.isPrn && (
-            <span className="text-xs px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-300 font-semibold whitespace-nowrap">
-              PRN
-            </span>
-          )}
+        <div className="flex items-start gap-1 flex-col">
+          <div className="flex items-center gap-1 flex-wrap">
+            {drug.brandName ? (
+              <div>
+                <strong className="text-amber-700">{drug.brandName}</strong>
+                <br />
+                <span className="text-gray-500 text-sm">{drug.drugName}</span>
+              </div>
+            ) : drug.nameType === "brand" ? (
+              <strong>{drug.drugName}</strong>
+            ) : (
+              <span>{drug.drugName}</span>
+            )}
+            {drug.isPrn && (
+              <span className="text-xs px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-300 font-semibold whitespace-nowrap">
+                PRN
+              </span>
+            )}
+          </div>
+          {/* Risk badges */}
+          <div className="flex gap-1 flex-wrap">
+            {drug.isControlled && (
+              <span className="inline-flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded bg-red-600 text-white font-bold">
+                <ShieldAlert className="w-2.5 h-2.5" /> CONTROLLED
+              </span>
+            )}
+            {allergyMatch && (
+              <span className="inline-flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-700 border border-red-400 font-semibold">
+                <AlertTriangle className="w-2.5 h-2.5" /> ALLERGY:{" "}
+                {allergyMatch}
+              </span>
+            )}
+            {hasInteraction && !allergyMatch && (
+              <span className="inline-flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 border border-amber-400 font-semibold">
+                <AlertTriangle className="w-2.5 h-2.5" /> INTERACTION
+              </span>
+            )}
+          </div>
         </div>
       </td>
       <td className={cellCls}>{drug.dose}</td>

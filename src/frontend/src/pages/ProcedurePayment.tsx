@@ -12,6 +12,7 @@ import {
   CreditCard,
   Download,
   FileText,
+  MessageCircle,
   Plus,
   Printer,
   Receipt,
@@ -32,6 +33,7 @@ import {
   generateTypedReceiptNumber,
   loadReceipts,
   saveReceiptToStore,
+  sendReceiptWhatsApp,
 } from "../components/MoneyReceipt";
 import type {
   InvestigationLineItem,
@@ -445,6 +447,16 @@ function ReceiptModal({
               >
                 Close
               </Button>
+              {receipt.phone && (
+                <Button
+                  variant="outline"
+                  className="gap-1.5 border-green-300 text-green-700 hover:bg-green-50"
+                  onClick={() => sendReceiptWhatsApp(receipt)}
+                  data-ocid="proc_receipt.whatsapp_button"
+                >
+                  <MessageCircle className="w-4 h-4" /> WhatsApp
+                </Button>
+              )}
               {(receipt.paid || receipt.invoiceState === "partial") &&
                 !isRefunded && (
                   <Button

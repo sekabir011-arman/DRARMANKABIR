@@ -163,67 +163,65 @@ export default function InternDashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Card className="border-0 shadow-sm">
-          <CardContent className="pt-5 pb-4 px-5 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
-              <Users className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-foreground leading-none">
-                {allPatients.length}
+        <div className="rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-gradient-to-r from-sky-500 to-blue-600 p-4 flex items-center justify-between">
+            <p className="text-3xl font-bold text-white leading-none">
+              {allPatients.length}
+            </p>
+            <Users className="w-6 h-6 text-white opacity-80" />
+          </div>
+          <div className="bg-card px-4 py-2.5 border border-t-0 border-border rounded-b-xl">
+            <p className="text-xs font-medium text-muted-foreground">
+              All Patients
+            </p>
+          </div>
+        </div>
+        <div className="rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-gradient-to-r from-violet-500 to-purple-600 p-4 flex items-center justify-between">
+            <p className="text-3xl font-bold text-white leading-none">
+              {admittedPatients.length}
+            </p>
+            <BedDouble className="w-6 h-6 text-white opacity-80" />
+          </div>
+          <div className="bg-card px-4 py-2.5 border border-t-0 border-border rounded-b-xl">
+            <p className="text-xs font-medium text-muted-foreground">
+              Admitted
+            </p>
+          </div>
+        </div>
+        <div className="rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-gradient-to-r from-amber-500 to-yellow-500 p-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <p className="text-3xl font-bold text-white leading-none">
+                {myDrafts.length}
               </p>
-              <p className="text-xs text-muted-foreground mt-0.5">All</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="pt-5 pb-4 px-5 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center">
-              <BedDouble className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-foreground leading-none">
-                {admittedPatients.length}
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">Admitted</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="pt-5 pb-4 px-5 flex items-center gap-3">
-            <div className="relative w-10 h-10">
-              <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
-                <Loader2 className="w-4 h-4" />
-              </div>
               {myDrafts.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-blue-600 text-white text-[9px] font-bold flex items-center justify-center leading-none">
-                  {myDrafts.length}
+                <span className="w-5 h-5 rounded-full bg-white/30 text-white text-[10px] font-bold flex items-center justify-center">
+                  !
                 </span>
               )}
             </div>
-            <div>
-              <p className="text-xl font-bold text-foreground leading-none">
-                {myDrafts.length}
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">My Drafts</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="pt-5 pb-4 px-5 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center">
-              <ClipboardCheck className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-foreground leading-none">
-                {patientsNeedingHistory.length}
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Pending Tasks
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+            <Loader2 className="w-6 h-6 text-white opacity-80" />
+          </div>
+          <div className="bg-card px-4 py-2.5 border border-t-0 border-border rounded-b-xl">
+            <p className="text-xs font-medium text-muted-foreground">
+              My Drafts
+            </p>
+          </div>
+        </div>
+        <div className="rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-gradient-to-r from-rose-500 to-red-600 p-4 flex items-center justify-between">
+            <p className="text-3xl font-bold text-white leading-none">
+              {patientsNeedingHistory.length}
+            </p>
+            <ClipboardCheck className="w-6 h-6 text-white opacity-80" />
+          </div>
+          <div className="bg-card px-4 py-2.5 border border-t-0 border-border rounded-b-xl">
+            <p className="text-xs font-medium text-muted-foreground">
+              Pending Tasks
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">

@@ -117,7 +117,7 @@ module {
 
   public func makeVersionedRecord(
     version : Nat,
-    caller : Principal,
+    _caller : Principal,
     callerName : Text,
     callerRole : Types.StaffRole,
     changeReason : ?Text,
@@ -125,7 +125,7 @@ module {
     {
       version;
       createdAt = Time.now();
-      createdBy = caller;
+      createdBy = _caller;
       createdByName = callerName;
       createdByRole = callerRole;
       changeReason;
@@ -1661,6 +1661,19 @@ module {
       planText;
       activeComplaints;
       activeDiagnoses;
+      noteState = #draft;
+      submittedByRole = null;
+      submitTimestamp = null;
+      reviewedByMO = null;
+      reviewedByConsultant = null;
+      consultantComments = "";
+      internSubjective = if (callerRole == #intern_doctor) assessmentText else "";
+      internObjective = switch (if (callerRole == #intern_doctor) objectiveVitals else null) { case (?v) v; case (null) "" };
+      moAssessment = "";
+      moPlan = "";
+      consultantOverrides = "";
+      versionChain = [];
+      rejectionReason = null;
       authorId = caller;
       authorName = callerName;
       authorRole = callerRole;
@@ -1711,6 +1724,10 @@ module {
     if (callerRole == #intern_doctor and not isDraft) {
       Runtime.trap("Unauthorized: Intern doctors can only save draft progress notes");
     };
+    // Block edits to finalized notes
+    if (existing.noteState == #finalized) {
+      Runtime.trap("Unauthorized: finalized notes are immutable");
+    };
     // Archive existing version
     let archiveId = state.dailyProgressNoteIdCounter;
     state.dailyProgressNoteIdCounter += 1;
@@ -1721,7 +1738,15 @@ module {
     };
     state.dailyProgressNotes.add(archiveId, archived);
     let prevIds = existing.previousVersionIds.concat([archiveId]);
+    let newVersionChain = existing.versionChain.concat([archiveId.toText()]);
     let newVersion = makeVersionedRecord(existing.versionInfo.version + 1, caller, callerName, callerRole, changeReason);
+    // Role-based field updates
+    let updatedInternSubjective = if (callerRole == #intern_doctor) assessmentText else existing.internSubjective;
+    let updatedInternObjective = if (callerRole == #intern_doctor) {
+      switch (objectiveVitals) { case (?v) v; case (null) existing.internObjective }
+    } else { existing.internObjective };
+    let updatedMoAssessment = if (callerRole == #medical_officer) assessmentText else existing.moAssessment;
+    let updatedMoPlan = if (callerRole == #medical_officer) planText else existing.moPlan;
     let updated : Types.DailyProgressNote = {
       existing with
       subjectiveComplaints;
@@ -1734,14 +1759,343 @@ module {
       planText;
       activeComplaints;
       activeDiagnoses;
+      internSubjective = updatedInternSubjective;
+      internObjective = updatedInternObjective;
+      moAssessment = updatedMoAssessment;
+      moPlan = updatedMoPlan;
       isDraft;
       updatedAt = Time.now();
       versionInfo = newVersion;
       previousVersionIds = prevIds;
+      versionChain = newVersionChain;
     };
     state.dailyProgressNotes.add(id, updated);
     addAudit(state, "DailyProgressNote", id, "updated", null, assessmentText, caller, callerName, callerRole, changeReason);
     updated;
+  };
+
+  // ─── Ward Round: Submit Note for Review ────────────────────────────────────
+
+  // Intern submits → #submittedToMO
+  // MO submits   → #moReviewComplete
+  public func submitDailyNoteForReview(
+    state : EngineState,
+    caller : Principal,
+    callerName : Text,
+    callerRole : Types.StaffRole,
+    patientId : Nat,
+    noteId : Nat,
+    noteContent : Types.DailyProgressNoteUpdate,
+  ) : { #ok : Types.DailyProgressNote; #err : Text } {
+    // Only intern and MO can submit for review
+    switch (callerRole) {
+      case (#intern_doctor or #medical_officer) {};
+      case (_) { return #err("Unauthorized: only Intern or MO can submit notes for review") };
+    };
+    let existing = switch (state.dailyProgressNotes.get(noteId)) {
+      case (null) { return #err("Daily progress note not found") };
+      case (?n) { n };
+    };
+    if (existing.patientId != patientId) {
+      return #err("Note does not belong to this patient");
+    };
+    if (existing.noteState == #finalized) {
+      return #err("Cannot submit a finalized note");
+    };
+    let targetState : Types.DailyNoteState = switch (callerRole) {
+      case (#intern_doctor) { #submittedToMO };
+      case (_) { #moReviewComplete }; // medical_officer
+    };
+    let now = Time.now();
+    let archiveId = state.dailyProgressNoteIdCounter;
+    state.dailyProgressNoteIdCounter += 1;
+    let archived : Types.DailyProgressNote = { existing with id = archiveId; isDeleted = true };
+    state.dailyProgressNotes.add(archiveId, archived);
+    let prevIds = existing.previousVersionIds.concat([archiveId]);
+    let newVersionChain = existing.versionChain.concat([archiveId.toText()]);
+    let newVersion = makeVersionedRecord(existing.versionInfo.version + 1, caller, callerName, callerRole, ?"submitted for review");
+    let updated : Types.DailyProgressNote = {
+      existing with
+      subjectiveComplaints = noteContent.subjectiveComplaints;
+      systemReview = noteContent.systemReview;
+      objectiveVitals = noteContent.objectiveVitals;
+      intakeOutput = noteContent.intakeOutput;
+      drainMonitoring = noteContent.drainMonitoring;
+      investigations = noteContent.investigations;
+      assessmentText = noteContent.assessmentText;
+      planText = noteContent.planText;
+      activeComplaints = noteContent.activeComplaints;
+      activeDiagnoses = noteContent.activeDiagnoses;
+      internSubjective = if (callerRole == #intern_doctor) noteContent.internSubjective else existing.internSubjective;
+      internObjective = if (callerRole == #intern_doctor) noteContent.internObjective else existing.internObjective;
+      moAssessment = if (callerRole == #medical_officer) noteContent.moAssessment else existing.moAssessment;
+      moPlan = if (callerRole == #medical_officer) noteContent.moPlan else existing.moPlan;
+      consultantOverrides = noteContent.consultantOverrides;
+      consultantComments = noteContent.consultantComments;
+      noteState = targetState;
+      submittedByRole = ?callerRole;
+      submitTimestamp = ?now;
+      reviewedByMO = if (callerRole == #medical_officer) ?caller.toText() else existing.reviewedByMO;
+      isDraft = false;
+      rejectionReason = null;
+      updatedAt = now;
+      versionInfo = newVersion;
+      previousVersionIds = prevIds;
+      versionChain = newVersionChain;
+    };
+    state.dailyProgressNotes.add(noteId, updated);
+    let prevStateText = debug_show(existing.noteState);
+    let newStateText = debug_show(targetState);
+    addAudit(state, "DailyProgressNote", noteId, "noteState", ?prevStateText, newStateText, caller, callerName, callerRole, ?"submitted for review");
+    #ok(updated);
+  };
+
+  // ─── Ward Round: Finalize Note (Consultant locks) ──────────────────────────
+
+  public func finalizeDailyNote(
+    state : EngineState,
+    caller : Principal,
+    callerName : Text,
+    callerRole : Types.StaffRole,
+    patientId : Nat,
+    noteId : Nat,
+    consultantEmail : Text,
+    consultantComments : Text,
+    finalSOAP : Types.DailyProgressNoteUpdate,
+  ) : { #ok : Types.DailyProgressNote; #err : Text } {
+    switch (callerRole) {
+      case (#consultant_doctor or #admin or #doctor) {};
+      case (_) { return #err("Unauthorized: only Consultant can finalize a ward round note") };
+    };
+    let existing = switch (state.dailyProgressNotes.get(noteId)) {
+      case (null) { return #err("Daily progress note not found") };
+      case (?n) { n };
+    };
+    if (existing.patientId != patientId) {
+      return #err("Note does not belong to this patient");
+    };
+    if (existing.noteState == #finalized) {
+      return #err("Note is already finalized");
+    };
+    let now = Time.now();
+    let archiveId = state.dailyProgressNoteIdCounter;
+    state.dailyProgressNoteIdCounter += 1;
+    let archived : Types.DailyProgressNote = { existing with id = archiveId; isDeleted = true };
+    state.dailyProgressNotes.add(archiveId, archived);
+    let prevIds = existing.previousVersionIds.concat([archiveId]);
+    let newVersionChain = existing.versionChain.concat([archiveId.toText()]);
+    let newVersion = makeVersionedRecord(existing.versionInfo.version + 1, caller, callerName, callerRole, ?"finalized by consultant");
+    let finalized : Types.DailyProgressNote = {
+      existing with
+      subjectiveComplaints = finalSOAP.subjectiveComplaints;
+      systemReview = finalSOAP.systemReview;
+      objectiveVitals = finalSOAP.objectiveVitals;
+      intakeOutput = finalSOAP.intakeOutput;
+      drainMonitoring = finalSOAP.drainMonitoring;
+      investigations = finalSOAP.investigations;
+      assessmentText = finalSOAP.assessmentText;
+      planText = finalSOAP.planText;
+      activeComplaints = finalSOAP.activeComplaints;
+      activeDiagnoses = finalSOAP.activeDiagnoses;
+      moAssessment = if (finalSOAP.moAssessment != "") finalSOAP.moAssessment else existing.moAssessment;
+      moPlan = if (finalSOAP.moPlan != "") finalSOAP.moPlan else existing.moPlan;
+      consultantOverrides = finalSOAP.consultantOverrides;
+      consultantComments;
+      noteState = #finalized;
+      reviewedByConsultant = ?consultantEmail;
+      isDraft = false;
+      rejectionReason = null;
+      updatedAt = now;
+      versionInfo = newVersion;
+      previousVersionIds = prevIds;
+      versionChain = newVersionChain;
+    };
+    state.dailyProgressNotes.add(noteId, finalized);
+    addAudit(state, "DailyProgressNote", noteId, "noteState", ?debug_show(existing.noteState), "finalized", caller, callerName, callerRole, ?consultantComments);
+    #ok(finalized);
+  };
+
+  // ─── Ward Round: Reject Draft Note ────────────────────────────────────────────
+
+  public func rejectDraftNote(
+    state : EngineState,
+    caller : Principal,
+    callerName : Text,
+    callerRole : Types.StaffRole,
+    patientId : Nat,
+    noteId : Nat,
+    reviewerEmail : Text,
+    rejectionReason : Text,
+  ) : { #ok : Types.DailyProgressNote; #err : Text } {
+    switch (callerRole) {
+      case (#consultant_doctor or #medical_officer or #admin or #doctor) {};
+      case (_) { return #err("Unauthorized: only MO or Consultant can reject notes") };
+    };
+    let existing = switch (state.dailyProgressNotes.get(noteId)) {
+      case (null) { return #err("Daily progress note not found") };
+      case (?n) { n };
+    };
+    if (existing.patientId != patientId) {
+      return #err("Note does not belong to this patient");
+    };
+    if (existing.noteState == #finalized) {
+      return #err("Cannot reject a finalized note");
+    };
+    let now = Time.now();
+    let newVersion = makeVersionedRecord(existing.versionInfo.version + 1, caller, callerName, callerRole, ?rejectionReason);
+    let rejected : Types.DailyProgressNote = {
+      existing with
+      noteState = #rejected;
+      rejectionReason = ?rejectionReason;
+      reviewedByMO = if (callerRole == #medical_officer) ?reviewerEmail else existing.reviewedByMO;
+      isDraft = true;
+      updatedAt = now;
+      versionInfo = newVersion;
+    };
+    state.dailyProgressNotes.add(noteId, rejected);
+    addAudit(state, "DailyProgressNote", noteId, "noteState", ?debug_show(existing.noteState), "rejected", caller, callerName, callerRole, ?rejectionReason);
+    #ok(rejected);
+  };
+
+  // ─── Ward Round: Get Daily Notes by Patient (with date filter) ───────────────
+
+  public func getDailyNotesByPatient(
+    state : EngineState,
+    patientId : Nat,
+    dateFilter : ?Text,
+  ) : [Types.DailyProgressNote] {
+    state.dailyProgressNotes.values().filter(func (n) {
+      n.patientId == patientId and not n.isDeleted and
+      (switch (dateFilter) {
+        case (null) { true };
+        case (?d)   { n.noteDate == d };
+      })
+    }).toArray();
+  };
+
+  // ─── Ward Round: Status Overview (all admitted patients for a given date) ───────
+
+  public func getWardRoundStatus(
+    state : EngineState,
+    date : Text,
+  ) : [Types.WardRoundPatientStatus] {
+    // Collect all occupied beds
+    let occupiedBeds = state.beds.values()
+      .filter(func (b) { b.status == #Occupied })
+      .toArray();
+
+    occupiedBeds.filterMap<Types.BedRecord, Types.WardRoundPatientStatus>(func (bed : Types.BedRecord) : ?Types.WardRoundPatientStatus {
+      let patId = switch (bed.patientId) { case (?id) { id }; case (null) { return null } };
+      // Find today's daily note (non-deleted) for this patient
+      let todayNotes = state.dailyProgressNotes.values()
+        .filter(func (n) { n.patientId == patId and n.noteDate == date and not n.isDeleted })
+        .toArray();
+      let todayNoteState : ?Text = switch (todayNotes.size()) {
+        case (0) { null };
+        case (_) {
+          let latest = todayNotes.sort(func (a : Types.DailyProgressNote, b : Types.DailyProgressNote) : Order.Order { Int.compare(b.updatedAt, a.updatedAt) });
+          ?debug_show(latest[0].noteState);
+        };
+      };
+      // Most recent vitals for this patient
+      let vitalsObs = state.observations.values()
+        .filter(func (o) { o.patientId == patId and o.observationType == #Vital and not o.isDeleted })
+        .toArray()
+        .sort(func (a : Types.Observation, b : Types.Observation) : Order.Order { Int.compare(b.observationDate, a.observationDate) });
+      let lastVitals : ?Types.VitalsSummary = if (vitalsObs.size() == 0) {
+        null
+      } else {
+        let ts = vitalsObs[0].observationDate;
+        let getVal = func(code : Text) : ?Text {
+          switch (vitalsObs.find(func (o : Types.Observation) : Bool { o.code == code })) {
+            case (?o) { ?o.value };
+            case (null) { null };
+          }
+        };
+        ?{
+          bp  = getVal("BP_SYSTOLIC");
+          pulse = getVal("PULSE");
+          spo2  = getVal("SPO2");
+          temp  = getVal("TEMPERATURE");
+          rbs   = getVal("RBS");
+          rr    = getVal("RR");
+          recordedAt = ts;
+        };
+      };
+      // Active unresolved alerts
+      let activeAlerts = state.alerts.values()
+        .filter(func (a : Types.ClinicalAlert) : Bool { a.patientId == patId and not a.isResolved })
+        .toArray()
+        .map(func (a) { a.message });
+      // Admission day count
+      let admissionDay : Nat = switch (bed.admissionDate) {
+        case (null) { 0 };
+        case (?admitTs) {
+          let diffNs = Time.now() - admitTs;
+          if (diffNs <= 0) { 1 } else {
+            let days : Int = diffNs / 86_400_000_000_000;
+            days.toNat() + 1;
+          };
+        };
+      };
+      // Assigned consultant via most recent in-progress encounter
+      let activeEncounters = state.encounters.values()
+        .filter(func (e) { e.patientId == patId and e.status == #InProgress })
+        .toArray()
+        .sort(func (a : Types.Encounter, b : Types.Encounter) : Order.Order { Int.compare(b.startDate, a.startDate) });
+      let assignedConsultant : ?Text = if (activeEncounters.size() == 0) { null } else { ?activeEncounters[0].providerName };
+      ?{
+        patientId = patId.toText();
+        patientName = switch (bed.patientName) { case (?n) n; case (null) "Unknown" };
+        bedNumber = bed.bedNumber;
+        ward = bed.ward;
+        admissionDay;
+        todayNoteState;
+        lastVitals;
+        activeAlerts;
+        assignedConsultant;
+      };
+    });
+  };
+
+  // ─── Ward Round: Add Post-Finalization Addendum (Consultant only) ───────────
+
+  public func addNoteAddendum(
+    state : EngineState,
+    caller : Principal,
+    callerName : Text,
+    callerRole : Types.StaffRole,
+    patientId : Nat,
+    noteId : Nat,
+    addendumText : Text,
+  ) : { #ok : Types.DailyProgressNote; #err : Text } {
+    switch (callerRole) {
+      case (#consultant_doctor or #admin or #doctor) {};
+      case (_) { return #err("Unauthorized: only Consultant can add addenda to finalized notes") };
+    };
+    let existing = switch (state.dailyProgressNotes.get(noteId)) {
+      case (null) { return #err("Daily progress note not found") };
+      case (?n) { n };
+    };
+    if (existing.patientId != patientId) {
+      return #err("Note does not belong to this patient");
+    };
+    // Only finalized notes accept addenda; non-finalized notes should use regular update
+    if (existing.noteState != #finalized) {
+      return #err("Addenda can only be appended to finalized notes");
+    };
+    let now = Time.now();
+    let newVersion = makeVersionedRecord(existing.versionInfo.version + 1, caller, callerName, callerRole, ?"addendum");
+    let appendedComments = existing.consultantComments # "\n[ADDENDUM " # now.toText() # " by " # callerName # "]: " # addendumText;
+    let updated : Types.DailyProgressNote = {
+      existing with
+      consultantComments = appendedComments;
+      updatedAt = now;
+      versionInfo = newVersion;
+    };
+    state.dailyProgressNotes.add(noteId, updated);
+    addAudit(state, "DailyProgressNote", noteId, "addendum", null, addendumText, caller, callerName, callerRole, ?"post-finalization addendum");
+    #ok(updated);
   };
 
   // ─── Medication Administration Logic ───────────────────────────────────────
@@ -1932,7 +2286,7 @@ module {
 
   public func createFollowUpAppointment(
     state : EngineState,
-    caller : Principal,
+    _caller : Principal,
     callerRole : Types.StaffRole,
     callerEmail : Text,
     prescriptionId : Nat,
@@ -1946,8 +2300,6 @@ module {
     };
     let apptId = "FOLLOWUP-" # prescriptionId.toText() # "-" # patientId.toText();
     let now = Time.now();
-    // followUpDate is a nanosecond timestamp; convert to YYYY-MM-DD Text for Appointment.date
-    // We store the raw timestamp in timeSlot notes and use a placeholder date string
     let appt : Types.Appointment = {
       id = apptId;
       patientId = ?patientId;

@@ -19,8 +19,38 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+
+interface HandoverRecord {
+  id: string;
+  fromShift: string;
+  toShift: string;
+  nurseEmail: string;
+  patientCount: number;
+  notes: string;
+  status: "pending_acknowledgment" | "acknowledged";
+  submittedAt: string;
+}
+
+function loadPendingHandovers(currentShift: string): HandoverRecord[] {
+  const results: HandoverRecord[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (!k?.startsWith("handover_record_")) continue;
+    try {
+      const rec = JSON.parse(localStorage.getItem(k) || "{}") as HandoverRecord;
+      if (
+        rec.status === "pending_acknowledgment" &&
+        rec.toShift === currentShift
+      ) {
+        results.push(rec);
+      }
+    } catch {}
+  }
+  return results.sort((a, b) => b.submittedAt.localeCompare(a.submittedAt));
+}
+import ClinicalAlertsPanel from "../../components/ClinicalAlertsPanel";
 import { useEmailAuth } from "../../hooks/useEmailAuth";
-import type { Patient } from "../../types";
+import type { Patient, VitalSigns } from "../../types";
 
 interface LocalPatient extends Patient {
   bedNumber?: string;
@@ -57,6 +87,20 @@ function loadAllPatients(): LocalPatient[] {
     try {
       const arr = JSON.parse(localStorage.getItem(k) || "[]") as LocalPatient[];
       result.push(...arr);
+    } catch {}
+  }
+  return result;
+}
+
+function loadVitalsData(
+  patients: LocalPatient[],
+): Record<string, VitalSigns[]> {
+  const result: Record<string, VitalSigns[]> = {};
+  for (const p of patients) {
+    const pidStr = String(p.id);
+    try {
+      const raw = localStorage.getItem(`vitals_${pidStr}`);
+      if (raw) result[pidStr] = JSON.parse(raw) as VitalSigns[];
     } catch {}
   }
   return result;
@@ -215,6 +259,10 @@ export default function NurseDashboard() {
 
   const admittedPatients = useMemo(loadAdmittedPatients, []);
   const allPatients = useMemo(loadAllPatients, []);
+  const vitalsData = useMemo(
+    () => loadVitalsData(admittedPatients),
+    [admittedPatients],
+  );
   const medsDue = useMemo(
     () => getMedsDue(admittedPatients),
     [admittedPatients],
@@ -227,6 +275,15 @@ export default function NurseDashboard() {
     () => getIOSummary(admittedPatients),
     [admittedPatients],
   );
+
+  const pendingHandovers = useMemo(
+    () => loadPendingHandovers(shift.label),
+    [shift.label],
+  );
+  const [acknowledgedIds, setAcknowledgedIds] = useState<Set<string>>(
+    new Set(),
+  );
+
   const [handoverText, setHandoverText] = useState(() => {
     try {
       return (
@@ -249,6 +306,24 @@ export default function NurseDashboard() {
       return false;
     }
   });
+
+  function acknowledgeHandover(id: string) {
+    try {
+      const key = `handover_record_${id}`;
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const rec = JSON.parse(raw) as HandoverRecord;
+        rec.status = "acknowledged";
+        localStorage.setItem(key, JSON.stringify(rec));
+      }
+    } catch {}
+    setAcknowledgedIds((prev) => new Set([...prev, id]));
+    toast.success("Handover acknowledged");
+  }
+
+  const visibleHandovers = pendingHandovers.filter(
+    (h) => !acknowledgedIds.has(h.id),
+  );
 
   const statusColors: Record<string, string> = {
     given: "bg-emerald-100 text-emerald-700 border-emerald-200",
@@ -285,49 +360,127 @@ export default function NurseDashboard() {
         </div>
       </div>
 
+      {/* Pending Handover Acknowledgments */}
+      <Card
+        className={
+          visibleHandovers.length > 0 ? "border-l-4 border-l-indigo-500" : ""
+        }
+        data-ocid="nurse.handover_ack.panel"
+      >
+        <CardHeader className="pb-3 pt-4 px-5">
+          <div className="flex items-center gap-2">
+            <ClipboardList className="w-4 h-4 text-indigo-600" />
+            <h2 className="font-semibold text-foreground text-sm">
+              Pending Handover Acknowledgments
+            </h2>
+            {visibleHandovers.length > 0 && (
+              <Badge className="ml-auto bg-indigo-600 text-white text-xs">
+                {visibleHandovers.length}
+              </Badge>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="px-5 pb-4">
+          {visibleHandovers.length === 0 ? (
+            <div
+              className="flex items-center gap-2 text-emerald-600 py-2"
+              data-ocid="nurse.handover_ack.empty_state"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <p className="text-sm">
+                All handovers acknowledged — you're all caught up!
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {visibleHandovers.map((h, idx) => (
+                <div
+                  key={h.id}
+                  className="flex items-center gap-3 bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2.5"
+                  data-ocid={`nurse.handover_ack.item.${idx + 1}`}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">
+                      {h.fromShift} → {h.toShift}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {h.patientCount} patient{h.patientCount !== 1 ? "s" : ""}{" "}
+                      ·{" "}
+                      {h.submittedAt
+                        ? new Date(h.submittedAt).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "—"}
+                    </p>
+                    {h.notes && (
+                      <p className="text-xs text-muted-foreground truncate mt-0.5">
+                        {h.notes}
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    size="sm"
+                    className="h-7 px-3 text-xs bg-indigo-600 hover:bg-indigo-700 text-white gap-1 shrink-0"
+                    onClick={() => acknowledgeHandover(h.id)}
+                    data-ocid={`nurse.handover_ack.confirm_button.${idx + 1}`}
+                  >
+                    <CheckCircle2 className="w-3 h-3" /> Acknowledge
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Clinical Alerts */}
+      <ClinicalAlertsPanel
+        patients={admittedPatients as Patient[]}
+        vitalsData={vitalsData}
+      />
+
       {/* Quick stats */}
       <div className="grid grid-cols-3 gap-3">
-        <Card className="border-0 shadow-sm">
-          <CardContent className="pt-5 pb-4 px-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-pink-100 text-pink-700 flex items-center justify-center">
-              <BedDouble className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-foreground leading-none">
-                {admittedPatients.length}
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">Patients</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="pt-5 pb-4 px-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
-              <Clock className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-foreground leading-none">
-                {medsDue.filter((m) => m.status === "pending").length}
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">Meds Due</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="pt-5 pb-4 px-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
-              <Activity className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-foreground leading-none">
-                {vitalsNeeded.length}
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Vitals Pending
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-gradient-to-r from-rose-500 to-pink-600 p-4 flex items-center justify-between">
+            <p className="text-3xl font-bold text-white leading-none">
+              {admittedPatients.length}
+            </p>
+            <BedDouble className="w-6 h-6 text-white opacity-80" />
+          </div>
+          <div className="bg-card px-4 py-2.5 border border-t-0 border-border rounded-b-xl">
+            <p className="text-xs font-medium text-muted-foreground">
+              Patients
+            </p>
+          </div>
+        </div>
+        <div className="rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-4 flex items-center justify-between">
+            <p className="text-3xl font-bold text-white leading-none">
+              {medsDue.filter((m) => m.status === "pending").length}
+            </p>
+            <Clock className="w-6 h-6 text-white opacity-80" />
+          </div>
+          <div className="bg-card px-4 py-2.5 border border-t-0 border-border rounded-b-xl">
+            <p className="text-xs font-medium text-muted-foreground">
+              Meds Due
+            </p>
+          </div>
+        </div>
+        <div className="rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-4 flex items-center justify-between">
+            <p className="text-3xl font-bold text-white leading-none">
+              {vitalsNeeded.length}
+            </p>
+            <Activity className="w-6 h-6 text-white opacity-80" />
+          </div>
+          <div className="bg-card px-4 py-2.5 border border-t-0 border-border rounded-b-xl">
+            <p className="text-xs font-medium text-muted-foreground">
+              Vitals Pending
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">

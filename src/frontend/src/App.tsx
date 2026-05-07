@@ -64,6 +64,7 @@ import EmergencyPrescription from "./pages/EmergencyPrescription";
 import InvestigationPaymentPage from "./pages/InvestigationPaymentPage";
 import LandingPage from "./pages/LandingPage";
 import OtherPayment from "./pages/OtherPayment";
+import OutstandingBalances from "./pages/OutstandingBalances";
 import PatientDashboard from "./pages/PatientDashboard";
 import Patients from "./pages/Patients";
 import ProcedurePayment from "./pages/ProcedurePayment";
@@ -184,6 +185,11 @@ const otherPaymentRoute = createRoute({
   path: "/OtherPayment",
   component: OtherPayment,
 });
+const outstandingBalancesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/OutstandingBalances",
+  component: OutstandingBalances,
+});
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
@@ -203,6 +209,7 @@ const routeTree = rootRoute.addChildren([
   procedurePaymentRoute,
   totalIncomeRoute,
   otherPaymentRoute,
+  outstandingBalancesRoute,
 ]);
 const router = createRouter({ routeTree });
 

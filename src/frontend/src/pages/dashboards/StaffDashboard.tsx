@@ -13,7 +13,9 @@ import {
   CalendarDays,
   CheckCircle2,
   Clock,
+  DollarSign,
   MessageSquare,
+  UserCheck,
   UserPlus,
   Users,
 } from "lucide-react";
@@ -29,6 +31,7 @@ interface LocalPatient extends Patient {
   bedNumber?: string;
   ward?: string;
   isAdmitted?: boolean;
+  registerNumber?: string;
 }
 
 interface AppointmentRecord {
@@ -42,6 +45,15 @@ interface AppointmentRecord {
   appointmentType: string;
   phone?: string;
   createdAt: string;
+}
+
+interface MoneyReceipt {
+  id: string;
+  patientName: string;
+  paymentStatus: string;
+  invoiceType?: string;
+  totalAmount?: number;
+  finalAmount?: number;
 }
 
 function loadBedSummary() {
@@ -102,6 +114,56 @@ function getTotalPatients(): number {
   return count;
 }
 
+function loadUnpaidInvoices(): MoneyReceipt[] {
+  try {
+    const all = JSON.parse(
+      localStorage.getItem("moneyReceipts") || "[]",
+    ) as MoneyReceipt[];
+    return all.filter((r) => r.paymentStatus !== "paid").slice(0, 10);
+  } catch {
+    return [];
+  }
+}
+
+function loadPendingPatients(): LocalPatient[] {
+  const results: LocalPatient[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (!k?.startsWith("patients_")) continue;
+    try {
+      const arr = JSON.parse(localStorage.getItem(k) || "[]") as LocalPatient[];
+      for (const p of arr) {
+        const st = String((p as Record<string, unknown>).status ?? "");
+        if (st === "pending_approval" || st === "pending") {
+          results.push(p);
+        }
+      }
+    } catch {}
+  }
+  return results;
+}
+
+function updatePatientStatus(
+  patientId: string | number | bigint,
+  newStatus: string,
+) {
+  const idStr = String(patientId);
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (!k?.startsWith("patients_")) continue;
+    try {
+      const arr = JSON.parse(localStorage.getItem(k) || "[]") as LocalPatient[];
+      const idx = arr.findIndex((p) => String(p.id) === idStr);
+      if (idx >= 0) {
+        (arr[idx] as Record<string, unknown>).status = newStatus;
+        localStorage.setItem(k, JSON.stringify(arr));
+        return true;
+      }
+    } catch {}
+  }
+  return false;
+}
+
 export default function StaffDashboard() {
   const { currentDoctor } = useEmailAuth();
   const navigate = useNavigate();
@@ -111,6 +173,10 @@ export default function StaffDashboard() {
   const occupiedBeds = useMemo(loadBedSummary, []);
   const todayAppointments = useMemo(loadTodayAppointments, []);
   const totalPatients = useMemo(getTotalPatients, []);
+  const unpaidInvoices = useMemo(loadUnpaidInvoices, []);
+  const [pendingPatients, setPendingPatients] = useState<LocalPatient[]>(() =>
+    loadPendingPatients(),
+  );
 
   const handleCreate = (data: PatientFormData) => {
     createPatient.mutate(data, {
@@ -124,6 +190,24 @@ export default function StaffDashboard() {
       onError: () => toast.error("Failed to register patient"),
     });
   };
+
+  function handleApprove(patientId: string | number | bigint) {
+    if (updatePatientStatus(patientId, "active")) {
+      setPendingPatients((prev) =>
+        prev.filter((p) => String(p.id) !== String(patientId)),
+      );
+      toast.success("Patient registration approved");
+    }
+  }
+
+  function handleReject(patientId: string | number | bigint) {
+    if (updatePatientStatus(patientId, "rejected")) {
+      setPendingPatients((prev) =>
+        prev.filter((p) => String(p.id) !== String(patientId)),
+      );
+      toast.success("Patient registration rejected");
+    }
+  }
 
   const statusColors: Record<string, string> = {
     pending: "bg-amber-100 text-amber-700 border-amber-200",
@@ -163,66 +247,58 @@ export default function StaffDashboard() {
 
       {/* Quick stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Card className="border-0 shadow-sm">
-          <CardContent className="pt-5 pb-4 px-5 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-700 flex items-center justify-center">
-              <Users className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-foreground leading-none">
-                {totalPatients}
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Total Patients
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="pt-5 pb-4 px-5 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
-              <BedDouble className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-foreground leading-none">
-                {occupiedBeds.length}
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Beds Occupied
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="pt-5 pb-4 px-5 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
-              <CalendarDays className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-foreground leading-none">
-                {todayAppointments.length}
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Today's Appointments
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="pt-5 pb-4 px-5 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
-              <Clock className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-foreground leading-none">
-                {todayAppointments.filter((a) => a.status === "pending").length}
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Pending Confirm
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-gradient-to-r from-orange-500 to-amber-600 p-4 flex items-center justify-between">
+            <p className="text-3xl font-bold text-white leading-none">
+              {totalPatients}
+            </p>
+            <Users className="w-6 h-6 text-white opacity-80" />
+          </div>
+          <div className="bg-card px-4 py-2.5 border border-t-0 border-border rounded-b-xl">
+            <p className="text-xs font-medium text-muted-foreground">
+              Total Patients
+            </p>
+          </div>
+        </div>
+        <div className="rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-4 flex items-center justify-between">
+            <p className="text-3xl font-bold text-white leading-none">
+              {occupiedBeds.length}
+            </p>
+            <BedDouble className="w-6 h-6 text-white opacity-80" />
+          </div>
+          <div className="bg-card px-4 py-2.5 border border-t-0 border-border rounded-b-xl">
+            <p className="text-xs font-medium text-muted-foreground">
+              Beds Occupied
+            </p>
+          </div>
+        </div>
+        <div className="rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-gradient-to-r from-teal-500 to-emerald-600 p-4 flex items-center justify-between">
+            <p className="text-3xl font-bold text-white leading-none">
+              {todayAppointments.length}
+            </p>
+            <CalendarDays className="w-6 h-6 text-white opacity-80" />
+          </div>
+          <div className="bg-card px-4 py-2.5 border border-t-0 border-border rounded-b-xl">
+            <p className="text-xs font-medium text-muted-foreground">
+              Today's Appointments
+            </p>
+          </div>
+        </div>
+        <div className="rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-gradient-to-r from-rose-500 to-red-600 p-4 flex items-center justify-between">
+            <p className="text-3xl font-bold text-white leading-none">
+              {todayAppointments.filter((a) => a.status === "pending").length}
+            </p>
+            <Clock className="w-6 h-6 text-white opacity-80" />
+          </div>
+          <div className="bg-card px-4 py-2.5 border border-t-0 border-border rounded-b-xl">
+            <p className="text-xs font-medium text-muted-foreground">
+              Pending Confirm
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">
@@ -354,6 +430,146 @@ export default function StaffDashboard() {
                     <p className="text-xs text-muted-foreground">Available</p>
                   </div>
                 </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ACTION CENTER — Unpaid Invoices & Pending Registrations */}
+      <div className="grid lg:grid-cols-2 gap-4">
+        {/* Unpaid Invoices */}
+        <Card
+          className="border-l-4 border-l-red-500"
+          data-ocid="staff.unpaid_invoices.panel"
+        >
+          <CardHeader className="pb-3 pt-4 px-5">
+            <div className="flex items-center gap-2">
+              <DollarSign className="w-4 h-4 text-red-600" />
+              <h2 className="font-semibold text-foreground text-sm">
+                Unpaid Invoices
+              </h2>
+              {unpaidInvoices.length > 0 && (
+                <Badge className="ml-auto bg-red-500 text-white text-xs">
+                  {unpaidInvoices.length}
+                </Badge>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="px-5 pb-4">
+            {unpaidInvoices.length === 0 ? (
+              <div
+                className="flex items-center gap-2 text-emerald-600 py-3"
+                data-ocid="staff.unpaid_invoices.empty_state"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <p className="text-sm">No unpaid invoices — all cleared!</p>
+              </div>
+            ) : (
+              <div className="space-y-1.5 max-h-52 overflow-y-auto">
+                {unpaidInvoices.map((inv, idx) => (
+                  <button
+                    key={inv.id}
+                    type="button"
+                    onClick={() => navigate({ to: "/AppointmentPayment" })}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-200 hover:bg-red-100 transition-colors text-left"
+                    data-ocid={`staff.unpaid_invoice.item.${idx + 1}`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {inv.patientName}
+                      </p>
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {inv.invoiceType || "Invoice"}
+                      </p>
+                    </div>
+                    {(inv.finalAmount ?? inv.totalAmount) ? (
+                      <span className="text-xs font-bold text-red-700 shrink-0">
+                        ৳
+                        {(inv.finalAmount ?? inv.totalAmount)?.toLocaleString()}
+                      </span>
+                    ) : null}
+                  </button>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Pending Patient Registrations */}
+        <Card
+          className="border-l-4 border-l-amber-500"
+          data-ocid="staff.pending_reg.panel"
+        >
+          <CardHeader className="pb-3 pt-4 px-5">
+            <div className="flex items-center gap-2">
+              <UserCheck className="w-4 h-4 text-amber-600" />
+              <h2 className="font-semibold text-foreground text-sm">
+                Pending Patient Registrations
+              </h2>
+              {pendingPatients.length > 0 && (
+                <Badge className="ml-auto bg-amber-500 text-white text-xs">
+                  {pendingPatients.length}
+                </Badge>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="px-5 pb-4">
+            {pendingPatients.length === 0 ? (
+              <div
+                className="flex items-center gap-2 text-emerald-600 py-3"
+                data-ocid="staff.pending_reg.empty_state"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <p className="text-sm">No pending registrations</p>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-52 overflow-y-auto">
+                {pendingPatients.map((p, idx) => (
+                  <div
+                    key={String(p.id)}
+                    className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5"
+                    data-ocid={`staff.pending_reg.item.${idx + 1}`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {p.fullName}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {p.registerNumber && (
+                          <span className="font-mono mr-2">
+                            {p.registerNumber}
+                          </span>
+                        )}
+                        {(p as Record<string, unknown>).createdAt
+                          ? new Date(
+                              String((p as Record<string, unknown>).createdAt),
+                            ).toLocaleDateString()
+                          : "—"}
+                      </p>
+                    </div>
+                    <div className="flex gap-1 shrink-0">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-6 px-2 text-[10px] text-emerald-700 border-emerald-300 hover:bg-emerald-50"
+                        onClick={() => handleApprove(p.id)}
+                        data-ocid={`staff.pending_reg.approve.${idx + 1}`}
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-6 px-2 text-[10px] text-red-700 border-red-300 hover:bg-red-50"
+                        onClick={() => handleReject(p.id)}
+                        data-ocid={`staff.pending_reg.reject.${idx + 1}`}
+                      >
+                        Reject
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </CardContent>

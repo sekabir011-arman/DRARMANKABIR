@@ -13,7 +13,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BarChart2, Download, FileText, TrendingUp, X } from "lucide-react";
+import {
+  BarChart2,
+  Calendar,
+  Download,
+  FileText,
+  TrendingUp,
+  X,
+} from "lucide-react";
+import React from "react";
 import { useMemo, useState } from "react";
 import { loadReceipts } from "../components/MoneyReceipt";
 import type { MoneyReceiptData } from "../types";
@@ -157,6 +165,158 @@ function getAllDoctors(
   for (const p of aptPayments) if (p.doctor) set.add(p.doctor);
   for (const r of allReceipts) if (r.doctorName) set.add(r.doctorName);
   return [...set].sort();
+}
+
+// ── Monthly chart data helper ─────────────────────────────────────────────────
+
+const MONTH_LABELS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+function buildMonthlyData(
+  aptPayments: ReturnType<typeof loadAppointmentPayments>,
+  allReceipts: MoneyReceiptData[],
+  procPayments: MoneyReceiptData[],
+  otherPayments: OtherPaymentRecord[],
+  filterDoctor: string,
+  filterMethod: string,
+) {
+  const year = new Date().getFullYear();
+  const months = Array.from({ length: 12 }, (_, i) => ({
+    month: i,
+    label: MONTH_LABELS[i],
+    appointment: 0,
+    investigation: 0,
+    procedure: 0,
+    other: 0,
+    total: 0,
+  }));
+
+  function addToMonth(
+    dateStr: string,
+    key: "appointment" | "investigation" | "procedure" | "other",
+    amount: number,
+  ) {
+    const d = new Date(dateStr);
+    if (d.getFullYear() !== year) return;
+    const m = months[d.getMonth()];
+    if (!m) return;
+    m[key] += amount;
+    m.total += amount;
+  }
+
+  for (const p of aptPayments) {
+    if (p.status !== "paid") continue;
+    if (filterDoctor !== "all" && p.doctor !== filterDoctor) continue;
+    if (filterMethod !== "all" && p.paymentMethod !== filterMethod) continue;
+    addToMonth(p.date, "appointment", p.fee ?? p.amount ?? 0);
+  }
+  for (const r of allReceipts) {
+    if (!r.paid) continue;
+    if (filterDoctor !== "all" && r.doctorName !== filterDoctor) continue;
+    const amt = r.finalAmount ?? r.amount;
+    if (r.type === "investigation") addToMonth(r.date, "investigation", amt);
+    else if (r.type === "procedure") addToMonth(r.date, "procedure", amt);
+    else if (r.type === "appointment") addToMonth(r.date, "appointment", amt);
+  }
+  for (const r of procPayments) {
+    if (!r.paid) continue;
+    if (filterDoctor !== "all" && r.doctorName !== filterDoctor) continue;
+    if (allReceipts.find((m) => m.id === r.id)) continue;
+    addToMonth(r.date, "procedure", r.finalAmount ?? r.amount);
+  }
+  for (const p of otherPayments) {
+    if (filterDoctor !== "all" && p.doctorName !== filterDoctor) continue;
+    if (filterMethod !== "all" && p.paymentMethod !== filterMethod) continue;
+    addToMonth(p.date, "other", p.amount);
+  }
+  return months;
+}
+
+const CHART_CATS = [
+  { key: "appointment" as const, color: "bg-green-500", label: "Appointment" },
+  {
+    key: "investigation" as const,
+    color: "bg-blue-500",
+    label: "Investigation",
+  },
+  { key: "procedure" as const, color: "bg-orange-500", label: "Procedure" },
+  { key: "other" as const, color: "bg-purple-500", label: "Other" },
+];
+
+type MonthlyEntry = ReturnType<typeof buildMonthlyData>[number];
+
+function MonthlyBarChart({ data }: { data: MonthlyEntry[] }) {
+  const maxVal = Math.max(...data.map((d) => d.total), 1);
+  const [hovIdx, setHovIdx] = React.useState<number | null>(null);
+
+  return (
+    <div>
+      <div className="flex gap-3 mb-4 flex-wrap">
+        {CHART_CATS.map((c) => (
+          <div
+            key={c.key}
+            className="flex items-center gap-1.5 text-xs text-muted-foreground"
+          >
+            <div className={`w-3 h-3 rounded-sm ${c.color}`} />
+            <span>{c.label}</span>
+          </div>
+        ))}
+      </div>
+      <div className="overflow-x-auto pb-1">
+        <div className="flex gap-1 items-end" style={{ minWidth: 540 }}>
+          {data.map((month, idx) => (
+            <div
+              key={month.label}
+              className="flex flex-col items-center gap-1 flex-1"
+            >
+              <div
+                className="w-full flex flex-col-reverse gap-px relative cursor-pointer"
+                style={{ height: 120 }}
+                onMouseEnter={() => setHovIdx(idx)}
+                onMouseLeave={() => setHovIdx(null)}
+              >
+                {CHART_CATS.map((cat) => {
+                  const val = month[cat.key];
+                  const pct = maxVal > 0 ? (val / maxVal) * 100 : 0;
+                  return pct > 0 ? (
+                    <div
+                      key={cat.key}
+                      className={`w-full rounded-sm ${cat.color} transition-opacity`}
+                      style={{ height: `${pct}%` }}
+                      title={`${cat.label}: ৳${val.toLocaleString("en-BD")}`}
+                    />
+                  ) : null;
+                })}
+                {hovIdx === idx && month.total > 0 && (
+                  <div className="absolute -top-9 left-1/2 -translate-x-1/2 bg-foreground text-background text-xs px-2 py-1 rounded shadow-md z-10 whitespace-nowrap pointer-events-none">
+                    ৳{month.total.toLocaleString("en-BD")}
+                  </div>
+                )}
+              </div>
+              <span
+                className="text-xs text-muted-foreground"
+                style={{ fontSize: 9 }}
+              >
+                {month.label}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ── Components ─────────────────────────────────────────────────────────────────
@@ -850,6 +1010,27 @@ export default function TotalIncome() {
             <IncomeBarChart data={breakdown} />
           </div>
         )}
+
+        {/* Monthly Revenue Chart */}
+        <div className="bg-card rounded-xl border border-border shadow-sm p-4">
+          <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-indigo-600" />
+            Monthly Revenue — {new Date().getFullYear()}
+            <span className="text-xs font-normal text-muted-foreground ml-1">
+              বাৎসরিক আয়
+            </span>
+          </h3>
+          <MonthlyBarChart
+            data={buildMonthlyData(
+              aptPayments,
+              allReceipts,
+              procPayments,
+              otherPayments,
+              filterDoctor,
+              filterMethod,
+            )}
+          />
+        </div>
 
         {/* Breakdown table */}
         <div

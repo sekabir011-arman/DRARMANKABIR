@@ -51,6 +51,7 @@ interface DailyProgressProps {
   viewerRole: StaffRole;
   authorName: string;
   prescriptions: Prescription[];
+  admissionDate?: string;
 }
 
 // ── Problem List Section ──────────────────────────────────────────────────────
@@ -436,6 +437,7 @@ export default function DailyProgress({
   viewerRole,
   authorName,
   prescriptions,
+  admissionDate: _admissionDate,
 }: DailyProgressProps) {
   const canEdit =
     currentRole === "admin" ||
@@ -444,6 +446,13 @@ export default function DailyProgress({
     viewerRole === "medical_officer" ||
     viewerRole === "intern_doctor" ||
     viewerRole === "nurse";
+
+  const canWriteSOAP =
+    viewerRole === "consultant_doctor" ||
+    viewerRole === "medical_officer" ||
+    viewerRole === "intern_doctor" ||
+    viewerRole === "doctor" ||
+    currentRole === "admin";
 
   const canDeleteOthers =
     currentRole === "admin" || viewerRole === "consultant_doctor";
@@ -575,7 +584,7 @@ export default function DailyProgress({
             {entries.length} entries
           </span>
         </h3>
-        {canEdit && (
+        {canWriteSOAP && (
           <Button
             size="sm"
             className="bg-slate-700 hover:bg-slate-800 text-white gap-1.5"

@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Banknote,
   CheckCircle2,
+  MessageCircle,
   Plus,
   PlusCircle,
   Printer,
@@ -26,11 +28,56 @@ import {
   RefundDialog,
   generateTypedReceiptNumber,
   saveReceiptToStore,
+  sendReceiptWhatsApp,
 } from "../components/MoneyReceipt";
 import { useEmailAuth } from "../hooks/useEmailAuth";
 import type { MoneyReceiptData, PaymentMethod, RefundRecord } from "../types";
 
 const OTHER_PAYMENTS_KEY = "other_payments_index";
+const ADV_PAYMENTS_KEY = "advance_payments";
+
+interface AdvancePaymentRecord {
+  id: string;
+  patientName: string;
+  registerNumber: string;
+  phone: string;
+  amount: number;
+  date: string;
+  paymentMethod?: PaymentMethod;
+  notes: string;
+  receiptNumber: string;
+  appliedToReceipt?: string;
+}
+
+function loadAdvancePayments(): AdvancePaymentRecord[] {
+  try {
+    return JSON.parse(localStorage.getItem(ADV_PAYMENTS_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveAdvancePayment(r: AdvancePaymentRecord) {
+  const all = loadAdvancePayments();
+  const idx = all.findIndex((x) => x.id === r.id);
+  if (idx >= 0) all[idx] = r;
+  else all.unshift(r);
+  localStorage.setItem(ADV_PAYMENTS_KEY, JSON.stringify(all));
+}
+
+function getAdvCounter(): string {
+  const year = new Date().getFullYear();
+  const yearKey = "receipt_year_adv";
+  const counterKey = "receipt_counter_adv";
+  const storedYear = Number.parseInt(localStorage.getItem(yearKey) || "0", 10);
+  let count = 1;
+  if (storedYear === year) {
+    count = Number.parseInt(localStorage.getItem(counterKey) || "0", 10) + 1;
+  }
+  localStorage.setItem(yearKey, String(year));
+  localStorage.setItem(counterKey, String(count));
+  return `ADV-${year}-${String(count).padStart(4, "0")}`;
+}
 
 interface OtherPaymentRecord {
   id: string;
@@ -85,9 +132,324 @@ const QUICK_ITEMS = [
   { description: "Report Collection Fee", amount: 100 },
 ];
 
+// ── Advance Payment View ──────────────────────────────────────────────────────────
+
+function AdvancePaymentView() {
+  const [patientName, setPatientName] = useState("");
+  const [registerNumber, setRegisterNumber] = useState("");
+  const [phone, setPhone] = useState("");
+  const [amount, setAmount] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | undefined>(
+    undefined,
+  );
+  const [notes, setNotes] = useState("");
+  const [history, setHistory] = useState<AdvancePaymentRecord[]>(() =>
+    loadAdvancePayments(),
+  );
+  const [view, setView] = useState<"new" | "history">("new");
+
+  function handleSave() {
+    if (!patientName.trim() || !amount || Number(amount) <= 0 || !paymentMethod)
+      return;
+    const rec: AdvancePaymentRecord = {
+      id: `adv-${Date.now()}`,
+      patientName: patientName.trim(),
+      registerNumber: registerNumber.trim(),
+      phone: phone.trim(),
+      amount: Number(amount),
+      date,
+      paymentMethod,
+      notes: notes.trim(),
+      receiptNumber: getAdvCounter(),
+    };
+    saveAdvancePayment(rec);
+    saveReceiptToStore({
+      id: rec.id,
+      receiptNumber: rec.receiptNumber,
+      type: "other",
+      patientName: rec.patientName,
+      registerNumber: rec.registerNumber,
+      phone: rec.phone,
+      service: "Advance Deposit",
+      amount: rec.amount,
+      finalAmount: rec.amount,
+      paid: true,
+      amountPaid: rec.amount,
+      dueAmount: 0,
+      invoiceState: "paid",
+      paymentMethod: rec.paymentMethod,
+      date: rec.date,
+      notes: rec.notes ? `Advance deposit. ${rec.notes}` : "Advance deposit",
+    });
+    setHistory(loadAdvancePayments());
+    setPatientName("");
+    setRegisterNumber("");
+    setPhone("");
+    setAmount("");
+    setNotes("");
+    setPaymentMethod(undefined);
+    setView("history");
+    import("sonner").then(({ toast }) =>
+      toast.success(`Advance receipt ${rec.receiptNumber} generated`),
+    );
+  }
+
+  const unusedCredit = history
+    .filter((r) => !r.appliedToReceipt)
+    .reduce((s, r) => s + r.amount, 0);
+
+  return (
+    <div className="space-y-4" data-ocid="advance_payment.panel">
+      {unusedCredit > 0 && (
+        <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center gap-3">
+          <Banknote className="w-5 h-5 text-green-600 shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-green-800">
+              Total Unused Advance Credit
+            </p>
+            <p className="text-xl font-black text-green-700">
+              ৳{unusedCredit.toLocaleString("en-BD")}
+            </p>
+          </div>
+        </div>
+      )}
+      <div className="flex gap-1 bg-muted/40 rounded-xl p-1 border border-border">
+        {(["new", "history"] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => {
+              setView(t);
+              if (t === "history") setHistory(loadAdvancePayments());
+            }}
+            className={`flex-1 h-8 rounded-lg text-sm font-semibold transition-colors ${
+              view === t
+                ? "bg-teal-600 text-white shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+            data-ocid={`advance_payment.${t}.tab`}
+          >
+            {t === "new" ? "New Advance" : "History"}
+          </button>
+        ))}
+      </div>
+      {view === "new" && (
+        <div className="bg-card border border-teal-200 rounded-2xl p-5 space-y-4">
+          <p className="text-sm font-semibold text-teal-800 flex items-center gap-2">
+            <Banknote className="w-4 h-4" /> Record Advance Deposit / অগ্রিম জমা
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label
+                htmlFor="advance_patient"
+                className="text-xs font-semibold text-muted-foreground"
+              >
+                Patient Name *
+              </label>
+              <input
+                id="advance_patient"
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
+                value={patientName}
+                onChange={(e) => setPatientName(e.target.value)}
+                placeholder="Full name"
+                data-ocid="advance.patient.input"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label
+                htmlFor="advance_register"
+                className="text-xs font-semibold text-muted-foreground"
+              >
+                Register No.
+              </label>
+              <input
+                id="advance_register"
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm font-mono"
+                value={registerNumber}
+                onChange={(e) => setRegisterNumber(e.target.value)}
+                placeholder="0001/26"
+                data-ocid="advance.register.input"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label
+                htmlFor="advance_phone"
+                className="text-xs font-semibold text-muted-foreground"
+              >
+                Phone
+              </label>
+              <input
+                id="advance_phone"
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="01XXXXXXXXX"
+                data-ocid="advance.phone.input"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label
+                htmlFor="advance_amount"
+                className="text-xs font-semibold text-muted-foreground"
+              >
+                Advance Amount (৳) *
+              </label>
+              <input
+                id="advance_amount"
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm font-bold text-teal-700"
+                type="number"
+                min={1}
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0"
+                data-ocid="advance.amount.input"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label
+                htmlFor="advance_date"
+                className="text-xs font-semibold text-muted-foreground"
+              >
+                Date
+              </label>
+              <input
+                id="advance_date"
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                data-ocid="advance.date.input"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label
+                htmlFor="advance_notes"
+                className="text-xs font-semibold text-muted-foreground"
+              >
+                Notes (optional)
+              </label>
+              <input
+                id="advance_notes"
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="e.g. Admission deposit"
+                data-ocid="advance.notes.input"
+              />
+            </div>
+          </div>
+          <PaymentMethodSelector
+            value={paymentMethod}
+            onChange={setPaymentMethod}
+            ocidPrefix="advance"
+          />
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={
+              !patientName.trim() ||
+              !amount ||
+              Number(amount) <= 0 ||
+              !paymentMethod
+            }
+            className="w-full h-11 rounded-xl bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white font-semibold flex items-center justify-center gap-2 transition-colors"
+            data-ocid="advance.save.button"
+          >
+            <CheckCircle2 className="w-4 h-4" /> Generate Advance Receipt
+            (ADV-XXXX)
+          </button>
+        </div>
+      )}
+      {view === "history" && (
+        <div className="space-y-3">
+          {history.length === 0 ? (
+            <div
+              className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3 text-center"
+              data-ocid="advance.empty_state"
+            >
+              <Banknote className="w-10 h-10 opacity-30" />
+              <p className="font-semibold">No advance payments yet</p>
+            </div>
+          ) : (
+            history.map((r, i) => (
+              <div
+                key={r.id}
+                className={`bg-card border rounded-xl p-4 flex items-start justify-between gap-3 ${
+                  r.appliedToReceipt
+                    ? "border-border opacity-70"
+                    : "border-teal-200"
+                }`}
+                data-ocid={`advance.item.${i + 1}`}
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-foreground">
+                    {r.patientName}
+                  </p>
+                  <p className="text-xs font-mono text-muted-foreground">
+                    {r.registerNumber || "—"} · {r.receiptNumber}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {r.date}
+                    {r.paymentMethod ? ` · ${r.paymentMethod}` : ""}
+                  </p>
+                  {r.notes && (
+                    <p className="text-xs italic text-muted-foreground mt-0.5">
+                      {r.notes}
+                    </p>
+                  )}
+                </div>
+                <div className="text-right shrink-0 space-y-1">
+                  <p className="font-black text-lg text-teal-700">
+                    ৳{r.amount.toLocaleString("en-BD")}
+                  </p>
+                  {r.appliedToReceipt ? (
+                    <span className="text-xs text-muted-foreground">
+                      Applied
+                    </span>
+                  ) : (
+                    <span className="text-xs font-semibold text-green-600">
+                      Available credit
+                    </span>
+                  )}
+                  {r.phone && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        sendReceiptWhatsApp({
+                          patientName: r.patientName,
+                          phone: r.phone,
+                          receiptNumber: r.receiptNumber,
+                          date: r.date,
+                          finalAmount: r.amount,
+                          amountPaid: r.amount,
+                          dueAmount: 0,
+                        })
+                      }
+                      className="flex items-center justify-center w-7 h-7 rounded border border-green-200 hover:bg-green-50 transition-colors"
+                      title="Send via WhatsApp"
+                      data-ocid={`advance.whatsapp_button.${i + 1}`}
+                      style={{ color: "#25D366" }}
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main Component ────────────────────────────────────────────────────────────
+
 export default function OtherPayment() {
   const { currentDoctor } = useEmailAuth();
-  const [tab, setTab] = useState<"new" | "history">("new");
+  const [tab, setTab] = useState<"new" | "history" | "advance">("new");
   const [patientName, setPatientName] = useState("");
   const [registerNumber, setRegisterNumber] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
@@ -248,23 +610,27 @@ export default function OtherPayment() {
 
       {/* Tabs */}
       <div className="flex gap-2 border-b border-border">
-        {(["new", "history"] as const).map((t) => (
+        {(["new", "history", "advance"] as const).map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => {
               setTab(t);
               if (t === "new") resetForm();
-              else setHistory(loadOtherPayments());
+              else if (t === "history") setHistory(loadOtherPayments());
             }}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors capitalize ${
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
               tab === t
                 ? "border-primary text-primary"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
             data-ocid={`other_payment.${t}.tab`}
           >
-            {t === "new" ? "New Receipt" : "History"}
+            {t === "new"
+              ? "New Receipt"
+              : t === "history"
+                ? "History"
+                : "Advance Deposit"}
           </button>
         ))}
       </div>
@@ -810,6 +1176,9 @@ export default function OtherPayment() {
           )}
         </div>
       )}
+
+      {/* Advance tab */}
+      {tab === "advance" && <AdvancePaymentView />}
 
       {showRefund && (
         <RefundDialog

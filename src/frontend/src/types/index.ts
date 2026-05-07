@@ -31,12 +31,54 @@ export const STAFF_ROLE_COLORS: Record<
   Exclude<StaffRole, "admin" | "patient">,
   string
 > = {
-  consultant_doctor: "bg-purple-100 text-purple-800 border-purple-200",
-  medical_officer: "bg-blue-100 text-blue-800 border-blue-200",
-  intern_doctor: "bg-sky-100 text-sky-800 border-sky-200",
-  nurse: "bg-pink-100 text-pink-800 border-pink-200",
-  staff: "bg-amber-100 text-amber-800 border-amber-200",
-  doctor: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  consultant_doctor: "bg-blue-700 text-white border-blue-700",
+  medical_officer: "bg-teal-600 text-white border-teal-600",
+  intern_doctor: "bg-violet-600 text-white border-violet-600",
+  nurse: "bg-rose-600 text-white border-rose-600",
+  staff: "bg-amber-600 text-white border-amber-600",
+  doctor: "bg-emerald-600 text-white border-emerald-600",
+};
+
+/** Active sidebar background tint per role */
+export const STAFF_ROLE_ACTIVE_BG: Record<
+  Exclude<StaffRole, "patient">,
+  string
+> = {
+  admin: "bg-slate-50",
+  consultant_doctor: "bg-blue-50",
+  medical_officer: "bg-teal-50",
+  intern_doctor: "bg-violet-50",
+  nurse: "bg-rose-50",
+  staff: "bg-amber-50",
+  doctor: "bg-emerald-50",
+};
+
+/** Active sidebar border-color per role (as inline CSS hex for dynamic border) */
+export const STAFF_ROLE_BORDER_COLOR: Record<
+  Exclude<StaffRole, "patient">,
+  string
+> = {
+  admin: "#475569",
+  consultant_doctor: "#1d4ed8",
+  medical_officer: "#0d9488",
+  intern_doctor: "#7c3aed",
+  nurse: "#e11d48",
+  staff: "#d97706",
+  doctor: "#059669",
+};
+
+/** Active text color class per role */
+export const STAFF_ROLE_TEXT_COLOR: Record<
+  Exclude<StaffRole, "patient">,
+  string
+> = {
+  admin: "text-slate-700",
+  consultant_doctor: "text-blue-700",
+  medical_officer: "text-teal-700",
+  intern_doctor: "text-violet-700",
+  nurse: "text-rose-700",
+  staff: "text-amber-700",
+  doctor: "text-emerald-700",
 };
 
 export type Gender = "male" | "female" | "other";
@@ -525,6 +567,14 @@ export interface BedTransferEntry {
   reason: string;
 }
 
+export type BedType =
+  | "General"
+  | "ICU"
+  | "HDU"
+  | "Isolation"
+  | "Private"
+  | "Cabin";
+
 export interface BedRecord {
   id: bigint;
   bedNumber: string;
@@ -533,10 +583,20 @@ export interface BedRecord {
   /** Floor/level within the hospital, e.g. "Ground Floor", "Floor 1", "ICU Level" */
   floor?: string;
   status: "Empty" | "Occupied" | "Maintenance" | "Reserved" | "Cleaning";
+  /** Bed category/type determining special equipment and purpose */
+  bedType?: BedType;
   patientId?: bigint;
   patientName?: string;
   admissionDate?: bigint;
   dischargeDate?: bigint;
+  /** ISO timestamp string for when a reservation expires (2h default) */
+  reservationExpiry?: string | null;
+  /** Name of the patient the bed is reserved for */
+  reservedForPatient?: string | null;
+  /** Whether the discharge checklist was completed */
+  dischargeChecklistCompleted?: boolean;
+  /** ISO timestamp when discharge checklist was signed off */
+  dischargeCheckedAt?: string;
   transferHistory: BedTransferEntry[];
 }
 

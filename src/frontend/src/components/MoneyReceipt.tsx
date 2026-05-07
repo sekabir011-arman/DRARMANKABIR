@@ -24,6 +24,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Download,
+  MessageCircle,
   Printer,
   RotateCcw,
   X,
@@ -93,7 +94,41 @@ export function generateReceiptNumber(): string {
   return generateTypedReceiptNumber("REC");
 }
 
-// ── Payment method label map ──────────────────────────────────────────────────
+// ── WhatsApp helper ────────────────────────────────────────────────────────────
+
+export function sendReceiptWhatsApp(r: {
+  patientName?: string;
+  phone?: string;
+  receiptNumber?: string;
+  date?: string;
+  finalAmount?: number;
+  amount?: number;
+  amountPaid?: number;
+  dueAmount?: number;
+}) {
+  if (!r.phone) return;
+  const phone = r.phone.replace(/\D/g, "");
+  const e164 = phone.startsWith("0") ? `880${phone.slice(1)}` : phone;
+  const total = r.finalAmount ?? r.amount ?? 0;
+  const paid = r.amountPaid ?? total;
+  const due = r.dueAmount ?? 0;
+  const msg = [
+    `Hello ${r.patientName ?? "Patient"},`,
+    `Your receipt from Dr. Arman Kabir's Clinic:`,
+    `Receipt No: ${r.receiptNumber ?? "N/A"}`,
+    `Date: ${r.date ? new Date(r.date).toLocaleDateString("en-BD") : "N/A"}`,
+    `Amount: ৳${total.toLocaleString("en-BD")}`,
+    `Paid: ৳${paid.toLocaleString("en-BD")}`,
+    ...(due > 0 ? [`Balance Due: ৳${due.toLocaleString("en-BD")}`] : []),
+    "For queries call: +8801751959262",
+  ].join("\n");
+  window.open(
+    `https://wa.me/${e164}?text=${encodeURIComponent(msg)}`,
+    "_blank",
+  );
+}
+
+// ── Payment method label map ───────────────────────────────────────────────
 
 const PM_LABELS: Record<PaymentMethod, string> = {
   cash: "Cash",
@@ -795,6 +830,16 @@ export default function MoneyReceipt({
               >
                 Close
               </Button>
+              {data.phone && (
+                <Button
+                  variant="outline"
+                  className="gap-1.5 border-green-300 text-green-700 hover:bg-green-50"
+                  onClick={() => sendReceiptWhatsApp(data)}
+                  data-ocid="receipt.whatsapp_button"
+                >
+                  <MessageCircle className="w-4 h-4" /> WhatsApp
+                </Button>
+              )}
               {(data.paid || isPartial) && !isRefunded && (
                 <Button
                   variant="outline"
@@ -989,6 +1034,18 @@ export function ReceiptsHistoryList() {
                       <Printer className="w-3 h-3" />
                       Reprint
                     </Button>
+                    {r.phone && (
+                      <button
+                        type="button"
+                        onClick={() => sendReceiptWhatsApp(r)}
+                        className="h-7 w-7 flex items-center justify-center rounded border border-green-200 hover:bg-green-50 transition-colors"
+                        title="Send via WhatsApp"
+                        data-ocid={`receipts.whatsapp_button.${idx + 1}`}
+                        style={{ color: "#25D366" }}
+                      >
+                        <MessageCircle className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                     <Button
                       size="sm"
                       variant="ghost"

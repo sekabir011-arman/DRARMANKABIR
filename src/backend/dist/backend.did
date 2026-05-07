@@ -1,3 +1,25 @@
+type WardRoundPatientStatus = 
+ record {
+   activeAlerts: vec text;
+   admissionDay: nat;
+   assignedConsultant: opt text;
+   bedNumber: text;
+   lastVitals: opt VitalsSummary;
+   patientId: text;
+   patientName: text;
+   todayNoteState: opt text;
+   ward: text;
+ };
+type VitalsSummary = 
+ record {
+   bp: opt text;
+   pulse: opt text;
+   rbs: opt text;
+   recordedAt: int;
+   rr: opt text;
+   spo2: opt text;
+   temp: opt text;
+ };
 type VitalSigns = 
  record {
    bloodPressure: opt text;
@@ -355,6 +377,25 @@ type DailyProgressType =
    evening;
    morning;
  };
+type DailyProgressNoteUpdate = 
+ record {
+   activeComplaints: vec text;
+   activeDiagnoses: vec text;
+   assessmentText: text;
+   consultantComments: text;
+   consultantOverrides: text;
+   drainMonitoring: opt text;
+   intakeOutput: opt text;
+   internObjective: text;
+   internSubjective: text;
+   investigations: vec text;
+   moAssessment: text;
+   moPlan: text;
+   objectiveVitals: opt text;
+   planText: text;
+   subjectiveComplaints: vec text;
+   systemReview: opt text;
+ };
 type DailyProgressNote = 
  record {
    activeComplaints: vec text;
@@ -363,24 +404,45 @@ type DailyProgressNote =
    authorId: principal;
    authorName: text;
    authorRole: StaffRole;
+   consultantComments: text;
+   consultantOverrides: text;
    createdAt: int;
    drainMonitoring: opt text;
    encounterId: opt nat;
    id: nat;
    intakeOutput: opt text;
+   internObjective: text;
+   internSubjective: text;
    investigations: vec text;
    isDeleted: bool;
    isDraft: bool;
+   moAssessment: text;
+   moPlan: text;
    noteDate: text;
+   noteState: DailyNoteState;
    objectiveVitals: opt text;
    patientId: nat;
    planText: text;
    previousVersionIds: vec nat;
    progressType: DailyProgressType;
+   rejectionReason: opt text;
+   reviewedByConsultant: opt text;
+   reviewedByMO: opt text;
    subjectiveComplaints: vec text;
+   submitTimestamp: opt int;
+   submittedByRole: opt StaffRole;
    systemReview: opt text;
    updatedAt: int;
+   versionChain: vec text;
    versionInfo: VersionedRecord;
+ };
+type DailyNoteState = 
+ variant {
+   draft;
+   finalized;
+   moReviewComplete;
+   rejected;
+   submittedToMO;
  };
 type CurrentUser = 
  record {
@@ -543,6 +605,11 @@ service : {
              });
   addAuditEntry: (entityType: text, entityId: nat, fieldName: text,
    beforeValue: opt text, afterValue: text, reason: opt text) -> ();
+  addNoteAddendum: (patientId: nat, noteId: nat, addendumText: text) ->
+   (variant {
+      err: text;
+      ok: DailyProgressNote;
+    });
   assignBed: (bedId: nat, patientId: nat, patientName: text) ->
    (variant {
       err: text;
@@ -697,6 +764,12 @@ service : {
       err: text;
       ok: Prescription__1;
     });
+  finalizeDailyNote: (patientId: nat, noteId: nat, consultantEmail: text,
+   consultantComments: text, finalSOAP: DailyProgressNoteUpdate) ->
+   (variant {
+      err: text;
+      ok: DailyProgressNote;
+    });
   finalizeNote: (id: nat) -> (variant {
                                 err: text;
                                 ok: ClinicalNote;
@@ -748,6 +821,8 @@ service : {
   getClinicalPrescriptionsByPatient: (patientId: nat) ->
    (vec Prescription__1) query;
   getCurrentUser: () -> (CurrentUser);
+  getDailyNotesByPatient: (patientId: nat, dateFilter: opt text) ->
+   (vec DailyProgressNote) query;
   getDailyProgressNotesByPatientId: (patientId: nat) ->
    (vec DailyProgressNote) query;
   getDiagnosisTemplate: (id: nat) -> (opt DiagnosisTemplate) query;
@@ -792,6 +867,7 @@ service : {
   getUserProfile: (user: principal) -> (opt UserProfile) query;
   getVisit: (id: nat) -> (opt Visit) query;
   getVisitsByPatientId: (patientId: nat) -> (vec Visit) query;
+  getWardRoundStatus: (date: text) -> (vec WardRoundPatientStatus) query;
   isCallerAdmin: () -> (bool) query;
   migrateFromLocalStorage: (patientsJson: text, visitsJson: text,
    prescriptionsJson: text, appointmentsJson: text) ->
@@ -813,11 +889,21 @@ service : {
       err: text;
       ok: MedicationAdministration;
     });
+  rejectDraftNote: (patientId: nat, noteId: nat, reviewerEmail: text,
+   rejectionReason: text) -> (variant {
+                                err: text;
+                                ok: DailyProgressNote;
+                              });
   resolveAlert: (id: nat) -> (variant {
                                 err: text;
                                 ok: ClinicalAlert;
                               });
   saveCallerUserProfile: (profile: UserProfile) -> ();
+  submitDailyNoteForReview: (patientId: nat, noteId: nat, noteContent:
+   DailyProgressNoteUpdate) -> (variant {
+                                  err: text;
+                                  ok: DailyProgressNote;
+                                });
   syncData: (doctorEmail: text) -> (variant {
                                       err: text;
                                       ok: SyncData;

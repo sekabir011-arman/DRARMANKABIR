@@ -29,6 +29,7 @@ import {
   Bell,
   Bot,
   Calendar,
+  CheckCircle2,
   ChevronRight,
   Clock,
   Download,
@@ -49,6 +50,7 @@ import {
   Scissors,
   Search,
   Settings,
+  ShieldAlert,
   Stethoscope,
   Thermometer,
   TrendingDown,
@@ -57,7 +59,6 @@ import {
   Users,
   Wind,
 } from "lucide-react";
-import { CheckCircle2, ShieldAlert } from "lucide-react";
 import { motion } from "motion/react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -105,6 +106,163 @@ import {
 import type { Patient, Prescription, StaffRole, Visit } from "../types";
 
 const RX_SKELETON_KEYS = ["rsk1", "rsk2", "rsk3"];
+// ── On-Duty Staff Card ──────────────────────────────────────────────────────────────
+
+function getCurrentShiftType(): "morning" | "evening" | "night" {
+  const h = new Date().getHours();
+  if (h >= 6 && h < 14) return "morning";
+  if (h >= 14 && h < 22) return "evening";
+  return "night";
+}
+
+function OnDutyStaffCard({
+  ward,
+  patientName,
+  registerNumber,
+}: {
+  ward: string;
+  patientName: string;
+  registerNumber: string;
+}) {
+  if (!ward) return null;
+  const today = new Date().toISOString().split("T")[0];
+  const currentShift = getCurrentShiftType();
+
+  const shifts: Array<{
+    staffId: string;
+    staffName: string;
+    shiftType: string;
+    startDate: string;
+    endDate: string;
+    ward: string;
+  }> = (() => {
+    try {
+      const raw = localStorage.getItem("staff_shifts");
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  })();
+
+  const registry: Array<{
+    id: string;
+    name: string;
+    role: string;
+    phone?: string;
+    status: string;
+  }> = (() => {
+    try {
+      const raw = localStorage.getItem("registry");
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  })();
+
+  const wardShifts = shifts.filter(
+    (s) =>
+      s.ward.toLowerCase() === ward.toLowerCase() &&
+      today >= s.startDate &&
+      today <= s.endDate &&
+      s.shiftType === currentShift,
+  );
+
+  const dutyStaff = wardShifts
+    .map((s) => {
+      const acc = registry.find(
+        (r) => r.id === s.staffId && r.status === "approved",
+      );
+      if (!acc) return null;
+      return {
+        ...acc,
+        shiftType: s.shiftType as "morning" | "evening" | "night",
+      };
+    })
+    .filter(Boolean) as Array<{
+    id: string;
+    name: string;
+    role: string;
+    phone?: string;
+    shiftType: "morning" | "evening" | "night";
+  }>;
+
+  const moOnDuty = dutyStaff.find(
+    (s) => s.role === "medical_officer" || s.role === "doctor",
+  );
+  const nurseOnDuty = dutyStaff.find((s) => s.role === "nurse");
+  const shiftLabel: Record<string, string> = {
+    morning: "Morning (6AM–2PM)",
+    evening: "Evening (2PM–10PM)",
+    night: "Night (10PM–6AM)",
+  };
+  const msgText = encodeURIComponent(
+    `Regarding patient ${patientName} (${registerNumber}) in ${ward}`,
+  );
+
+  if (!moOnDuty && !nurseOnDuty) {
+    return (
+      <div
+        className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5 text-xs text-amber-700 flex items-center gap-2"
+        data-ocid="patient_profile.on_duty.empty_state"
+      >
+        <Users className="w-3.5 h-3.5 shrink-0" />
+        No staff assigned to <strong className="mx-1">{ward}</strong> for
+        current shift
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="bg-green-50 border border-green-200 rounded-lg px-3 py-2.5 space-y-2"
+      data-ocid="patient_profile.on_duty.card"
+    >
+      <p className="text-[11px] font-semibold text-green-700 uppercase tracking-wide flex items-center gap-1.5">
+        <Clock className="w-3 h-3" />
+        On Duty — {ward} · {shiftLabel[currentShift]}
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {(
+          [
+            { label: "MO on Duty", person: moOnDuty },
+            { label: "Nurse on Duty", person: nurseOnDuty },
+          ] as const
+        ).map(({ label, person }) => (
+          <div
+            key={label}
+            className="flex items-center justify-between gap-2 bg-white/60 rounded-lg px-2.5 py-2"
+          >
+            <div className="min-w-0">
+              <p className="text-[10px] font-medium text-muted-foreground">
+                {label}
+              </p>
+              {person ? (
+                <p className="text-xs font-semibold text-foreground truncate">
+                  {person.name}
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground italic">
+                  Not assigned
+                </p>
+              )}
+            </div>
+            {person?.phone && (
+              <a
+                href={`https://wa.me/${person.phone.replace(/[^0-9]/g, "")}?text=${msgText}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shrink-0 flex items-center gap-1 text-[10px] font-semibold bg-green-600 hover:bg-green-700 text-white rounded px-2 py-1 transition-colors"
+                data-ocid="patient_profile.on_duty.button"
+              >
+                WhatsApp
+              </a>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 // ── Reassign Consultant Modal ─────────────────────────────────────────────────
 
@@ -1305,30 +1463,42 @@ export default function PatientProfile() {
                 {(patient.isAdmitted ||
                   patient.patientType === "admitted" ||
                   patient.patientType === "indoor") && (
-                  <div className="flex items-center gap-2 mt-3">
-                    <div className="flex items-center gap-1.5 bg-purple-50 border border-purple-200 rounded-lg px-2.5 py-1.5 flex-1 min-w-0">
-                      <Users className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
-                      <span className="text-xs text-purple-800 font-medium truncate">
-                        Consultant:{" "}
-                        {patient.consultantAssignment?.name ?? (
-                          <span className="italic font-normal text-purple-400">
-                            Not assigned
-                          </span>
-                        )}
-                      </span>
+                  <div className="space-y-2 mt-3">
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 bg-purple-50 border border-purple-200 rounded-lg px-2.5 py-1.5 flex-1 min-w-0">
+                        <Users className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
+                        <span className="text-xs text-purple-800 font-medium truncate">
+                          Consultant:{" "}
+                          {patient.consultantAssignment?.name ?? (
+                            <span className="italic font-normal text-purple-400">
+                              Not assigned
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                      {canReassignConsultant && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setShowReassignConsultant(true)}
+                          className="flex-shrink-0 gap-1 text-xs border-purple-300 text-purple-700 hover:bg-purple-50 h-7 px-2"
+                          data-ocid="patient_profile.reassign_consultant.button"
+                        >
+                          <Edit className="w-3 h-3" />
+                          {patient.consultantAssignment ? "Reassign" : "Assign"}
+                        </Button>
+                      )}
                     </div>
-                    {canReassignConsultant && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setShowReassignConsultant(true)}
-                        className="flex-shrink-0 gap-1 text-xs border-purple-300 text-purple-700 hover:bg-purple-50 h-7 px-2"
-                        data-ocid="patient_profile.reassign_consultant.button"
-                      >
-                        <Edit className="w-3 h-3" />
-                        {patient.consultantAssignment ? "Reassign" : "Assign"}
-                      </Button>
-                    )}
+                    <OnDutyStaffCard
+                      ward={
+                        (patient as unknown as { ward?: string }).ward ?? ""
+                      }
+                      patientName={patient.fullName}
+                      registerNumber={
+                        (patient as unknown as { registerNumber?: string })
+                          .registerNumber ?? ""
+                      }
+                    />
                   </div>
                 )}
               </div>

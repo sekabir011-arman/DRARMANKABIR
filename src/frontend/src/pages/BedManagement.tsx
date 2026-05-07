@@ -9,20 +9,25 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { differenceInDays, format } from "date-fns";
+import { differenceInDays, format, formatDistanceToNow } from "date-fns";
 import {
+  AlertCircle,
   ArrowLeftRight,
   Bed,
   Building2,
+  CalendarClock,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Clock,
   Layers,
   LogOut,
   Plus,
   Search,
   Sparkles,
-  Users,
+  Timer,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   loadFromAllDoctorKeys,
@@ -31,9 +36,55 @@ import {
   useGetAllBeds,
 } from "../hooks/useQueries";
 import { getClinicalStore, saveClinicalStore } from "../lib/clinicalStore";
-import type { BedRecord, Patient } from "../types";
+import type { BedRecord, BedType, Patient } from "../types";
 
-// ── Seed demo beds if none exist ──────────────────────────────────────────────
+// ── Bed Type config ──────────────────────────────────────────────────────────
+const BED_TYPES: BedType[] = [
+  "General",
+  "ICU",
+  "HDU",
+  "Isolation",
+  "Private",
+  "Cabin",
+];
+
+const BED_TYPE_CONFIG: Record<
+  BedType,
+  { label: string; badge: string; dot: string }
+> = {
+  General: {
+    label: "General",
+    badge: "bg-slate-100 text-slate-600 border-slate-300",
+    dot: "bg-slate-400",
+  },
+  ICU: {
+    label: "ICU",
+    badge: "bg-red-100 text-red-700 border-red-300",
+    dot: "bg-red-500",
+  },
+  HDU: {
+    label: "HDU",
+    badge: "bg-orange-100 text-orange-700 border-orange-300",
+    dot: "bg-orange-500",
+  },
+  Isolation: {
+    label: "Isolation",
+    badge: "bg-yellow-100 text-yellow-700 border-yellow-300",
+    dot: "bg-yellow-500",
+  },
+  Private: {
+    label: "Private",
+    badge: "bg-teal-100 text-teal-700 border-teal-300",
+    dot: "bg-teal-500",
+  },
+  Cabin: {
+    label: "Cabin",
+    badge: "bg-purple-100 text-purple-700 border-purple-300",
+    dot: "bg-purple-500",
+  },
+};
+
+// ── Seed demo beds ───────────────────────────────────────────────────────────
 function seedBedsIfEmpty() {
   const store = getClinicalStore();
   if ((store.beds as BedRecord[] | undefined)?.length) return;
@@ -44,6 +95,7 @@ function seedBedsIfEmpty() {
       ward: "General",
       floor: "Ground Floor",
       hospitalName: "Dhaka Medical College Hospital",
+      bedType: "General",
       status: "Empty",
       transferHistory: [],
     },
@@ -53,6 +105,7 @@ function seedBedsIfEmpty() {
       ward: "General",
       floor: "Ground Floor",
       hospitalName: "Dhaka Medical College Hospital",
+      bedType: "General",
       status: "Occupied",
       patientName: "Rahim Uddin",
       admissionDate: BigInt(Date.now() - 86400000 * 2) * 1_000_000n,
@@ -64,6 +117,7 @@ function seedBedsIfEmpty() {
       ward: "Medical",
       floor: "Floor 1",
       hospitalName: "Dhaka Medical College Hospital",
+      bedType: "General",
       status: "Empty",
       transferHistory: [],
     },
@@ -73,6 +127,7 @@ function seedBedsIfEmpty() {
       ward: "Medical",
       floor: "Floor 1",
       hospitalName: "Dhaka Medical College Hospital",
+      bedType: "General",
       status: "Maintenance",
       transferHistory: [],
     },
@@ -82,6 +137,7 @@ function seedBedsIfEmpty() {
       ward: "ICU",
       floor: "Floor 2",
       hospitalName: "Dhaka Medical College Hospital",
+      bedType: "ICU",
       status: "Occupied",
       patientName: "Karim Hossain",
       admissionDate: BigInt(Date.now() - 86400000) * 1_000_000n,
@@ -93,6 +149,7 @@ function seedBedsIfEmpty() {
       ward: "ICU",
       floor: "Floor 2",
       hospitalName: "Dhaka Medical College Hospital",
+      bedType: "ICU",
       status: "Cleaning",
       transferHistory: [],
     },
@@ -102,7 +159,10 @@ function seedBedsIfEmpty() {
       ward: "ICU",
       floor: "Floor 2",
       hospitalName: "Dhaka Medical College Hospital",
+      bedType: "HDU",
       status: "Reserved",
+      reservedForPatient: "Nadia Islam",
+      reservationExpiry: new Date(Date.now() + 75 * 60 * 1000).toISOString(),
       transferHistory: [],
     },
     {
@@ -111,6 +171,7 @@ function seedBedsIfEmpty() {
       ward: "Chamber",
       floor: "Ground Floor",
       hospitalName: "Dr. Arman Kabir Chamber",
+      bedType: "Private",
       status: "Empty",
       transferHistory: [],
     },
@@ -120,6 +181,7 @@ function seedBedsIfEmpty() {
       ward: "Chamber",
       floor: "Ground Floor",
       hospitalName: "Dr. Arman Kabir Chamber",
+      bedType: "Cabin",
       status: "Occupied",
       patientName: "Sumaiya Begum",
       admissionDate: BigInt(Date.now() - 3600000) * 1_000_000n,
@@ -131,6 +193,7 @@ function seedBedsIfEmpty() {
       ward: "Observation",
       floor: "Floor 1",
       hospitalName: "Dr. Arman Kabir Chamber",
+      bedType: "Isolation",
       status: "Empty",
       transferHistory: [],
     },
@@ -139,42 +202,47 @@ function seedBedsIfEmpty() {
   saveClinicalStore(store);
 }
 
-// ── Status helpers ─────────────────────────────────────────────────────────────
+// ── Status helpers ───────────────────────────────────────────────────────────
 type BedStatus = BedRecord["status"];
 
 const STATUS_CONFIG: Record<
   BedStatus,
-  { card: string; dot: string; badge: string; label: string }
+  { cell: string; label: string; dot: string; badge: string; card: string }
 > = {
   Empty: {
-    card: "bg-emerald-50 border-emerald-300 text-emerald-900",
-    dot: "bg-emerald-500",
-    badge: "bg-emerald-100 text-emerald-700",
+    cell: "bg-green-500 border-green-600",
     label: "Available",
+    dot: "bg-green-500",
+    badge: "bg-green-100 text-green-700",
+    card: "bg-green-50 border-green-300 text-green-900",
   },
   Occupied: {
-    card: "bg-red-50 border-red-300 text-red-900",
-    dot: "bg-red-500",
-    badge: "bg-red-100 text-red-700",
+    cell: "bg-red-600 border-red-700",
     label: "Occupied",
+    dot: "bg-red-600",
+    badge: "bg-red-100 text-red-700",
+    card: "bg-red-50 border-red-300 text-red-900",
   },
   Maintenance: {
-    card: "bg-amber-50 border-amber-300 text-amber-900",
-    dot: "bg-amber-500",
-    badge: "bg-amber-100 text-amber-700",
+    cell: "bg-gray-400 border-gray-500",
     label: "Maintenance",
+    dot: "bg-gray-400",
+    badge: "bg-gray-100 text-gray-700",
+    card: "bg-gray-50 border-gray-300 text-gray-900",
   },
   Reserved: {
-    card: "bg-yellow-50 border-yellow-300 text-yellow-900",
-    dot: "bg-yellow-500",
-    badge: "bg-yellow-100 text-yellow-700",
+    cell: "bg-amber-500 border-amber-600",
     label: "Reserved",
+    dot: "bg-amber-500",
+    badge: "bg-amber-100 text-amber-700",
+    card: "bg-amber-50 border-amber-300 text-amber-900",
   },
   Cleaning: {
-    card: "bg-slate-100 border-slate-300 text-slate-700",
-    dot: "bg-slate-400",
-    badge: "bg-slate-200 text-slate-600",
+    cell: "bg-slate-500 border-slate-600",
     label: "Cleaning",
+    dot: "bg-slate-500",
+    badge: "bg-slate-200 text-slate-600",
+    card: "bg-slate-100 border-slate-300 text-slate-700",
   },
 };
 
@@ -217,7 +285,37 @@ const WARDS = [
   "Other",
 ];
 
-// ── Stats Panel ───────────────────────────────────────────────────────────────
+// ── Reservation Countdown ────────────────────────────────────────────────────
+function useReservationCountdown(expiry: string | null | undefined) {
+  const [remaining, setRemaining] = useState("");
+  const [isExpired, setIsExpired] = useState(false);
+  const [isLow, setIsLow] = useState(false);
+
+  useEffect(() => {
+    if (!expiry) return;
+    function tick() {
+      const ms = new Date(expiry!).getTime() - Date.now();
+      if (ms <= 0) {
+        setIsExpired(true);
+        setRemaining("Expired");
+        return;
+      }
+      setIsExpired(false);
+      const totalMin = Math.floor(ms / 60000);
+      const h = Math.floor(totalMin / 60);
+      const m = totalMin % 60;
+      setRemaining(h > 0 ? `${h}h ${m}m remaining` : `${m}m remaining`);
+      setIsLow(ms < 30 * 60 * 1000); // < 30 minutes
+    }
+    tick();
+    const id = setInterval(tick, 30000);
+    return () => clearInterval(id);
+  }, [expiry]);
+
+  return { remaining, isExpired, isLow };
+}
+
+// ── Stats Panel ──────────────────────────────────────────────────────────────
 function StatsPanel({ beds }: { beds: BedRecord[] }) {
   const total = beds.length;
   const occupied = beds.filter((b) => b.status === "Occupied").length;
@@ -226,7 +324,7 @@ function StatsPanel({ beds }: { beds: BedRecord[] }) {
   const reserved = beds.filter((b) => b.status === "Reserved").length;
   const occupancyPct = total > 0 ? Math.round((occupied / total) * 100) : 0;
   const occupiedBeds = beds.filter((b) => b.status === "Occupied");
-  const avgDays =
+  const _avgDays =
     occupiedBeds.length > 0
       ? Math.round(
           occupiedBeds.reduce(
@@ -238,81 +336,461 @@ function StatsPanel({ beds }: { beds: BedRecord[] }) {
   const thisMonthAdmissions = beds.filter((b) =>
     isCurrentMonth(b.admissionDate),
   ).length;
-
-  const stats = [
-    {
-      label: "Occupancy",
-      value: `${occupancyPct}%`,
-      sub: `${occupied}/${total} beds`,
-      color: "bg-red-50 border-red-200 text-red-800",
-    },
-    {
-      label: "Available",
-      value: available,
-      sub: "ready to assign",
-      color: "bg-emerald-50 border-emerald-200 text-emerald-800",
-    },
-    {
-      label: "Cleaning",
-      value: cleaning,
-      sub: "needs ready mark",
-      color: "bg-slate-100 border-slate-300 text-slate-700",
-    },
-    {
-      label: "Reserved",
-      value: reserved,
-      sub: "pre-assigned",
-      color: "bg-yellow-50 border-yellow-200 text-yellow-800",
-    },
-    {
-      label: "Avg Stay",
-      value: avgDays === 0 ? "—" : `${avgDays}d`,
-      sub: "current patients",
-      color: "bg-blue-50 border-blue-200 text-blue-800",
-    },
-    {
-      label: "This Month",
-      value: thisMonthAdmissions,
-      sub: "new admissions",
-      color: "bg-purple-50 border-purple-200 text-purple-800",
-    },
-  ];
+  const occupancyColor =
+    occupancyPct > 80
+      ? "text-red-600"
+      : occupancyPct >= 50
+        ? "text-amber-600"
+        : "text-green-600";
 
   return (
     <div
       className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3"
       data-ocid="bed_management.stats.panel"
     >
-      {stats.map((s) => (
+      {[
+        {
+          value: `${occupancyPct}%`,
+          label: "Occupancy",
+          sub: `${occupied}/${total} beds`,
+          color: occupancyColor,
+        },
+        {
+          value: available,
+          label: "Available",
+          sub: "ready to assign",
+          color: "text-green-600",
+        },
+        {
+          value: occupied,
+          label: "Occupied",
+          sub: "active patients",
+          color: "text-red-600",
+        },
+        {
+          value: reserved,
+          label: "Reserved",
+          sub: "pre-assigned",
+          color: "text-amber-600",
+        },
+        {
+          value: cleaning,
+          label: "Cleaning",
+          sub: "needs ready mark",
+          color: "text-slate-600",
+        },
+        {
+          value: thisMonthAdmissions,
+          label: "This Month",
+          sub: "new admissions",
+          color: "text-purple-600",
+        },
+      ].map(({ value, label, sub, color }) => (
         <div
-          key={s.label}
-          className={`rounded-xl border px-3 py-3 ${s.color}`}
+          key={label}
+          className="rounded-xl border px-3 py-3 bg-card border-border"
           data-ocid="bed_management.card"
         >
-          <p className="text-xl font-bold leading-tight">{s.value}</p>
-          <p className="text-xs font-semibold mt-0.5">{s.label}</p>
-          <p className="text-[10px] opacity-60 mt-0.5">{s.sub}</p>
+          <p className={`text-xl font-bold leading-tight ${color}`}>{value}</p>
+          <p className="text-xs font-semibold mt-0.5 text-foreground">
+            {label}
+          </p>
+          <p className="text-[10px] opacity-60 mt-0.5 text-muted-foreground">
+            {sub}
+          </p>
         </div>
       ))}
     </div>
   );
 }
 
-// ── Status legend ─────────────────────────────────────────────────────────────
+// ── Status + BedType Legend ──────────────────────────────────────────────────
 function StatusLegend() {
+  const statusItems: { status: BedStatus; bg: string }[] = [
+    { status: "Empty", bg: "bg-green-500" },
+    { status: "Occupied", bg: "bg-red-600" },
+    { status: "Reserved", bg: "bg-amber-500" },
+    { status: "Cleaning", bg: "bg-slate-500" },
+    { status: "Maintenance", bg: "bg-gray-400" },
+  ];
   return (
-    <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs">
-      {(Object.keys(STATUS_CONFIG) as BedStatus[]).map((s) => (
-        <span key={s} className="flex items-center gap-1.5">
-          <span className={`w-2.5 h-2.5 rounded-full ${statusCfg(s).dot}`} />
-          <span className="text-muted-foreground">{statusCfg(s).label}</span>
+    <div className="flex flex-wrap gap-2">
+      {statusItems.map(({ status, bg }) => (
+        <span
+          key={status}
+          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold text-white ${bg}`}
+        >
+          <span className="w-2 h-2 rounded-full bg-white/40" />
+          {STATUS_CONFIG[status].label}
         </span>
       ))}
     </div>
   );
 }
 
-// ── Main Component ────────────────────────────────────────────────────────────
+// ── BedType Badge ────────────────────────────────────────────────────────────
+function BedTypeBadge({ bedType }: { bedType?: BedType }) {
+  const t = bedType ?? "General";
+  const cfg = BED_TYPE_CONFIG[t];
+  return (
+    <span
+      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border ${cfg.badge}`}
+    >
+      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+      {cfg.label}
+    </span>
+  );
+}
+
+// ── Expected Admissions Panel ────────────────────────────────────────────────
+interface Appointment {
+  id?: string;
+  patientName?: string;
+  patientId?: string;
+  time?: string;
+  date?: string;
+  type?: string;
+  reason?: string;
+  status?: string;
+}
+
+function ExpectedAdmissionsPanel({
+  onPreAssign,
+}: { onPreAssign: (apt: Appointment) => void }) {
+  const [expanded, setExpanded] = useState(true);
+
+  const todayAdmissions = useMemo(() => {
+    try {
+      const raw = localStorage.getItem("appointments");
+      if (!raw) return [];
+      const all: Appointment[] = JSON.parse(raw);
+      const today = format(new Date(), "yyyy-MM-dd");
+      return all.filter(
+        (a) =>
+          a.date === today &&
+          (a.type === "admission" || a.type === "Admission") &&
+          a.status !== "Cancelled",
+      );
+    } catch {
+      return [];
+    }
+  }, []);
+
+  return (
+    <div
+      className="rounded-xl border border-blue-200 bg-blue-50"
+      data-ocid="bed_management.expected_admissions.panel"
+    >
+      <button
+        type="button"
+        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-blue-100/60 transition-colors rounded-xl"
+        onClick={() => setExpanded((e) => !e)}
+        data-ocid="bed_management.expected_admissions.toggle"
+      >
+        <div className="flex items-center gap-2">
+          <CalendarClock className="w-4 h-4 text-blue-600" />
+          <span className="font-semibold text-blue-800 text-sm">
+            Expected Admissions Today
+          </span>
+          <span
+            className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold ${
+              todayAdmissions.length > 0
+                ? "bg-blue-600 text-white"
+                : "bg-blue-200 text-blue-600"
+            }`}
+          >
+            {todayAdmissions.length}
+          </span>
+        </div>
+        {expanded ? (
+          <ChevronUp className="w-4 h-4 text-blue-600" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-blue-600" />
+        )}
+      </button>
+
+      {expanded && (
+        <div className="px-4 pb-4">
+          {todayAdmissions.length === 0 ? (
+            <div
+              className="text-center py-5"
+              data-ocid="bed_management.expected_admissions.empty_state"
+            >
+              <CalendarClock className="w-7 h-7 text-blue-300 mx-auto mb-2" />
+              <p className="text-sm text-blue-500">
+                No admissions scheduled for today
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {todayAdmissions.map((apt, i) => (
+                <div
+                  key={apt.id ?? i}
+                  className="flex items-center justify-between gap-3 bg-white rounded-lg border border-blue-100 px-3 py-2.5"
+                  data-ocid={`bed_management.expected_admissions.item.${i + 1}`}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                      <Bed className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm text-foreground truncate">
+                        {apt.patientName ?? "Unknown Patient"}
+                      </p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {apt.time && (
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {apt.time}
+                          </span>
+                        )}
+                        {apt.reason && (
+                          <span className="text-xs text-muted-foreground truncate max-w-[160px]">
+                            {apt.reason}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    className="gap-1.5 bg-blue-600 hover:bg-blue-700 flex-shrink-0"
+                    onClick={() => onPreAssign(apt)}
+                    data-ocid={`bed_management.expected_admissions.pre_assign_button.${i + 1}`}
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Pre-Assign Bed
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Reservation countdown cell overlay ──────────────────────────────────────
+function ReservationTimer({
+  bed,
+  onExpire,
+}: { bed: BedRecord; onExpire: (bed: BedRecord) => void }) {
+  const { remaining, isExpired, isLow } = useReservationCountdown(
+    bed.reservationExpiry,
+  );
+  const expiredRef = useRef(false);
+
+  useEffect(() => {
+    if (isExpired && !expiredRef.current) {
+      expiredRef.current = true;
+      onExpire(bed);
+    }
+  }, [isExpired, bed, onExpire]);
+
+  if (!bed.reservationExpiry) return null;
+  return (
+    <span
+      className={`text-[9px] font-semibold flex items-center gap-0.5 mt-0.5 ${
+        isExpired ? "text-red-200" : isLow ? "text-orange-200" : "text-white/70"
+      }`}
+    >
+      <Timer className="w-2.5 h-2.5" />
+      {remaining}
+    </span>
+  );
+}
+
+// ── Discharge Checklist Modal ────────────────────────────────────────────────
+const DISCHARGE_CHECKLIST = [
+  { id: "iv", label: "IV line removed" },
+  { id: "meds", label: "Medications stopped" },
+  { id: "summary", label: "Discharge summary signed" },
+  { id: "belongs", label: "Patient belongings collected" },
+];
+
+function DischargeChecklistDialog({
+  bed,
+  open,
+  onClose,
+  onConfirm,
+}: {
+  bed: BedRecord | null;
+  open: boolean;
+  onClose: () => void;
+  onConfirm: (bed: BedRecord) => void;
+}) {
+  const [checked, setChecked] = useState<Set<string>>(new Set());
+  const allChecked = checked.size === DISCHARGE_CHECKLIST.length;
+
+  function toggle(id: string) {
+    setChecked((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function handleClose() {
+    setChecked(new Set());
+    onClose();
+  }
+
+  function handleConfirm() {
+    if (!bed || !allChecked) return;
+    setChecked(new Set());
+    onConfirm(bed);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
+      <DialogContent
+        className="max-w-sm"
+        data-ocid="bed_management.discharge_checklist.dialog"
+      >
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <AlertCircle className="w-5 h-5 text-red-500" />
+            Discharge Checklist
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-xs text-red-700">
+            All items must be confirmed before discharging
+            {bed
+              ? ` ${bed.patientName ? `${bed.patientName} from ` : ""}bed ${bed.bedNumber}`
+              : ""}
+            .
+          </div>
+          <div className="space-y-3">
+            {DISCHARGE_CHECKLIST.map((item) => (
+              <label
+                key={item.id}
+                className={`flex items-center gap-3 cursor-pointer rounded-lg px-3 py-2.5 border transition-colors ${
+                  checked.has(item.id)
+                    ? "bg-green-50 border-green-300 text-green-800"
+                    : "bg-card border-border hover:bg-muted/40"
+                }`}
+                data-ocid={`bed_management.discharge_checklist.${item.id}`}
+              >
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded accent-green-600"
+                  checked={checked.has(item.id)}
+                  onChange={() => toggle(item.id)}
+                />
+                <span className="text-sm font-medium">{item.label}</span>
+                {checked.has(item.id) && (
+                  <CheckCircle2 className="w-4 h-4 text-green-500 ml-auto" />
+                )}
+              </label>
+            ))}
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              data-ocid="bed_management.discharge_checklist.cancel_button"
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={!allChecked}
+              className={allChecked ? "bg-red-600 hover:bg-red-700" : ""}
+              onClick={handleConfirm}
+              data-ocid="bed_management.discharge_checklist.confirm_button"
+            >
+              <LogOut className="w-4 h-4 mr-1.5" /> Confirm Discharge
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Reserve Dialog ───────────────────────────────────────────────────────────
+function ReserveBedDialog({
+  bed,
+  open,
+  onClose,
+  onConfirm,
+}: {
+  bed: BedRecord | null;
+  open: boolean;
+  onClose: () => void;
+  onConfirm: (patientName: string, expiryHours: number) => void;
+}) {
+  const [name, setName] = useState("");
+  const [hours, setHours] = useState(2);
+
+  function handleClose() {
+    setName("");
+    setHours(2);
+    onClose();
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
+      <DialogContent
+        className="max-w-sm"
+        data-ocid="bed_management.reserve.dialog"
+      >
+        <DialogHeader>
+          <DialogTitle>Reserve Bed {bed?.bedNumber}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <Label>Reserve for Patient (optional)</Label>
+            <Input
+              placeholder="Patient name..."
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              data-ocid="bed_management.reserve.patient_input"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Expiry Time</Label>
+            <select
+              className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background"
+              value={hours}
+              onChange={(e) => setHours(Number(e.target.value))}
+              data-ocid="bed_management.reserve.expiry_select"
+            >
+              <option value={1}>1 hour</option>
+              <option value={2}>2 hours (default)</option>
+              <option value={4}>4 hours</option>
+              <option value={8}>8 hours</option>
+              <option value={24}>24 hours</option>
+            </select>
+            <p className="text-xs text-muted-foreground">
+              Bed auto-releases to Available when the timer expires.
+            </p>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              data-ocid="bed_management.reserve.cancel_button"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                onConfirm(name.trim(), hours);
+                handleClose();
+              }}
+              data-ocid="bed_management.reserve.confirm_button"
+            >
+              Reserve
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Main Component ───────────────────────────────────────────────────────────
 export default function BedManagement() {
   seedBedsIfEmpty();
 
@@ -324,45 +802,76 @@ export default function BedManagement() {
   const [selectedHospital, setSelectedHospital] = useState<string>("All");
   const [selectedWard, setSelectedWard] = useState<string>("All");
   const [selectedFloor, setSelectedFloor] = useState<string>("All");
+  const [selectedBedType, setSelectedBedType] = useState<"All" | BedType>(
+    "All",
+  );
   const [selectedBed, setSelectedBed] = useState<BedRecord | null>(null);
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [showTransferDialog, setShowTransferDialog] = useState(false);
   const [showAddBedDialog, setShowAddBedDialog] = useState(false);
+  const [showDischargeChecklist, setShowDischargeChecklist] = useState(false);
+  const [showReserveDialog, setShowReserveDialog] = useState(false);
+  const [pendingDischarge, setPendingDischarge] = useState<BedRecord | null>(
+    null,
+  );
   const [assignSearch, setAssignSearch] = useState("");
+  const [preAssignPatient, setPreAssignPatient] = useState<{
+    name: string;
+    id?: string;
+  } | null>(null);
   const [transferBedId, setTransferBedId] = useState<string>("");
   const [transferReason, setTransferReason] = useState("");
   const [newBedNumber, setNewBedNumber] = useState("");
   const [newWard, setNewWard] = useState("General");
   const [newFloor, setNewFloor] = useState("");
   const [newHospitalName, setNewHospitalName] = useState("");
+  const [newBedType, setNewBedType] = useState<BedType>("General");
 
   const allPatients = useMemo(
     () => loadFromAllDoctorKeys<Patient>("patients"),
     [],
   );
 
+  // ── Auto-release expired reservations ──────────────────────────────────────
+  function handleReservationExpired(bed: BedRecord) {
+    const store = getClinicalStore();
+    const all = (store.beds as BedRecord[] | undefined) ?? [];
+    const target = all.find((b) => b.id === bed.id);
+    if (!target || target.status !== "Reserved") return;
+    store.beds = all.map((b) =>
+      b.id === bed.id
+        ? {
+            ...b,
+            status: "Empty" as BedStatus,
+            reservationExpiry: null,
+            reservedForPatient: null,
+          }
+        : b,
+    ) as unknown[];
+    saveClinicalStore(store);
+    refetch();
+    toast.warning(
+      `Bed ${bed.bedNumber} reservation expired and released — ${bed.reservedForPatient ?? "patient"} did not arrive`,
+      { duration: 8000 },
+    );
+  }
+
   const hospitalNames = useMemo(() => {
     const names = new Set<string>();
-    for (const b of beds) {
-      if (b.hospitalName) names.add(b.hospitalName);
-    }
+    for (const b of beds) if (b.hospitalName) names.add(b.hospitalName);
     return Array.from(names).sort();
   }, [beds]);
 
-  // Available wards for selected hospital
   const wardOptions = useMemo(() => {
     const src =
       selectedHospital === "All"
         ? beds
         : beds.filter((b) => b.hospitalName === selectedHospital);
     const wards = new Set<string>();
-    for (const b of src) {
-      if (b.ward) wards.add(b.ward);
-    }
+    for (const b of src) if (b.ward) wards.add(b.ward);
     return Array.from(wards).sort();
   }, [beds, selectedHospital]);
 
-  // Available floors for selected hospital+ward
   const floorOptions = useMemo(() => {
     let src =
       selectedHospital === "All"
@@ -371,9 +880,7 @@ export default function BedManagement() {
     if (selectedWard !== "All")
       src = src.filter((b) => b.ward === selectedWard);
     const floors = new Set<string>();
-    for (const b of src) {
-      if (b.floor) floors.add(b.floor);
-    }
+    for (const b of src) if (b.floor) floors.add(b.floor);
     return Array.from(floors).sort();
   }, [beds, selectedHospital, selectedWard]);
 
@@ -385,6 +892,10 @@ export default function BedManagement() {
       result = result.filter((b) => b.ward === selectedWard);
     if (selectedFloor !== "All")
       result = result.filter((b) => b.floor === selectedFloor);
+    if (selectedBedType !== "All")
+      result = result.filter(
+        (b) => (b.bedType ?? "General") === selectedBedType,
+      );
     if (searchQ.trim()) {
       const q = searchQ.toLowerCase();
       result = result.filter(
@@ -397,9 +908,15 @@ export default function BedManagement() {
       );
     }
     return result;
-  }, [beds, selectedHospital, selectedWard, selectedFloor, searchQ]);
+  }, [
+    beds,
+    selectedHospital,
+    selectedWard,
+    selectedFloor,
+    selectedBedType,
+    searchQ,
+  ]);
 
-  // Group by hospital → ward
   const grouped = useMemo(() => {
     const byHospital: Record<string, Record<string, BedRecord[]>> = {};
     for (const b of filteredBeds) {
@@ -412,26 +929,31 @@ export default function BedManagement() {
     return byHospital;
   }, [filteredBeds]);
 
-  // Available beds for transfer dialog (exclude Cleaning, Occupied, Maintenance)
   const transferableEmpty = useMemo(
     () => beds.filter((b) => b.status === "Empty" && b.id !== selectedBed?.id),
     [beds, selectedBed],
   );
 
   const matchedPatients = useMemo(() => {
-    if (!assignSearch.trim()) return allPatients.slice(0, 8);
+    const base = preAssignPatient?.name
+      ? allPatients.filter((p) =>
+          p.fullName
+            .toLowerCase()
+            .includes(preAssignPatient.name.toLowerCase()),
+        )
+      : allPatients;
+    if (!assignSearch.trim()) return base.slice(0, 8);
     const q = assignSearch.toLowerCase();
-    return allPatients
+    return base
       .filter(
         (p) =>
           p.fullName.toLowerCase().includes(q) ||
           ((p.registerNumber as string) ?? "").toLowerCase().includes(q),
       )
       .slice(0, 8);
-  }, [assignSearch, allPatients]);
+  }, [assignSearch, allPatients, preAssignPatient]);
 
-  // ── Actions ─────────────────────────────────────────────────────────────────
-
+  // ── Actions ──────────────────────────────────────────────────────────────
   function updateBedInStore(updater: (b: BedRecord) => BedRecord) {
     const store = getClinicalStore();
     const all = (store.beds as BedRecord[] | undefined) ?? [];
@@ -440,7 +962,13 @@ export default function BedManagement() {
     refetch();
   }
 
-  function dischargeFromBed(bed: BedRecord) {
+  function initiateDischarge(bed: BedRecord) {
+    setPendingDischarge(bed);
+    setSelectedBed(null);
+    setShowDischargeChecklist(true);
+  }
+
+  function confirmDischarge(bed: BedRecord) {
     updateBedInStore((b) =>
       b.id === bed.id
         ? {
@@ -449,10 +977,22 @@ export default function BedManagement() {
             patientId: undefined,
             patientName: undefined,
             dischargeDate: BigInt(Date.now()) * 1_000_000n,
+            dischargeChecklistCompleted: true,
+            dischargeCheckedAt: new Date().toISOString(),
+            transferHistory: [
+              ...(b.transferHistory ?? []),
+              {
+                fromBed: b.bedNumber,
+                toBed: b.bedNumber,
+                date: BigInt(Date.now()) * 1_000_000n,
+                reason: "Discharge checklist completed — all items verified",
+              },
+            ],
           }
         : b,
     );
-    setSelectedBed(null);
+    setPendingDischarge(null);
+    setShowDischargeChecklist(false);
     toast.success(`Patient discharged — Bed ${bed.bedNumber} set to Cleaning`);
   }
 
@@ -472,12 +1012,42 @@ export default function BedManagement() {
     toast.success("Bed marked for maintenance");
   }
 
-  function markBedReserved(bed: BedRecord) {
+  function confirmReservation(
+    bed: BedRecord,
+    patientName: string,
+    expiryHours: number,
+  ) {
+    const expiry = new Date(
+      Date.now() + expiryHours * 60 * 60 * 1000,
+    ).toISOString();
     updateBedInStore((b) =>
-      b.id === bed.id ? { ...b, status: "Reserved" as BedStatus } : b,
+      b.id === bed.id
+        ? {
+            ...b,
+            status: "Reserved" as BedStatus,
+            reservedForPatient: patientName || null,
+            reservationExpiry: expiry,
+          }
+        : b,
     );
     setSelectedBed(null);
-    toast.success(`Bed ${bed.bedNumber} reserved`);
+    toast.success(
+      `Bed ${bed.bedNumber} reserved${patientName ? ` for ${patientName}` : ""} — expires in ${expiryHours}h`,
+    );
+  }
+
+  function extendReservation(bed: BedRecord) {
+    const current = bed.reservationExpiry
+      ? new Date(bed.reservationExpiry).getTime()
+      : Date.now();
+    const extended = new Date(
+      Math.max(current, Date.now()) + 60 * 60 * 1000,
+    ).toISOString(); // +1h
+    updateBedInStore((b) =>
+      b.id === bed.id ? { ...b, reservationExpiry: extended } : b,
+    );
+    setSelectedBed(null);
+    toast.success("Reservation extended by 1 hour");
   }
 
   function transferPatient(
@@ -532,7 +1102,6 @@ export default function BedManagement() {
     );
   }
 
-  // Reset ward/floor when hospital changes
   function handleHospitalChange(hn: string) {
     setSelectedHospital(hn);
     setSelectedWard("All");
@@ -544,17 +1113,31 @@ export default function BedManagement() {
     setSelectedFloor("All");
   }
 
+  function handlePreAssign(apt: Appointment) {
+    setPreAssignPatient({ name: apt.patientName ?? "", id: apt.patientId });
+    setAssignSearch(apt.patientName ?? "");
+    // open assign dialog — user must click an available bed first
+    toast.info(
+      `Select a bed to pre-assign for ${apt.patientName ?? "patient"}`,
+    );
+  }
+
+  // ── render bed's extended reservation info in detail dialog ─────────────
+  function isReservationLow(expiry?: string | null) {
+    if (!expiry) return false;
+    return new Date(expiry).getTime() - Date.now() < 30 * 60 * 1000;
+  }
+
   return (
     <div
       className="p-4 sm:p-6 max-w-7xl mx-auto space-y-5"
       data-ocid="bed_management.page"
     >
-      {/* ── Header ── */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
         <div>
           <h1 className="font-display text-2xl font-bold text-foreground flex items-center gap-2">
-            <Bed className="w-6 h-6 text-teal-600" />
-            Bed Management
+            <Bed className="w-6 h-6 text-teal-600" /> Bed Management
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             Real-time occupancy, patient assignment, and transfer by
@@ -570,7 +1153,7 @@ export default function BedManagement() {
         </Button>
       </div>
 
-      {/* ── Stats panel ── */}
+      {/* Stats */}
       <StatsPanel
         beds={
           selectedHospital === "All"
@@ -579,10 +1162,13 @@ export default function BedManagement() {
         }
       />
 
-      {/* ── Legend ── */}
+      {/* Expected admissions */}
+      <ExpectedAdmissionsPanel onPreAssign={handlePreAssign} />
+
+      {/* Legend */}
       <StatusLegend />
 
-      {/* ── Filters ── */}
+      {/* Filters */}
       <div className="flex flex-wrap gap-2 items-center">
         {/* Hospital filter */}
         <div
@@ -607,7 +1193,7 @@ export default function BedManagement() {
           ))}
         </div>
 
-        {/* Ward filter (only if a hospital is selected) */}
+        {/* Ward filter */}
         {wardOptions.length > 0 && (
           <div
             className="flex flex-wrap gap-1.5"
@@ -660,9 +1246,51 @@ export default function BedManagement() {
             ))}
           </div>
         )}
+
+        {/* BedType filter */}
+        <div
+          className="flex flex-wrap gap-1.5"
+          data-ocid="bed_management.bedtype.tab"
+        >
+          <span className="flex items-center gap-1 text-xs text-muted-foreground px-1">
+            <Bed className="w-3 h-3" /> Type:
+          </span>
+          <button
+            type="button"
+            onClick={() => setSelectedBedType("All")}
+            className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
+              selectedBedType === "All"
+                ? "bg-slate-600 text-white border-slate-600"
+                : "bg-card border-border text-muted-foreground hover:border-slate-400 hover:text-slate-700"
+            }`}
+            data-ocid="bed_management.bedtype_filter.all"
+          >
+            All Types
+          </button>
+          {BED_TYPES.map((bt) => {
+            const cfg = BED_TYPE_CONFIG[bt];
+            return (
+              <button
+                key={bt}
+                type="button"
+                onClick={() => setSelectedBedType(bt)}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
+                  selectedBedType === bt
+                    ? `${cfg.dot.replace("bg-", "bg-")} text-white border-transparent`
+                    : `bg-card border-border text-muted-foreground ${cfg.badge}`
+                }`}
+                style={selectedBedType === bt ? {} : {}}
+                data-ocid={`bed_management.bedtype_filter.${bt.toLowerCase()}`}
+              >
+                <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
+                {cfg.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* ── Search ── */}
+      {/* Search */}
       <div className="relative max-w-xs">
         <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
         <Input
@@ -674,7 +1302,7 @@ export default function BedManagement() {
         />
       </div>
 
-      {/* ── Bed grid grouped by Hospital → Ward ── */}
+      {/* Bed grid */}
       {filteredBeds.length === 0 ? (
         <div
           className="text-center py-20"
@@ -690,7 +1318,6 @@ export default function BedManagement() {
               key={hospitalName}
               data-ocid={`bed_management.hospital.${hospitalName.toLowerCase().replace(/\s+/g, "_")}`}
             >
-              {/* Hospital header */}
               <div className="flex items-center gap-2 mb-4">
                 <Building2 className="w-4 h-4 text-indigo-600" />
                 <h2 className="font-bold text-base text-indigo-700">
@@ -702,8 +1329,6 @@ export default function BedManagement() {
                 </span>
                 <div className="flex-1 h-px bg-indigo-100 ml-1" />
               </div>
-
-              {/* Wards within hospital */}
               <div className="space-y-5">
                 {Object.entries(wardMap).map(([wardName, wardBeds]) => (
                   <div
@@ -711,7 +1336,6 @@ export default function BedManagement() {
                     className="pl-1"
                     data-ocid={`bed_management.ward.${wardName.toLowerCase().replace(/\s+/g, "_")}`}
                   >
-                    {/* Ward sub-header */}
                     <div className="flex items-center gap-2 mb-2.5">
                       <div className="w-1 h-5 bg-teal-400 rounded-full" />
                       <span className="text-sm font-semibold text-teal-700">
@@ -727,8 +1351,6 @@ export default function BedManagement() {
                         )
                       </span>
                     </div>
-
-                    {/* Bed cards */}
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                       {wardBeds.map((bed) => {
                         const cfg = statusCfg(bed.status);
@@ -737,37 +1359,47 @@ export default function BedManagement() {
                             key={bed.id.toString()}
                             type="button"
                             onClick={() => setSelectedBed(bed)}
-                            className={`rounded-xl border-2 p-3 text-left transition-all hover:shadow-md hover:-translate-y-0.5 ${cfg.card}`}
+                            className={`min-h-[88px] w-full flex flex-col items-center justify-center rounded-lg border-2 cursor-pointer hover:opacity-90 transition-opacity p-2 relative ${cfg.cell}`}
                             data-ocid={`bed_management.item.${bed.bedNumber}`}
                           >
-                            <div className="flex items-start justify-between mb-1.5">
-                              <div className="flex items-center gap-1.5">
-                                <span
-                                  className={`w-2 h-2 rounded-full flex-shrink-0 ${cfg.dot}`}
-                                />
-                                <span className="font-bold text-sm">
-                                  {bed.bedNumber}
-                                </span>
-                              </div>
-                              {bed.status === "Occupied" && (
-                                <Users className="w-3.5 h-3.5 opacity-60" />
-                              )}
-                            </div>
-                            {bed.status === "Occupied" && bed.patientName && (
-                              <p className="text-xs font-semibold truncate mb-1">
+                            <span className="text-lg font-bold text-white leading-tight">
+                              {bed.bedNumber}
+                            </span>
+                            {bed.status === "Occupied" && bed.patientName ? (
+                              <span className="text-xs font-bold text-white truncate max-w-full mt-1 px-1 text-center">
                                 {bed.patientName}
-                              </p>
+                              </span>
+                            ) : bed.status === "Reserved" &&
+                              bed.reservedForPatient ? (
+                              <span className="text-xs font-medium text-white truncate max-w-full mt-1 px-1 text-center">
+                                {bed.reservedForPatient}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-white/80 mt-1">
+                                {cfg.label}
+                              </span>
                             )}
-                            {bed.status === "Occupied" && bed.admissionDate && (
-                              <p className="text-[10px] opacity-60">
-                                {daysAdmitted(bed.admissionDate)}d ago
-                              </p>
-                            )}
-                            <Badge
-                              className={`text-[10px] mt-1 border-0 px-1.5 py-0 ${cfg.badge}`}
+                            {/* BedType badge overlay */}
+                            <span
+                              className={`absolute top-1 right-1 px-1 py-0.5 rounded text-[8px] font-bold border ${
+                                BED_TYPE_CONFIG[bed.bedType ?? "General"].badge
+                              } opacity-90`}
                             >
-                              {cfg.label}
-                            </Badge>
+                              {bed.bedType ?? "General"}
+                            </span>
+                            {/* Reservation countdown */}
+                            {bed.status === "Reserved" &&
+                              bed.reservationExpiry && (
+                                <ReservationTimer
+                                  bed={bed}
+                                  onExpire={handleReservationExpired}
+                                />
+                              )}
+                            {bed.status === "Occupied" && bed.admissionDate && (
+                              <span className="text-[10px] text-white/60 mt-0.5">
+                                {daysAdmitted(bed.admissionDate)}d
+                              </span>
+                            )}
                           </button>
                         );
                       })}
@@ -790,14 +1422,15 @@ export default function BedManagement() {
             <DialogTitle className="flex items-center gap-2">
               <Bed className="w-5 h-5 text-teal-600" />
               Bed {selectedBed?.bedNumber} — {selectedBed?.ward}
+              {selectedBed && <BedTypeBadge bedType={selectedBed.bedType} />}
             </DialogTitle>
           </DialogHeader>
           {selectedBed &&
             (() => {
               const cfg = statusCfg(selectedBed.status);
+              const resLow = isReservationLow(selectedBed.reservationExpiry);
               return (
                 <div className="space-y-4">
-                  {/* Hospital + floor */}
                   <div className="flex flex-wrap gap-2">
                     {selectedBed.hospitalName && (
                       <span className="flex items-center gap-1.5 text-xs text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-1.5">
@@ -813,7 +1446,6 @@ export default function BedManagement() {
                     )}
                   </div>
 
-                  {/* Status card */}
                   <div className={`rounded-lg border px-4 py-3 ${cfg.card}`}>
                     <div className="flex items-center gap-2 mb-1">
                       <span className={`w-2.5 h-2.5 rounded-full ${cfg.dot}`} />
@@ -824,6 +1456,12 @@ export default function BedManagement() {
                         {selectedBed.patientName}
                       </p>
                     )}
+                    {selectedBed.reservedForPatient &&
+                      selectedBed.status === "Reserved" && (
+                        <p className="font-bold text-sm">
+                          {selectedBed.reservedForPatient}
+                        </p>
+                      )}
                     {selectedBed.admissionDate && (
                       <p className="text-xs opacity-70 mt-0.5">
                         Admitted: {formatTs(selectedBed.admissionDate)}
@@ -831,25 +1469,62 @@ export default function BedManagement() {
                           ` (${daysAdmitted(selectedBed.admissionDate)} day${daysAdmitted(selectedBed.admissionDate) !== 1 ? "s" : ""})`}
                       </p>
                     )}
+                    {/* Reservation countdown */}
+                    {selectedBed.status === "Reserved" &&
+                      selectedBed.reservationExpiry && (
+                        <div
+                          className={`flex items-center gap-1.5 mt-2 text-xs font-medium ${
+                            resLow ? "text-red-600" : "text-amber-700"
+                          }`}
+                        >
+                          <Timer className="w-3.5 h-3.5" />
+                          {formatDistanceToNow(
+                            new Date(selectedBed.reservationExpiry),
+                            { addSuffix: true },
+                          )}
+                          &nbsp;— expires{" "}
+                          {format(
+                            new Date(selectedBed.reservationExpiry),
+                            "h:mm a",
+                          )}
+                        </div>
+                      )}
                   </div>
 
-                  {/* Cleaning notice */}
-                  {selectedBed.status === "Cleaning" && (
-                    <div className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-600 flex items-start gap-2">
-                      <span className="mt-0.5">🧹</span>
+                  {/* Extend reservation warning */}
+                  {selectedBed.status === "Reserved" && resLow && (
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg px-3 py-2 text-xs text-orange-700 flex items-start gap-2">
+                      <AlertCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
                       <span>
-                        This bed is being cleaned after a patient discharge or
-                        transfer. Mark it as Ready when cleaning is complete to
-                        make it Available again.
+                        Less than 30 minutes remaining. Extend the reservation
+                        or it will auto-release.
                       </span>
                     </div>
                   )}
 
-                  {/* Transfer history */}
+                  {selectedBed.status === "Cleaning" && (
+                    <div className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-600 flex items-start gap-2">
+                      <span className="mt-0.5">🧹</span>
+                      <span>
+                        Cleaning in progress. Mark Ready when complete to make
+                        it Available again.
+                      </span>
+                      {selectedBed.dischargeCheckedAt && (
+                        <span className="ml-auto text-[10px] text-muted-foreground">
+                          Checklist:{" "}
+                          {format(
+                            new Date(selectedBed.dischargeCheckedAt),
+                            "h:mm a",
+                          )}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   {selectedBed.transferHistory?.length > 0 && (
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                        Transfer History
+                        Transfer / Discharge History
                       </p>
                       <ScrollArea className="h-28">
                         <div className="space-y-1.5">
@@ -876,9 +1551,7 @@ export default function BedManagement() {
                     </div>
                   )}
 
-                  {/* Action buttons */}
                   <div className="flex flex-wrap gap-2">
-                    {/* Empty: assign patient or reserve or maintenance */}
                     {selectedBed.status === "Empty" && (
                       <>
                         <Button
@@ -893,7 +1566,7 @@ export default function BedManagement() {
                           size="sm"
                           variant="outline"
                           className="gap-1.5 border-yellow-300 text-yellow-700 hover:bg-yellow-50"
-                          onClick={() => markBedReserved(selectedBed)}
+                          onClick={() => setShowReserveDialog(true)}
                           data-ocid="bed_management.reserve_button"
                         >
                           Reserve
@@ -909,8 +1582,6 @@ export default function BedManagement() {
                         </Button>
                       </>
                     )}
-
-                    {/* Occupied: transfer or discharge */}
                     {selectedBed.status === "Occupied" && (
                       <>
                         <Button
@@ -926,15 +1597,13 @@ export default function BedManagement() {
                           size="sm"
                           variant="outline"
                           className="gap-1.5 border-red-300 text-red-700 hover:bg-red-50"
-                          onClick={() => dischargeFromBed(selectedBed)}
+                          onClick={() => initiateDischarge(selectedBed)}
                           data-ocid="bed_management.discharge_button"
                         >
                           <LogOut className="w-3.5 h-3.5" /> Discharge
                         </Button>
                       </>
                     )}
-
-                    {/* Cleaning: mark ready */}
                     {selectedBed.status === "Cleaning" && (
                       <Button
                         size="sm"
@@ -946,8 +1615,6 @@ export default function BedManagement() {
                         (Available)
                       </Button>
                     )}
-
-                    {/* Maintenance: mark available */}
                     {selectedBed.status === "Maintenance" && (
                       <Button
                         size="sm"
@@ -959,8 +1626,6 @@ export default function BedManagement() {
                         <CheckCircle2 className="w-3.5 h-3.5" /> Mark Available
                       </Button>
                     )}
-
-                    {/* Reserved: make available or assign */}
                     {selectedBed.status === "Reserved" && (
                       <>
                         <Button
@@ -971,6 +1636,17 @@ export default function BedManagement() {
                         >
                           <Plus className="w-3.5 h-3.5" /> Assign Patient
                         </Button>
+                        {resLow && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1.5 border-orange-300 text-orange-700 hover:bg-orange-50"
+                            onClick={() => extendReservation(selectedBed)}
+                            data-ocid="bed_management.extend_reservation_button"
+                          >
+                            <Timer className="w-3.5 h-3.5" /> Extend +1h
+                          </Button>
+                        )}
                         <Button
                           size="sm"
                           variant="outline"
@@ -989,6 +1665,27 @@ export default function BedManagement() {
         </DialogContent>
       </Dialog>
 
+      {/* ── Discharge Checklist ── */}
+      <DischargeChecklistDialog
+        bed={pendingDischarge}
+        open={showDischargeChecklist}
+        onClose={() => {
+          setShowDischargeChecklist(false);
+          setPendingDischarge(null);
+        }}
+        onConfirm={confirmDischarge}
+      />
+
+      {/* ── Reserve Dialog ── */}
+      <ReserveBedDialog
+        bed={selectedBed}
+        open={showReserveDialog}
+        onClose={() => setShowReserveDialog(false)}
+        onConfirm={(name, hours) =>
+          selectedBed && confirmReservation(selectedBed, name, hours)
+        }
+      />
+
       {/* ── Assign Patient Dialog ── */}
       <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
         <DialogContent
@@ -1001,6 +1698,12 @@ export default function BedManagement() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
+            {preAssignPatient?.name && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs text-blue-700">
+                Pre-filling from scheduled admission:{" "}
+                <strong>{preAssignPatient.name}</strong>
+              </div>
+            )}
             <Input
               placeholder="Search patient by name or reg no..."
               value={assignSearch}
@@ -1035,6 +1738,7 @@ export default function BedManagement() {
                             setShowAssignDialog(false);
                             setAssignSearch("");
                             setSelectedBed(null);
+                            setPreAssignPatient(null);
                           },
                         },
                       );
@@ -1067,7 +1771,7 @@ export default function BedManagement() {
           <div className="space-y-3">
             <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-xs text-amber-700">
               After transfer, bed <strong>{selectedBed?.bedNumber}</strong> will
-              be set to <strong>Cleaning</strong> status.
+              be set to <strong>Cleaning</strong>.
             </div>
             <div className="space-y-1.5">
               <Label>Transfer to Bed</Label>
@@ -1081,21 +1785,19 @@ export default function BedManagement() {
                 {transferableEmpty.map((b) => (
                   <option key={b.id.toString()} value={b.id.toString()}>
                     {b.bedNumber} ({b.ward}
-                    {b.floor ? `, ${b.floor}` : ""}) — {b.hospitalName}
+                    {b.floor ? `, ${b.floor}` : ""}) [{b.bedType ?? "General"}]
+                    — {b.hospitalName}
                   </option>
                 ))}
               </select>
               {transferableEmpty.length === 0 && (
-                <p className="text-xs text-destructive">
-                  No available beds. A bed must be in Available status to
-                  receive a transfer.
-                </p>
+                <p className="text-xs text-destructive">No available beds.</p>
               )}
             </div>
             <div className="space-y-1.5">
               <Label>Reason for Transfer</Label>
               <Input
-                placeholder="e.g. Bed maintenance, Transfer to ICU"
+                placeholder="e.g. Transfer to ICU, bed maintenance"
                 value={transferReason}
                 onChange={(e) => setTransferReason(e.target.value)}
                 data-ocid="bed_management.transfer.input"
@@ -1163,6 +1865,21 @@ export default function BedManagement() {
               />
             </div>
             <div className="space-y-1.5">
+              <Label>Bed Type *</Label>
+              <select
+                className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background"
+                value={newBedType}
+                onChange={(e) => setNewBedType(e.target.value as BedType)}
+                data-ocid="bed_management.add.bedtype_select"
+              >
+                {BED_TYPES.map((bt) => (
+                  <option key={bt} value={bt}>
+                    {BED_TYPE_CONFIG[bt].label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1.5">
               <Label>Ward *</Label>
               <select
                 className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background"
@@ -1180,7 +1897,7 @@ export default function BedManagement() {
             <div className="space-y-1.5">
               <Label>Floor / Level</Label>
               <Input
-                placeholder="e.g. Ground Floor, Floor 1, ICU Level"
+                placeholder="e.g. Ground Floor, Floor 1"
                 value={newFloor}
                 onChange={(e) => setNewFloor(e.target.value)}
                 data-ocid="bed_management.add.floor_input"
@@ -1195,6 +1912,7 @@ export default function BedManagement() {
                   setNewWard("General");
                   setNewHospitalName("");
                   setNewFloor("");
+                  setNewBedType("General");
                 }}
                 data-ocid="bed_management.add.cancel_button"
               >
@@ -1212,12 +1930,26 @@ export default function BedManagement() {
                     },
                     {
                       onSuccess: () => {
+                        // Patch bedType after create since the hook doesn't accept it yet
+                        const store = getClinicalStore();
+                        const all =
+                          (store.beds as BedRecord[] | undefined) ?? [];
+                        const lastId = all.reduce(
+                          (max, b) => (b.id > max ? b.id : max),
+                          0n,
+                        );
+                        store.beds = all.map((b) =>
+                          b.id === lastId ? { ...b, bedType: newBedType } : b,
+                        ) as unknown[];
+                        saveClinicalStore(store);
+                        refetch();
                         toast.success("Bed added");
                         setShowAddBedDialog(false);
                         setNewBedNumber("");
                         setNewWard("General");
                         setNewHospitalName("");
                         setNewFloor("");
+                        setNewBedType("General");
                       },
                     },
                   );

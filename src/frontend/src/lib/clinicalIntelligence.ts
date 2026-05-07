@@ -1463,6 +1463,124 @@ export function checkExtendedClinicalAlerts(
   ];
 }
 
+// ── NEWS2 Score ───────────────────────────────────────────────────────────────
+
+export interface NEWS2Result {
+  score: number;
+  risk: "low" | "medium" | "high";
+  breakdown: {
+    rr: number;
+    spo2: number;
+    temp: number;
+    sysBP: number;
+    pulse: number;
+    consciousness: number;
+  };
+}
+
+/**
+ * Calculates the National Early Warning Score 2 (NEWS2).
+ * Accepts a VitalSigns-compatible object (string fields).
+ * Returns score, risk band, and component breakdown.
+ */
+export function calculateNEWS2(vitals: {
+  bloodPressure?: string;
+  pulse?: string;
+  temperature?: string;
+  oxygenSaturation?: string;
+  respiratoryRate?: string;
+  [key: string]: string | undefined;
+}): NEWS2Result {
+  const parseNum = (v?: string) => (v ? Number.parseFloat(v) : undefined);
+
+  const rr = parseNum(vitals.respiratoryRate);
+  const spo2 = parseNum(vitals.oxygenSaturation);
+  const temp = parseNum(vitals.temperature);
+  const bpStr = vitals.bloodPressure ?? "";
+  const sysBP = bpStr.includes("/")
+    ? Number.parseFloat(bpStr.split("/")[0])
+    : undefined;
+  const pulse = parseNum(vitals.pulse);
+
+  // Respiratory rate scoring
+  let rrScore = 0;
+  if (rr !== undefined) {
+    if (rr <= 8) rrScore = 3;
+    else if (rr <= 11) rrScore = 1;
+    else if (rr <= 20) rrScore = 0;
+    else if (rr <= 24) rrScore = 2;
+    else rrScore = 3;
+  }
+
+  // SpO2 scoring
+  let spo2Score = 0;
+  if (spo2 !== undefined) {
+    if (spo2 <= 91) spo2Score = 3;
+    else if (spo2 <= 93) spo2Score = 2;
+    else if (spo2 <= 95) spo2Score = 1;
+    else spo2Score = 0;
+  }
+
+  // Temperature scoring
+  let tempScore = 0;
+  if (temp !== undefined) {
+    if (temp <= 35.0) tempScore = 3;
+    else if (temp <= 36.0) tempScore = 1;
+    else if (temp <= 38.0) tempScore = 0;
+    else if (temp <= 39.0) tempScore = 1;
+    else tempScore = 2;
+  }
+
+  // Systolic BP scoring
+  let sysBPScore = 0;
+  if (sysBP !== undefined) {
+    if (sysBP <= 90) sysBPScore = 3;
+    else if (sysBP <= 100) sysBPScore = 2;
+    else if (sysBP <= 110) sysBPScore = 1;
+    else if (sysBP <= 219) sysBPScore = 0;
+    else sysBPScore = 3;
+  }
+
+  // Pulse scoring
+  let pulseScore = 0;
+  if (pulse !== undefined) {
+    if (pulse <= 40) pulseScore = 3;
+    else if (pulse <= 50) pulseScore = 1;
+    else if (pulse <= 90) pulseScore = 0;
+    else if (pulse <= 110) pulseScore = 1;
+    else if (pulse <= 130) pulseScore = 2;
+    else pulseScore = 3;
+  }
+
+  // Consciousness: assume "A" (Alert) = 0 unless noted elsewhere
+  const consciousnessScore = 0;
+
+  const score =
+    rrScore +
+    spo2Score +
+    tempScore +
+    sysBPScore +
+    pulseScore +
+    consciousnessScore;
+
+  let risk: "low" | "medium" | "high" = "low";
+  if (score >= 7) risk = "high";
+  else if (score >= 5) risk = "medium";
+
+  return {
+    score,
+    risk,
+    breakdown: {
+      rr: rrScore,
+      spo2: spo2Score,
+      temp: tempScore,
+      sysBP: sysBPScore,
+      pulse: pulseScore,
+      consciousness: consciousnessScore,
+    },
+  };
+}
+
 // ── TREND ALERTS ─────────────────────────────────────────────────────────────
 
 /**

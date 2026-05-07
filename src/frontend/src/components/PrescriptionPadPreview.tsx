@@ -457,9 +457,22 @@ export default function PrescriptionPadPreview({
         .ml-1 { margin-left: 0.25rem !important; }
         strong { font-weight: 700 !important; }
         .signature-line { border-top: 1px solid #555; min-width: 120px; display: inline-block; }
+        /* Colored accent border for every printed page */
+        .rx-print-container { border-left: 6px solid #1d4ed8 !important; padding-left: 12px !important; }
+        .rx-print-top-accent { border-top: 4px solid #1d4ed8 !important; margin-bottom: 8px !important; }
+        /* Drug row colors */
+        .drug-row-controlled { background-color: #fee2e2 !important; border-left: 4px solid #dc2626 !important; }
+        .drug-row-allergy { background-color: #fecaca !important; border-left: 4px solid #b91c1c !important; }
+        .drug-row-interaction { background-color: #fef9c3 !important; border-left: 4px solid #d97706 !important; }
         @media print {
           body { margin: 10mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          .no-print { display: none !important; }
+          .no-print, .print\:hidden { display: none !important; }
+          .rx-print-container { border-left: 6px solid #1d4ed8 !important; padding-left: 12px !important; page-break-inside: auto; }
+          .rx-print-top-accent { border-top: 4px solid #1d4ed8 !important; }
+          .drug-row-controlled { background-color: #fee2e2 !important; border-left: 4px solid #dc2626 !important; }
+          .drug-row-allergy { background-color: #fecaca !important; border-left: 4px solid #b91c1c !important; }
+          .drug-row-interaction { background-color: #fef9c3 !important; border-left: 4px solid #d97706 !important; }
+          tr { page-break-inside: avoid !important; }
         }
       </style></head><body>
       ${headerHtml}
@@ -622,8 +635,9 @@ export default function PrescriptionPadPreview({
       {/* Print target — header is injected by handlePrint, not rendered here */}
       <div
         id="rx-pad-preview-print"
-        className="font-serif text-gray-900 border border-gray-200 p-4 rounded bg-white"
+        className="font-serif text-gray-900 border border-gray-200 p-4 rounded bg-white rx-print-container"
       >
+        <div className="rx-print-top-accent" />
         {/* On-screen header */}
         {withHeader && (
           <HeaderBlock

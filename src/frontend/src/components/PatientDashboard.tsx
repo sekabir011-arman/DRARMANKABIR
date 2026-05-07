@@ -25,6 +25,7 @@ import {
   ChevronDown,
   Clock,
   Download,
+  ExternalLink,
   Eye,
   EyeOff,
   FileText,
@@ -101,12 +102,16 @@ import InvestigationTracker, {
 } from "./InvestigationTracker";
 import MissedDoseReport from "./MissedDoseReport";
 import PatientChat from "./PatientChat";
+import PatientSummaryCard from "./PatientSummaryCard";
+import PatientTimeline from "./PatientTimeline";
 import {
   CurrentMedicationList,
   FirstPrescriptionLabel,
   PrescriptionDiffRow,
   ViewedByPatientBadge,
 } from "./PrescriptionEnhancements";
+import ProcedureLog from "./ProcedureLog";
+import ReferralLetter from "./ReferralLetter";
 import type {
   AdviceEntry,
   ComplaintEntry,
@@ -754,6 +759,7 @@ function VitalGraph({
   bgClass,
   borderClass,
   icon: Icon,
+  outOfRangeCheck,
 }: {
   title: string;
   data: Record<string, unknown>[];
@@ -763,56 +769,126 @@ function VitalGraph({
   bgClass: string;
   borderClass: string;
   icon: React.ElementType;
+  outOfRangeCheck?: (key: string, value: number) => boolean;
 }) {
   const keys = Array.isArray(dataKey) ? dataKey : [dataKey];
   const colors = Array.isArray(color) ? color : [color];
   const hasData = data.filter((r) => keys.some((k) => r[k])).length >= 2;
 
+  // Custom dot renderer with glow for out-of-range values
+  const makeCustomDot =
+    (strokeColor: string, dKey: string) =>
+    (props: {
+      cx?: number;
+      cy?: number;
+      value?: number;
+      payload?: Record<string, unknown>;
+    }) => {
+      const { cx, cy, value } = props;
+      if (cx == null || cy == null || value == null) return <g />;
+      const isOutOfRange = outOfRangeCheck
+        ? outOfRangeCheck(dKey, value)
+        : false;
+      if (isOutOfRange) {
+        return (
+          <g>
+            <circle
+              cx={cx}
+              cy={cy}
+              r={7}
+              fill="#DC2626"
+              fillOpacity={0.2}
+              stroke="#DC2626"
+              strokeWidth={0}
+            />
+            <circle
+              cx={cx}
+              cy={cy}
+              r={6}
+              fill="#DC2626"
+              stroke="white"
+              strokeWidth={1.5}
+              style={{ filter: "drop-shadow(0 0 4px #DC2626)" }}
+            />
+          </g>
+        );
+      }
+      return (
+        <circle
+          cx={cx}
+          cy={cy}
+          r={3}
+          fill={strokeColor}
+          stroke="white"
+          strokeWidth={1}
+        />
+      );
+    };
+
   return (
     <div
-      className={`${bgClass} rounded-xl border ${borderClass} shadow-sm p-4`}
+      className={`${bgClass} rounded-xl border ${borderClass} shadow-sm overflow-hidden`}
     >
-      <h4 className="font-semibold mb-3 text-sm flex items-center gap-1.5">
-        <Icon className="w-4 h-4" />
-        {title}
+      {/* Colored card header */}
+      <div
+        className="px-4 py-3 flex items-center gap-2"
+        style={{
+          background: Array.isArray(color)
+            ? `linear-gradient(to right, ${colors[0]}22, ${colors[0]}11)`
+            : `${color}18`,
+        }}
+      >
+        <Icon className="w-4 h-4" style={{ color: colors[0] }} />
+        <h4 className="font-semibold text-sm" style={{ color: colors[0] }}>
+          {title}
+        </h4>
         <span className="text-xs font-normal ml-1 opacity-60">({unit})</span>
-      </h4>
-      {hasData ? (
-        <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-            <YAxis
-              tick={{ fontSize: 10 }}
-              label={{
-                value: unit,
-                angle: -90,
-                position: "insideLeft",
-                style: { fontWeight: "bold", fontSize: 10 },
-              }}
-            />
-            <Tooltip />
-            {keys.length > 1 && <Legend />}
-            {keys.map((k, i) => (
-              <Line
-                key={k}
-                type="monotone"
-                dataKey={k}
-                stroke={colors[i] || colors[0]}
-                strokeWidth={2}
-                dot={{ r: 3 }}
-                name={k}
-                connectNulls
+      </div>
+      <div className="p-4">
+        {hasData ? (
+          <ResponsiveContainer width="100%" height={200}>
+            <LineChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+              <YAxis
+                tick={{ fontSize: 10 }}
+                label={{
+                  value: unit,
+                  angle: -90,
+                  position: "insideLeft",
+                  style: { fontWeight: "bold", fontSize: 10 },
+                }}
               />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
-      ) : (
-        <div className="text-center py-8 text-gray-400">
-          <Activity className="w-6 h-6 mx-auto mb-1 opacity-40" />
-          <p className="text-xs">Need 2+ visits for trend</p>
-        </div>
-      )}
+              <Tooltip
+                contentStyle={{
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                }}
+              />
+              <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
+              {keys.map((k, i) => (
+                <Line
+                  key={k}
+                  type="monotone"
+                  dataKey={k}
+                  stroke={colors[i] || colors[0]}
+                  strokeWidth={2.5}
+                  dot={makeCustomDot(colors[i] || colors[0], k)}
+                  activeDot={{ r: 5, strokeWidth: 2, stroke: "white" }}
+                  name={k}
+                  connectNulls
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="text-center py-8 text-gray-400">
+            <Activity className="w-6 h-6 mx-auto mb-1 opacity-40" />
+            <p className="text-xs">Need 2+ visits for trend</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -1980,6 +2056,9 @@ export default function PatientDashboardInner({
   );
   const [newComplaintText, setNewComplaintText] = useState("");
 
+  // ── Referral modal state ──────────────────────────────────────────────────────
+  const [showReferralModal, setShowReferralModal] = useState(false);
+
   // ── Advice ────────────────────────────────────────────────────────────────────
   const [adviceEntries, setAdviceEntries] = useState<AdviceEntry[]>(() =>
     loadAdviceEntries(String(patientId)),
@@ -2353,6 +2432,11 @@ export default function PatientDashboardInner({
       activeClass: "data-[state=active]:bg-purple-500",
     },
     {
+      value: "timeline",
+      label: t("🕐 Timeline", "🕐 টাইমলাইন"),
+      activeClass: "data-[state=active]:bg-slate-500",
+    },
+    {
       value: "prescriptions",
       label: t("💊 Prescriptions", "💊 প্রেসক্রিপশন"),
       activeClass: "data-[state=active]:bg-indigo-500",
@@ -2428,1003 +2512,1916 @@ export default function PatientDashboardInner({
       activeClass: "data-[state=active]:bg-purple-600",
       hidden: currentRole === "patient",
     },
+    {
+      value: "procedures",
+      label: t("🔬 Procedures", "🔬 পদ্ধতি"),
+      activeClass: "data-[state=active]:bg-teal-700",
+      hidden:
+        currentRole === "patient" &&
+        !patient.isAdmitted &&
+        patient.patientType !== "admitted",
+    },
+    {
+      value: "referrals",
+      label: t("📤 Referrals", "📤 রেফারেল"),
+      activeClass: "data-[state=active]:bg-blue-700",
+      hidden:
+        currentRole !== "doctor" &&
+        currentRole !== "admin" &&
+        viewerRole !== "consultant_doctor" &&
+        viewerRole !== "medical_officer",
+    },
   ];
 
   return (
-    <Tabs defaultValue="overview" className="w-full">
-      <div className="flex flex-col lg:flex-row gap-4">
-        {/* VERTICAL TAB NAV */}
-        <div className="lg:w-52 shrink-0">
-          {/* Bilingual toggle */}
-          <div className="flex justify-end mb-1.5">
-            <button
-              type="button"
-              onClick={toggleLang}
-              className="text-xs px-2.5 py-1 rounded-full border border-teal-300 text-teal-700 bg-teal-50 hover:bg-teal-100 font-semibold transition-colors"
-              data-ocid="patient_dashboard.lang_toggle"
-              title={lang === "en" ? "Switch to Bangla" : "Switch to English"}
-            >
-              {lang === "en" ? "EN | বাং" : "বাং | EN"}
-            </button>
-          </div>
-          <TabsList className="flex flex-row lg:flex-col w-full h-auto p-1.5 gap-1 bg-gray-100 rounded-xl overflow-x-auto lg:overflow-x-visible">
-            {TAB_CONFIG.filter(
-              (tab) => !(tab as { hidden?: boolean }).hidden,
-            ).map((tab) => (
-              <TabsTrigger
-                key={tab.value}
-                value={tab.value}
-                className={`w-full justify-start text-left shrink-0 rounded-lg px-3 py-2.5 text-sm font-medium relative data-[state=active]:text-white data-[state=active]:shadow-md ${tab.activeClass}`}
-                data-ocid="patient_dashboard.tab"
+    <>
+      <Tabs defaultValue="overview" className="w-full">
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* VERTICAL TAB NAV */}
+          <div className="lg:w-52 shrink-0">
+            {/* Bilingual toggle */}
+            <div className="flex justify-end mb-1.5">
+              <button
+                type="button"
+                onClick={toggleLang}
+                className="text-xs px-2.5 py-1 rounded-full border border-teal-300 text-teal-700 bg-teal-50 hover:bg-teal-100 font-semibold transition-colors"
+                data-ocid="patient_dashboard.lang_toggle"
+                title={lang === "en" ? "Switch to Bangla" : "Switch to English"}
               >
-                {tab.label}
-                {tab.badge != null && tab.badge > 0 && (
-                  <span className="ml-auto inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold">
-                    {tab.badge}
-                  </span>
-                )}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </div>
+                {lang === "en" ? "EN | বাং" : "বাং | EN"}
+              </button>
+            </div>
+            <TabsList className="flex flex-row lg:flex-col w-full h-auto p-1.5 gap-1 bg-gray-100 rounded-xl overflow-x-auto lg:overflow-x-visible">
+              {TAB_CONFIG.filter(
+                (tab) => !(tab as { hidden?: boolean }).hidden,
+              ).map((tab) => (
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  className={`w-full justify-start text-left shrink-0 rounded-lg px-3 py-2.5 text-sm font-medium relative data-[state=active]:text-white data-[state=active]:shadow-md ${tab.activeClass}`}
+                  data-ocid="patient_dashboard.tab"
+                >
+                  {tab.label}
+                  {tab.badge != null && tab.badge > 0 && (
+                    <span className="ml-auto inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold">
+                      {tab.badge}
+                    </span>
+                  )}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
 
-        {/* TAB CONTENT */}
-        <div className="flex-1 min-w-0">
-          {/* ── OVERVIEW ── */}
-          <TabsContent value="overview" className="space-y-4">
-            {/* Red Flag Monitor — visible to all clinical roles including consultant */}
-            {(currentRole === "doctor" ||
-              currentRole === "admin" ||
-              viewerRole === "consultant_doctor" ||
-              viewerRole === "medical_officer" ||
-              viewerRole === "intern_doctor" ||
-              viewerRole === "nurse") && (
-              <div className="bg-card rounded-xl border border-border shadow-sm p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-sm flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-red-500" />
-                    Red Flag Monitor
-                  </h3>
-                  <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                    Auto-refresh every 5 min
-                  </span>
+          {/* TAB CONTENT */}
+          <div className="flex-1 min-w-0">
+            {/* ── OVERVIEW ── */}
+            <TabsContent value="overview" className="space-y-4">
+              {/* Red Flag Monitor — visible to all clinical roles including consultant */}
+              {(currentRole === "doctor" ||
+                currentRole === "admin" ||
+                viewerRole === "consultant_doctor" ||
+                viewerRole === "medical_officer" ||
+                viewerRole === "intern_doctor" ||
+                viewerRole === "nurse") && (
+                <div className="bg-card rounded-xl border border-border shadow-sm p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-sm flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 text-red-500" />
+                      Red Flag Monitor
+                    </h3>
+                    <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                      Auto-refresh every 5 min
+                    </span>
+                  </div>
+                  <RedFlagMonitor
+                    patientId={patientId}
+                    latestVitals={latestVitals}
+                    allInvestigations={allInvestigations}
+                    prescriptions={prescriptions}
+                    diagnoses={[
+                      latestVisit?.diagnosis ?? "",
+                      ...(patient.chronicConditions ?? []),
+                    ].filter(Boolean)}
+                  />
                 </div>
-                <RedFlagMonitor
-                  patientId={patientId}
-                  latestVitals={latestVitals}
-                  allInvestigations={allInvestigations}
-                  prescriptions={prescriptions}
-                  diagnoses={[
-                    latestVisit?.diagnosis ?? "",
-                    ...(patient.chronicConditions ?? []),
-                  ].filter(Boolean)}
+              )}
+              {/* Patient profile card */}
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                {currentRole === "patient" && (
+                  <div className="flex justify-end mb-3">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5 border-teal-300 text-teal-700 hover:bg-teal-50"
+                      onClick={() => setShowSubmitPanel(!showSubmitPanel)}
+                      data-ocid="patient_dashboard.overview.open_modal_button"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Update My Health
+                    </Button>
+                  </div>
+                )}
+
+                {/* Doctor / admin WhatsApp quick-send + Refer Patient */}
+                {(currentRole === "doctor" || currentRole === "admin") && (
+                  <div className="flex justify-end gap-2 mb-3 relative flex-wrap">
+                    {/* Print Summary Card button */}
+                    <PatientSummaryCard
+                      patientId={patientId}
+                      patient={patient}
+                      visits={sortedVisits}
+                      prescriptions={prescriptions}
+                    />
+                    {/* Refer Patient button */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5 border-blue-300 text-blue-700 hover:bg-blue-50"
+                      onClick={() => setShowReferralModal(true)}
+                      data-ocid="patient_dashboard.overview.refer_patient_button"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      Refer Patient
+                    </Button>
+                    <div className="relative">
+                      <Button
+                        size="sm"
+                        className="gap-1.5 bg-green-600 hover:bg-green-700 text-white pr-2"
+                        onClick={() => setWaDropdownOpen((o) => !o)}
+                        data-ocid="patient_dashboard.whatsapp_dropdown.button"
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          className="w-3.5 h-3.5 fill-white"
+                          role="img"
+                          aria-label="WhatsApp"
+                        >
+                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                        </svg>
+                        Send WhatsApp
+                        <ChevronDown className="w-3.5 h-3.5 ml-0.5" />
+                      </Button>
+                      {waDropdownOpen && (
+                        <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-green-200 rounded-xl shadow-lg py-1 min-w-[200px]">
+                          <button
+                            type="button"
+                            className="w-full text-left px-4 py-2.5 text-sm hover:bg-green-50 text-green-800 font-medium flex items-center gap-2"
+                            onClick={openWaReportModal}
+                            data-ocid="patient_dashboard.whatsapp.report_ready"
+                          >
+                            <FlaskConical className="w-4 h-4 text-green-600" />
+                            Report Ready Notification
+                          </button>
+                          <button
+                            type="button"
+                            className="w-full text-left px-4 py-2.5 text-sm hover:bg-green-50 text-green-800 font-medium flex items-center gap-2"
+                            onClick={openWaFollowUpModal}
+                            data-ocid="patient_dashboard.whatsapp.follow_up"
+                          >
+                            <Calendar className="w-4 h-4 text-green-600" />
+                            Follow-up Reminder
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* WhatsApp modals */}
+                {waModalType === "report_ready" && (
+                  <div className="mb-4 bg-green-50 border border-green-200 rounded-xl p-4 space-y-3">
+                    <h4 className="font-semibold text-green-800 flex items-center gap-2 text-sm">
+                      <FlaskConical className="w-4 h-4" /> Send Report Ready
+                      Notification
+                    </h4>
+                    <p className="text-xs text-green-600">
+                      Patient:{" "}
+                      <span className="font-semibold">{patient.fullName}</span>{" "}
+                      · {patientPhone || "No phone"}
+                    </p>
+                    <div>
+                      <label
+                        htmlFor="wa-report-name"
+                        className="text-xs font-medium text-gray-600"
+                      >
+                        Report Name *
+                      </label>
+                      <input
+                        id="wa-report-name"
+                        type="text"
+                        value={waReportName}
+                        onChange={(e) => setWaReportName(e.target.value)}
+                        placeholder="e.g. CBC, S. Creatinine, Chest X-Ray"
+                        className="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                        data-ocid="patient_dashboard.whatsapp.report_name.input"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={sendWaMessage}
+                        className="bg-green-600 hover:bg-green-700 text-white gap-1.5"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5" /> Open WhatsApp
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setWaModalType(null)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                {waModalType === "follow_up" && (
+                  <div className="mb-4 bg-green-50 border border-green-200 rounded-xl p-4 space-y-3">
+                    <h4 className="font-semibold text-green-800 flex items-center gap-2 text-sm">
+                      <Calendar className="w-4 h-4" /> Send Follow-up Reminder
+                    </h4>
+                    <p className="text-xs text-green-600">
+                      Patient:{" "}
+                      <span className="font-semibold">{patient.fullName}</span>{" "}
+                      · {patientPhone || "No phone"}
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label
+                          htmlFor="wa-followup-date"
+                          className="text-xs font-medium text-gray-600"
+                        >
+                          Appointment Date *
+                        </label>
+                        <input
+                          id="wa-followup-date"
+                          type="date"
+                          value={waFollowUpDate}
+                          onChange={(e) => setWaFollowUpDate(e.target.value)}
+                          className="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                          data-ocid="patient_dashboard.whatsapp.followup_date.input"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="wa-followup-time"
+                          className="text-xs font-medium text-gray-600"
+                        >
+                          Appointment Time *
+                        </label>
+                        <input
+                          id="wa-followup-time"
+                          type="time"
+                          value={waFollowUpTime}
+                          onChange={(e) => setWaFollowUpTime(e.target.value)}
+                          className="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                          data-ocid="patient_dashboard.whatsapp.followup_time.input"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={sendWaMessage}
+                        className="bg-green-600 hover:bg-green-700 text-white gap-1.5"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5" /> Open WhatsApp
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setWaModalType(null)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-4">
+                  <div className="flex-1 min-w-[220px]">
+                    <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                      <User className="w-4 h-4 text-teal-600" /> Patient Summary
+                    </h3>
+                    <div className="grid grid-cols-2 gap-2.5 text-sm">
+                      {[
+                        [
+                          "Sex",
+                          patient.gender
+                            ? patient.gender === "male"
+                              ? "Male"
+                              : patient.gender === "female"
+                                ? "Female"
+                                : "Other"
+                            : "N/A",
+                        ],
+                        ["Age", age ? `${age} years` : "N/A"],
+                        ["Blood Group", patient.bloodGroup || "N/A"],
+                        [
+                          "Status",
+                          (patient as Record<string, unknown>).status ===
+                            "Admitted" ||
+                          patient.isAdmitted ||
+                          patient.patientType === "admitted" ||
+                          patient.patientType === "indoor"
+                            ? "🏥 Admitted"
+                            : latestVisit
+                              ? "Under Treatment"
+                              : "Active",
+                        ],
+                        [
+                          "Last Visit",
+                          latestVisit
+                            ? formatTime(latestVisit.visitDate)
+                            : "No visits",
+                        ],
+                        ["Register No.", registerNo || "N/A"],
+                        ...(((patient as Record<string, unknown>).status ===
+                          "Admitted" ||
+                          patient.isAdmitted ||
+                          patient.patientType === "admitted" ||
+                          patient.patientType === "indoor") &&
+                        (patient as Record<string, unknown>).ward
+                          ? [
+                              [
+                                "Ward / Bed",
+                                `${(patient as Record<string, unknown>).ward as string}${(patient as Record<string, unknown>).bedNumber ? `, Bed ${(patient as Record<string, unknown>).bedNumber as string}` : ""}`,
+                              ],
+                            ]
+                          : []),
+                      ].map(([label, value]) => (
+                        <div
+                          key={label}
+                          className="bg-gray-50 rounded-lg p-2.5"
+                        >
+                          <p className="text-xs text-gray-400 mb-0.5">
+                            {label}
+                          </p>
+                          <p className="font-semibold text-gray-800 text-sm">
+                            {value}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {latestVisit && (
+                    <div className="flex-1 min-w-[200px]">
+                      <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-blue-600" /> Latest
+                        Visit
+                      </h3>
+                      <div className="bg-blue-50 rounded-xl p-3 text-sm space-y-2">
+                        <p className="text-xs text-blue-500">
+                          {formatTime(latestVisit.visitDate)}
+                        </p>
+                        {latestVisit.diagnosis && (
+                          <p className="font-semibold text-blue-800">
+                            {latestVisit.diagnosis}
+                          </p>
+                        )}
+                        {latestVisit.chiefComplaint && (
+                          <p className="text-blue-700 text-xs">
+                            {latestVisit.chiefComplaint}
+                          </p>
+                        )}
+                        <Badge className="text-xs border-0 bg-amber-100 text-amber-700">
+                          Under Treatment
+                        </Badge>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {bmi && bmiCat && (
+                  <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-4">
+                    <div>
+                      <p className="text-xs text-gray-500">BMI</p>
+                      <p className="text-2xl font-bold text-gray-800">
+                        {bmi}{" "}
+                        <span className="text-sm font-normal text-gray-500">
+                          kg/m²
+                        </span>
+                      </p>
+                    </div>
+                    <span
+                      className={`px-3 py-1.5 rounded-full text-sm font-semibold ${bmiCat.color}`}
+                    >
+                      {bmiCat.label}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Latest vitals - blue gradient header */}
+              <div className="bg-white rounded-xl border border-blue-200 shadow-sm overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-500 to-blue-700 px-5 py-3 flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-white" />
+                  <h3 className="font-semibold text-white text-sm">
+                    Latest Vitals
+                  </h3>
+                  {latestVisit && (
+                    <span className="text-xs text-blue-200 ml-auto">
+                      {formatTime(latestVisit.visitDate)}
+                    </span>
+                  )}
+                </div>
+                <div className="p-5">
+                  <VitalsBar
+                    vitals={latestVitals}
+                    weight={patient.weight}
+                    height={patient.height}
+                  />
+                </div>
+              </div>
+
+              {/* Family History Risk Card */}
+              {(() => {
+                const email = getDoctorEmail();
+                const risk = loadFamilyHistoryRisk(email, patientId.toString());
+                if (!risk) return null;
+                const active: string[] = [];
+                if (risk.diabetes) active.push("Diabetes");
+                if (risk.hypertension) active.push("Hypertension");
+                if (risk.ihd) active.push("IHD");
+                if (risk.cancer) active.push("Cancer");
+                if (risk.stroke) active.push("Stroke");
+                if (active.length === 0) return null;
+                return (
+                  <div
+                    className="rounded-xl overflow-hidden shadow-sm"
+                    data-ocid="patient_dashboard.family_risk_section"
+                  >
+                    <div className="bg-gradient-to-r from-orange-500 to-red-500 px-5 py-3 flex items-center gap-2">
+                      <span className="text-white text-sm">🧬</span>
+                      <h3 className="font-semibold text-white text-sm">
+                        Family History Risk
+                      </h3>
+                    </div>
+                    <div className="bg-orange-50 border border-orange-200 border-t-0 px-5 py-4">
+                      <div className="flex flex-wrap gap-2">
+                        {active.map((r) => (
+                          <span
+                            key={r}
+                            className="inline-flex items-center gap-1 bg-orange-100 text-orange-900 border border-orange-300 rounded-full px-2.5 py-1 text-xs font-semibold"
+                          >
+                            🔴 {r}
+                          </span>
+                        ))}
+                      </div>
+                      {risk.additionalNotes && (
+                        <p className="text-xs text-orange-700 mt-2 italic">
+                          {risk.additionalNotes}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Pregnancy Card */}
+              {patient.gender === "female" &&
+                (currentRole === "doctor" || currentRole === "admin") && (
+                  <div className="bg-white rounded-xl border border-pink-200 shadow-sm p-5">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                        <Baby className="w-4 h-4 text-pink-500" /> Pregnancy
+                        Status
+                      </h3>
+                      <div className="flex gap-2">
+                        {pregnancyData?.active && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs border-red-300 text-red-600"
+                            onClick={clearPregnancyData}
+                          >
+                            Clear
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs border-pink-300 text-pink-600"
+                          onClick={() =>
+                            setShowPregnancyForm(!showPregnancyForm)
+                          }
+                        >
+                          {pregnancyData?.active ? "Update" : "Set Pregnancy"}
+                        </Button>
+                      </div>
+                    </div>
+                    {showPregnancyForm && (
+                      <div className="bg-pink-50 rounded-lg p-3 mb-3 space-y-2 border border-pink-100">
+                        <div className="grid grid-cols-3 gap-2">
+                          {[
+                            {
+                              id: "preg-lmp",
+                              label: "LMP Date",
+                              type: "date",
+                              value: lmpInput,
+                              onChange: setLmpInput,
+                            },
+                            {
+                              id: "preg-gravida",
+                              label: "Gravida",
+                              type: "number",
+                              value: gravidaInput,
+                              onChange: setGravidaInput,
+                            },
+                            {
+                              id: "preg-para",
+                              label: "Para",
+                              type: "number",
+                              value: paraInput,
+                              onChange: setParaInput,
+                            },
+                          ].map((field) => (
+                            <div key={field.id}>
+                              <label
+                                htmlFor={field.id}
+                                className="text-xs text-gray-500 mb-1 block"
+                              >
+                                {field.label}
+                              </label>
+                              <input
+                                id={field.id}
+                                type={field.type}
+                                min="0"
+                                value={field.value}
+                                onChange={(e) => field.onChange(e.target.value)}
+                                className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm"
+                                data-ocid="patient_dashboard.pregnancy.input"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        <Button
+                          size="sm"
+                          onClick={savePregnancyData}
+                          className="bg-pink-600 hover:bg-pink-700 text-white"
+                          data-ocid="patient_dashboard.pregnancy.save_button"
+                        >
+                          Save
+                        </Button>
+                      </div>
+                    )}
+                    {pregnancyData?.active && pregnancyData.lmp ? (
+                      (() => {
+                        const info = calcPregnancy(pregnancyData.lmp);
+                        return (
+                          <div className="space-y-3">
+                            <div className="grid grid-cols-3 gap-3">
+                              <div className="bg-pink-50 rounded-lg p-3 text-center">
+                                <p className="text-2xl font-bold text-pink-600">
+                                  {info.weeks}
+                                </p>
+                                <p className="text-xs text-gray-500">Weeks</p>
+                              </div>
+                              <div className="bg-rose-50 rounded-lg p-3 text-center">
+                                <p className="text-2xl font-bold text-rose-600">
+                                  {info.months}
+                                </p>
+                                <p className="text-xs text-gray-500">Months</p>
+                              </div>
+                              <div className="bg-purple-50 rounded-lg p-3 text-center">
+                                <p className="text-sm font-bold text-purple-600">
+                                  {info.edd}
+                                </p>
+                                <p className="text-xs text-gray-500">EDD</p>
+                              </div>
+                            </div>
+                            {pregnancyData.gravida && (
+                              <p className="text-xs text-gray-500">
+                                G{pregnancyData.gravida}P
+                                {pregnancyData.para || 0}
+                              </p>
+                            )}
+                            <div className="space-y-1.5">
+                              <p className="text-xs font-semibold text-gray-600 flex items-center gap-1">
+                                <HeartPulse className="w-3.5 h-3.5 text-pink-500" />{" "}
+                                Pregnancy Advice
+                              </p>
+                              {[
+                                "Take folic acid 400–800 mcg daily",
+                                "Prenatal vitamins as prescribed",
+                                "Avoid alcohol, tobacco, raw fish",
+                                `Next scan at ${info.weeks < 20 ? "20" : "32"} weeks`,
+                                "Monitor BP and blood sugar regularly",
+                                "Emergency: severe headache, blurred vision, or bleeding → visit immediately",
+                              ].map((adv) => (
+                                <p
+                                  key={adv}
+                                  className="text-xs text-gray-600 flex items-start gap-1.5 bg-pink-50/60 rounded px-2 py-1"
+                                >
+                                  <span className="text-pink-400 mt-0.5">
+                                    •
+                                  </span>
+                                  {adv}
+                                </p>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()
+                    ) : (
+                      <p
+                        className="text-sm text-gray-400 text-center py-2"
+                        data-ocid="patient_dashboard.pregnancy.empty_state"
+                      >
+                        No active pregnancy recorded
+                      </p>
+                    )}
+                  </div>
+                )}
+
+              {/* Patient data submission panel */}
+              {currentRole === "patient" && showSubmitPanel && (
+                <div className="bg-white rounded-xl border border-teal-200 shadow-sm p-5">
+                  <h3 className="font-semibold text-teal-800 mb-3">
+                    Submit Health Data
+                  </h3>
+                  <div className="flex gap-2 mb-4">
+                    {["complaint", "vitals", "investigation"].map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setSubmitTab(t)}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors ${submitTab === t ? "bg-teal-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                  {submitTab === "complaint" && (
+                    <Textarea
+                      value={complaint}
+                      onChange={(e) => setComplaint(e.target.value)}
+                      placeholder="Describe your symptoms..."
+                      rows={3}
+                      data-ocid="patient_dashboard.submit.textarea"
+                    />
+                  )}
+                  {submitTab === "vitals" && (
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { key: "systolic", label: "Systolic BP (mmHg)" },
+                        { key: "diastolic", label: "Diastolic BP (mmHg)" },
+                        { key: "pulse", label: "Pulse (beats/min)" },
+                        { key: "temp", label: "Temperature (°C)" },
+                        { key: "spo2", label: "SpO₂ (%)" },
+                        { key: "weight", label: "Weight (kg)" },
+                      ].map((f) => (
+                        <div key={f.key}>
+                          <Label className="text-xs">{f.label}</Label>
+                          <Input
+                            value={
+                              vitalFields[f.key as keyof typeof vitalFields]
+                            }
+                            onChange={(e) =>
+                              setVitalFields((prev) => ({
+                                ...prev,
+                                [f.key]: e.target.value,
+                              }))
+                            }
+                            placeholder="Value"
+                            type="number"
+                            className="mt-1"
+                            data-ocid="patient_dashboard.submit.input"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {submitTab === "investigation" && (
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { key: "name", label: "Test Name" },
+                        { key: "result", label: "Result" },
+                        { key: "unit", label: "Unit" },
+                        { key: "date", label: "Date" },
+                      ].map((f) => (
+                        <div key={f.key}>
+                          <Label className="text-xs">{f.label}</Label>
+                          <Input
+                            value={invFields[f.key as keyof typeof invFields]}
+                            onChange={(e) =>
+                              setInvFields((prev) => ({
+                                ...prev,
+                                [f.key]: e.target.value,
+                              }))
+                            }
+                            type={f.key === "date" ? "date" : "text"}
+                            className="mt-1"
+                            data-ocid="patient_dashboard.submit.input"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <Button
+                    className="mt-3 bg-teal-600 hover:bg-teal-700 text-white"
+                    onClick={handleSubmitData}
+                    data-ocid="patient_dashboard.submit.submit_button"
+                  >
+                    Submit for Doctor Review
+                  </Button>
+                </div>
+              )}
+            </TabsContent>
+
+            {/* ── VITALS ── */}
+            <TabsContent value="vitals" className="space-y-4">
+              <div className="bg-white rounded-xl border border-blue-200 shadow-sm overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-500 to-blue-700 px-5 py-3 flex items-center gap-2">
+                  <Heart className="w-4 h-4 text-white" />
+                  <h3 className="font-semibold text-white text-sm">
+                    Vital Signs Summary
+                  </h3>
+                </div>
+                <div className="p-5">
+                  <VitalsBar
+                    vitals={latestVitals}
+                    weight={patient.weight}
+                    height={patient.height}
+                    showAlertBanner={true}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <VitalGraph
+                  title="Blood Pressure"
+                  data={vitalsHistory}
+                  dataKey={["BP", "Diastolic"]}
+                  unit="mmHg"
+                  color={["#DC2626", "#EF4444"]}
+                  bgClass="bg-rose-50"
+                  borderClass="border-rose-200"
+                  icon={Heart}
+                  outOfRangeCheck={(key, val) => {
+                    if (key === "BP") return val < 90 || val > 140;
+                    if (key === "Diastolic") return val < 60 || val > 90;
+                    return false;
+                  }}
+                />
+                <VitalGraph
+                  title="Pulse Rate"
+                  data={vitalsHistory}
+                  dataKey="Pulse"
+                  unit="beats/min"
+                  color="#EA580C"
+                  bgClass="bg-orange-50"
+                  borderClass="border-orange-200"
+                  icon={Activity}
+                  outOfRangeCheck={(_key, val) => val < 60 || val > 100}
+                />
+                <VitalGraph
+                  title="SpO₂"
+                  data={vitalsHistory}
+                  dataKey="SpO2"
+                  unit="%"
+                  color="#2563EB"
+                  bgClass="bg-blue-50"
+                  borderClass="border-blue-200"
+                  icon={Wind}
+                  outOfRangeCheck={(_key, val) => val < 94}
+                />
+                <VitalGraph
+                  title="Temperature"
+                  data={vitalsHistory}
+                  dataKey="Temp"
+                  unit="°C"
+                  color="#CA8A04"
+                  bgClass="bg-yellow-50"
+                  borderClass="border-yellow-200"
+                  icon={Thermometer}
+                  outOfRangeCheck={(_key, val) => val < 36.0 || val > 37.5}
+                />
+                <VitalGraph
+                  title="Blood Glucose (RBS)"
+                  data={vitalsHistory}
+                  dataKey="RBS"
+                  unit="mmol/L"
+                  color="#9333EA"
+                  bgClass="bg-purple-50"
+                  borderClass="border-purple-200"
+                  icon={Activity}
+                  outOfRangeCheck={(_key, val) => val < 4 || val > 11}
+                />
+                <VitalGraph
+                  title="Weight"
+                  data={vitalsHistory}
+                  dataKey="Weight"
+                  unit="kg"
+                  color="#16A34A"
+                  bgClass="bg-green-50"
+                  borderClass="border-green-200"
+                  icon={User}
+                />
+                <VitalGraph
+                  title="Height"
+                  data={vitalsHistory}
+                  dataKey="Height"
+                  unit="cm"
+                  color="#0891B2"
+                  bgClass="bg-cyan-50"
+                  borderClass="border-cyan-200"
+                  icon={User}
+                />
+                <VitalGraph
+                  title="Respiratory Rate"
+                  data={vitalsHistory}
+                  dataKey="RespRate"
+                  unit="breaths/min"
+                  color="#0891b2"
+                  bgClass="bg-cyan-50"
+                  borderClass="border-cyan-200"
+                  icon={Wind}
+                />
+                <VitalGraph
+                  title="BMI Trend"
+                  data={vitalsHistory}
+                  dataKey="BMI"
+                  unit="kg/m²"
+                  color="#6366f1"
+                  bgClass="bg-indigo-50"
+                  borderClass="border-indigo-200"
+                  icon={Activity}
                 />
               </div>
-            )}
-            {/* Patient profile card */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-              {currentRole === "patient" && (
-                <div className="flex justify-end mb-3">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="gap-1.5 border-teal-300 text-teal-700 hover:bg-teal-50"
-                    onClick={() => setShowSubmitPanel(!showSubmitPanel)}
-                    data-ocid="patient_dashboard.overview.open_modal_button"
+            </TabsContent>
+
+            {/* ── INVESTIGATIONS ── */}
+            <TabsContent value="investigations" className="space-y-4">
+              {/* Tracking panel at the top */}
+              <div className="bg-white rounded-xl border border-teal-200 shadow-sm p-5">
+                <InvestigationTracker
+                  patientId={String(patientId)}
+                  patientPhone={patient.phone}
+                  viewerRole={viewerRole}
+                  currentRole={currentRole}
+                />
+              </div>
+
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                    <FlaskConical className="w-4 h-4 text-teal-600" />{" "}
+                    Investigation Reports
+                  </h3>
+                  <div className="relative w-52">
+                    <Search className="absolute left-2.5 top-2 w-4 h-4 text-gray-400" />
+                    <Input
+                      placeholder="Search test..."
+                      value={invSearch}
+                      onChange={(e) => setInvSearch(e.target.value)}
+                      className="pl-8 h-8 text-sm"
+                      data-ocid="patient_dashboard.search_input"
+                    />
+                  </div>
+                </div>
+                {filteredInvRows.length === 0 ? (
+                  <div
+                    className="text-center py-8"
+                    data-ocid="patient_dashboard.investigations.empty_state"
                   >
-                    <Plus className="w-3.5 h-3.5" />
-                    Update My Health
+                    <FlaskConical className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                    <p className="text-sm text-gray-400">
+                      No investigation reports found
+                    </p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-100">
+                          {[
+                            "Investigation",
+                            "Result",
+                            "Unit",
+                            "Date",
+                            "Interpretation",
+                          ].map((h) => (
+                            <th
+                              key={h}
+                              className="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wide"
+                            >
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredInvRows.map((row, i) => (
+                          <tr
+                            key={`inv-${row.name}-${row.date}-${i}`}
+                            className="border-b border-gray-50 hover:bg-gray-50"
+                            data-ocid={`patient_dashboard.investigations.row.${i + 1}`}
+                          >
+                            <td className="py-2.5 px-3 font-medium text-gray-800">
+                              {row.name}
+                            </td>
+                            <td className="py-2.5 px-3 text-gray-700">
+                              {row.result}
+                            </td>
+                            <td className="py-2.5 px-3 text-gray-500">
+                              {row.unit || "—"}
+                            </td>
+                            <td className="py-2.5 px-3 text-gray-500">
+                              {row.date || "—"}
+                            </td>
+                            <td className="py-2.5 px-3 text-gray-500 max-w-[200px] truncate">
+                              {row.interpretation || "—"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+              {Object.keys(invByName).length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(invByName)
+                    .slice(0, 12)
+                    .map(([name, { data, unit }]) => {
+                      // Build AI interpretation for latest tracked result of this test
+                      const trackedInvs = loadTrackedInvestigations(
+                        String(patientId),
+                      );
+                      const latestTracked = trackedInvs
+                        .filter((t) => t.name === name && t.result)
+                        .sort(
+                          (a, b) =>
+                            new Date(b.result!.recordedAt).getTime() -
+                            new Date(a.result!.recordedAt).getTime(),
+                        )[0];
+                      const allReadings = trackedInvs
+                        .filter((t) => t.name === name && t.result)
+                        .map((t) => ({
+                          value: t.result!.value,
+                          recordedAt: t.result!.recordedAt,
+                        }));
+                      // Fallback: use most recent allInvestigations reading
+                      const latestRow = allInvestigations
+                        .filter(
+                          (r) =>
+                            r.name === name &&
+                            r.result &&
+                            !Number.isNaN(Number.parseFloat(r.result)),
+                        )
+                        .sort((a, b) => b.date.localeCompare(a.date))[0];
+                      let aiText = "";
+                      if (latestTracked?.result) {
+                        aiText = generateAIInterpretation(
+                          name,
+                          latestTracked.result,
+                          allReadings,
+                        );
+                      } else if (latestRow) {
+                        aiText = generateAIInterpretation(
+                          name,
+                          {
+                            value: latestRow.result,
+                            unit: latestRow.unit ?? unit,
+                            referenceRange: "",
+                            interpretation: (latestRow.interpretation ??
+                              "Normal") as InterpretationLabel,
+                            recordedAt: new Date(latestRow.date).toISOString(),
+                            recordedBy: "System",
+                          },
+                          [],
+                        );
+                      }
+
+                      return (
+                        <div
+                          key={name}
+                          className="bg-white rounded-xl border border-teal-200 shadow-sm p-4"
+                        >
+                          <h4 className="font-semibold text-teal-800 mb-1 text-sm">
+                            {name} Trend
+                          </h4>
+                          {unit && (
+                            <p className="text-xs mb-2">
+                              Unit:{" "}
+                              <span className="font-bold text-gray-700">
+                                {unit}
+                              </span>
+                            </p>
+                          )}
+                          {data.length >= 2 ? (
+                            <ResponsiveContainer width="100%" height={180}>
+                              <LineChart data={data}>
+                                <CartesianGrid
+                                  strokeDasharray="3 3"
+                                  stroke="#f0f0f0"
+                                />
+                                <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                                <YAxis
+                                  tick={{ fontSize: 10 }}
+                                  label={
+                                    unit
+                                      ? {
+                                          value: unit,
+                                          angle: -90,
+                                          position: "insideLeft",
+                                          style: {
+                                            fontWeight: "bold",
+                                            fontSize: 10,
+                                          },
+                                        }
+                                      : undefined
+                                  }
+                                />
+                                <Tooltip
+                                  formatter={(v: number) => [
+                                    `${v} ${unit}`,
+                                    name,
+                                  ]}
+                                />
+                                <Line
+                                  type="monotone"
+                                  dataKey="value"
+                                  stroke="#0d9488"
+                                  strokeWidth={2}
+                                  dot={{ r: 4 }}
+                                  name={name}
+                                />
+                              </LineChart>
+                            </ResponsiveContainer>
+                          ) : (
+                            <div className="text-center py-6 text-gray-400 text-xs">
+                              Need 2+ data points for chart
+                            </div>
+                          )}
+                          {/* AI Interpretation under each graph */}
+                          {aiText && (
+                            <div
+                              className={`mt-3 rounded-lg p-3 border text-xs ${
+                                aiText.startsWith("⚠️")
+                                  ? "bg-amber-50 border-amber-200 text-amber-800"
+                                  : "bg-teal-50 border-teal-200 text-teal-800"
+                              }`}
+                              data-ocid="patient_dashboard.inv.ai_interpretation"
+                            >
+                              <p className="font-semibold mb-0.5">
+                                🤖 AI Interpretation
+                              </p>
+                              <p>{aiText}</p>
+                              <p className="mt-1 opacity-60 italic">
+                                AI Suggested — Review with Doctor
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+            </TabsContent>
+
+            {/* ── HISTORY ── */}
+            <TabsContent value="history" className="space-y-4">
+              {/* ── Admission History section — admitted patients, clinical roles only ── */}
+              {isAdmittedPatient &&
+                currentRole !== "patient" &&
+                (() => {
+                  const admHxRecords = loadAdmissionHistory(String(patientId));
+                  if (admHxRecords.length === 0) return null;
+                  return (
+                    <AdmissionHistoryInlineSection
+                      records={admHxRecords}
+                      viewerRole={viewerRole ?? "doctor"}
+                      patient={patient}
+                    />
+                  );
+                })()}
+
+              {/* ── Admissions timeline section (admitted patients only) ── */}
+              {isAdmittedPatient && (
+                <div className="bg-white rounded-xl border border-blue-200 shadow-sm p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                      <BookOpen className="w-4 h-4 text-blue-600" /> Admissions
+                    </h3>
+                  </div>
+                  <AdmissionTimeline
+                    patientId={String(patientId)}
+                    doctorEmail={(() => {
+                      try {
+                        const session = localStorage.getItem(
+                          "medicare_current_doctor",
+                        );
+                        if (!session) return "default";
+                        const registry: Array<{ id: string; email: string }> =
+                          JSON.parse(
+                            localStorage.getItem("medicare_doctors_registry") ||
+                              "[]",
+                          );
+                        return (
+                          registry.find((d) => d.id === session)?.email ??
+                          "default"
+                        );
+                      } catch {
+                        return "default";
+                      }
+                    })()}
+                  />
+                </div>
+              )}
+
+              {/* ── Visit History (outpatient) ── */}
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-purple-600" /> Visit History
+                    {isAdmittedPatient && (
+                      <span className="text-xs font-normal text-gray-400 ml-1">
+                        (Outpatient)
+                      </span>
+                    )}
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-purple-700 border-purple-300 gap-1.5"
+                      onClick={downloadVisitHistoryPDF}
+                      data-ocid="patient_dashboard.visits.secondary_button"
+                    >
+                      <Download className="w-3.5 h-3.5" /> Download PDF
+                    </Button>
+                    {(currentRole === "doctor" || currentRole === "admin") &&
+                      permissions.canEditClinical && (
+                        <Button
+                          size="sm"
+                          className="bg-purple-600 hover:bg-purple-700 text-white gap-1.5"
+                          onClick={() => setShowVisitForm(true)}
+                          data-ocid="patient_dashboard.visits.open_modal_button"
+                        >
+                          <Plus className="w-3.5 h-3.5" /> New Visit
+                        </Button>
+                      )}
+                  </div>
+                </div>
+                {loadingVisits ? (
+                  <div
+                    className="space-y-2"
+                    data-ocid="patient_dashboard.visits.loading_state"
+                  >
+                    {[1, 2, 3].map((k) => (
+                      <Skeleton key={k} className="h-12 rounded-lg" />
+                    ))}
+                  </div>
+                ) : (
+                  <HistoryTabContent
+                    sortedVisits={sortedVisits}
+                    currentRole={currentRole}
+                    setSelectedVisit={setSelectedVisit}
+                    downloadSingleVisitPDF={downloadSingleVisitPDF}
+                    openRxForm={openRxForm}
+                  />
+                )}
+              </div>
+
+              {/* ── History Features: Problem List, Complaint Trend, Compare Visits, Vaccinations ── */}
+              <HistoryFeaturesPanel
+                visits={sortedVisits}
+                patient={patient}
+                isDoctor={currentRole === "doctor" || currentRole === "admin"}
+              />
+            </TabsContent>
+
+            {/* ── TIMELINE ── */}
+            <TabsContent value="timeline" className="space-y-4">
+              <PatientTimeline patientId={patientId} patient={patient} />
+            </TabsContent>
+
+            {/* ── PRESCRIPTIONS ── */}
+            <TabsContent value="prescriptions">
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-indigo-600" />{" "}
+                    Prescriptions ({prescriptions.length})
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-indigo-700 border-indigo-300 gap-1.5"
+                      onClick={downloadPrescriptionsPDF}
+                      data-ocid="patient_dashboard.prescriptions.secondary_button"
+                    >
+                      <Download className="w-3.5 h-3.5" /> Download PDF
+                    </Button>
+                    {(currentRole === "doctor" || currentRole === "admin") &&
+                      permissions.canPrescribe && (
+                        <Button
+                          size="sm"
+                          className="bg-indigo-600 hover:bg-indigo-700 text-white gap-1.5"
+                          onClick={() => openRxForm()}
+                          data-ocid="patient_dashboard.prescriptions.open_modal_button"
+                        >
+                          <Plus className="w-3.5 h-3.5" /> New Rx
+                        </Button>
+                      )}
+                  </div>
+                </div>
+                {loadingRx ? (
+                  <div
+                    className="space-y-3"
+                    data-ocid="patient_dashboard.prescriptions.loading_state"
+                  >
+                    {[1, 2, 3].map((k) => (
+                      <Skeleton key={k} className="h-16 rounded-xl" />
+                    ))}
+                  </div>
+                ) : prescriptions.length === 0 ? (
+                  <div
+                    className="text-center py-8"
+                    data-ocid="patient_dashboard.prescriptions.empty_state"
+                  >
+                    <FileText className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                    <p className="text-sm text-gray-400">
+                      No prescriptions yet
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {/* Current Medication List */}
+                    <CurrentMedicationList prescriptions={prescriptions} />
+
+                    {[...prescriptions]
+                      .sort((a, b) =>
+                        Number(b.prescriptionDate - a.prescriptionDate),
+                      )
+                      .map((rx, idx, arr) => {
+                        const prev = arr[idx + 1];
+                        const rxExt = rx as Prescription & {
+                          viewedByPatientAt?: number;
+                        };
+                        return (
+                          <div key={rx.id.toString()}>
+                            {idx === arr.length - 1 ? (
+                              <FirstPrescriptionLabel />
+                            ) : (
+                              prev && (
+                                <PrescriptionDiffRow
+                                  curr={rx}
+                                  prev={prev}
+                                  index={idx}
+                                />
+                              )
+                            )}
+                            <div
+                              className={`bg-card border rounded-xl p-3 hover:shadow-sm transition-all ${
+                                (
+                                  rx as Prescription & {
+                                    prescriptionType?: string;
+                                  }
+                                ).prescriptionType === "emergency"
+                                  ? "border-l-4 border-l-red-500 border-red-200"
+                                  : "border-border"
+                              }`}
+                              data-ocid={`patient_dashboard.prescriptions.item.${idx + 1}`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                                  <FileText className="w-3.5 h-3.5 text-indigo-600" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    {(
+                                      rx as Prescription & {
+                                        prescriptionType?: string;
+                                      }
+                                    ).prescriptionType === "emergency" && (
+                                      <span className="inline-flex items-center gap-0.5 bg-red-100 text-red-700 border border-red-200 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none">
+                                        🚨 EMERGENCY
+                                      </span>
+                                    )}
+                                    <p className="text-sm font-medium truncate">
+                                      {rx.diagnosis ?? "Prescription"}
+                                    </p>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    {formatTime(rx.prescriptionDate)}
+                                    <span className="ml-2">
+                                      {rx.medications.length} med
+                                      {rx.medications.length !== 1 ? "s" : ""}
+                                    </span>
+                                  </p>
+                                </div>
+                                {(currentRole === "doctor" ||
+                                  currentRole === "admin") && (
+                                  <div className="flex items-center gap-1 shrink-0 flex-wrap justify-end">
+                                    {permissions.canEditClinical && (
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="h-7 px-2 text-xs gap-1 border-amber-300 text-amber-700"
+                                        onClick={() => setEditRx(rx)}
+                                        data-ocid={`patient_dashboard.prescriptions.edit_button.${idx + 1}`}
+                                      >
+                                        <Pencil className="w-3 h-3" />
+                                        Edit
+                                      </Button>
+                                    )}
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="h-7 px-2 text-xs gap-1 border-blue-300 text-blue-700"
+                                      onClick={() => setSelectedRx(rx)}
+                                      data-ocid={`patient_dashboard.prescriptions.secondary_button.${idx + 1}`}
+                                    >
+                                      <FileText className="w-3 h-3" />
+                                      View
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="h-7 px-2 text-xs gap-1 border-green-300 text-green-700"
+                                      onClick={() => {
+                                        setPadPrescription(rx);
+                                        setShowPadPreview(true);
+                                        loadSavedPads();
+                                      }}
+                                      data-ocid={`patient_dashboard.prescriptions.open_modal_button.${idx + 1}`}
+                                    >
+                                      <Printer className="w-3 h-3" />
+                                      Pad
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="h-7 px-2 text-xs gap-1 border-purple-300 text-purple-700"
+                                      onClick={() =>
+                                        downloadSinglePrescriptionPDF(rx)
+                                      }
+                                      data-ocid={`patient_dashboard.prescriptions.button.${idx + 1}`}
+                                    >
+                                      <Download className="w-3 h-3" />
+                                      PDF
+                                    </Button>
+                                  </div>
+                                )}
+                                {(currentRole === "patient" ||
+                                  currentRole === "staff") && (
+                                  <div className="flex items-center gap-1 shrink-0">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="h-7 px-2 text-xs gap-1 border-blue-300 text-blue-700"
+                                      onClick={() => setSelectedRx(rx)}
+                                      data-ocid={`patient_dashboard.prescriptions.secondary_button.${idx + 1}`}
+                                    >
+                                      <FileText className="w-3 h-3" />
+                                      View
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="h-7 px-2 text-xs gap-1 border-purple-300 text-purple-700"
+                                      onClick={() =>
+                                        downloadSinglePrescriptionPDF(rx)
+                                      }
+                                      data-ocid={`patient_dashboard.prescriptions.button.${idx + 1}`}
+                                    >
+                                      <Download className="w-3 h-3" />
+                                      PDF
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                              {/* Doctor's view: show viewed-by-patient timestamp */}
+                              {(currentRole === "doctor" ||
+                                currentRole === "admin") && (
+                                <ViewedByPatientBadge
+                                  viewedAt={rxExt.viewedByPatientAt}
+                                />
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
+              </div>
+
+              {/* Saved Prescription Pads */}
+              {savedPads.length > 0 && (
+                <div className="bg-white rounded-xl border border-green-200 shadow-sm p-5 mt-3">
+                  <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                    <Printer className="w-4 h-4 text-green-600" /> Saved
+                    Prescription Pads
+                  </h3>
+                  <div className="space-y-2">
+                    {savedPads.map((pad, idx) => (
+                      <div
+                        key={String(pad.id ?? `pad-${idx}`)}
+                        className="flex items-center justify-between bg-green-50 rounded-lg px-3 py-2 border border-green-100"
+                        data-ocid={`patient_dashboard.prescriptions.item.${idx + 1}`}
+                      >
+                        <div>
+                          <p className="text-sm font-medium text-green-800">
+                            {String(pad.diagnosis || "Prescription Pad")}
+                          </p>
+                          <p className="text-xs text-green-600">
+                            {String(pad.date || "")}
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1 border-green-300 text-green-700 hover:bg-green-50 h-7 text-xs"
+                          onClick={() => {
+                            const win = window.open(
+                              "",
+                              "_blank",
+                              "width=900,height=1100",
+                            );
+                            if (win) {
+                              const meds = Array.isArray(pad.medications)
+                                ? pad.medications
+                                : [];
+                              win.document.write(
+                                `<!DOCTYPE html><html><head><title>Prescription Pad</title><style>body{font-family:Arial,sans-serif;padding:20px}</style></head><body><h2>Prescription — ${String(pad.patientName || "")}</h2><p>Date: ${String(pad.date || "")}</p><p>Diagnosis: ${String(pad.diagnosis || "N/A")}</p><h3>Medications:</h3><ul>${meds.map((m: Record<string, unknown>) => `<li><strong>${String(m.name || "")}</strong> — ${String(m.dose || "")} ${String(m.frequency || "")} ${String(m.duration || "")}</li>`).join("")}</ul></body></html>`,
+                              );
+                              win.document.close();
+                              win.print();
+                            }
+                          }}
+                          data-ocid={`patient_dashboard.prescriptions.secondary_button.${idx + 1}`}
+                        >
+                          <Download className="w-3 h-3" />
+                          Print
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Missed Dose Report — visible to doctor, admin, medical_officer */}
+              {(currentRole === "doctor" ||
+                currentRole === "admin" ||
+                viewerRole === "medical_officer" ||
+                viewerRole === "consultant_doctor") &&
+                patient.isAdmitted && (
+                  <div className="mt-4">
+                    <MissedDoseReport
+                      patientId={patientId.toString()}
+                      patientName={patient.fullName}
+                      admissionDate={
+                        patient.admittedOn || patient.admissionDate
+                      }
+                    />
+                  </div>
+                )}
+            </TabsContent>
+
+            {/* ── APPOINTMENTS ── */}
+            <TabsContent value="appointments">
+              <AppointmentsTab
+                patientId={patientId}
+                currentRole={currentRole}
+                patientName={patient.fullName}
+              />
+            </TabsContent>
+
+            {/* ── PENDING APPROVALS ── */}
+            <TabsContent value="pending">
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-600" /> Pending
+                  Approvals
+                  {pendingCount > 0 && (
+                    <Badge className="bg-red-100 text-red-700 border-0 text-xs">
+                      {pendingCount} pending
+                    </Badge>
+                  )}
+                </h3>
+                {patientSubmissions.length === 0 ? (
+                  <div
+                    className="text-center py-8"
+                    data-ocid="patient_dashboard.pending.empty_state"
+                  >
+                    <CheckCircle2 className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                    <p className="text-sm text-gray-400">
+                      No patient submissions yet
+                    </p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-100">
+                          {[
+                            "Date / Time",
+                            "Type",
+                            "Submitted Data",
+                            "Status",
+                            "Actions",
+                          ].map((h) => (
+                            <th
+                              key={h}
+                              className="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wide"
+                            >
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {patientSubmissions.map((sub, idx) => (
+                          <tr
+                            key={sub.id}
+                            className="border-b border-gray-50"
+                            data-ocid={`patient_dashboard.pending.item.${idx + 1}`}
+                          >
+                            <td className="py-2.5 px-3 text-xs text-gray-500 whitespace-nowrap">
+                              {format(new Date(sub.timestamp), "MMM d, HH:mm")}
+                            </td>
+                            <td className="py-2.5 px-3">
+                              <Badge
+                                className={`text-xs border-0 ${sub.type === "vitals" ? "bg-rose-100 text-rose-700" : sub.type === "investigation" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}
+                              >
+                                {sub.type}
+                              </Badge>
+                            </td>
+                            <td className="py-2.5 px-3 max-w-[250px]">
+                              <div className="flex flex-wrap gap-1">
+                                {Object.entries(sub.data)
+                                  .filter(([, v]) => v)
+                                  .slice(0, 3)
+                                  .map(([k, v]) => (
+                                    <span
+                                      key={k}
+                                      className="text-xs bg-gray-100 rounded px-1.5 py-0.5"
+                                    >
+                                      {k}: {v}
+                                    </span>
+                                  ))}
+                              </div>
+                            </td>
+                            <td className="py-2.5 px-3">
+                              <Badge
+                                className={`text-xs border-0 ${sub.status === "pending" ? "bg-amber-100 text-amber-700" : sub.status === "approved" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+                              >
+                                {sub.status === "pending"
+                                  ? "✓ Submitted — Pending Review"
+                                  : sub.status === "approved"
+                                    ? "Approved"
+                                    : "Rejected"}
+                              </Badge>
+                            </td>
+                            <td className="py-2.5 px-3">
+                              {sub.status === "pending" &&
+                                (currentRole === "doctor" ||
+                                  currentRole === "admin") && (
+                                  <div className="flex gap-1">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="text-emerald-700 border-emerald-300 gap-1 h-7 px-2 text-xs"
+                                      onClick={() => approveSubmission(sub.id)}
+                                      data-ocid="patient_dashboard.confirm_button"
+                                    >
+                                      <CheckCircle2 className="w-3 h-3" />
+                                      Approve
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="text-red-700 border-red-300 gap-1 h-7 px-2 text-xs"
+                                      onClick={() => rejectSubmission(sub.id)}
+                                      data-ocid="patient_dashboard.cancel_button"
+                                    >
+                                      <XCircle className="w-3 h-3" />
+                                      Reject
+                                    </Button>
+                                  </div>
+                                )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
+            {/* ── COMPLAINTS ── */}
+            <TabsContent value="complaints" className="space-y-4">
+              {currentRole === "patient" && (
+                <div className="bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl border-2 border-pink-300 shadow-sm p-5">
+                  <h3 className="font-semibold text-pink-800 mb-3 flex items-center gap-2">
+                    <MessageCircle className="w-4 h-4" /> Submit a Complaint
+                  </h3>
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {[
+                      "Fever",
+                      "Headache",
+                      "Chest Pain",
+                      "Cough",
+                      "Nausea",
+                      "Vomiting",
+                      "Dizziness",
+                      "Pain",
+                    ].map((chip) => (
+                      <button
+                        key={chip}
+                        type="button"
+                        onClick={() =>
+                          setNewComplaintText((prev) =>
+                            prev ? `${prev}, ${chip}` : chip,
+                          )
+                        }
+                        className="text-xs bg-pink-100 hover:bg-pink-200 border border-pink-300 text-pink-700 px-2.5 py-1 rounded-full font-medium transition-colors"
+                      >
+                        {chip}
+                      </button>
+                    ))}
+                  </div>
+                  <Textarea
+                    placeholder="Describe your symptoms or concerns..."
+                    value={newComplaintText}
+                    onChange={(e) => setNewComplaintText(e.target.value)}
+                    rows={3}
+                    className="mb-3 border-pink-200"
+                    data-ocid="patient_dashboard.complaints.textarea"
+                  />
+                  <Button
+                    onClick={() => {
+                      if (!newComplaintText.trim()) return;
+                      const entry: ComplaintEntry = {
+                        id:
+                          Date.now().toString(36) +
+                          Math.random().toString(36).slice(2),
+                        patientId: String(patientId),
+                        text: newComplaintText.trim(),
+                        timestamp: new Date().toISOString(),
+                        status: "pending",
+                      };
+                      const updated = [entry, ...complaints];
+                      setComplaints(updated);
+                      saveComplaints(String(patientId), updated);
+                      setNewComplaintText("");
+                      toast.success("Complaint submitted");
+                    }}
+                    className="bg-pink-600 hover:bg-pink-700 w-full"
+                    data-ocid="patient_dashboard.complaints.submit_button"
+                  >
+                    <MessageCircle className="w-4 h-4 mr-1" /> Submit Complaint
                   </Button>
                 </div>
               )}
 
-              {/* Doctor / admin WhatsApp quick-send */}
-              {(currentRole === "doctor" || currentRole === "admin") && (
-                <div className="flex justify-end mb-3 relative">
-                  <div className="relative">
-                    <Button
-                      size="sm"
-                      className="gap-1.5 bg-green-600 hover:bg-green-700 text-white pr-2"
-                      onClick={() => setWaDropdownOpen((o) => !o)}
-                      data-ocid="patient_dashboard.whatsapp_dropdown.button"
-                    >
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="w-3.5 h-3.5 fill-white"
-                        role="img"
-                        aria-label="WhatsApp"
-                      >
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                      </svg>
-                      Send WhatsApp
-                      <ChevronDown className="w-3.5 h-3.5 ml-0.5" />
-                    </Button>
-                    {waDropdownOpen && (
-                      <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-green-200 rounded-xl shadow-lg py-1 min-w-[200px]">
-                        <button
-                          type="button"
-                          className="w-full text-left px-4 py-2.5 text-sm hover:bg-green-50 text-green-800 font-medium flex items-center gap-2"
-                          onClick={openWaReportModal}
-                          data-ocid="patient_dashboard.whatsapp.report_ready"
-                        >
-                          <FlaskConical className="w-4 h-4 text-green-600" />
-                          Report Ready Notification
-                        </button>
-                        <button
-                          type="button"
-                          className="w-full text-left px-4 py-2.5 text-sm hover:bg-green-50 text-green-800 font-medium flex items-center gap-2"
-                          onClick={openWaFollowUpModal}
-                          data-ocid="patient_dashboard.whatsapp.follow_up"
-                        >
-                          <Calendar className="w-4 h-4 text-green-600" />
-                          Follow-up Reminder
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* WhatsApp modals */}
-              {waModalType === "report_ready" && (
-                <div className="mb-4 bg-green-50 border border-green-200 rounded-xl p-4 space-y-3">
-                  <h4 className="font-semibold text-green-800 flex items-center gap-2 text-sm">
-                    <FlaskConical className="w-4 h-4" /> Send Report Ready
-                    Notification
-                  </h4>
-                  <p className="text-xs text-green-600">
-                    Patient:{" "}
-                    <span className="font-semibold">{patient.fullName}</span> ·{" "}
-                    {patientPhone || "No phone"}
-                  </p>
-                  <div>
-                    <label
-                      htmlFor="wa-report-name"
-                      className="text-xs font-medium text-gray-600"
-                    >
-                      Report Name *
-                    </label>
-                    <input
-                      id="wa-report-name"
-                      type="text"
-                      value={waReportName}
-                      onChange={(e) => setWaReportName(e.target.value)}
-                      placeholder="e.g. CBC, S. Creatinine, Chest X-Ray"
-                      className="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm"
-                      data-ocid="patient_dashboard.whatsapp.report_name.input"
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={sendWaMessage}
-                      className="bg-green-600 hover:bg-green-700 text-white gap-1.5"
-                    >
-                      <MessageCircle className="w-3.5 h-3.5" /> Open WhatsApp
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setWaModalType(null)}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              )}
-              {waModalType === "follow_up" && (
-                <div className="mb-4 bg-green-50 border border-green-200 rounded-xl p-4 space-y-3">
-                  <h4 className="font-semibold text-green-800 flex items-center gap-2 text-sm">
-                    <Calendar className="w-4 h-4" /> Send Follow-up Reminder
-                  </h4>
-                  <p className="text-xs text-green-600">
-                    Patient:{" "}
-                    <span className="font-semibold">{patient.fullName}</span> ·{" "}
-                    {patientPhone || "No phone"}
-                  </p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label
-                        htmlFor="wa-followup-date"
-                        className="text-xs font-medium text-gray-600"
-                      >
-                        Appointment Date *
-                      </label>
-                      <input
-                        id="wa-followup-date"
-                        type="date"
-                        value={waFollowUpDate}
-                        onChange={(e) => setWaFollowUpDate(e.target.value)}
-                        className="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm"
-                        data-ocid="patient_dashboard.whatsapp.followup_date.input"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="wa-followup-time"
-                        className="text-xs font-medium text-gray-600"
-                      >
-                        Appointment Time *
-                      </label>
-                      <input
-                        id="wa-followup-time"
-                        type="time"
-                        value={waFollowUpTime}
-                        onChange={(e) => setWaFollowUpTime(e.target.value)}
-                        className="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm"
-                        data-ocid="patient_dashboard.whatsapp.followup_time.input"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={sendWaMessage}
-                      className="bg-green-600 hover:bg-green-700 text-white gap-1.5"
-                    >
-                      <MessageCircle className="w-3.5 h-3.5" /> Open WhatsApp
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setWaModalType(null)}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              )}
-              <div className="flex flex-wrap gap-4">
-                <div className="flex-1 min-w-[220px]">
-                  <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                    <User className="w-4 h-4 text-teal-600" /> Patient Summary
-                  </h3>
-                  <div className="grid grid-cols-2 gap-2.5 text-sm">
-                    {[
-                      [
-                        "Sex",
-                        patient.gender
-                          ? patient.gender === "male"
-                            ? "Male"
-                            : patient.gender === "female"
-                              ? "Female"
-                              : "Other"
-                          : "N/A",
-                      ],
-                      ["Age", age ? `${age} years` : "N/A"],
-                      ["Blood Group", patient.bloodGroup || "N/A"],
-                      [
-                        "Status",
-                        (patient as Record<string, unknown>).status ===
-                          "Admitted" ||
-                        patient.isAdmitted ||
-                        patient.patientType === "admitted" ||
-                        patient.patientType === "indoor"
-                          ? "🏥 Admitted"
-                          : latestVisit
-                            ? "Under Treatment"
-                            : "Active",
-                      ],
-                      [
-                        "Last Visit",
-                        latestVisit
-                          ? formatTime(latestVisit.visitDate)
-                          : "No visits",
-                      ],
-                      ["Register No.", registerNo || "N/A"],
-                      ...(((patient as Record<string, unknown>).status ===
-                        "Admitted" ||
-                        patient.isAdmitted ||
-                        patient.patientType === "admitted" ||
-                        patient.patientType === "indoor") &&
-                      (patient as Record<string, unknown>).ward
-                        ? [
-                            [
-                              "Ward / Bed",
-                              `${(patient as Record<string, unknown>).ward as string}${(patient as Record<string, unknown>).bedNumber ? `, Bed ${(patient as Record<string, unknown>).bedNumber as string}` : ""}`,
-                            ],
-                          ]
-                        : []),
-                    ].map(([label, value]) => (
-                      <div key={label} className="bg-gray-50 rounded-lg p-2.5">
-                        <p className="text-xs text-gray-400 mb-0.5">{label}</p>
-                        <p className="font-semibold text-gray-800 text-sm">
-                          {value}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                {latestVisit && (
-                  <div className="flex-1 min-w-[200px]">
-                    <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-blue-600" /> Latest
-                      Visit
-                    </h3>
-                    <div className="bg-blue-50 rounded-xl p-3 text-sm space-y-2">
-                      <p className="text-xs text-blue-500">
-                        {formatTime(latestVisit.visitDate)}
-                      </p>
-                      {latestVisit.diagnosis && (
-                        <p className="font-semibold text-blue-800">
-                          {latestVisit.diagnosis}
-                        </p>
-                      )}
-                      {latestVisit.chiefComplaint && (
-                        <p className="text-blue-700 text-xs">
-                          {latestVisit.chiefComplaint}
-                        </p>
-                      )}
-                      <Badge className="text-xs border-0 bg-amber-100 text-amber-700">
-                        Under Treatment
-                      </Badge>
-                    </div>
-                  </div>
-                )}
-              </div>
-              {bmi && bmiCat && (
-                <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-4">
-                  <div>
-                    <p className="text-xs text-gray-500">BMI</p>
-                    <p className="text-2xl font-bold text-gray-800">
-                      {bmi}{" "}
-                      <span className="text-sm font-normal text-gray-500">
-                        kg/m²
-                      </span>
-                    </p>
-                  </div>
-                  <span
-                    className={`px-3 py-1.5 rounded-full text-sm font-semibold ${bmiCat.color}`}
+              <div className="bg-white rounded-xl border border-pink-100 shadow-sm p-5">
+                <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-pink-600" /> Complaints Log
+                  {complaints.length > 0 && (
+                    <span className="ml-auto text-xs font-normal text-gray-400">
+                      {complaints.length} entries
+                    </span>
+                  )}
+                </h3>
+                {complaints.length === 0 ? (
+                  <p
+                    className="text-sm text-gray-400 text-center py-4"
+                    data-ocid="patient_dashboard.complaints.empty_state"
                   >
-                    {bmiCat.label}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Latest vitals */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-              <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                <Activity className="w-4 h-4 text-rose-500" /> Latest Vitals
-                {latestVisit && (
-                  <span className="text-xs font-normal text-gray-400">
-                    from {formatTime(latestVisit.visitDate)}
-                  </span>
-                )}
-              </h3>
-              <VitalsBar
-                vitals={latestVitals}
-                weight={patient.weight}
-                height={patient.height}
-              />
-            </div>
-
-            {/* Family History Risk Card */}
-            {(() => {
-              const email = getDoctorEmail();
-              const risk = loadFamilyHistoryRisk(email, patientId.toString());
-              if (!risk) return null;
-              const active: string[] = [];
-              if (risk.diabetes) active.push("Diabetes");
-              if (risk.hypertension) active.push("Hypertension");
-              if (risk.ihd) active.push("IHD");
-              if (risk.cancer) active.push("Cancer");
-              if (risk.stroke) active.push("Stroke");
-              if (active.length === 0) return null;
-              return (
-                <div
-                  className="bg-amber-50 border border-amber-200 rounded-xl p-4"
-                  data-ocid="patient_dashboard.family_risk_section"
-                >
-                  <h3 className="font-semibold text-amber-800 mb-2 flex items-center gap-2 text-sm">
-                    🧬 Family History Risk
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {active.map((r) => (
-                      <span
-                        key={r}
-                        className="inline-flex items-center gap-1 bg-amber-100 text-amber-800 border border-amber-300 rounded-full px-2.5 py-1 text-xs font-semibold"
-                      >
-                        🔴 {r}
-                      </span>
-                    ))}
-                  </div>
-                  {risk.additionalNotes && (
-                    <p className="text-xs text-amber-700 mt-2 italic">
-                      {risk.additionalNotes}
-                    </p>
-                  )}
-                </div>
-              );
-            })()}
-
-            {/* Pregnancy Card */}
-            {patient.gender === "female" &&
-              (currentRole === "doctor" || currentRole === "admin") && (
-                <div className="bg-white rounded-xl border border-pink-200 shadow-sm p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-                      <Baby className="w-4 h-4 text-pink-500" /> Pregnancy
-                      Status
-                    </h3>
-                    <div className="flex gap-2">
-                      {pregnancyData?.active && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-xs border-red-300 text-red-600"
-                          onClick={clearPregnancyData}
-                        >
-                          Clear
-                        </Button>
-                      )}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-7 text-xs border-pink-300 text-pink-600"
-                        onClick={() => setShowPregnancyForm(!showPregnancyForm)}
-                      >
-                        {pregnancyData?.active ? "Update" : "Set Pregnancy"}
-                      </Button>
-                    </div>
-                  </div>
-                  {showPregnancyForm && (
-                    <div className="bg-pink-50 rounded-lg p-3 mb-3 space-y-2 border border-pink-100">
-                      <div className="grid grid-cols-3 gap-2">
-                        {[
-                          {
-                            id: "preg-lmp",
-                            label: "LMP Date",
-                            type: "date",
-                            value: lmpInput,
-                            onChange: setLmpInput,
-                          },
-                          {
-                            id: "preg-gravida",
-                            label: "Gravida",
-                            type: "number",
-                            value: gravidaInput,
-                            onChange: setGravidaInput,
-                          },
-                          {
-                            id: "preg-para",
-                            label: "Para",
-                            type: "number",
-                            value: paraInput,
-                            onChange: setParaInput,
-                          },
-                        ].map((field) => (
-                          <div key={field.id}>
-                            <label
-                              htmlFor={field.id}
-                              className="text-xs text-gray-500 mb-1 block"
-                            >
-                              {field.label}
-                            </label>
-                            <input
-                              id={field.id}
-                              type={field.type}
-                              min="0"
-                              value={field.value}
-                              onChange={(e) => field.onChange(e.target.value)}
-                              className="w-full border border-gray-200 rounded px-2 py-1.5 text-sm"
-                              data-ocid="patient_dashboard.pregnancy.input"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                      <Button
-                        size="sm"
-                        onClick={savePregnancyData}
-                        className="bg-pink-600 hover:bg-pink-700 text-white"
-                        data-ocid="patient_dashboard.pregnancy.save_button"
-                      >
-                        Save
-                      </Button>
-                    </div>
-                  )}
-                  {pregnancyData?.active && pregnancyData.lmp ? (
-                    (() => {
-                      const info = calcPregnancy(pregnancyData.lmp);
-                      return (
-                        <div className="space-y-3">
-                          <div className="grid grid-cols-3 gap-3">
-                            <div className="bg-pink-50 rounded-lg p-3 text-center">
-                              <p className="text-2xl font-bold text-pink-600">
-                                {info.weeks}
-                              </p>
-                              <p className="text-xs text-gray-500">Weeks</p>
-                            </div>
-                            <div className="bg-rose-50 rounded-lg p-3 text-center">
-                              <p className="text-2xl font-bold text-rose-600">
-                                {info.months}
-                              </p>
-                              <p className="text-xs text-gray-500">Months</p>
-                            </div>
-                            <div className="bg-purple-50 rounded-lg p-3 text-center">
-                              <p className="text-sm font-bold text-purple-600">
-                                {info.edd}
-                              </p>
-                              <p className="text-xs text-gray-500">EDD</p>
-                            </div>
-                          </div>
-                          {pregnancyData.gravida && (
-                            <p className="text-xs text-gray-500">
-                              G{pregnancyData.gravida}P{pregnancyData.para || 0}
-                            </p>
-                          )}
-                          <div className="space-y-1.5">
-                            <p className="text-xs font-semibold text-gray-600 flex items-center gap-1">
-                              <HeartPulse className="w-3.5 h-3.5 text-pink-500" />{" "}
-                              Pregnancy Advice
-                            </p>
-                            {[
-                              "Take folic acid 400–800 mcg daily",
-                              "Prenatal vitamins as prescribed",
-                              "Avoid alcohol, tobacco, raw fish",
-                              `Next scan at ${info.weeks < 20 ? "20" : "32"} weeks`,
-                              "Monitor BP and blood sugar regularly",
-                              "Emergency: severe headache, blurred vision, or bleeding → visit immediately",
-                            ].map((adv) => (
-                              <p
-                                key={adv}
-                                className="text-xs text-gray-600 flex items-start gap-1.5 bg-pink-50/60 rounded px-2 py-1"
-                              >
-                                <span className="text-pink-400 mt-0.5">•</span>
-                                {adv}
-                              </p>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })()
-                  ) : (
-                    <p
-                      className="text-sm text-gray-400 text-center py-2"
-                      data-ocid="patient_dashboard.pregnancy.empty_state"
-                    >
-                      No active pregnancy recorded
-                    </p>
-                  )}
-                </div>
-              )}
-
-            {/* Patient data submission panel */}
-            {currentRole === "patient" && showSubmitPanel && (
-              <div className="bg-white rounded-xl border border-teal-200 shadow-sm p-5">
-                <h3 className="font-semibold text-teal-800 mb-3">
-                  Submit Health Data
-                </h3>
-                <div className="flex gap-2 mb-4">
-                  {["complaint", "vitals", "investigation"].map((t) => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setSubmitTab(t)}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors ${submitTab === t ? "bg-teal-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
-                    >
-                      {t}
-                    </button>
-                  ))}
-                </div>
-                {submitTab === "complaint" && (
-                  <Textarea
-                    value={complaint}
-                    onChange={(e) => setComplaint(e.target.value)}
-                    placeholder="Describe your symptoms..."
-                    rows={3}
-                    data-ocid="patient_dashboard.submit.textarea"
-                  />
-                )}
-                {submitTab === "vitals" && (
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      { key: "systolic", label: "Systolic BP (mmHg)" },
-                      { key: "diastolic", label: "Diastolic BP (mmHg)" },
-                      { key: "pulse", label: "Pulse (beats/min)" },
-                      { key: "temp", label: "Temperature (°C)" },
-                      { key: "spo2", label: "SpO₂ (%)" },
-                      { key: "weight", label: "Weight (kg)" },
-                    ].map((f) => (
-                      <div key={f.key}>
-                        <Label className="text-xs">{f.label}</Label>
-                        <Input
-                          value={vitalFields[f.key as keyof typeof vitalFields]}
-                          onChange={(e) =>
-                            setVitalFields((prev) => ({
-                              ...prev,
-                              [f.key]: e.target.value,
-                            }))
-                          }
-                          placeholder="Value"
-                          type="number"
-                          className="mt-1"
-                          data-ocid="patient_dashboard.submit.input"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {submitTab === "investigation" && (
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      { key: "name", label: "Test Name" },
-                      { key: "result", label: "Result" },
-                      { key: "unit", label: "Unit" },
-                      { key: "date", label: "Date" },
-                    ].map((f) => (
-                      <div key={f.key}>
-                        <Label className="text-xs">{f.label}</Label>
-                        <Input
-                          value={invFields[f.key as keyof typeof invFields]}
-                          onChange={(e) =>
-                            setInvFields((prev) => ({
-                              ...prev,
-                              [f.key]: e.target.value,
-                            }))
-                          }
-                          type={f.key === "date" ? "date" : "text"}
-                          className="mt-1"
-                          data-ocid="patient_dashboard.submit.input"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <Button
-                  className="mt-3 bg-teal-600 hover:bg-teal-700 text-white"
-                  onClick={handleSubmitData}
-                  data-ocid="patient_dashboard.submit.submit_button"
-                >
-                  Submit for Doctor Review
-                </Button>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* ── VITALS ── */}
-          <TabsContent value="vitals" className="space-y-4">
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-              <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <Heart className="w-4 h-4 text-rose-500" /> Vital Signs Summary
-              </h3>
-              <VitalsBar
-                vitals={latestVitals}
-                weight={patient.weight}
-                height={patient.height}
-                showAlertBanner={true}
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <VitalGraph
-                title="Blood Pressure"
-                data={vitalsHistory}
-                dataKey={["BP", "Diastolic", "MAP"]}
-                unit="mmHg"
-                color={["#ef4444", "#3b82f6", "#16a34a"]}
-                bgClass="bg-rose-50"
-                borderClass="border-rose-200"
-                icon={Heart}
-              />
-              <VitalGraph
-                title="Pulse Rate"
-                data={vitalsHistory}
-                dataKey="Pulse"
-                unit="beats/min"
-                color="#f97316"
-                bgClass="bg-orange-50"
-                borderClass="border-orange-200"
-                icon={Activity}
-              />
-              <VitalGraph
-                title="SpO₂"
-                data={vitalsHistory}
-                dataKey="SpO2"
-                unit="%"
-                color="#3b82f6"
-                bgClass="bg-blue-50"
-                borderClass="border-blue-200"
-                icon={Wind}
-              />
-              <VitalGraph
-                title="Temperature"
-                data={vitalsHistory}
-                dataKey="Temp"
-                unit="°C"
-                color="#8b5cf6"
-                bgClass="bg-purple-50"
-                borderClass="border-purple-200"
-                icon={Thermometer}
-              />
-              <VitalGraph
-                title="Weight"
-                data={vitalsHistory}
-                dataKey="Weight"
-                unit="kg"
-                color="#0d9488"
-                bgClass="bg-teal-50"
-                borderClass="border-teal-200"
-                icon={User}
-              />
-              <VitalGraph
-                title="Respiratory Rate"
-                data={vitalsHistory}
-                dataKey="RespRate"
-                unit="breaths/min"
-                color="#0891b2"
-                bgClass="bg-cyan-50"
-                borderClass="border-cyan-200"
-                icon={Wind}
-              />
-              <VitalGraph
-                title="BMI Trend"
-                data={vitalsHistory}
-                dataKey="BMI"
-                unit="kg/m²"
-                color="#6366f1"
-                bgClass="bg-indigo-50"
-                borderClass="border-indigo-200"
-                icon={Activity}
-              />
-            </div>
-          </TabsContent>
-
-          {/* ── INVESTIGATIONS ── */}
-          <TabsContent value="investigations" className="space-y-4">
-            {/* Tracking panel at the top */}
-            <div className="bg-white rounded-xl border border-teal-200 shadow-sm p-5">
-              <InvestigationTracker
-                patientId={String(patientId)}
-                patientPhone={patient.phone}
-                viewerRole={viewerRole}
-                currentRole={currentRole}
-              />
-            </div>
-
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-                  <FlaskConical className="w-4 h-4 text-teal-600" />{" "}
-                  Investigation Reports
-                </h3>
-                <div className="relative w-52">
-                  <Search className="absolute left-2.5 top-2 w-4 h-4 text-gray-400" />
-                  <Input
-                    placeholder="Search test..."
-                    value={invSearch}
-                    onChange={(e) => setInvSearch(e.target.value)}
-                    className="pl-8 h-8 text-sm"
-                    data-ocid="patient_dashboard.search_input"
-                  />
-                </div>
-              </div>
-              {filteredInvRows.length === 0 ? (
-                <div
-                  className="text-center py-8"
-                  data-ocid="patient_dashboard.investigations.empty_state"
-                >
-                  <FlaskConical className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                  <p className="text-sm text-gray-400">
-                    No investigation reports found
+                    No complaints submitted yet.
                   </p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-100">
-                        {[
-                          "Investigation",
-                          "Result",
-                          "Unit",
-                          "Date",
-                          "Interpretation",
-                        ].map((h) => (
-                          <th
-                            key={h}
-                            className="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wide"
-                          >
-                            {h}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredInvRows.map((row, i) => (
-                        <tr
-                          key={`inv-${row.name}-${row.date}-${i}`}
-                          className="border-b border-gray-50 hover:bg-gray-50"
-                          data-ocid={`patient_dashboard.investigations.row.${i + 1}`}
-                        >
-                          <td className="py-2.5 px-3 font-medium text-gray-800">
-                            {row.name}
-                          </td>
-                          <td className="py-2.5 px-3 text-gray-700">
-                            {row.result}
-                          </td>
-                          <td className="py-2.5 px-3 text-gray-500">
-                            {row.unit || "—"}
-                          </td>
-                          <td className="py-2.5 px-3 text-gray-500">
-                            {row.date || "—"}
-                          </td>
-                          <td className="py-2.5 px-3 text-gray-500 max-w-[200px] truncate">
-                            {row.interpretation || "—"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-            {Object.keys(invByName).length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Object.entries(invByName)
-                  .slice(0, 12)
-                  .map(([name, { data, unit }]) => {
-                    // Build AI interpretation for latest tracked result of this test
-                    const trackedInvs = loadTrackedInvestigations(
-                      String(patientId),
-                    );
-                    const latestTracked = trackedInvs
-                      .filter((t) => t.name === name && t.result)
-                      .sort(
-                        (a, b) =>
-                          new Date(b.result!.recordedAt).getTime() -
-                          new Date(a.result!.recordedAt).getTime(),
-                      )[0];
-                    const allReadings = trackedInvs
-                      .filter((t) => t.name === name && t.result)
-                      .map((t) => ({
-                        value: t.result!.value,
-                        recordedAt: t.result!.recordedAt,
-                      }));
-                    // Fallback: use most recent allInvestigations reading
-                    const latestRow = allInvestigations
-                      .filter(
-                        (r) =>
-                          r.name === name &&
-                          r.result &&
-                          !Number.isNaN(Number.parseFloat(r.result)),
-                      )
-                      .sort((a, b) => b.date.localeCompare(a.date))[0];
-                    let aiText = "";
-                    if (latestTracked?.result) {
-                      aiText = generateAIInterpretation(
-                        name,
-                        latestTracked.result,
-                        allReadings,
-                      );
-                    } else if (latestRow) {
-                      aiText = generateAIInterpretation(
-                        name,
-                        {
-                          value: latestRow.result,
-                          unit: latestRow.unit ?? unit,
-                          referenceRange: "",
-                          interpretation: (latestRow.interpretation ??
-                            "Normal") as InterpretationLabel,
-                          recordedAt: new Date(latestRow.date).toISOString(),
-                          recordedBy: "System",
-                        },
-                        [],
-                      );
-                    }
-
-                    return (
+                ) : (
+                  <div className="space-y-3">
+                    {complaints.map((c, idx) => (
                       <div
-                        key={name}
-                        className="bg-white rounded-xl border border-teal-200 shadow-sm p-4"
+                        key={c.id}
+                        className="border border-gray-200 rounded-xl p-4 space-y-2"
+                        data-ocid={`patient_dashboard.complaints.item.${idx + 1}`}
                       >
-                        <h4 className="font-semibold text-teal-800 mb-1 text-sm">
-                          {name} Trend
-                        </h4>
-                        {unit && (
-                          <p className="text-xs mb-2">
-                            Unit:{" "}
-                            <span className="font-bold text-gray-700">
-                              {unit}
-                            </span>
-                          </p>
-                        )}
-                        {data.length >= 2 ? (
-                          <ResponsiveContainer width="100%" height={180}>
-                            <LineChart data={data}>
-                              <CartesianGrid
-                                strokeDasharray="3 3"
-                                stroke="#f0f0f0"
-                              />
-                              <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                              <YAxis
-                                tick={{ fontSize: 10 }}
-                                label={
-                                  unit
-                                    ? {
-                                        value: unit,
-                                        angle: -90,
-                                        position: "insideLeft",
-                                        style: {
-                                          fontWeight: "bold",
-                                          fontSize: 10,
-                                        },
-                                      }
-                                    : undefined
-                                }
-                              />
-                              <Tooltip
-                                formatter={(v: number) => [
-                                  `${v} ${unit}`,
-                                  name,
-                                ]}
-                              />
-                              <Line
-                                type="monotone"
-                                dataKey="value"
-                                stroke="#0d9488"
-                                strokeWidth={2}
-                                dot={{ r: 4 }}
-                                name={name}
-                              />
-                            </LineChart>
-                          </ResponsiveContainer>
-                        ) : (
-                          <div className="text-center py-6 text-gray-400 text-xs">
-                            Need 2+ data points for chart
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-800">
+                              {c.text}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              {format(
+                                new Date(c.timestamp),
+                                "MMM d, yyyy 'at' h:mm a",
+                              )}
+                            </p>
+                          </div>
+                          <Badge
+                            className={
+                              c.status === "seen"
+                                ? "bg-green-100 text-green-700 border-0 shrink-0"
+                                : "bg-amber-100 text-amber-700 border-0 shrink-0"
+                            }
+                          >
+                            {c.status === "seen" ? "Seen" : "Pending"}
+                          </Badge>
+                        </div>
+                        {c.doctorNote && (
+                          <div className="bg-blue-50 rounded-lg px-3 py-2 text-sm text-blue-800">
+                            <span className="font-semibold">
+                              Doctor's note:
+                            </span>{" "}
+                            {c.doctorNote}
                           </div>
                         )}
-                        {/* AI Interpretation under each graph */}
-                        {aiText && (
-                          <div
-                            className={`mt-3 rounded-lg p-3 border text-xs ${
-                              aiText.startsWith("⚠️")
-                                ? "bg-amber-50 border-amber-200 text-amber-800"
-                                : "bg-teal-50 border-teal-200 text-teal-800"
-                            }`}
-                            data-ocid="patient_dashboard.inv.ai_interpretation"
-                          >
-                            <p className="font-semibold mb-0.5">
-                              🤖 AI Interpretation
-                            </p>
-                            <p>{aiText}</p>
-                            <p className="mt-1 opacity-60 italic">
-                              AI Suggested — Review with Doctor
-                            </p>
+                        {(currentRole === "doctor" ||
+                          currentRole === "admin") && (
+                          <div className="pt-2 border-t border-gray-100 space-y-2">
+                            <Input
+                              placeholder="Add a note for the patient (optional)..."
+                              defaultValue={c.doctorNote || ""}
+                              onBlur={(e) => {
+                                const note = e.target.value.trim();
+                                if (note !== (c.doctorNote || "")) {
+                                  const updated = complaints.map((x) =>
+                                    x.id === c.id
+                                      ? { ...x, doctorNote: note }
+                                      : x,
+                                  );
+                                  setComplaints(updated);
+                                  saveComplaints(String(patientId), updated);
+                                }
+                              }}
+                              className="text-sm"
+                              data-ocid="patient_dashboard.complaints.input"
+                            />
+                            {c.status === "pending" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-green-700 border-green-300 hover:bg-green-50"
+                                onClick={() => {
+                                  const updated = complaints.map((x) =>
+                                    x.id === c.id
+                                      ? { ...x, status: "seen" as const }
+                                      : x,
+                                  );
+                                  setComplaints(updated);
+                                  saveComplaints(String(patientId), updated);
+                                  toast.success("Marked as seen");
+                                }}
+                                data-ocid="patient_dashboard.complaints.confirm_button"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5 mr-1" />{" "}
+                                Mark as Seen
+                              </Button>
+                            )}
                           </div>
                         )}
                       </div>
-                    );
-                  })}
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </TabsContent>
+            </TabsContent>
 
-          {/* ── HISTORY ── */}
-          <TabsContent value="history" className="space-y-4">
-            {/* ── Admission History section — admitted patients, clinical roles only ── */}
-            {isAdmittedPatient &&
-              currentRole !== "patient" &&
-              (() => {
-                const admHxRecords = loadAdmissionHistory(String(patientId));
-                if (admHxRecords.length === 0) return null;
-                return (
-                  <AdmissionHistoryInlineSection
-                    records={admHxRecords}
-                    viewerRole={viewerRole ?? "doctor"}
-                    patient={patient}
-                  />
-                );
-              })()}
-
-            {/* ── Admissions timeline section (admitted patients only) ── */}
-            {isAdmittedPatient && (
-              <div className="bg-white rounded-xl border border-blue-200 shadow-sm p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-                    <BookOpen className="w-4 h-4 text-blue-600" /> Admissions
+            {/* ── ADVICE ── */}
+            <TabsContent value="advice" className="space-y-4">
+              {(currentRole === "doctor" || currentRole === "admin") && (
+                <div className="bg-white rounded-xl border border-emerald-200 shadow-sm p-5">
+                  <h3 className="font-semibold text-emerald-800 mb-3 flex items-center gap-2">
+                    <Lightbulb className="w-4 h-4" /> Add Advice
                   </h3>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-xs">Date</Label>
+                      <input
+                        type="date"
+                        value={newAdviceDate}
+                        onChange={(e) => setNewAdviceDate(e.target.value)}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                        data-ocid="patient_dashboard.advice.input"
+                      />
+                    </div>
+                    <Textarea
+                      placeholder="Enter advice or instructions..."
+                      value={newAdviceText}
+                      onChange={(e) => setNewAdviceText(e.target.value)}
+                      rows={3}
+                      data-ocid="patient_dashboard.advice.textarea"
+                    />
+                    <Button
+                      onClick={() => {
+                        if (!newAdviceText.trim()) return;
+                        const entry: AdviceEntry = {
+                          id:
+                            Date.now().toString(36) +
+                            Math.random().toString(36).slice(2),
+                          patientId: String(patientId),
+                          text: newAdviceText.trim(),
+                          date: newAdviceDate || new Date().toISOString(),
+                          addedBy: currentRole,
+                          source: "Doctor's Note",
+                        };
+                        const updated = [entry, ...adviceEntries];
+                        setAdviceEntries(updated);
+                        saveAdviceEntries(String(patientId), updated);
+                        setNewAdviceText("");
+                        toast.success("Advice added");
+                      }}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                      data-ocid="patient_dashboard.advice.submit_button"
+                    >
+                      <Plus className="w-4 h-4 mr-1" /> Add Advice
+                    </Button>
+                  </div>
                 </div>
-                <AdmissionTimeline
+              )}
+              <div className="bg-white rounded-xl border border-emerald-100 shadow-sm p-5">
+                <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <Lightbulb className="w-4 h-4 text-emerald-600" /> Advice &
+                  Instructions
+                </h3>
+                {adviceEntries.length === 0 ? (
+                  <p
+                    className="text-sm text-gray-400 text-center py-6"
+                    data-ocid="patient_dashboard.advice.empty_state"
+                  >
+                    No advice or instructions recorded yet.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {adviceEntries.map((entry, idx) => (
+                      <div
+                        key={entry.id}
+                        className="border border-emerald-100 rounded-xl p-4 bg-emerald-50"
+                        data-ocid={`patient_dashboard.advice.item.${idx + 1}`}
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-emerald-700 bg-emerald-200 px-2 py-0.5 rounded-full">
+                              {entry.source}
+                            </span>
+                            <span className="text-xs text-gray-400">
+                              {entry.date
+                                ? format(new Date(entry.date), "MMM d, yyyy")
+                                : "—"}
+                            </span>
+                          </div>
+                          {(currentRole === "doctor" ||
+                            currentRole === "admin") && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = adviceEntries.filter(
+                                  (e) => e.id !== entry.id,
+                                );
+                                setAdviceEntries(updated);
+                                saveAdviceEntries(String(patientId), updated);
+                              }}
+                              className="text-red-400 hover:text-red-600"
+                              data-ocid="patient_dashboard.advice.delete_button"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-700 whitespace-pre-line">
+                          {entry.text}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
+            {/* ── CHAT ── */}
+            <TabsContent value="chat">
+              <PatientChat
+                patientId={patientId}
+                currentRole={currentRole}
+                currentUserName={
+                  currentRole === "patient" ? patient.fullName : "Doctor"
+                }
+              />
+            </TabsContent>
+
+            {/* ── ACCOUNT SETTINGS ── */}
+            <TabsContent value="account">
+              <AccountSettingsTab
+                patientId={patientId}
+                registerNo={registerNo}
+                currentRole={currentRole}
+                patientAccount={patientAccount}
+                linkedAccount={linkedAccount}
+                reminders={reminders}
+                prescriptionDrugChips={prescriptionDrugChips}
+                onSaveReminders={saveReminders}
+              />
+            </TabsContent>
+
+            {/* ── DAILY PROGRESS NOTE (admitted patients — clinical roles) ── */}
+            <TabsContent value="daily_progress">
+              {canViewDailyProgress ? (
+                <DailyProgressNote
                   patientId={String(patientId)}
                   doctorEmail={(() => {
                     try {
@@ -3445,795 +4442,47 @@ export default function PatientDashboardInner({
                       return "default";
                     }
                   })()}
-                />
-              </div>
-            )}
-
-            {/* ── Visit History (outpatient) ── */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-purple-600" /> Visit History
-                  {isAdmittedPatient && (
-                    <span className="text-xs font-normal text-gray-400 ml-1">
-                      (Outpatient)
-                    </span>
-                  )}
-                </h3>
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-purple-700 border-purple-300 gap-1.5"
-                    onClick={downloadVisitHistoryPDF}
-                    data-ocid="patient_dashboard.visits.secondary_button"
-                  >
-                    <Download className="w-3.5 h-3.5" /> Download PDF
-                  </Button>
-                  {(currentRole === "doctor" || currentRole === "admin") &&
-                    permissions.canEditClinical && (
-                      <Button
-                        size="sm"
-                        className="bg-purple-600 hover:bg-purple-700 text-white gap-1.5"
-                        onClick={() => setShowVisitForm(true)}
-                        data-ocid="patient_dashboard.visits.open_modal_button"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> New Visit
-                      </Button>
-                    )}
-                </div>
-              </div>
-              {loadingVisits ? (
-                <div
-                  className="space-y-2"
-                  data-ocid="patient_dashboard.visits.loading_state"
-                >
-                  {[1, 2, 3].map((k) => (
-                    <Skeleton key={k} className="h-12 rounded-lg" />
-                  ))}
-                </div>
-              ) : (
-                <HistoryTabContent
-                  sortedVisits={sortedVisits}
-                  currentRole={currentRole}
-                  setSelectedVisit={setSelectedVisit}
-                  downloadSingleVisitPDF={downloadSingleVisitPDF}
-                  openRxForm={openRxForm}
-                />
-              )}
-            </div>
-
-            {/* ── History Features: Problem List, Complaint Trend, Compare Visits, Vaccinations ── */}
-            <HistoryFeaturesPanel
-              visits={sortedVisits}
-              patient={patient}
-              isDoctor={currentRole === "doctor" || currentRole === "admin"}
-            />
-          </TabsContent>
-
-          {/* ── PRESCRIPTIONS ── */}
-          <TabsContent value="prescriptions">
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-indigo-600" /> Prescriptions
-                  ({prescriptions.length})
-                </h3>
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-indigo-700 border-indigo-300 gap-1.5"
-                    onClick={downloadPrescriptionsPDF}
-                    data-ocid="patient_dashboard.prescriptions.secondary_button"
-                  >
-                    <Download className="w-3.5 h-3.5" /> Download PDF
-                  </Button>
-                  {(currentRole === "doctor" || currentRole === "admin") &&
-                    permissions.canPrescribe && (
-                      <Button
-                        size="sm"
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white gap-1.5"
-                        onClick={() => openRxForm()}
-                        data-ocid="patient_dashboard.prescriptions.open_modal_button"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> New Rx
-                      </Button>
-                    )}
-                </div>
-              </div>
-              {loadingRx ? (
-                <div
-                  className="space-y-3"
-                  data-ocid="patient_dashboard.prescriptions.loading_state"
-                >
-                  {[1, 2, 3].map((k) => (
-                    <Skeleton key={k} className="h-16 rounded-xl" />
-                  ))}
-                </div>
-              ) : prescriptions.length === 0 ? (
-                <div
-                  className="text-center py-8"
-                  data-ocid="patient_dashboard.prescriptions.empty_state"
-                >
-                  <FileText className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                  <p className="text-sm text-gray-400">No prescriptions yet</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {/* Current Medication List */}
-                  <CurrentMedicationList prescriptions={prescriptions} />
-
-                  {[...prescriptions]
-                    .sort((a, b) =>
-                      Number(b.prescriptionDate - a.prescriptionDate),
-                    )
-                    .map((rx, idx, arr) => {
-                      const prev = arr[idx + 1];
-                      const rxExt = rx as Prescription & {
-                        viewedByPatientAt?: number;
-                      };
-                      return (
-                        <div key={rx.id.toString()}>
-                          {idx === arr.length - 1 ? (
-                            <FirstPrescriptionLabel />
-                          ) : (
-                            prev && (
-                              <PrescriptionDiffRow
-                                curr={rx}
-                                prev={prev}
-                                index={idx}
-                              />
-                            )
-                          )}
-                          <div
-                            className={`bg-card border rounded-xl p-3 hover:shadow-sm transition-all ${
-                              (
-                                rx as Prescription & {
-                                  prescriptionType?: string;
-                                }
-                              ).prescriptionType === "emergency"
-                                ? "border-l-4 border-l-red-500 border-red-200"
-                                : "border-border"
-                            }`}
-                            data-ocid={`patient_dashboard.prescriptions.item.${idx + 1}`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                                <FileText className="w-3.5 h-3.5 text-indigo-600" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  {(
-                                    rx as Prescription & {
-                                      prescriptionType?: string;
-                                    }
-                                  ).prescriptionType === "emergency" && (
-                                    <span className="inline-flex items-center gap-0.5 bg-red-100 text-red-700 border border-red-200 rounded-full px-2 py-0.5 text-[10px] font-bold leading-none">
-                                      🚨 EMERGENCY
-                                    </span>
-                                  )}
-                                  <p className="text-sm font-medium truncate">
-                                    {rx.diagnosis ?? "Prescription"}
-                                  </p>
-                                </div>
-                                <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-                                  <Clock className="w-3 h-3" />
-                                  {formatTime(rx.prescriptionDate)}
-                                  <span className="ml-2">
-                                    {rx.medications.length} med
-                                    {rx.medications.length !== 1 ? "s" : ""}
-                                  </span>
-                                </p>
-                              </div>
-                              {(currentRole === "doctor" ||
-                                currentRole === "admin") && (
-                                <div className="flex items-center gap-1 shrink-0 flex-wrap justify-end">
-                                  {permissions.canEditClinical && (
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      className="h-7 px-2 text-xs gap-1 border-amber-300 text-amber-700"
-                                      onClick={() => setEditRx(rx)}
-                                      data-ocid={`patient_dashboard.prescriptions.edit_button.${idx + 1}`}
-                                    >
-                                      <Pencil className="w-3 h-3" />
-                                      Edit
-                                    </Button>
-                                  )}
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-7 px-2 text-xs gap-1 border-blue-300 text-blue-700"
-                                    onClick={() => setSelectedRx(rx)}
-                                    data-ocid={`patient_dashboard.prescriptions.secondary_button.${idx + 1}`}
-                                  >
-                                    <FileText className="w-3 h-3" />
-                                    View
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-7 px-2 text-xs gap-1 border-green-300 text-green-700"
-                                    onClick={() => {
-                                      setPadPrescription(rx);
-                                      setShowPadPreview(true);
-                                      loadSavedPads();
-                                    }}
-                                    data-ocid={`patient_dashboard.prescriptions.open_modal_button.${idx + 1}`}
-                                  >
-                                    <Printer className="w-3 h-3" />
-                                    Pad
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-7 px-2 text-xs gap-1 border-purple-300 text-purple-700"
-                                    onClick={() =>
-                                      downloadSinglePrescriptionPDF(rx)
-                                    }
-                                    data-ocid={`patient_dashboard.prescriptions.button.${idx + 1}`}
-                                  >
-                                    <Download className="w-3 h-3" />
-                                    PDF
-                                  </Button>
-                                </div>
-                              )}
-                              {(currentRole === "patient" ||
-                                currentRole === "staff") && (
-                                <div className="flex items-center gap-1 shrink-0">
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-7 px-2 text-xs gap-1 border-blue-300 text-blue-700"
-                                    onClick={() => setSelectedRx(rx)}
-                                    data-ocid={`patient_dashboard.prescriptions.secondary_button.${idx + 1}`}
-                                  >
-                                    <FileText className="w-3 h-3" />
-                                    View
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-7 px-2 text-xs gap-1 border-purple-300 text-purple-700"
-                                    onClick={() =>
-                                      downloadSinglePrescriptionPDF(rx)
-                                    }
-                                    data-ocid={`patient_dashboard.prescriptions.button.${idx + 1}`}
-                                  >
-                                    <Download className="w-3 h-3" />
-                                    PDF
-                                  </Button>
-                                </div>
-                              )}
-                            </div>
-                            {/* Doctor's view: show viewed-by-patient timestamp */}
-                            {(currentRole === "doctor" ||
-                              currentRole === "admin") && (
-                              <ViewedByPatientBadge
-                                viewedAt={rxExt.viewedByPatientAt}
-                              />
-                            )}
-                          </div>
-                        </div>
+                  authorName={(() => {
+                    try {
+                      const session = localStorage.getItem(
+                        "medicare_current_doctor",
                       );
-                    })}
-                </div>
-              )}
-            </div>
-
-            {/* Saved Prescription Pads */}
-            {savedPads.length > 0 && (
-              <div className="bg-white rounded-xl border border-green-200 shadow-sm p-5 mt-3">
-                <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                  <Printer className="w-4 h-4 text-green-600" /> Saved
-                  Prescription Pads
-                </h3>
-                <div className="space-y-2">
-                  {savedPads.map((pad, idx) => (
-                    <div
-                      key={String(pad.id ?? `pad-${idx}`)}
-                      className="flex items-center justify-between bg-green-50 rounded-lg px-3 py-2 border border-green-100"
-                      data-ocid={`patient_dashboard.prescriptions.item.${idx + 1}`}
-                    >
-                      <div>
-                        <p className="text-sm font-medium text-green-800">
-                          {String(pad.diagnosis || "Prescription Pad")}
-                        </p>
-                        <p className="text-xs text-green-600">
-                          {String(pad.date || "")}
-                        </p>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="gap-1 border-green-300 text-green-700 hover:bg-green-50 h-7 text-xs"
-                        onClick={() => {
-                          const win = window.open(
-                            "",
-                            "_blank",
-                            "width=900,height=1100",
-                          );
-                          if (win) {
-                            const meds = Array.isArray(pad.medications)
-                              ? pad.medications
-                              : [];
-                            win.document.write(
-                              `<!DOCTYPE html><html><head><title>Prescription Pad</title><style>body{font-family:Arial,sans-serif;padding:20px}</style></head><body><h2>Prescription — ${String(pad.patientName || "")}</h2><p>Date: ${String(pad.date || "")}</p><p>Diagnosis: ${String(pad.diagnosis || "N/A")}</p><h3>Medications:</h3><ul>${meds.map((m: Record<string, unknown>) => `<li><strong>${String(m.name || "")}</strong> — ${String(m.dose || "")} ${String(m.frequency || "")} ${String(m.duration || "")}</li>`).join("")}</ul></body></html>`,
-                            );
-                            win.document.close();
-                            win.print();
-                          }
-                        }}
-                        data-ocid={`patient_dashboard.prescriptions.secondary_button.${idx + 1}`}
-                      >
-                        <Download className="w-3 h-3" />
-                        Print
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Missed Dose Report — visible to doctor, admin, medical_officer */}
-            {(currentRole === "doctor" ||
-              currentRole === "admin" ||
-              viewerRole === "medical_officer" ||
-              viewerRole === "consultant_doctor") &&
-              patient.isAdmitted && (
-                <div className="mt-4">
-                  <MissedDoseReport
-                    patientId={patientId.toString()}
-                    patientName={patient.fullName}
-                    admissionDate={patient.admittedOn || patient.admissionDate}
-                  />
-                </div>
-              )}
-          </TabsContent>
-
-          {/* ── APPOINTMENTS ── */}
-          <TabsContent value="appointments">
-            <AppointmentsTab
-              patientId={patientId}
-              currentRole={currentRole}
-              patientName={patient.fullName}
-            />
-          </TabsContent>
-
-          {/* ── PENDING APPROVALS ── */}
-          <TabsContent value="pending">
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-              <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-600" /> Pending
-                Approvals
-                {pendingCount > 0 && (
-                  <Badge className="bg-red-100 text-red-700 border-0 text-xs">
-                    {pendingCount} pending
-                  </Badge>
-                )}
-              </h3>
-              {patientSubmissions.length === 0 ? (
-                <div
-                  className="text-center py-8"
-                  data-ocid="patient_dashboard.pending.empty_state"
-                >
-                  <CheckCircle2 className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                      if (!session)
+                        return currentRole === "patient"
+                          ? patient.fullName
+                          : "Unknown";
+                      const registry: Array<{ id: string; name: string }> =
+                        JSON.parse(
+                          localStorage.getItem("medicare_doctors_registry") ||
+                            "[]",
+                        );
+                      return (
+                        registry.find((d) => d.id === session)?.name ??
+                        "Unknown"
+                      );
+                    } catch {
+                      return "Unknown";
+                    }
+                  })()}
+                  viewerRole={viewerRole ?? "doctor"}
+                  latestVitals={latestVitals}
+                  patientWeightKg={patient.weight}
+                  prescriptions={prescriptions}
+                  latestVisit={latestVisit}
+                />
+              ) : (
+                <div className="text-center py-12 bg-white rounded-xl border border-indigo-100">
                   <p className="text-sm text-gray-400">
-                    No patient submissions yet
+                    Daily Progress Note is only available for admitted patients.
                   </p>
                 </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-100">
-                        {[
-                          "Date / Time",
-                          "Type",
-                          "Submitted Data",
-                          "Status",
-                          "Actions",
-                        ].map((h) => (
-                          <th
-                            key={h}
-                            className="text-left py-2 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wide"
-                          >
-                            {h}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {patientSubmissions.map((sub, idx) => (
-                        <tr
-                          key={sub.id}
-                          className="border-b border-gray-50"
-                          data-ocid={`patient_dashboard.pending.item.${idx + 1}`}
-                        >
-                          <td className="py-2.5 px-3 text-xs text-gray-500 whitespace-nowrap">
-                            {format(new Date(sub.timestamp), "MMM d, HH:mm")}
-                          </td>
-                          <td className="py-2.5 px-3">
-                            <Badge
-                              className={`text-xs border-0 ${sub.type === "vitals" ? "bg-rose-100 text-rose-700" : sub.type === "investigation" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}
-                            >
-                              {sub.type}
-                            </Badge>
-                          </td>
-                          <td className="py-2.5 px-3 max-w-[250px]">
-                            <div className="flex flex-wrap gap-1">
-                              {Object.entries(sub.data)
-                                .filter(([, v]) => v)
-                                .slice(0, 3)
-                                .map(([k, v]) => (
-                                  <span
-                                    key={k}
-                                    className="text-xs bg-gray-100 rounded px-1.5 py-0.5"
-                                  >
-                                    {k}: {v}
-                                  </span>
-                                ))}
-                            </div>
-                          </td>
-                          <td className="py-2.5 px-3">
-                            <Badge
-                              className={`text-xs border-0 ${sub.status === "pending" ? "bg-amber-100 text-amber-700" : sub.status === "approved" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
-                            >
-                              {sub.status === "pending"
-                                ? "✓ Submitted — Pending Review"
-                                : sub.status === "approved"
-                                  ? "Approved"
-                                  : "Rejected"}
-                            </Badge>
-                          </td>
-                          <td className="py-2.5 px-3">
-                            {sub.status === "pending" &&
-                              (currentRole === "doctor" ||
-                                currentRole === "admin") && (
-                                <div className="flex gap-1">
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="text-emerald-700 border-emerald-300 gap-1 h-7 px-2 text-xs"
-                                    onClick={() => approveSubmission(sub.id)}
-                                    data-ocid="patient_dashboard.confirm_button"
-                                  >
-                                    <CheckCircle2 className="w-3 h-3" />
-                                    Approve
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="text-red-700 border-red-300 gap-1 h-7 px-2 text-xs"
-                                    onClick={() => rejectSubmission(sub.id)}
-                                    data-ocid="patient_dashboard.cancel_button"
-                                  >
-                                    <XCircle className="w-3 h-3" />
-                                    Reject
-                                  </Button>
-                                </div>
-                              )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
               )}
-            </div>
-          </TabsContent>
+            </TabsContent>
 
-          {/* ── COMPLAINTS ── */}
-          <TabsContent value="complaints" className="space-y-4">
-            {currentRole === "patient" && (
-              <div className="bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl border-2 border-pink-300 shadow-sm p-5">
-                <h3 className="font-semibold text-pink-800 mb-3 flex items-center gap-2">
-                  <MessageCircle className="w-4 h-4" /> Submit a Complaint
-                </h3>
-                <div className="flex flex-wrap gap-1.5 mb-3">
-                  {[
-                    "Fever",
-                    "Headache",
-                    "Chest Pain",
-                    "Cough",
-                    "Nausea",
-                    "Vomiting",
-                    "Dizziness",
-                    "Pain",
-                  ].map((chip) => (
-                    <button
-                      key={chip}
-                      type="button"
-                      onClick={() =>
-                        setNewComplaintText((prev) =>
-                          prev ? `${prev}, ${chip}` : chip,
-                        )
-                      }
-                      className="text-xs bg-pink-100 hover:bg-pink-200 border border-pink-300 text-pink-700 px-2.5 py-1 rounded-full font-medium transition-colors"
-                    >
-                      {chip}
-                    </button>
-                  ))}
-                </div>
-                <Textarea
-                  placeholder="Describe your symptoms or concerns..."
-                  value={newComplaintText}
-                  onChange={(e) => setNewComplaintText(e.target.value)}
-                  rows={3}
-                  className="mb-3 border-pink-200"
-                  data-ocid="patient_dashboard.complaints.textarea"
-                />
-                <Button
-                  onClick={() => {
-                    if (!newComplaintText.trim()) return;
-                    const entry: ComplaintEntry = {
-                      id:
-                        Date.now().toString(36) +
-                        Math.random().toString(36).slice(2),
-                      patientId: String(patientId),
-                      text: newComplaintText.trim(),
-                      timestamp: new Date().toISOString(),
-                      status: "pending",
-                    };
-                    const updated = [entry, ...complaints];
-                    setComplaints(updated);
-                    saveComplaints(String(patientId), updated);
-                    setNewComplaintText("");
-                    toast.success("Complaint submitted");
-                  }}
-                  className="bg-pink-600 hover:bg-pink-700 w-full"
-                  data-ocid="patient_dashboard.complaints.submit_button"
-                >
-                  <MessageCircle className="w-4 h-4 mr-1" /> Submit Complaint
-                </Button>
-              </div>
-            )}
-
-            <div className="bg-white rounded-xl border border-pink-100 shadow-sm p-5">
-              <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-pink-600" /> Complaints Log
-                {complaints.length > 0 && (
-                  <span className="ml-auto text-xs font-normal text-gray-400">
-                    {complaints.length} entries
-                  </span>
-                )}
-              </h3>
-              {complaints.length === 0 ? (
-                <p
-                  className="text-sm text-gray-400 text-center py-4"
-                  data-ocid="patient_dashboard.complaints.empty_state"
-                >
-                  No complaints submitted yet.
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {complaints.map((c, idx) => (
-                    <div
-                      key={c.id}
-                      className="border border-gray-200 rounded-xl p-4 space-y-2"
-                      data-ocid={`patient_dashboard.complaints.item.${idx + 1}`}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-800">
-                            {c.text}
-                          </p>
-                          <p className="text-xs text-gray-400 mt-1">
-                            {format(
-                              new Date(c.timestamp),
-                              "MMM d, yyyy 'at' h:mm a",
-                            )}
-                          </p>
-                        </div>
-                        <Badge
-                          className={
-                            c.status === "seen"
-                              ? "bg-green-100 text-green-700 border-0 shrink-0"
-                              : "bg-amber-100 text-amber-700 border-0 shrink-0"
-                          }
-                        >
-                          {c.status === "seen" ? "Seen" : "Pending"}
-                        </Badge>
-                      </div>
-                      {c.doctorNote && (
-                        <div className="bg-blue-50 rounded-lg px-3 py-2 text-sm text-blue-800">
-                          <span className="font-semibold">Doctor's note:</span>{" "}
-                          {c.doctorNote}
-                        </div>
-                      )}
-                      {(currentRole === "doctor" ||
-                        currentRole === "admin") && (
-                        <div className="pt-2 border-t border-gray-100 space-y-2">
-                          <Input
-                            placeholder="Add a note for the patient (optional)..."
-                            defaultValue={c.doctorNote || ""}
-                            onBlur={(e) => {
-                              const note = e.target.value.trim();
-                              if (note !== (c.doctorNote || "")) {
-                                const updated = complaints.map((x) =>
-                                  x.id === c.id
-                                    ? { ...x, doctorNote: note }
-                                    : x,
-                                );
-                                setComplaints(updated);
-                                saveComplaints(String(patientId), updated);
-                              }
-                            }}
-                            className="text-sm"
-                            data-ocid="patient_dashboard.complaints.input"
-                          />
-                          {c.status === "pending" && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-green-700 border-green-300 hover:bg-green-50"
-                              onClick={() => {
-                                const updated = complaints.map((x) =>
-                                  x.id === c.id
-                                    ? { ...x, status: "seen" as const }
-                                    : x,
-                                );
-                                setComplaints(updated);
-                                saveComplaints(String(patientId), updated);
-                                toast.success("Marked as seen");
-                              }}
-                              data-ocid="patient_dashboard.complaints.confirm_button"
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Mark
-                              as Seen
-                            </Button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          {/* ── ADVICE ── */}
-          <TabsContent value="advice" className="space-y-4">
-            {(currentRole === "doctor" || currentRole === "admin") && (
-              <div className="bg-white rounded-xl border border-emerald-200 shadow-sm p-5">
-                <h3 className="font-semibold text-emerald-800 mb-3 flex items-center gap-2">
-                  <Lightbulb className="w-4 h-4" /> Add Advice
-                </h3>
-                <div className="space-y-3">
-                  <div>
-                    <Label className="text-xs">Date</Label>
-                    <input
-                      type="date"
-                      value={newAdviceDate}
-                      onChange={(e) => setNewAdviceDate(e.target.value)}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                      data-ocid="patient_dashboard.advice.input"
-                    />
-                  </div>
-                  <Textarea
-                    placeholder="Enter advice or instructions..."
-                    value={newAdviceText}
-                    onChange={(e) => setNewAdviceText(e.target.value)}
-                    rows={3}
-                    data-ocid="patient_dashboard.advice.textarea"
-                  />
-                  <Button
-                    onClick={() => {
-                      if (!newAdviceText.trim()) return;
-                      const entry: AdviceEntry = {
-                        id:
-                          Date.now().toString(36) +
-                          Math.random().toString(36).slice(2),
-                        patientId: String(patientId),
-                        text: newAdviceText.trim(),
-                        date: newAdviceDate || new Date().toISOString(),
-                        addedBy: currentRole,
-                        source: "Doctor's Note",
-                      };
-                      const updated = [entry, ...adviceEntries];
-                      setAdviceEntries(updated);
-                      saveAdviceEntries(String(patientId), updated);
-                      setNewAdviceText("");
-                      toast.success("Advice added");
-                    }}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                    data-ocid="patient_dashboard.advice.submit_button"
-                  >
-                    <Plus className="w-4 h-4 mr-1" /> Add Advice
-                  </Button>
-                </div>
-              </div>
-            )}
-            <div className="bg-white rounded-xl border border-emerald-100 shadow-sm p-5">
-              <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <Lightbulb className="w-4 h-4 text-emerald-600" /> Advice &
-                Instructions
-              </h3>
-              {adviceEntries.length === 0 ? (
-                <p
-                  className="text-sm text-gray-400 text-center py-6"
-                  data-ocid="patient_dashboard.advice.empty_state"
-                >
-                  No advice or instructions recorded yet.
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {adviceEntries.map((entry, idx) => (
-                    <div
-                      key={entry.id}
-                      className="border border-emerald-100 rounded-xl p-4 bg-emerald-50"
-                      data-ocid={`patient_dashboard.advice.item.${idx + 1}`}
-                    >
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-emerald-700 bg-emerald-200 px-2 py-0.5 rounded-full">
-                            {entry.source}
-                          </span>
-                          <span className="text-xs text-gray-400">
-                            {entry.date
-                              ? format(new Date(entry.date), "MMM d, yyyy")
-                              : "—"}
-                          </span>
-                        </div>
-                        {(currentRole === "doctor" ||
-                          currentRole === "admin") && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const updated = adviceEntries.filter(
-                                (e) => e.id !== entry.id,
-                              );
-                              setAdviceEntries(updated);
-                              saveAdviceEntries(String(patientId), updated);
-                            }}
-                            className="text-red-400 hover:text-red-600"
-                            data-ocid="patient_dashboard.advice.delete_button"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-700 whitespace-pre-line">
-                        {entry.text}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          {/* ── CHAT ── */}
-          <TabsContent value="chat">
-            <PatientChat
-              patientId={patientId}
-              currentRole={currentRole}
-              currentUserName={
-                currentRole === "patient" ? patient.fullName : "Doctor"
-              }
-            />
-          </TabsContent>
-
-          {/* ── ACCOUNT SETTINGS ── */}
-          <TabsContent value="account">
-            <AccountSettingsTab
-              patientId={patientId}
-              registerNo={registerNo}
-              currentRole={currentRole}
-              patientAccount={patientAccount}
-              linkedAccount={linkedAccount}
-              reminders={reminders}
-              prescriptionDrugChips={prescriptionDrugChips}
-              onSaveReminders={saveReminders}
-            />
-          </TabsContent>
-
-          {/* ── DAILY PROGRESS NOTE (admitted patients — clinical roles) ── */}
-          <TabsContent value="daily_progress">
-            {canViewDailyProgress ? (
-              <DailyProgressNote
-                patientId={String(patientId)}
+            {/* ── SOAP NOTES (classic daily progress) ── */}
+            <TabsContent value="soap_notes">
+              <DailyProgress
+                patientId={patientId}
                 doctorEmail={(() => {
                   try {
                     const session = localStorage.getItem(
@@ -4245,13 +4494,71 @@ export default function PatientDashboardInner({
                         localStorage.getItem("medicare_doctors_registry") ||
                           "[]",
                       );
-                    return (
-                      registry.find((d) => d.id === session)?.email ?? "default"
-                    );
+                    const doc = registry.find((d) => d.id === session);
+                    return doc?.email ?? "default";
                   } catch {
                     return "default";
                   }
                 })()}
+                currentRole={currentRole}
+                viewerRole={viewerRole ?? "doctor"}
+                authorName={(() => {
+                  try {
+                    const session = localStorage.getItem(
+                      "medicare_current_doctor",
+                    );
+                    if (!session)
+                      return currentRole === "patient"
+                        ? patient.fullName
+                        : "Unknown";
+                    const registry: Array<{ id: string; name: string }> =
+                      JSON.parse(
+                        localStorage.getItem("medicare_doctors_registry") ||
+                          "[]",
+                      );
+                    const doc = registry.find((d) => d.id === session);
+                    return doc?.name ?? "Unknown";
+                  } catch {
+                    return "Unknown";
+                  }
+                })()}
+                prescriptions={prescriptions}
+              />
+            </TabsContent>
+
+            {/* ── DISCHARGE SUMMARY (admitted patients only) ── */}
+            <TabsContent value="discharge">
+              {isAdmittedPatient ? (
+                <DischargeSummaryTab
+                  patient={patient}
+                  visits={sortedVisits}
+                  prescriptions={prescriptions}
+                  encounters={encounters}
+                  clinicalNotes={clinicalNotes}
+                  canApproveDischarge={canApproveDischarge}
+                />
+              ) : (
+                <div className="text-center py-12 bg-white rounded-xl border border-rose-100">
+                  <p className="text-sm text-gray-400">
+                    Discharge Summary is only available for admitted patients.
+                  </p>
+                </div>
+              )}
+            </TabsContent>
+
+            {/* ── HANDOVER SYSTEM ── */}
+            <TabsContent value="handover">
+              <HandoverSystem
+                patientId={String(patientId)}
+                patientName={patient.fullName}
+                bed={
+                  ((patient as Record<string, unknown>).bedNumber as string) ??
+                  ""
+                }
+                ward={
+                  ((patient as Record<string, unknown>).ward as string) ?? ""
+                }
+                viewerRole={viewerRole ?? "doctor"}
                 authorName={(() => {
                   try {
                     const session = localStorage.getItem(
@@ -4273,233 +4580,162 @@ export default function PatientDashboardInner({
                     return "Unknown";
                   }
                 })()}
-                viewerRole={viewerRole ?? "doctor"}
-                latestVitals={latestVitals}
-                patientWeightKg={patient.weight}
-                prescriptions={prescriptions}
-                latestVisit={latestVisit}
-              />
-            ) : (
-              <div className="text-center py-12 bg-white rounded-xl border border-indigo-100">
-                <p className="text-sm text-gray-400">
-                  Daily Progress Note is only available for admitted patients.
-                </p>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* ── SOAP NOTES (classic daily progress) ── */}
-          <TabsContent value="soap_notes">
-            <DailyProgress
-              patientId={patientId}
-              doctorEmail={(() => {
-                try {
-                  const session = localStorage.getItem(
-                    "medicare_current_doctor",
-                  );
-                  if (!session) return "default";
-                  const registry: Array<{ id: string; email: string }> =
-                    JSON.parse(
-                      localStorage.getItem("medicare_doctors_registry") || "[]",
-                    );
-                  const doc = registry.find((d) => d.id === session);
-                  return doc?.email ?? "default";
-                } catch {
-                  return "default";
-                }
-              })()}
-              currentRole={currentRole}
-              viewerRole={viewerRole ?? "doctor"}
-              authorName={(() => {
-                try {
-                  const session = localStorage.getItem(
-                    "medicare_current_doctor",
-                  );
-                  if (!session)
-                    return currentRole === "patient"
-                      ? patient.fullName
-                      : "Unknown";
-                  const registry: Array<{ id: string; name: string }> =
-                    JSON.parse(
-                      localStorage.getItem("medicare_doctors_registry") || "[]",
-                    );
-                  const doc = registry.find((d) => d.id === session);
-                  return doc?.name ?? "Unknown";
-                } catch {
-                  return "Unknown";
-                }
-              })()}
-              prescriptions={prescriptions}
-            />
-          </TabsContent>
-
-          {/* ── DISCHARGE SUMMARY (admitted patients only) ── */}
-          <TabsContent value="discharge">
-            {isAdmittedPatient ? (
-              <DischargeSummaryTab
-                patient={patient}
-                visits={sortedVisits}
-                prescriptions={prescriptions}
-                encounters={encounters}
-                clinicalNotes={clinicalNotes}
-                canApproveDischarge={canApproveDischarge}
-              />
-            ) : (
-              <div className="text-center py-12 bg-white rounded-xl border border-rose-100">
-                <p className="text-sm text-gray-400">
-                  Discharge Summary is only available for admitted patients.
-                </p>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* ── HANDOVER SYSTEM ── */}
-          <TabsContent value="handover">
-            <HandoverSystem
-              patientId={String(patientId)}
-              patientName={patient.fullName}
-              bed={
-                ((patient as Record<string, unknown>).bedNumber as string) ?? ""
-              }
-              ward={((patient as Record<string, unknown>).ward as string) ?? ""}
-              viewerRole={viewerRole ?? "doctor"}
-              authorName={(() => {
-                try {
-                  const session = localStorage.getItem(
-                    "medicare_current_doctor",
-                  );
-                  if (!session)
-                    return currentRole === "patient"
-                      ? patient.fullName
-                      : "Unknown";
-                  const registry: Array<{ id: string; name: string }> =
-                    JSON.parse(
-                      localStorage.getItem("medicare_doctors_registry") || "[]",
-                    );
-                  return (
-                    registry.find((d) => d.id === session)?.name ?? "Unknown"
-                  );
-                } catch {
-                  return "Unknown";
-                }
-              })()}
-              currentUser={{
-                name: (() => {
-                  try {
-                    const session = localStorage.getItem(
-                      "medicare_current_doctor",
-                    );
-                    if (!session)
-                      return currentRole === "patient"
-                        ? patient.fullName
-                        : "Unknown";
-                    const registry: Array<{ id: string; name: string }> =
-                      JSON.parse(
-                        localStorage.getItem("medicare_doctors_registry") ||
-                          "[]",
+                currentUser={{
+                  name: (() => {
+                    try {
+                      const session = localStorage.getItem(
+                        "medicare_current_doctor",
                       );
-                    return (
-                      registry.find((d) => d.id === session)?.name ?? "Unknown"
-                    );
-                  } catch {
-                    return "Unknown";
-                  }
-                })(),
-                role: viewerRole ?? "doctor",
-                email: (() => {
-                  try {
-                    const session = localStorage.getItem(
-                      "medicare_current_doctor",
-                    );
-                    if (!session) return "";
-                    const registry: Array<{ id: string; email?: string }> =
-                      JSON.parse(
-                        localStorage.getItem("medicare_doctors_registry") ||
-                          "[]",
+                      if (!session)
+                        return currentRole === "patient"
+                          ? patient.fullName
+                          : "Unknown";
+                      const registry: Array<{ id: string; name: string }> =
+                        JSON.parse(
+                          localStorage.getItem("medicare_doctors_registry") ||
+                            "[]",
+                        );
+                      return (
+                        registry.find((d) => d.id === session)?.name ??
+                        "Unknown"
                       );
-                    return (
-                      (
-                        registry.find((d) => d.id === session) as {
-                          email?: string;
-                        }
-                      )?.email ?? session
-                    );
-                  } catch {
-                    return "";
-                  }
-                })(),
-              }}
-              admissionDate={
-                ((patient as Record<string, unknown>)
-                  .admissionDate as string) ?? ""
-              }
-              bedNumber={
-                ((patient as Record<string, unknown>).bedNumber as string) ?? ""
-              }
-              department={
-                ((patient as Record<string, unknown>).department as string) ??
-                ""
-              }
-              primaryDiagnosis={
-                prescriptions.find((rx) => rx.diagnosis)?.diagnosis ?? ""
-              }
-              secondaryDiagnoses={[]}
-              comorbidities={[]}
-              assignedConsultant={
-                ((patient as Record<string, unknown>)
-                  .assignedConsultantName as string) ?? ""
-              }
-              latestVitals={latestVitals}
-              activeMedications={prescriptions
-                .flatMap((rx) =>
-                  (rx.medications ?? []).map((m) => ({
-                    drugName: [m.drugForm || "", m.drugName || m.name || ""]
-                      .filter(Boolean)
-                      .join(" ")
-                      .trim(),
-                    dose: m.dose ?? "",
-                    frequency: m.frequency ?? "",
-                  })),
-                )
-                .slice(0, 20)}
-              activeDiagnoses={prescriptions
-                .map((rx) => rx.diagnosis)
-                .filter((d): d is string => !!d)
-                .slice(0, 5)}
-              latestPlan=""
-            />
-          </TabsContent>
-
-          {/* ── INVESTIGATION PAYMENT ── */}
-          <TabsContent value="inv_payment" className="space-y-4">
-            <div className="bg-card rounded-xl border border-border shadow-sm p-4">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
-                  <span className="text-purple-700 text-base">🧾</span>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">
-                    Investigation Payment
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Bill investigations, apply discount, generate receipt
-                  </p>
-                </div>
-              </div>
-              <InvestigationPayment
-                patientId={String(patientId)}
-                patientName={patient.fullName}
-                registerNumber={
+                    } catch {
+                      return "Unknown";
+                    }
+                  })(),
+                  role: viewerRole ?? "doctor",
+                  email: (() => {
+                    try {
+                      const session = localStorage.getItem(
+                        "medicare_current_doctor",
+                      );
+                      if (!session) return "";
+                      const registry: Array<{ id: string; email?: string }> =
+                        JSON.parse(
+                          localStorage.getItem("medicare_doctors_registry") ||
+                            "[]",
+                        );
+                      return (
+                        (
+                          registry.find((d) => d.id === session) as {
+                            email?: string;
+                          }
+                        )?.email ?? session
+                      );
+                    } catch {
+                      return "";
+                    }
+                  })(),
+                }}
+                admissionDate={
                   ((patient as Record<string, unknown>)
-                    .registerNumber as string) ?? ""
+                    .admissionDate as string) ?? ""
                 }
-                phone={patient.phone ?? ""}
-                doctorName={doctorName}
+                bedNumber={
+                  ((patient as Record<string, unknown>).bedNumber as string) ??
+                  ""
+                }
+                department={
+                  ((patient as Record<string, unknown>).department as string) ??
+                  ""
+                }
+                primaryDiagnosis={
+                  prescriptions.find((rx) => rx.diagnosis)?.diagnosis ?? ""
+                }
+                secondaryDiagnoses={[]}
+                comorbidities={[]}
+                assignedConsultant={
+                  ((patient as Record<string, unknown>)
+                    .assignedConsultantName as string) ?? ""
+                }
+                latestVitals={latestVitals}
+                activeMedications={prescriptions
+                  .flatMap((rx) =>
+                    (rx.medications ?? []).map((m) => ({
+                      drugName: [m.drugForm || "", m.drugName || m.name || ""]
+                        .filter(Boolean)
+                        .join(" ")
+                        .trim(),
+                      dose: m.dose ?? "",
+                      frequency: m.frequency ?? "",
+                    })),
+                  )
+                  .slice(0, 20)}
+                activeDiagnoses={prescriptions
+                  .map((rx) => rx.diagnosis)
+                  .filter((d): d is string => !!d)
+                  .slice(0, 5)}
+                latestPlan=""
               />
-            </div>
-          </TabsContent>
+            </TabsContent>
+
+            {/* ── INVESTIGATION PAYMENT ── */}
+            <TabsContent value="inv_payment" className="space-y-4">
+              <div className="bg-card rounded-xl border border-border shadow-sm p-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                    <span className="text-purple-700 text-base">🧾</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground">
+                      Investigation Payment
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Bill investigations, apply discount, generate receipt
+                    </p>
+                  </div>
+                </div>
+                <InvestigationPayment
+                  patientId={String(patientId)}
+                  patientName={patient.fullName}
+                  registerNumber={
+                    ((patient as Record<string, unknown>)
+                      .registerNumber as string) ?? ""
+                  }
+                  phone={patient.phone ?? ""}
+                  doctorName={doctorName}
+                />
+              </div>
+            </TabsContent>
+
+            {/* ── PROCEDURES ── */}
+            <TabsContent value="procedures">
+              <div className="bg-card rounded-xl border border-border shadow-sm p-4">
+                <ProcedureLog patientId={String(patientId)} patient={patient} />
+              </div>
+            </TabsContent>
+
+            {/* ── REFERRALS ── */}
+            <TabsContent value="referrals">
+              <div className="bg-card rounded-xl border border-border shadow-sm p-4">
+                <ReferralLetter
+                  patientId={String(patientId)}
+                  patient={patient}
+                  lastVisit={latestVisit}
+                  onClose={() => {}}
+                />
+              </div>
+            </TabsContent>
+          </div>
         </div>
-      </div>
-    </Tabs>
+      </Tabs>
+
+      {/* ── Referral Letter Modal (from Overview "Refer Patient" button) ── */}
+      {showReferralModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center p-4 overflow-y-auto"
+          data-ocid="referral.dialog"
+        >
+          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-2xl my-8 p-5">
+            <ReferralLetter
+              patientId={String(patientId)}
+              patient={patient}
+              lastVisit={latestVisit}
+              onClose={() => setShowReferralModal(false)}
+            />
+          </div>
+        </div>
+      )}
+    </>
   );
 }

@@ -765,6 +765,64 @@ mixin (
     #ok(note);
   };
 
+  // ─── Ward Round Rounding API ───────────────────────────────────────────────────
+
+  public shared ({ caller }) func submitDailyNoteForReview(
+    patientId : Nat,
+    noteId : Nat,
+    noteContent : Types.DailyProgressNoteUpdate,
+  ) : async { #ok : Types.DailyProgressNote; #err : Text } {
+    let role = getCallerRole(caller);
+    Lib.submitDailyNoteForReview(engineState, caller, caller.toText(), role, patientId, noteId, noteContent);
+  };
+
+  public shared ({ caller }) func finalizeDailyNote(
+    patientId : Nat,
+    noteId : Nat,
+    consultantEmail : Text,
+    consultantComments : Text,
+    finalSOAP : Types.DailyProgressNoteUpdate,
+  ) : async { #ok : Types.DailyProgressNote; #err : Text } {
+    let role = getCallerRole(caller);
+    Lib.finalizeDailyNote(engineState, caller, caller.toText(), role, patientId, noteId, consultantEmail, consultantComments, finalSOAP);
+  };
+
+  public query ({ caller }) func getDailyNotesByPatient(
+    patientId : Nat,
+    dateFilter : ?Text,
+  ) : async [Types.DailyProgressNote] {
+    let role = getCallerRole(caller);
+    if (not Lib.isClinician(role)) { return [] };
+    Lib.getDailyNotesByPatient(engineState, patientId, dateFilter);
+  };
+
+  public query ({ caller }) func getWardRoundStatus(
+    date : Text
+  ) : async [Types.WardRoundPatientStatus] {
+    let role = getCallerRole(caller);
+    if (not Lib.isClinician(role)) { return [] };
+    Lib.getWardRoundStatus(engineState, date);
+  };
+
+  public shared ({ caller }) func rejectDraftNote(
+    patientId : Nat,
+    noteId : Nat,
+    reviewerEmail : Text,
+    rejectionReason : Text,
+  ) : async { #ok : Types.DailyProgressNote; #err : Text } {
+    let role = getCallerRole(caller);
+    Lib.rejectDraftNote(engineState, caller, caller.toText(), role, patientId, noteId, reviewerEmail, rejectionReason);
+  };
+
+  public shared ({ caller }) func addNoteAddendum(
+    patientId : Nat,
+    noteId : Nat,
+    addendumText : Text,
+  ) : async { #ok : Types.DailyProgressNote; #err : Text } {
+    let role = getCallerRole(caller);
+    Lib.addNoteAddendum(engineState, caller, caller.toText(), role, patientId, noteId, addendumText);
+  };
+
   // ─── Audit Log wrappers (required by contract) ────────────────────────────
 
   public shared ({ caller }) func addAuditEntry(

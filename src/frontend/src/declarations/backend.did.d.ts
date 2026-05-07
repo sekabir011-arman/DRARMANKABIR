@@ -128,27 +128,63 @@ export interface ClinicalOrder {
   'encounterId' : [] | [bigint],
 }
 export interface CurrentUser { 'principal' : Principal, 'role' : UserRole }
+export type DailyNoteState = { 'submittedToMO' : null } |
+  { 'finalized' : null } |
+  { 'rejected' : null } |
+  { 'moReviewComplete' : null } |
+  { 'draft' : null };
 export interface DailyProgressNote {
   'id' : bigint,
+  'moAssessment' : string,
   'isDeleted' : boolean,
   'drainMonitoring' : [] | [string],
+  'internObjective' : string,
   'patientId' : bigint,
   'authorId' : Principal,
+  'consultantComments' : string,
+  'submittedByRole' : [] | [StaffRole],
+  'consultantOverrides' : string,
   'createdAt' : bigint,
   'authorName' : string,
+  'reviewedByMO' : [] | [string],
   'authorRole' : StaffRole,
   'noteDate' : string,
+  'rejectionReason' : [] | [string],
   'objectiveVitals' : [] | [string],
   'assessmentText' : string,
   'subjectiveComplaints' : Array<string>,
   'isDraft' : boolean,
   'updatedAt' : bigint,
   'activeDiagnoses' : Array<string>,
+  'internSubjective' : string,
   'progressType' : DailyProgressType,
   'activeComplaints' : Array<string>,
+  'moPlan' : string,
+  'noteState' : DailyNoteState,
   'previousVersionIds' : Array<bigint>,
+  'reviewedByConsultant' : [] | [string],
+  'versionChain' : Array<string>,
   'versionInfo' : VersionedRecord,
+  'submitTimestamp' : [] | [bigint],
   'encounterId' : [] | [bigint],
+  'planText' : string,
+  'systemReview' : [] | [string],
+  'intakeOutput' : [] | [string],
+  'investigations' : Array<string>,
+}
+export interface DailyProgressNoteUpdate {
+  'moAssessment' : string,
+  'drainMonitoring' : [] | [string],
+  'internObjective' : string,
+  'consultantComments' : string,
+  'consultantOverrides' : string,
+  'objectiveVitals' : [] | [string],
+  'assessmentText' : string,
+  'subjectiveComplaints' : Array<string>,
+  'activeDiagnoses' : Array<string>,
+  'internSubjective' : string,
+  'activeComplaints' : Array<string>,
+  'moPlan' : string,
   'planText' : string,
   'systemReview' : [] | [string],
   'intakeOutput' : [] | [string],
@@ -443,6 +479,26 @@ export interface VitalSigns {
   'oxygenSaturation' : [] | [string],
   'pulse' : [] | [string],
 }
+export interface VitalsSummary {
+  'bp' : [] | [string],
+  'rr' : [] | [string],
+  'rbs' : [] | [string],
+  'spo2' : [] | [string],
+  'temp' : [] | [string],
+  'recordedAt' : bigint,
+  'pulse' : [] | [string],
+}
+export interface WardRoundPatientStatus {
+  'admissionDay' : bigint,
+  'patientId' : string,
+  'todayNoteState' : [] | [string],
+  'assignedConsultant' : [] | [string],
+  'ward' : string,
+  'bedNumber' : string,
+  'activeAlerts' : Array<string>,
+  'patientName' : string,
+  'lastVitals' : [] | [VitalsSummary],
+}
 export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'acknowledgeAlert' : ActorMethod<
@@ -463,6 +519,11 @@ export interface _SERVICE {
   'addAuditEntry' : ActorMethod<
     [string, bigint, string, [] | [string], string, [] | [string]],
     undefined
+  >,
+  'addNoteAddendum' : ActorMethod<
+    [bigint, bigint, string],
+    { 'ok' : DailyProgressNote } |
+      { 'err' : string }
   >,
   'assignBed' : ActorMethod<
     [bigint, bigint, string],
@@ -719,6 +780,11 @@ export interface _SERVICE {
     { 'ok' : Prescription__1 } |
       { 'err' : string }
   >,
+  'finalizeDailyNote' : ActorMethod<
+    [bigint, bigint, string, string, DailyProgressNoteUpdate],
+    { 'ok' : DailyProgressNote } |
+      { 'err' : string }
+  >,
   'finalizeNote' : ActorMethod<
     [bigint],
     { 'ok' : ClinicalNote } |
@@ -776,6 +842,10 @@ export interface _SERVICE {
     Array<Prescription__1>
   >,
   'getCurrentUser' : ActorMethod<[], CurrentUser>,
+  'getDailyNotesByPatient' : ActorMethod<
+    [bigint, [] | [string]],
+    Array<DailyProgressNote>
+  >,
   'getDailyProgressNotesByPatientId' : ActorMethod<
     [bigint],
     Array<DailyProgressNote>
@@ -826,6 +896,7 @@ export interface _SERVICE {
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'getVisit' : ActorMethod<[bigint], [] | [Visit]>,
   'getVisitsByPatientId' : ActorMethod<[bigint], Array<Visit>>,
+  'getWardRoundStatus' : ActorMethod<[string], Array<WardRoundPatientStatus>>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'migrateFromLocalStorage' : ActorMethod<
     [string, string, string, string],
@@ -854,12 +925,22 @@ export interface _SERVICE {
     { 'ok' : MedicationAdministration } |
       { 'err' : string }
   >,
+  'rejectDraftNote' : ActorMethod<
+    [bigint, bigint, string, string],
+    { 'ok' : DailyProgressNote } |
+      { 'err' : string }
+  >,
   'resolveAlert' : ActorMethod<
     [bigint],
     { 'ok' : ClinicalAlert } |
       { 'err' : string }
   >,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'submitDailyNoteForReview' : ActorMethod<
+    [bigint, bigint, DailyProgressNoteUpdate],
+    { 'ok' : DailyProgressNote } |
+      { 'err' : string }
+  >,
   'syncData' : ActorMethod<[string], { 'ok' : SyncData } | { 'err' : string }>,
   'transferBed' : ActorMethod<
     [bigint, bigint, string],

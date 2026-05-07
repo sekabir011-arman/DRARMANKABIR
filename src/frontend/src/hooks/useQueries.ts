@@ -1444,6 +1444,25 @@ export function useGetAuditTrail(patientId: bigint | null) {
 
 // ── Admission History ─────────────────────────────────────────────────────────
 
+// ── Ward Round Note State (for sidebar badge count) ─────────────────────────
+
+export function useGetUnfinalizedNoteCount(): number {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    let count = 0;
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith("note_state_") && key.endsWith(`_${today}`)) {
+        const val = localStorage.getItem(key) ?? "none";
+        if (val !== "finalized" && val !== "quick_review") count++;
+      }
+    }
+    return count;
+  } catch {
+    return 0;
+  }
+}
+
 export function admissionHistoryKey(patientId: bigint | string): string {
   return `admissionHistory_${patientId}`;
 }

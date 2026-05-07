@@ -1,29 +1,28 @@
 {
-  "overview": "Dr. Arman Kabir's Care is a comprehensive bilingual (English/Bangla) Patient Management and Doctor Portal App for clinics and individual practitioners. It supports outpatient and inpatient workflows with role-based dashboards, clinical intelligence alerts, prescriptions, daily progress notes, handover management, appointment scheduling, and full audit trail — all synced across devices in real time.",
+  "overview": "Dr. Arman Kabir's Care is a comprehensive bilingual (English/Bangla) Patient Management and Doctor Portal for clinics and hospitals. It supports OPD and inpatient workflows with role-based dashboards for Consultant, MO, Nurse, Reception, and Admin. Features include patient registration, visit management, prescriptions with clinical intelligence, medication tracking, inpatient daily progress (SOAP), discharge summaries, emergency prescriptions, bed management, payment processing, and real-time sync across devices.",
   "features": [
-    "Role-based dashboards for Consultant, MO, Intern, Nurse, Staff, and Admin",
-    "Full prescription & EMR with clinical intelligence and drug interaction warnings",
-    "Intern draft prescriptions with MO/Consultant approval workflow",
-    "Handover system with shift auto-detection, task carry-forward, and legal acknowledgment",
-    "Daily progress SOAP notes with auto-generated assessment and Plan→Prescription sync",
-    "Appointment booking with conflict detection and walk-in queue support",
-    "Patient portal with chat, drug reminders, vitals submission, and read receipts",
-    "Full audit trail with CSV/PDF export",
-    "AI diagnosis suggestions with confidence levels and audit logging",
-    "Real-time sync across devices with conflict resolution and sync status indicator"
+    "Role-based dashboards with clinical action centers",
+    "Medication Administration Record (MAR) with per-dose tracking",
+    "Discharge Summary Generator with auto-compiled clinical data",
+    "Clinical Alerts Engine (Sepsis, AKI, NEWS2, Hypoglycemia, Hypertensive urgency)",
+    "Referral Letter Generator with printable PDF",
+    "Procedure Log with consent tracking",
+    "Digital Consent Forms with signature capture",
+    "Patient Timeline View — all events chronologically",
+    "Teleconsult Note from patient chat",
+    "Audit Dashboard for Admin with visual charts",
+    "Printable Patient Summary Card with QR code",
+    "Ward Round efficiency tools (Quick Review, Bedside Checklist, Round Summary)"
   ],
   "category": "healthcare",
   "tags": [
     "healthcare",
-    "patient-management",
     "emr",
-    "prescription",
+    "patient-management",
     "clinical",
-    "bangla",
-    "bilingual",
     "hospital",
-    "doctor-portal",
-    "pwa"
+    "bilingual",
+    "offline-first"
   ],
-  "last_updated": "2026-04-21T16:01:24.265Z"
+  "last_updated": "2026-04-28T16:48:32.596Z"
 }

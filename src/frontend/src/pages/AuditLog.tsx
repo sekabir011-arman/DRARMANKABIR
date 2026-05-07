@@ -1,5 +1,5 @@
-// Enhanced Audit Log — full before/after trail visible only to Admin + Consultant Doctor
-// Includes working CSV export, print-based PDF export, date/role/entity filters
+// Enhanced Audit Log — full before/after trail + Admin Dashboard tab
+// Admin-only dashboard tab with charts using recharts
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,11 +20,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 import {
   ArrowRightLeft,
+  BarChart3,
   Download,
   FileText,
+  List,
   Lock,
   Printer,
   Search,
@@ -32,6 +34,18 @@ import {
   X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import {
+  Bar,
+  BarChart,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { useAdminAuth } from "../hooks/useAdminAuth";
 import { type AuditLogEntry, getAuditLog } from "../hooks/useEmailAuth";
 import { useEmailAuth } from "../hooks/useEmailAuth";
@@ -58,9 +72,19 @@ const ROLE_COLORS: Record<string, string> = {
   medical_officer: "bg-sky-100 text-sky-800",
   intern_doctor: "bg-cyan-100 text-cyan-800",
   nurse: "bg-pink-100 text-pink-800",
-  staff: "bg-gray-100 text-gray-700",
+  staff: "bg-muted text-muted-foreground",
   patient: "bg-teal-100 text-teal-800",
 };
+
+const CHART_PALETTE = [
+  "#0ea5e9",
+  "#8b5cf6",
+  "#10b981",
+  "#f59e0b",
+  "#ef4444",
+  "#ec4899",
+  "#06b6d4",
+];
 
 const ENTITY_TYPES = [
   "All",
@@ -233,7 +257,7 @@ function LegacyLogRow({ log, idx }: { log: AuditLogEntry; idx: number }) {
       <TableCell className="font-medium text-sm">{log.userName}</TableCell>
       <TableCell>
         <Badge
-          className={`text-xs border-0 ${ROLE_COLORS[log.userRole] ?? "bg-gray-100 text-gray-700"}`}
+          className={`text-xs border-0 ${ROLE_COLORS[log.userRole] ?? "bg-muted text-muted-foreground"}`}
         >
           {log.userRole}
         </Badge>
@@ -261,7 +285,7 @@ function ClinicalAuditRow({ entry, idx }: { entry: AuditEntry; idx: number }) {
       </TableCell>
       <TableCell>
         <Badge
-          className={`text-xs border-0 ${ROLE_COLORS[entry.changedByRole] ?? "bg-gray-100 text-gray-700"}`}
+          className={`text-xs border-0 ${ROLE_COLORS[entry.changedByRole] ?? "bg-muted text-muted-foreground"}`}
         >
           {entry.changedByRole}
         </Badge>
@@ -293,6 +317,480 @@ function ClinicalAuditRow({ entry, idx }: { entry: AuditEntry; idx: number }) {
   );
 }
 
+// ── Dashboard Tab ─────────────────────────────────────────────────────────────
+
+interface DashboardProps {
+  legacyLogs: AuditLogEntry[];
+  clinicalEntries: AuditEntry[];
+}
+
+function AuditDashboard({ legacyLogs, clinicalEntries }: DashboardProps) {
+  const [days, setDays] = useState(7);
+  const cutoff = subDays(new Date(), days);
+
+  const recentLegacy = useMemo(
+    () => legacyLogs.filter((l) => new Date(l.timestamp) >= cutoff),
+    [legacyLogs, cutoff],
+  );
+  const recentClinical = useMemo(
+    () =>
+      clinicalEntries.filter(
+        (e) => new Date(Number(e.changedAt) / 1_000_000) >= cutoff,
+      ),
+    [clinicalEntries, cutoff],
+  );
+
+  // ── Login activity per user ──
+  const loginActivity = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const l of recentLegacy) {
+      if (l.action.toLowerCase().includes("login")) {
+        map[l.userName] = (map[l.userName] ?? 0) + 1;
+      }
+    }
+    return Object.entries(map)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+  }, [recentLegacy]);
+
+  // ── Top action types ──
+  const topActions = useMemo(() => {
+    const map: Record<string, number> = {};
+    const normalize = (action: string) => {
+      const a = action.toLowerCase();
+      if (a.includes("prescription")) return "Prescriptions Written";
+      if (a.includes("patient") && a.includes("register"))
+        return "Patients Registered";
+      if (a.includes("visit")) return "Visits Created";
+      if (a.includes("edit") || a.includes("update")) return "Edits Made";
+      if (a.includes("ai")) return "AI Suggestions";
+      if (a.includes("export")) return "Data Exports";
+      if (a.includes("login")) return "Logins";
+      return "Other Actions";
+    };
+    for (const l of recentLegacy) {
+      const key = normalize(l.action);
+      map[key] = (map[key] ?? 0) + 1;
+    }
+    for (const e of recentClinical) {
+      const key = normalize(e.fieldName);
+      map[key] = (map[key] ?? 0) + 1;
+    }
+    return Object.entries(map)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 8);
+  }, [recentLegacy, recentClinical]);
+
+  // ── Failed logins ──
+  const failedLogins = useMemo(
+    () =>
+      recentLegacy
+        .filter(
+          (l) =>
+            l.action.toLowerCase().includes("failed") ||
+            l.action.toLowerCase().includes("login_failed"),
+        )
+        .slice(0, 20),
+    [recentLegacy],
+  );
+
+  // ── AI acceptance rate ──
+  const aiRate = useMemo(() => {
+    const accepted = recentLegacy.filter((l) =>
+      l.action.toLowerCase().includes("ai suggestion accepted"),
+    ).length;
+    const rejected = recentLegacy.filter((l) =>
+      l.action.toLowerCase().includes("ai suggestion rejected"),
+    ).length;
+    const total = accepted + rejected;
+    return total === 0
+      ? null
+      : { accepted, rejected, rate: Math.round((accepted / total) * 100) };
+  }, [recentLegacy]);
+
+  // ── AI pie data ──
+  const aiPieData = aiRate
+    ? [
+        { name: "Accepted", value: aiRate.accepted },
+        { name: "Rejected", value: aiRate.rejected },
+      ]
+    : [];
+
+  // ── Data exports ──
+  const exports = useMemo(
+    () =>
+      recentLegacy
+        .filter((l) => l.action.toLowerCase().includes("export"))
+        .slice(0, 20),
+    [recentLegacy],
+  );
+
+  // ── Role changes ──
+  const roleChanges = useMemo(
+    () =>
+      recentLegacy
+        .filter(
+          (l) =>
+            l.action.toLowerCase().includes("role") ||
+            l.action.toLowerCase().includes("role_change"),
+        )
+        .slice(0, 20),
+    [recentLegacy],
+  );
+
+  const dateRangeOptions = [
+    { label: "Last 7 days", value: 7 },
+    { label: "Last 14 days", value: 14 },
+    { label: "Last 30 days", value: 30 },
+    { label: "Last 90 days", value: 90 },
+  ];
+
+  return (
+    <div className="space-y-6" data-ocid="audit_dashboard.panel">
+      {/* Date range filter */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          Showing data for the past{" "}
+          <strong className="text-foreground">{days} days</strong>
+        </p>
+        <Select value={String(days)} onValueChange={(v) => setDays(Number(v))}>
+          <SelectTrigger
+            className="w-40 h-9 text-sm"
+            data-ocid="audit_dashboard.date_range.select"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {dateRangeOptions.map((opt) => (
+              <SelectItem key={opt.value} value={String(opt.value)}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Summary stats row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {[
+          {
+            label: "Total Events",
+            value: recentLegacy.length + recentClinical.length,
+            color: "bg-blue-50 border-blue-200 text-blue-700",
+          },
+          {
+            label: "Failed Logins",
+            value: failedLogins.length,
+            color: "bg-red-50 border-red-200 text-red-700",
+          },
+          {
+            label: "Data Exports",
+            value: exports.length,
+            color: "bg-amber-50 border-amber-200 text-amber-700",
+          },
+          {
+            label: "Role Changes",
+            value: roleChanges.length,
+            color: "bg-purple-50 border-purple-200 text-purple-700",
+          },
+        ].map((stat) => (
+          <div
+            key={stat.label}
+            className={`border rounded-xl p-4 ${stat.color}`}
+          >
+            <p className="text-2xl font-bold">{stat.value}</p>
+            <p className="text-xs font-medium mt-0.5 opacity-80">
+              {stat.label}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* Charts row 1 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Login activity */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-primary" />
+            Login Activity (by user)
+          </h3>
+          {loginActivity.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">
+              No logins recorded in this period
+            </p>
+          ) : (
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart
+                data={loginActivity}
+                layout="vertical"
+                margin={{ left: 8, right: 16, top: 4, bottom: 4 }}
+              >
+                <XAxis type="number" tick={{ fontSize: 11 }} />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  width={110}
+                  tick={{ fontSize: 10 }}
+                />
+                <Tooltip
+                  contentStyle={{ fontSize: 12 }}
+                  formatter={(v) => [`${v} logins`, "Count"]}
+                />
+                <Bar dataKey="count" radius={[0, 4, 4, 0]}>
+                  {loginActivity.map((entry) => (
+                    <Cell
+                      key={`login-${entry.name}`}
+                      fill={
+                        CHART_PALETTE[
+                          loginActivity.indexOf(entry) % CHART_PALETTE.length
+                        ]
+                      }
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        {/* Top actions */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-primary" />
+            Top Actions This Week
+          </h3>
+          {topActions.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">
+              No actions recorded in this period
+            </p>
+          ) : (
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart
+                data={topActions}
+                margin={{ left: 8, right: 16, top: 4, bottom: 32 }}
+              >
+                <XAxis
+                  dataKey="name"
+                  tick={{ fontSize: 9 }}
+                  angle={-25}
+                  textAnchor="end"
+                  interval={0}
+                />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip contentStyle={{ fontSize: 12 }} />
+                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                  {topActions.map((entry) => (
+                    <Cell
+                      key={`action-${entry.name}`}
+                      fill={
+                        CHART_PALETTE[
+                          topActions.indexOf(entry) % CHART_PALETTE.length
+                        ]
+                      }
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </div>
+
+      {/* Charts row 2 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* AI Suggestion Acceptance Rate */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="text-sm font-bold text-foreground mb-4">
+            AI Suggestion Acceptance Rate
+          </h3>
+          {!aiRate ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">
+              No AI suggestion events in this period
+            </p>
+          ) : (
+            <div className="flex items-center gap-6">
+              <ResponsiveContainer width={180} height={180}>
+                <PieChart>
+                  <Pie
+                    data={aiPieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={80}
+                    dataKey="value"
+                    paddingAngle={3}
+                  >
+                    <Cell fill="#10b981" />
+                    <Cell fill="#f87171" />
+                  </Pie>
+                  <Tooltip contentStyle={{ fontSize: 12 }} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="space-y-2 text-sm">
+                <p className="text-2xl font-bold text-green-600">
+                  {aiRate.rate}%
+                </p>
+                <p className="text-xs text-muted-foreground">Acceptance Rate</p>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-green-500 inline-block" />
+                    <span>Accepted: {aiRate.accepted}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-red-400 inline-block" />
+                    <span>Rejected: {aiRate.rejected}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Failed login attempts */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+            <ShieldAlert className="w-4 h-4 text-red-500" />
+            Failed Login Attempts
+          </h3>
+          {failedLogins.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">
+              No failed logins in this period
+            </p>
+          ) : (
+            <div className="space-y-2 max-h-44 overflow-y-auto">
+              {failedLogins.map((l, idx) => (
+                <div
+                  key={l.id}
+                  className="flex items-center justify-between text-xs py-1.5 border-b border-border last:border-0"
+                  data-ocid={`audit_dashboard.failed_login.item.${idx + 1}`}
+                >
+                  <div>
+                    <span className="font-medium text-foreground">
+                      {l.userName || "Unknown"}
+                    </span>
+                    <span className="text-muted-foreground ml-2">
+                      {l.target}
+                    </span>
+                  </div>
+                  <span className="text-muted-foreground whitespace-nowrap">
+                    {format(new Date(l.timestamp), "MMM d, HH:mm")}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Data exports table */}
+      <div className="bg-card border border-border rounded-xl p-5">
+        <h3 className="text-sm font-bold text-foreground mb-4">
+          Data Export History
+        </h3>
+        {exports.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-4">
+            No data exports in this period
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left text-xs font-semibold text-muted-foreground pb-2 pr-4">
+                    User
+                  </th>
+                  <th className="text-left text-xs font-semibold text-muted-foreground pb-2 pr-4">
+                    Role
+                  </th>
+                  <th className="text-left text-xs font-semibold text-muted-foreground pb-2 pr-4">
+                    Action
+                  </th>
+                  <th className="text-left text-xs font-semibold text-muted-foreground pb-2">
+                    Timestamp
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {exports.map((l, idx) => (
+                  <tr
+                    key={l.id}
+                    className="border-b border-border/50 last:border-0"
+                    data-ocid={`audit_dashboard.export.item.${idx + 1}`}
+                  >
+                    <td className="py-2 pr-4 font-medium">{l.userName}</td>
+                    <td className="py-2 pr-4 text-muted-foreground">
+                      {l.userRole}
+                    </td>
+                    <td className="py-2 pr-4 text-muted-foreground">
+                      {l.action}
+                    </td>
+                    <td className="py-2 text-muted-foreground whitespace-nowrap">
+                      {format(new Date(l.timestamp), "MMM d, yyyy HH:mm")}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Role changes table */}
+      <div className="bg-card border border-border rounded-xl p-5">
+        <h3 className="text-sm font-bold text-foreground mb-4">
+          Role Change Log
+        </h3>
+        {roleChanges.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-4">
+            No role changes in this period
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  {["User Changed", "Action", "Changed By", "Timestamp"].map(
+                    (h) => (
+                      <th
+                        key={h}
+                        className="text-left text-xs font-semibold text-muted-foreground pb-2 pr-4"
+                      >
+                        {h}
+                      </th>
+                    ),
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {roleChanges.map((l, idx) => (
+                  <tr
+                    key={l.id}
+                    className="border-b border-border/50 last:border-0"
+                    data-ocid={`audit_dashboard.role_change.item.${idx + 1}`}
+                  >
+                    <td className="py-2 pr-4 font-medium">{l.target}</td>
+                    <td className="py-2 pr-4 text-muted-foreground">
+                      {l.action}
+                    </td>
+                    <td className="py-2 pr-4 text-muted-foreground">
+                      {l.userName}
+                    </td>
+                    <td className="py-2 text-muted-foreground whitespace-nowrap">
+                      {format(new Date(l.timestamp), "MMM d, yyyy HH:mm")}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function AuditLog() {
@@ -305,6 +803,7 @@ export default function AuditLog() {
     (currentDoctor?.role === "consultant_doctor" &&
       permissions.canViewAuditTrail);
 
+  const [activeTab, setActiveTab] = useState<"log" | "dashboard">("log");
   const [search, setSearch] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -331,7 +830,6 @@ export default function AuditLog() {
   const filteredLegacy = useMemo(() => {
     return legacyLogs.filter((log) => {
       if (roleFilter !== "All" && log.userRole !== roleFilter) return false;
-      // "AI Suggestion" filter — match legacy log entries with AI suggestion actions
       if (entityFilter === "AI Suggestion") {
         if (!log.action.toLowerCase().includes("ai suggestion")) return false;
       } else if (entityFilter !== "All") {
@@ -447,18 +945,7 @@ export default function AuditLog() {
               Full Audit Trail
             </h1>
             <p className="text-sm text-muted-foreground">
-              {hasActiveFilters ? (
-                <>
-                  Showing{" "}
-                  <strong className="text-foreground">{totalEntries}</strong> of{" "}
-                  {totalUnfilteredEntries} entries
-                </>
-              ) : (
-                <>
-                  {totalUnfilteredEntries} entries — before/after values tracked
-                  for medico-legal safety
-                </>
-              )}
+              {totalUnfilteredEntries} entries — medico-legal compliance record
             </p>
           </div>
         </div>
@@ -496,257 +983,311 @@ export default function AuditLog() {
         </div>
       </div>
 
-      {/* Info banner */}
-      <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-start gap-3 text-sm text-amber-800">
-        <ArrowRightLeft className="w-4 h-4 mt-0.5 shrink-0" />
-        <div>
-          <p className="font-semibold">Before → After Audit Trail</p>
-          <p className="text-xs mt-0.5">
-            Every change is recorded with the original value (amber) and new
-            value (green). This log is immutable — no records can be deleted.
-          </p>
-        </div>
+      {/* Tab switcher */}
+      <div
+        className="flex gap-1 bg-muted/50 rounded-xl p-1 w-fit"
+        data-ocid="audit_log.tab"
+      >
+        <button
+          type="button"
+          onClick={() => setActiveTab("log")}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            activeTab === "log"
+              ? "bg-card shadow-sm text-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+          data-ocid="audit_log.log.tab"
+        >
+          <List className="w-3.5 h-3.5" />
+          Audit Log
+        </button>
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={() => setActiveTab("dashboard")}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === "dashboard"
+                ? "bg-card shadow-sm text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+            data-ocid="audit_log.dashboard.tab"
+          >
+            <BarChart3 className="w-3.5 h-3.5" />
+            Dashboard
+          </button>
+        )}
       </div>
 
-      {/* Filters */}
-      <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-        <div className="flex flex-wrap gap-3 items-end">
-          <div className="flex-1 min-w-48 space-y-1">
-            <label
-              htmlFor="audit-search"
-              className="text-xs font-medium text-muted-foreground"
-            >
-              Search
-            </label>
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 w-4 h-4 text-muted-foreground" />
-              <Input
-                id="audit-search"
-                placeholder="User, action, field..."
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                className="pl-9"
-                data-ocid="audit_log.search_input"
-              />
+      {/* Dashboard tab */}
+      {activeTab === "dashboard" && isAdmin && (
+        <AuditDashboard
+          legacyLogs={legacyLogs}
+          clinicalEntries={clinicalEntries}
+        />
+      )}
+
+      {/* Log tab */}
+      {activeTab === "log" && (
+        <>
+          {/* Info banner */}
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-start gap-3 text-sm text-amber-800">
+            <ArrowRightLeft className="w-4 h-4 mt-0.5 shrink-0" />
+            <div>
+              <p className="font-semibold">Before → After Audit Trail</p>
+              <p className="text-xs mt-0.5">
+                Every change is recorded with the original value (amber) and new
+                value (green). This log is immutable — no records can be
+                deleted.
+              </p>
             </div>
           </div>
 
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">
-              Entity Type
-            </p>
-            <Select
-              value={entityFilter}
-              onValueChange={(v) => {
-                setEntityFilter(v);
-                setPage(1);
-              }}
-            >
-              <SelectTrigger
-                className="w-40 h-9 text-sm"
-                data-ocid="audit_log.entity_filter"
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ENTITY_TYPES.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Filters */}
+          <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+            <div className="flex flex-wrap gap-3 items-end">
+              <div className="flex-1 min-w-48 space-y-1">
+                <label
+                  htmlFor="audit-search"
+                  className="text-xs font-medium text-muted-foreground"
+                >
+                  Search
+                </label>
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="audit-search"
+                    placeholder="User, action, field..."
+                    value={search}
+                    onChange={(e) => {
+                      setSearch(e.target.value);
+                      setPage(1);
+                    }}
+                    className="pl-9"
+                    data-ocid="audit_log.search_input"
+                  />
+                </div>
+              </div>
 
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">Role</p>
-            <Select
-              value={roleFilter}
-              onValueChange={(v) => {
-                setRoleFilter(v);
-                setPage(1);
-              }}
-            >
-              <SelectTrigger
-                className="w-40 h-9 text-sm"
-                data-ocid="audit_log.role_filter"
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {allRoles.map((r) => (
-                  <SelectItem key={r} value={r} className="capitalize">
-                    {r}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-muted-foreground">
+                  Entity Type
+                </p>
+                <Select
+                  value={entityFilter}
+                  onValueChange={(v) => {
+                    setEntityFilter(v);
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger
+                    className="w-40 h-9 text-sm"
+                    data-ocid="audit_log.entity_filter"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ENTITY_TYPES.map((t) => (
+                      <SelectItem key={t} value={t}>
+                        {t}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-          <div className="space-y-1">
-            <label
-              htmlFor="audit-from"
-              className="text-xs font-medium text-muted-foreground"
-            >
-              From Date
-            </label>
-            <Input
-              id="audit-from"
-              type="date"
-              value={fromDate}
-              onChange={(e) => {
-                setFromDate(e.target.value);
-                setPage(1);
-              }}
-              className="w-36 h-9 text-sm"
-              data-ocid="audit_log.from_date_input"
-            />
-          </div>
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-muted-foreground">
+                  Role
+                </p>
+                <Select
+                  value={roleFilter}
+                  onValueChange={(v) => {
+                    setRoleFilter(v);
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger
+                    className="w-40 h-9 text-sm"
+                    data-ocid="audit_log.role_filter"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allRoles.map((r) => (
+                      <SelectItem key={r} value={r} className="capitalize">
+                        {r}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-          <div className="space-y-1">
-            <label
-              htmlFor="audit-to"
-              className="text-xs font-medium text-muted-foreground"
-            >
-              To Date
-            </label>
-            <Input
-              id="audit-to"
-              type="date"
-              value={toDate}
-              onChange={(e) => {
-                setToDate(e.target.value);
-                setPage(1);
-              }}
-              className="w-36 h-9 text-sm"
-              data-ocid="audit_log.to_date_input"
-            />
-          </div>
-        </div>
+              <div className="space-y-1">
+                <label
+                  htmlFor="audit-from"
+                  className="text-xs font-medium text-muted-foreground"
+                >
+                  From Date
+                </label>
+                <Input
+                  id="audit-from"
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => {
+                    setFromDate(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-36 h-9 text-sm"
+                  data-ocid="audit_log.from_date_input"
+                />
+              </div>
 
-        {hasActiveFilters && (
-          <div className="flex items-center gap-2 pt-1">
-            <span className="text-xs text-muted-foreground">
-              {totalEntries} result{totalEntries !== 1 ? "s" : ""} matching
-              current filters
-            </span>
-            <button
-              type="button"
-              onClick={resetFilters}
-              className="text-xs text-primary underline flex items-center gap-1 hover:opacity-80"
-              data-ocid="audit_log.reset_filters"
-            >
-              <X className="w-3 h-3" />
-              Reset filters
-            </button>
-          </div>
-        )}
-      </div>
+              <div className="space-y-1">
+                <label
+                  htmlFor="audit-to"
+                  className="text-xs font-medium text-muted-foreground"
+                >
+                  To Date
+                </label>
+                <Input
+                  id="audit-to"
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => {
+                    setToDate(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-36 h-9 text-sm"
+                  data-ocid="audit_log.to_date_input"
+                />
+              </div>
+            </div>
 
-      {/* Table */}
-      <div
-        className="bg-card border border-border rounded-xl overflow-hidden"
-        data-ocid="audit_log.table"
-      >
-        {totalEntries === 0 ? (
-          <div className="text-center py-16" data-ocid="audit_log.empty_state">
-            <FileText className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground">No audit entries found</p>
             {hasActiveFilters && (
-              <button
-                type="button"
-                onClick={resetFilters}
-                className="mt-2 text-sm text-primary underline"
-              >
-                Clear filters
-              </button>
+              <div className="flex items-center gap-2 pt-1">
+                <span className="text-xs text-muted-foreground">
+                  {totalEntries} result{totalEntries !== 1 ? "s" : ""} matching
+                  current filters
+                </span>
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="text-xs text-primary underline flex items-center gap-1 hover:opacity-80"
+                  data-ocid="audit_log.reset_filters"
+                >
+                  <X className="w-3 h-3" />
+                  Reset filters
+                </button>
+              </div>
             )}
           </div>
-        ) : (
-          <ScrollArea className="h-[58vh]">
-            <Table>
-              <TableHeader className="sticky top-0 bg-card z-10">
-                <TableRow className="bg-muted/30">
-                  <TableHead className="font-semibold text-xs w-40">
-                    Timestamp
-                  </TableHead>
-                  <TableHead className="font-semibold text-xs">
-                    Changed By
-                  </TableHead>
-                  <TableHead className="font-semibold text-xs w-28">
-                    Role
-                  </TableHead>
-                  <TableHead className="font-semibold text-xs w-28">
-                    Entity
-                  </TableHead>
-                  <TableHead className="font-semibold text-xs">
-                    Field / Action
-                  </TableHead>
-                  <TableHead className="font-semibold text-xs w-32 text-amber-700">
-                    Before
-                  </TableHead>
-                  <TableHead className="font-semibold text-xs w-32 text-green-700">
-                    After
-                  </TableHead>
-                  <TableHead className="font-semibold text-xs">
-                    Reason / Target
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {pagedClinical.map((entry, idx) => (
-                  <ClinicalAuditRow
-                    key={entry.id.toString()}
-                    entry={entry}
-                    idx={idx}
-                  />
-                ))}
-                {pagedLegacy.map((log, idx) => (
-                  <LegacyLogRow
-                    key={log.id}
-                    log={log}
-                    idx={pagedClinical.length + idx}
-                  />
-                ))}
-              </TableBody>
-            </Table>
-          </ScrollArea>
-        )}
-      </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div
-          className="flex items-center justify-between text-sm"
-          data-ocid="audit_log.pagination"
-        >
-          <p className="text-muted-foreground">
-            Page {page} of {totalPages} · {totalEntries} entries
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page === 1}
-              onClick={() => setPage((p) => p - 1)}
-              data-ocid="audit_log.pagination_prev"
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page === totalPages}
-              onClick={() => setPage((p) => p + 1)}
-              data-ocid="audit_log.pagination_next"
-            >
-              Next
-            </Button>
+          {/* Table */}
+          <div
+            className="bg-card border border-border rounded-xl overflow-hidden"
+            data-ocid="audit_log.table"
+          >
+            {totalEntries === 0 ? (
+              <div
+                className="text-center py-16"
+                data-ocid="audit_log.empty_state"
+              >
+                <FileText className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">No audit entries found</p>
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    onClick={resetFilters}
+                    className="mt-2 text-sm text-primary underline"
+                  >
+                    Clear filters
+                  </button>
+                )}
+              </div>
+            ) : (
+              <ScrollArea className="h-[58vh]">
+                <Table>
+                  <TableHeader className="sticky top-0 bg-card z-10">
+                    <TableRow className="bg-muted/30">
+                      <TableHead className="font-semibold text-xs w-40">
+                        Timestamp
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs">
+                        Changed By
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs w-28">
+                        Role
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs w-28">
+                        Entity
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs">
+                        Field / Action
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs w-32 text-amber-700">
+                        Before
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs w-32 text-green-700">
+                        After
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs">
+                        Reason / Target
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pagedClinical.map((entry, idx) => (
+                      <ClinicalAuditRow
+                        key={entry.id.toString()}
+                        entry={entry}
+                        idx={idx}
+                      />
+                    ))}
+                    {pagedLegacy.map((log, idx) => (
+                      <LegacyLogRow
+                        key={log.id}
+                        log={log}
+                        idx={pagedClinical.length + idx}
+                      />
+                    ))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
+            )}
           </div>
-        </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div
+              className="flex items-center justify-between text-sm"
+              data-ocid="audit_log.pagination"
+            >
+              <p className="text-muted-foreground">
+                Page {page} of {totalPages} · {totalEntries} entries
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page === 1}
+                  onClick={() => setPage((p) => p - 1)}
+                  data-ocid="audit_log.pagination_prev"
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page === totalPages}
+                  onClick={() => setPage((p) => p + 1)}
+                  data-ocid="audit_log.pagination_next"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

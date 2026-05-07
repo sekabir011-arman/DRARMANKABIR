@@ -7,29 +7,46 @@ export interface None {
     __kind__: "None";
 }
 export type Option<T> = Some<T> | None;
-export interface UserProfile {
+export interface Medication {
+    duration: string;
+    dose: string;
     name: string;
+    instructions: string;
+    frequency: string;
 }
 export interface DailyProgressNote {
     id: bigint;
+    moAssessment: string;
     isDeleted: boolean;
     drainMonitoring?: string;
+    internObjective: string;
     patientId: bigint;
     authorId: Principal;
+    consultantComments: string;
+    submittedByRole?: StaffRole;
+    consultantOverrides: string;
     createdAt: bigint;
     authorName: string;
+    reviewedByMO?: string;
     authorRole: StaffRole;
     noteDate: string;
+    rejectionReason?: string;
     objectiveVitals?: string;
     assessmentText: string;
     subjectiveComplaints: Array<string>;
     isDraft: boolean;
     updatedAt: bigint;
     activeDiagnoses: Array<string>;
+    internSubjective: string;
     progressType: DailyProgressType;
     activeComplaints: Array<string>;
+    moPlan: string;
+    noteState: DailyNoteState;
     previousVersionIds: Array<bigint>;
+    reviewedByConsultant?: string;
+    versionChain: Array<string>;
     versionInfo: VersionedRecord;
+    submitTimestamp?: bigint;
     encounterId?: bigint;
     planText: string;
     systemReview?: string;
@@ -302,6 +319,15 @@ export interface Observation {
     versionInfo: VersionedRecord;
     encounterId?: bigint;
 }
+export interface VitalsSummary {
+    bp?: string;
+    rr?: string;
+    rbs?: string;
+    spo2?: string;
+    temp?: string;
+    recordedAt: bigint;
+    pulse?: string;
+}
 export interface BedRecord {
     id: bigint;
     status: BedStatus;
@@ -323,6 +349,35 @@ export interface BedTransferEntry {
     date: bigint;
     fromBed: string;
     reason: string;
+}
+export interface WardRoundPatientStatus {
+    admissionDay: bigint;
+    patientId: string;
+    todayNoteState?: string;
+    assignedConsultant?: string;
+    ward: string;
+    bedNumber: string;
+    activeAlerts: Array<string>;
+    patientName: string;
+    lastVitals?: VitalsSummary;
+}
+export interface DailyProgressNoteUpdate {
+    moAssessment: string;
+    drainMonitoring?: string;
+    internObjective: string;
+    consultantComments: string;
+    consultantOverrides: string;
+    objectiveVitals?: string;
+    assessmentText: string;
+    subjectiveComplaints: Array<string>;
+    activeDiagnoses: Array<string>;
+    internSubjective: string;
+    activeComplaints: Array<string>;
+    moPlan: string;
+    planText: string;
+    systemReview?: string;
+    intakeOutput?: string;
+    investigations: Array<string>;
 }
 export interface SerialQueueEntry {
     id: string;
@@ -354,12 +409,8 @@ export interface UpdatedData {
     timestamp: bigint;
     patients: Array<bigint>;
 }
-export interface Medication {
-    duration: string;
-    dose: string;
+export interface UserProfile {
     name: string;
-    instructions: string;
-    frequency: string;
 }
 export enum AlertSeverity {
     Info = "Info",
@@ -390,6 +441,13 @@ export enum BedStatus {
     Empty = "Empty",
     Maintenance = "Maintenance",
     Occupied = "Occupied"
+}
+export enum DailyNoteState {
+    submittedToMO = "submittedToMO",
+    finalized = "finalized",
+    rejected = "rejected",
+    moReviewComplete = "moReviewComplete",
+    draft = "draft"
 }
 export enum DailyProgressType {
     morning = "morning",
@@ -508,6 +566,13 @@ export interface backendInterface {
         err: string;
     }>;
     addAuditEntry(entityType: string, entityId: bigint, fieldName: string, beforeValue: string | null, afterValue: string, reason: string | null): Promise<void>;
+    addNoteAddendum(patientId: bigint, noteId: bigint, addendumText: string): Promise<{
+        __kind__: "ok";
+        ok: DailyProgressNote;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     assignBed(bedId: bigint, patientId: bigint, patientName: string): Promise<{
         __kind__: "ok";
         ok: BedRecord;
@@ -673,6 +738,13 @@ export interface backendInterface {
         __kind__: "err";
         err: string;
     }>;
+    finalizeDailyNote(patientId: bigint, noteId: bigint, consultantEmail: string, consultantComments: string, finalSOAP: DailyProgressNoteUpdate): Promise<{
+        __kind__: "ok";
+        ok: DailyProgressNote;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     finalizeNote(id: bigint): Promise<{
         __kind__: "ok";
         ok: ClinicalNote;
@@ -731,6 +803,7 @@ export interface backendInterface {
     getClinicalPrescriptionsAwaitingApproval(): Promise<Array<Prescription__1>>;
     getClinicalPrescriptionsByPatient(patientId: bigint): Promise<Array<Prescription__1>>;
     getCurrentUser(): Promise<CurrentUser>;
+    getDailyNotesByPatient(patientId: bigint, dateFilter: string | null): Promise<Array<DailyProgressNote>>;
     getDailyProgressNotesByPatientId(patientId: bigint): Promise<Array<DailyProgressNote>>;
     getDiagnosisTemplate(id: bigint): Promise<DiagnosisTemplate | null>;
     getEncountersByPatient(patientId: bigint): Promise<Array<Encounter>>;
@@ -780,6 +853,7 @@ export interface backendInterface {
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     getVisit(id: bigint): Promise<Visit | null>;
     getVisitsByPatientId(patientId: bigint): Promise<Array<Visit>>;
+    getWardRoundStatus(date: string): Promise<Array<WardRoundPatientStatus>>;
     isCallerAdmin(): Promise<boolean>;
     migrateFromLocalStorage(patientsJson: string, visitsJson: string, prescriptionsJson: string, appointmentsJson: string): Promise<{
         __kind__: "ok";
@@ -803,6 +877,13 @@ export interface backendInterface {
         __kind__: "err";
         err: string;
     }>;
+    rejectDraftNote(patientId: bigint, noteId: bigint, reviewerEmail: string, rejectionReason: string): Promise<{
+        __kind__: "ok";
+        ok: DailyProgressNote;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     resolveAlert(id: bigint): Promise<{
         __kind__: "ok";
         ok: ClinicalAlert;
@@ -811,6 +892,13 @@ export interface backendInterface {
         err: string;
     }>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    submitDailyNoteForReview(patientId: bigint, noteId: bigint, noteContent: DailyProgressNoteUpdate): Promise<{
+        __kind__: "ok";
+        ok: DailyProgressNote;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     syncData(doctorEmail: string): Promise<{
         __kind__: "ok";
         ok: SyncData;

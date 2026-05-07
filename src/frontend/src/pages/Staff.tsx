@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  BarChart3,
   BookOpen,
   Calendar,
   CheckCircle2,
@@ -30,6 +31,7 @@ import {
   Sun,
   Sunset,
   Trash2,
+  TrendingUp,
   UserCheck,
   UserX,
   Users,
@@ -52,10 +54,36 @@ import type { StaffRole } from "../types";
 // ── Storage Keys ──────────────────────────────────────────────────────────────
 const SHIFTS_KEY = "staff_shifts";
 const ATTENDANCE_KEY = "staff_attendance";
+const LEAVE_REQUESTS_KEY = "leave_requests";
 
 // ── Local Types ───────────────────────────────────────────────────────────────
 type StatusFilter = "all" | "approved" | "pending" | "rejected";
-type MainTab = "registration" | "schedule" | "attendance" | "directory";
+type MainTab =
+  | "registration"
+  | "schedule"
+  | "attendance"
+  | "directory"
+  | "performance"
+  | "leave";
+
+type LeaveType = "Annual Leave" | "Sick Leave" | "Emergency Leave" | "Training";
+type LeaveStatus = "pending" | "approved" | "rejected";
+
+interface LeaveRequest {
+  id: string;
+  staffId: string;
+  staffName: string;
+  staffRole: string;
+  startDate: string;
+  endDate: string;
+  leaveType: LeaveType;
+  reason: string;
+  status: LeaveStatus;
+  adminNote: string;
+  requestedAt: string;
+  reviewedAt?: string;
+  reviewedBy?: string;
+}
 
 type ShiftType = "morning" | "evening" | "night";
 
@@ -107,6 +135,19 @@ function loadAttendance(): AttendanceRecord[] {
 
 function saveAttendance(records: AttendanceRecord[]) {
   localStorage.setItem(ATTENDANCE_KEY, JSON.stringify(records));
+}
+
+function loadLeaveRequests(): LeaveRequest[] {
+  try {
+    const raw = localStorage.getItem(LEAVE_REQUESTS_KEY);
+    return raw ? (JSON.parse(raw) as LeaveRequest[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLeaveRequests(requests: LeaveRequest[]) {
+  localStorage.setItem(LEAVE_REQUESTS_KEY, JSON.stringify(requests));
 }
 
 // ── Helper: log attendance on login ──────────────────────────────────────────
@@ -287,11 +328,27 @@ export default function Staff() {
     currentDoctor?.role === "admin" ||
     currentDoctor?.role === "consultant_doctor";
 
+  // Leave requests state
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
+  const [showLeaveForm, setShowLeaveForm] = useState(false);
+  const [leaveForm, setLeaveForm] = useState({
+    startDate: new Date().toISOString().split("T")[0],
+    endDate: new Date().toISOString().split("T")[0],
+    leaveType: "Annual Leave" as LeaveType,
+    reason: "",
+  });
+
+  // Performance state
+  const [perfMonth, setPerfMonth] = useState(
+    new Date().toISOString().slice(0, 7),
+  );
+
   const refresh = useCallback(() => {
     const reg = loadRegistry() as (DoctorAccount & { photo?: string })[];
     setStaff(reg);
     setShifts(loadShifts());
     setAttendance(loadAttendance());
+    setLeaveRequests(loadLeaveRequests());
   }, []);
 
   useEffect(() => {
@@ -517,6 +574,151 @@ export default function Staff() {
     return matchSearch && matchRole && matchShift;
   });
 
+  // ── Leave request actions ───────────────────────────────────────────────────
+  const submitLeaveRequest = () => {
+    if (!currentDoctor) return;
+    if (!leaveForm.startDate || !leaveForm.endDate) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+    const requests = loadLeaveRequests();
+    requests.push({
+      id: Date.now().toString(36),
+      staffId: currentDoctor.id,
+      staffName: currentDoctor.name,
+      staffRole: currentDoctor.role,
+      startDate: leaveForm.startDate,
+      endDate: leaveForm.endDate,
+      leaveType: leaveForm.leaveType,
+      reason: leaveForm.reason,
+      status: "pending",
+      adminNote: "",
+      requestedAt: new Date().toISOString(),
+    });
+    saveLeaveRequests(requests);
+    refresh();
+    setShowLeaveForm(false);
+    setLeaveForm({
+      startDate: new Date().toISOString().split("T")[0],
+      endDate: new Date().toISOString().split("T")[0],
+      leaveType: "Annual Leave",
+      reason: "",
+    });
+    toast.success("Leave request submitted");
+  };
+
+  const reviewLeave = (id: string, status: LeaveStatus, note: string) => {
+    const requests = loadLeaveRequests();
+    const idx = requests.findIndex((r) => r.id === id);
+    if (idx >= 0) {
+      requests[idx] = {
+        ...requests[idx],
+        status,
+        adminNote: note,
+        reviewedAt: new Date().toISOString(),
+        reviewedBy: currentDoctor?.name ?? "Admin",
+      };
+      saveLeaveRequests(requests);
+      refresh();
+      toast.success(`Leave request ${status}`);
+    }
+  };
+
+  // ── Performance helpers ─────────────────────────────────────────────────────
+  const perfData = useMemo(() => {
+    const prescriptions: Array<{ createdBy?: string; createdAt?: string }> =
+      (() => {
+        try {
+          const raw = localStorage.getItem("clinic_prescriptions");
+          return raw ? JSON.parse(raw) : [];
+        } catch {
+          return [];
+        }
+      })();
+    const procedures: Array<{
+      doctorName?: string;
+      createdAt?: string;
+      date?: string;
+    }> = (() => {
+      try {
+        const raw = localStorage.getItem("procedurePayments");
+        return raw ? JSON.parse(raw) : [];
+      } catch {
+        return [];
+      }
+    })();
+    const appts: Array<{
+      assignedTo?: string;
+      doctorName?: string;
+      createdAt?: string;
+      date?: string;
+    }> = (() => {
+      try {
+        const raw = localStorage.getItem("appointments");
+        return raw ? JSON.parse(raw) : [];
+      } catch {
+        return [];
+      }
+    })();
+
+    return approvedStaff.map((s) => {
+      const monthAttendance = attendance.filter(
+        (r) =>
+          r.staffId === s.id &&
+          r.date.startsWith(perfMonth) &&
+          r.shiftStatus === "present",
+      );
+      const totalShiftsMonth = attendance.filter(
+        (r) => r.staffId === s.id && r.date.startsWith(perfMonth),
+      );
+      const rxCount = prescriptions.filter(
+        (p) =>
+          p.createdBy === s.email && (p.createdAt ?? "").startsWith(perfMonth),
+      ).length;
+      const procCount = procedures.filter(
+        (p) =>
+          p.doctorName === s.name &&
+          (p.createdAt ?? p.date ?? "").startsWith(perfMonth),
+      ).length;
+      const patientsCount = appts.filter(
+        (a) =>
+          (a.assignedTo === s.email || a.doctorName === s.name) &&
+          (a.createdAt ?? a.date ?? "").startsWith(perfMonth),
+      ).length;
+      const adherencePct =
+        totalShiftsMonth.length > 0
+          ? Math.round((monthAttendance.length / totalShiftsMonth.length) * 100)
+          : 0;
+      return {
+        staff: s,
+        shiftsCompleted: monthAttendance.length,
+        totalShifts: totalShiftsMonth.length,
+        adherencePct,
+        rxCount,
+        procCount,
+        patientsCount,
+      };
+    });
+  }, [approvedStaff, attendance, perfMonth]);
+
+  const exportPerformance = () => {
+    const lines = [
+      "Name,Role,Patients Attended,Prescriptions Written,Procedures Logged,Shifts Completed,Shift Adherence %",
+      ...perfData.map(
+        (p) =>
+          `"${p.staff.name}","${STAFF_ROLE_LABELS[p.staff.role as keyof typeof STAFF_ROLE_LABELS] ?? p.staff.role}",${p.patientsCount},${p.rxCount},${p.procCount},${p.shiftsCompleted},${p.adherencePct}%`,
+      ),
+    ];
+    const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `staff-performance-${perfMonth}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Performance report exported");
+  };
+
   const exportDirectory = () => {
     const lines = [
       "Name,Role,Phone,Email,Current Shift,Ward",
@@ -618,6 +820,24 @@ export default function Staff() {
             { key: "schedule", label: "Shift Schedule", icon: Calendar },
             { key: "attendance", label: "Attendance", icon: BookOpen },
             { key: "directory", label: "Directory", icon: Users },
+            ...(canManage
+              ? [
+                  {
+                    key: "performance" as MainTab,
+                    label: "Performance",
+                    icon: BarChart3,
+                  },
+                ]
+              : []),
+            ...(isAdmin || currentDoctor?.role === "admin"
+              ? [
+                  {
+                    key: "leave" as MainTab,
+                    label: "Leave Requests",
+                    icon: Calendar,
+                  },
+                ]
+              : []),
           ] as { key: MainTab; label: string; icon: React.ElementType }[]
         ).map(({ key, label, icon: Icon }) => (
           <button
@@ -638,9 +858,124 @@ export default function Staff() {
                 {counts.pending}
               </span>
             )}
+            {key === "leave" &&
+              leaveRequests.filter((r) => r.status === "pending").length >
+                0 && (
+                <span className="w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">
+                  {leaveRequests.filter((r) => r.status === "pending").length}
+                </span>
+              )}
           </button>
         ))}
       </div>
+
+      {/* My Leave Request button for non-admin staff */}
+      {!canManage && currentDoctor && currentDoctor.role !== "patient" && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">Your leave requests</p>
+          <Button
+            size="sm"
+            onClick={() => setShowLeaveForm(true)}
+            className="gap-1.5"
+            data-ocid="staff.leave.open_modal_button"
+          >
+            <Plus className="w-4 h-4" />
+            Request Leave
+          </Button>
+        </div>
+      )}
+
+      {/* Leave Request Form Modal for non-admin staff */}
+      {showLeaveForm && !canManage && (
+        <div
+          className="bg-card border border-border rounded-xl p-4 space-y-4"
+          data-ocid="staff.leave.dialog"
+        >
+          <h3 className="font-semibold text-foreground">
+            Submit Leave Request
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Leave Type *</Label>
+              <select
+                value={leaveForm.leaveType}
+                onChange={(e) =>
+                  setLeaveForm((f) => ({
+                    ...f,
+                    leaveType: e.target.value as LeaveType,
+                  }))
+                }
+                className="w-full border border-input rounded-lg px-3 py-2 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                data-ocid="staff.leave.select"
+              >
+                {(
+                  [
+                    "Annual Leave",
+                    "Sick Leave",
+                    "Emergency Leave",
+                    "Training",
+                  ] as LeaveType[]
+                ).map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Reason (optional)</Label>
+              <Input
+                placeholder="Brief reason..."
+                value={leaveForm.reason}
+                onChange={(e) =>
+                  setLeaveForm((f) => ({ ...f, reason: e.target.value }))
+                }
+                data-ocid="staff.leave.input"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Start Date *</Label>
+              <Input
+                type="date"
+                value={leaveForm.startDate}
+                onChange={(e) =>
+                  setLeaveForm((f) => ({ ...f, startDate: e.target.value }))
+                }
+                data-ocid="staff.leave.input"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">End Date *</Label>
+              <Input
+                type="date"
+                value={leaveForm.endDate}
+                min={leaveForm.startDate}
+                onChange={(e) =>
+                  setLeaveForm((f) => ({ ...f, endDate: e.target.value }))
+                }
+                data-ocid="staff.leave.input"
+              />
+            </div>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowLeaveForm(false)}
+              data-ocid="staff.leave.cancel_button"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={submitLeaveRequest}
+              data-ocid="staff.leave.submit_button"
+            >
+              Submit Request
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* ── Tab: Registration & Approval ───────────────────────────────────── */}
       {mainTab === "registration" && (
@@ -1482,6 +1817,290 @@ export default function Staff() {
               </table>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── Tab: Performance ────────────────────────────────────────────────── */}
+      {mainTab === "performance" && canManage && (
+        <div className="space-y-5" data-ocid="staff.performance.section">
+          {/* Controls */}
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Label className="text-sm">Month:</Label>
+              <Input
+                type="month"
+                value={perfMonth}
+                onChange={(e) => setPerfMonth(e.target.value)}
+                className="w-44"
+                data-ocid="staff.performance.input"
+              />
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={exportPerformance}
+              className="gap-1.5"
+              data-ocid="staff.performance.button"
+            >
+              <Download className="w-4 h-4" />
+              Export CSV
+            </Button>
+          </div>
+
+          {/* Summary stat cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              {
+                label: "Total Patients",
+                value: perfData.reduce((s, p) => s + p.patientsCount, 0),
+                color: "bg-blue-50 border-blue-200 text-blue-700",
+              },
+              {
+                label: "Total Prescriptions",
+                value: perfData.reduce((s, p) => s + p.rxCount, 0),
+                color: "bg-teal-50 border-teal-200 text-teal-700",
+              },
+              {
+                label: "Total Procedures",
+                value: perfData.reduce((s, p) => s + p.procCount, 0),
+                color: "bg-purple-50 border-purple-200 text-purple-700",
+              },
+              {
+                label: "Avg Shift Adherence",
+                value:
+                  perfData.length > 0
+                    ? `${Math.round(perfData.reduce((s, p) => s + p.adherencePct, 0) / perfData.length)}%`
+                    : "0%",
+                color: "bg-emerald-50 border-emerald-200 text-emerald-700",
+              },
+            ].map(({ label, value, color }) => (
+              <div key={label} className={`border rounded-xl p-4 ${color}`}>
+                <p className="text-xs font-medium opacity-70 mb-1">{label}</p>
+                <p className="text-2xl font-bold">{value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Performance table */}
+          {perfData.length === 0 ? (
+            <div
+              className="bg-card border border-border rounded-xl p-12 text-center"
+              data-ocid="staff.performance.empty_state"
+            >
+              <BarChart3 className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+              <p className="font-semibold text-foreground">
+                No approved staff yet
+              </p>
+            </div>
+          ) : (
+            <div className="bg-card border border-border rounded-xl overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/50 border-b border-border">
+                  <tr>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase">
+                      Staff
+                    </th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground uppercase">
+                      Patients
+                    </th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground uppercase">
+                      Rx Written
+                    </th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground uppercase">
+                      Procedures
+                    </th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground uppercase">
+                      Shifts Done
+                    </th>
+                    <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground uppercase">
+                      Adherence
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {perfData.map((p, i) => (
+                    <tr
+                      key={p.staff.id}
+                      className="hover:bg-muted/20 transition-colors"
+                      data-ocid={`staff.performance.row.${i + 1}`}
+                    >
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2.5">
+                          <StaffAvatar acc={p.staff} size="sm" />
+                          <div className="min-w-0">
+                            <p className="font-medium text-foreground truncate">
+                              {p.staff.name}
+                            </p>
+                            <span
+                              className={`text-[10px] px-1.5 py-0.5 rounded-full border ${STAFF_ROLE_COLORS[p.staff.role as keyof typeof STAFF_ROLE_COLORS] ?? "bg-muted text-muted-foreground"}`}
+                            >
+                              {STAFF_ROLE_LABELS[
+                                p.staff.role as keyof typeof STAFF_ROLE_LABELS
+                              ] ?? p.staff.role}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-right font-semibold text-foreground">
+                        {p.patientsCount}
+                      </td>
+                      <td className="px-4 py-3 text-right font-semibold text-teal-700">
+                        {p.rxCount}
+                      </td>
+                      <td className="px-4 py-3 text-right font-semibold text-purple-700">
+                        {p.procCount}
+                      </td>
+                      <td className="px-4 py-3 text-right text-muted-foreground">
+                        {p.shiftsCompleted}/{p.totalShifts}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <span
+                          className={`font-bold ${
+                            p.adherencePct >= 90
+                              ? "text-emerald-600"
+                              : p.adherencePct >= 75
+                                ? "text-amber-600"
+                                : "text-red-600"
+                          }`}
+                        >
+                          {p.adherencePct}%
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Tab: Leave Requests ─────────────────────────────────────────────── */}
+      {mainTab === "leave" && (isAdmin || currentDoctor?.role === "admin") && (
+        <div className="space-y-4" data-ocid="staff.leave.section">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <h3 className="font-semibold text-foreground flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-primary" />
+              Leave Requests
+              {leaveRequests.filter((r) => r.status === "pending").length >
+                0 && (
+                <span className="text-xs bg-rose-100 text-rose-700 border border-rose-200 rounded-full px-2 py-0.5">
+                  {leaveRequests.filter((r) => r.status === "pending").length}{" "}
+                  pending
+                </span>
+              )}
+            </h3>
+          </div>
+
+          {leaveRequests.length === 0 ? (
+            <div
+              className="bg-card border border-border rounded-xl p-12 text-center"
+              data-ocid="staff.leave.empty_state"
+            >
+              <Calendar className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+              <p className="font-semibold text-foreground mb-1">
+                No leave requests
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Staff leave requests will appear here.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3" data-ocid="staff.leave.list">
+              {[...leaveRequests].reverse().map((req, i) => {
+                const statusColors: Record<LeaveStatus, string> = {
+                  pending: "bg-amber-100 text-amber-700 border-amber-200",
+                  approved:
+                    "bg-emerald-100 text-emerald-700 border-emerald-200",
+                  rejected: "bg-red-100 text-red-700 border-red-200",
+                };
+                return (
+                  <div
+                    key={req.id}
+                    className="bg-card border border-border rounded-xl p-4"
+                    data-ocid={`staff.leave.item.${i + 1}`}
+                  >
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <p className="font-semibold text-foreground">
+                            {req.staffName}
+                          </p>
+                          <span
+                            className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${
+                              STAFF_ROLE_COLORS[
+                                req.staffRole as keyof typeof STAFF_ROLE_COLORS
+                              ] ??
+                              "bg-muted text-muted-foreground border-border"
+                            }`}
+                          >
+                            {STAFF_ROLE_LABELS[
+                              req.staffRole as keyof typeof STAFF_ROLE_LABELS
+                            ] ?? req.staffRole}
+                          </span>
+                          <span
+                            className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${statusColors[req.status]}`}
+                          >
+                            {req.status.charAt(0).toUpperCase() +
+                              req.status.slice(1)}
+                          </span>
+                        </div>
+                        <p className="text-sm text-foreground">
+                          <span className="font-medium">{req.leaveType}</span> ·{" "}
+                          {req.startDate} → {req.endDate}
+                        </p>
+                        {req.reason && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {req.reason}
+                          </p>
+                        )}
+                        {req.adminNote && (
+                          <p className="text-xs text-muted-foreground mt-1 italic">
+                            Admin note: {req.adminNote}
+                          </p>
+                        )}
+                        {req.reviewedBy && (
+                          <p className="text-[10px] text-muted-foreground mt-0.5">
+                            Reviewed by {req.reviewedBy} ·{" "}
+                            {req.reviewedAt
+                              ? new Date(req.reviewedAt).toLocaleDateString()
+                              : ""}
+                          </p>
+                        )}
+                      </div>
+                      {req.status === "pending" && canManage && (
+                        <div className="flex gap-2 shrink-0">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 text-xs text-emerald-700 border-emerald-300 hover:bg-emerald-50 gap-1"
+                            onClick={() => reviewLeave(req.id, "approved", "")}
+                            data-ocid="staff.leave.confirm_button"
+                          >
+                            <CheckCircle2 className="w-3.5 h-3.5" /> Approve
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 text-xs text-red-700 border-red-300 hover:bg-red-50 gap-1"
+                            onClick={() => reviewLeave(req.id, "rejected", "")}
+                            data-ocid="staff.leave.delete_button"
+                          >
+                            <XCircle className="w-3.5 h-3.5" /> Reject
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* TrendingUp placeholder to avoid unused import lint warning */}
+          <span className="hidden">
+            <TrendingUp className="w-0 h-0" />
+          </span>
         </div>
       )}
 

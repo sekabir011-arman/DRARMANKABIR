@@ -379,13 +379,52 @@ module {
 
   public type DailyProgressType = { #morning; #evening; #emergency };
 
+  // Three-doctor escalation states: intern→MO→consultant
+  public type DailyNoteState = {
+    #draft;             // being written by intern/MO
+    #submittedToMO;     // intern submitted, awaiting MO review
+    #moReviewComplete;  // MO reviewed and forwarded to consultant
+    #finalized;         // consultant locked — immutable
+    #rejected;          // returned to drafter with reason
+  };
+
+  public type VitalsSummary = {
+    bp : ?Text;
+    pulse : ?Text;
+    spo2 : ?Text;
+    temp : ?Text;
+    rbs : ?Text;
+    rr : ?Text;
+    recordedAt : Int;
+  };
+
+  // Input payload for create/update/submit/finalize
+  public type DailyProgressNoteUpdate = {
+    subjectiveComplaints : [Text];
+    systemReview : ?Text;
+    objectiveVitals : ?Text;
+    intakeOutput : ?Text;
+    drainMonitoring : ?Text;
+    investigations : [Text];
+    assessmentText : Text;
+    planText : Text;
+    activeComplaints : [Text];
+    activeDiagnoses : [Text];
+    internSubjective : Text;
+    internObjective : Text;
+    moAssessment : Text;
+    moPlan : Text;
+    consultantOverrides : Text;
+    consultantComments : Text;
+  };
+
   public type DailyProgressNote = {
     id : Nat;
     patientId : Nat;
     encounterId : ?Nat;
     progressType : DailyProgressType;
     noteDate : Text;          // YYYY-MM-DD
-    // SOAP sections
+    // SOAP sections (legacy flat fields — kept for backward compat)
     subjectiveComplaints : [Text];
     systemReview : ?Text;
     objectiveVitals : ?Text;
@@ -397,6 +436,20 @@ module {
     // Active clinical state
     activeComplaints : [Text];
     activeDiagnoses : [Text];
+    // Three-doctor rounding fields
+    noteState : DailyNoteState;
+    submittedByRole : ?StaffRole;
+    submitTimestamp : ?Int;
+    reviewedByMO : ?Text;          // email
+    reviewedByConsultant : ?Text;  // email
+    consultantComments : Text;
+    internSubjective : Text;
+    internObjective : Text;
+    moAssessment : Text;
+    moPlan : Text;
+    consultantOverrides : Text;
+    versionChain : [Text];         // IDs of previous versions as Text
+    rejectionReason : ?Text;
     // Authoring metadata
     authorId : Principal;
     authorName : Text;
@@ -408,6 +461,19 @@ module {
     versionInfo : VersionedRecord;
     previousVersionIds : [Nat];
     isDeleted : Bool;
+  };
+
+  // Ward round patient status — returned by getWardRoundStatus
+  public type WardRoundPatientStatus = {
+    patientId : Text;
+    patientName : Text;
+    bedNumber : Text;
+    ward : Text;
+    admissionDay : Nat;
+    todayNoteState : ?Text;
+    lastVitals : ?VitalsSummary;
+    activeAlerts : [Text];
+    assignedConsultant : ?Text;
   };
 
   // ─── Sync Bootstrap ────────────────────────────────────────────────────────

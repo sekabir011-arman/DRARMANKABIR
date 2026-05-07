@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "@tanstack/react-router";
 import {
@@ -8,6 +9,7 @@ import {
   ArrowRight,
   BedDouble,
   Bell,
+  CalendarDays,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
@@ -15,18 +17,21 @@ import {
   Clock,
   Eye,
   FileText,
+  FlaskConical,
   Pill,
   Stethoscope,
+  TrendingDown,
   Users,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import ClinicalAlertsPanel from "../../components/ClinicalAlertsPanel";
 import {
   type MissedDoseEscalation,
   acknowledgeEscalation,
   loadEscalations,
 } from "../../components/NurseDueMeds";
 import { useEmailAuth } from "../../hooks/useEmailAuth";
-import type { Patient } from "../../types";
+import type { Patient, VitalSigns } from "../../types";
 
 interface LocalPatient extends Patient {
   registerNumber?: string;
@@ -44,6 +49,24 @@ interface DraftApprovalItem {
   createdAt: string;
 }
 
+interface InvestigationResult {
+  patientName: string;
+  patientId: string;
+  testName: string;
+  result: string;
+  unit?: string;
+  isAbnormal?: boolean;
+  receivedAt: string;
+}
+
+interface OpdQueueItem {
+  id: string;
+  patientName: string;
+  serialNumber?: number;
+  preferredTime?: string;
+  status: string;
+}
+
 function loadAllPatients(): LocalPatient[] {
   const result: LocalPatient[] = [];
   for (let i = 0; i < localStorage.length; i++) {
@@ -52,6 +75,20 @@ function loadAllPatients(): LocalPatient[] {
     try {
       const arr = JSON.parse(localStorage.getItem(k) || "[]") as LocalPatient[];
       result.push(...arr);
+    } catch {}
+  }
+  return result;
+}
+
+function loadVitalsData(
+  patients: LocalPatient[],
+): Record<string, VitalSigns[]> {
+  const result: Record<string, VitalSigns[]> = {};
+  for (const p of patients) {
+    const pidStr = String(p.id);
+    try {
+      const raw = localStorage.getItem(`vitals_${pidStr}`);
+      if (raw) result[pidStr] = JSON.parse(raw) as VitalSigns[];
     } catch {}
   }
   return result;
@@ -136,44 +173,162 @@ function getRecentPrescriptions() {
     .slice(0, 5);
 }
 
+function loadTodayOpdQueue(): OpdQueueItem[] {
+  const today = new Date().toISOString().split("T")[0];
+  try {
+    const all = JSON.parse(
+      localStorage.getItem("medicare_appointments") || "[]",
+    ) as Array<Record<string, unknown>>;
+    return all
+      .filter((a) => {
+        const date = String(a.preferredDate ?? a.createdAt ?? "");
+        return date.startsWith(today);
+      })
+      .map((a, idx) => ({
+        id: String(a.id ?? idx),
+        patientName: String(a.patientName ?? "Unknown"),
+        serialNumber: idx + 1,
+        preferredTime: String(a.preferredTime ?? ""),
+        status: String(a.status ?? "pending"),
+      }));
+  } catch {
+    return [];
+  }
+}
+
+function loadAdmittedNeedingReview(
+  patients: LocalPatient[],
+): Array<LocalPatient & { hoursSinceNote: number }> {
+  const now = Date.now();
+  return patients
+    .filter(
+      (p) =>
+        p.isAdmitted || p.patientType === "admitted" || p.status === "Admitted",
+    )
+    .map((p) => {
+      try {
+        const notes = JSON.parse(
+          localStorage.getItem(`soapNotes_${String(p.id)}`) || "[]",
+        ) as Array<{ createdAt?: string; date?: string }>;
+        if (notes.length === 0) return { ...p, hoursSinceNote: 999 };
+        const sorted = notes.sort((a, b) => {
+          const ta = new Date(a.createdAt ?? a.date ?? 0).getTime();
+          const tb = new Date(b.createdAt ?? b.date ?? 0).getTime();
+          return tb - ta;
+        });
+        const lastNoteTime = new Date(
+          sorted[0].createdAt ?? sorted[0].date ?? 0,
+        ).getTime();
+        const hours = Math.floor((now - lastNoteTime) / 3600000);
+        return { ...p, hoursSinceNote: hours };
+      } catch {
+        return { ...p, hoursSinceNote: 999 };
+      }
+    })
+    .filter((p) => p.hoursSinceNote >= 24)
+    .sort((a, b) => b.hoursSinceNote - a.hoursSinceNote);
+}
+
+function loadNewInvestigationResults(): InvestigationResult[] {
+  const lastLogin = Number(localStorage.getItem("medicare_last_login") || "0");
+  const results: InvestigationResult[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (!k?.startsWith("investigations_")) continue;
+    const patientId = k.replace("investigations_", "");
+    try {
+      const inv = JSON.parse(localStorage.getItem(k) || "[]") as Array<
+        Record<string, unknown>
+      >;
+      let patientName = "Unknown";
+      for (let j = 0; j < localStorage.length; j++) {
+        const pk = localStorage.key(j);
+        if (!pk?.startsWith("patients_")) continue;
+        try {
+          const arr = JSON.parse(
+            localStorage.getItem(pk) || "[]",
+          ) as LocalPatient[];
+          const pt = arr.find((p) => String(p.id) === patientId);
+          if (pt) {
+            patientName = pt.fullName;
+            break;
+          }
+        } catch {}
+      }
+      for (const item of inv) {
+        const status = String(item.status ?? "");
+        const receivedAt = String(
+          item.receivedAt ?? item.resultDate ?? item.updatedAt ?? "",
+        );
+        if ((status === "received" || status === "completed") && receivedAt) {
+          const recTime = new Date(receivedAt).getTime();
+          if (recTime > lastLogin) {
+            results.push({
+              patientName,
+              patientId,
+              testName: String(item.testName ?? item.name ?? "Investigation"),
+              result: String(item.result ?? item.value ?? "—"),
+              unit: String(item.unit ?? ""),
+              isAbnormal: Boolean(item.isAbnormal ?? item.flagged ?? false),
+              receivedAt,
+            });
+          }
+        }
+      }
+    } catch {}
+  }
+  return results
+    .sort((a, b) => b.receivedAt.localeCompare(a.receivedAt))
+    .slice(0, 8);
+}
+
 function StatCard({
   icon: Icon,
   label,
   value,
-  color,
+  gradient,
 }: {
   icon: React.ElementType;
   label: string;
   value: number | string;
-  color: string;
+  gradient: string;
 }) {
   return (
-    <Card className="border-0 shadow-sm">
-      <CardContent className="pt-5 pb-4 px-5 flex items-center gap-4">
-        <div
-          className={`w-11 h-11 rounded-xl flex items-center justify-center ${color}`}
-        >
-          <Icon className="w-5 h-5" />
-        </div>
-        <div>
-          <p className="text-2xl font-bold text-foreground leading-none">
-            {value}
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="rounded-xl shadow-sm overflow-hidden">
+      <div className={`${gradient} p-4 flex items-center justify-between`}>
+        <p className="text-3xl font-bold text-white leading-none">{value}</p>
+        <Icon className="w-6 h-6 text-white opacity-80" />
+      </div>
+      <div className="bg-card px-4 py-2.5 border border-t-0 border-border rounded-b-xl">
+        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+function ActionSkeleton() {
+  return (
+    <div className="space-y-2">
+      {[1, 2, 3].map((i) => (
+        <Skeleton key={i} className="h-12 w-full rounded-lg" />
+      ))}
+    </div>
   );
 }
 
 export default function ConsultantDashboard() {
   const { currentDoctor } = useEmailAuth();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
 
   const allPatients = useMemo(loadAllPatients, []);
   const admittedPatients = allPatients.filter(
     (p) =>
       p.isAdmitted || p.patientType === "admitted" || p.status === "Admitted",
+  );
+  const vitalsData = useMemo(
+    () => loadVitalsData(admittedPatients),
+    [admittedPatients],
   );
   const opdPatients = allPatients.filter(
     (p) =>
@@ -189,29 +344,41 @@ export default function ConsultantDashboard() {
     return created.startsWith(today);
   }).length;
 
-  // ── Pending Drafts Panel ─────────────────────────────────────────────────
   const [pendingDrafts, setPendingDrafts] = useState<DraftApprovalItem[]>(() =>
     loadPendingDrafts(),
   );
   const [draftsExpanded, setDraftsExpanded] = useState(false);
 
-  // Refresh drafts every 30 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPendingDrafts(loadPendingDrafts());
-    }, 30_000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // ── Medication escalation alerts ──────────────────────────────────────────
   const [escalations, setEscalations] = useState<MissedDoseEscalation[]>(() =>
     loadEscalations().filter((e) => !e.acknowledged),
+  );
+
+  // Action center state
+  const [opdQueue] = useState<OpdQueueItem[]>(() => loadTodayOpdQueue());
+  const [reviewNeeded] = useState(() =>
+    loadAdmittedNeedingReview(admittedPatients),
+  );
+  const [newResults] = useState<InvestigationResult[]>(() =>
+    loadNewInvestigationResults(),
   );
 
   const recentRx = useMemo(getRecentPrescriptions, []);
   const pendingRx = recentRx.filter(
     (r) => r.status === "draft_awaiting_approval",
   ).length;
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 800);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(
+      () => setPendingDrafts(loadPendingDrafts()),
+      30_000,
+    );
+    return () => clearInterval(interval);
+  }, []);
 
   function handleAcknowledge(patientId: string, drugName: string) {
     acknowledgeEscalation(patientId, drugName);
@@ -221,6 +388,13 @@ export default function ConsultantDashboard() {
       ),
     );
   }
+
+  const statusColors: Record<string, string> = {
+    pending: "bg-amber-100 text-amber-700 border-amber-200",
+    confirmed: "bg-emerald-100 text-emerald-700 border-emerald-200",
+    completed: "bg-blue-100 text-blue-700 border-blue-200",
+    cancelled: "bg-red-100 text-red-700 border-red-200",
+  };
 
   return (
     <div
@@ -248,27 +422,33 @@ export default function ConsultantDashboard() {
           icon={BedDouble}
           label="Total Admitted"
           value={admittedPatients.length}
-          color="bg-blue-100 text-blue-700"
+          gradient="bg-gradient-to-r from-blue-600 to-indigo-700"
         />
         <StatCard
           icon={Users}
           label="OPD Seen Today"
           value={opdToday}
-          color="bg-emerald-100 text-emerald-700"
+          gradient="bg-gradient-to-r from-teal-500 to-green-600"
         />
         <StatCard
           icon={FileText}
           label="Pending Prescriptions"
           value={pendingRx}
-          color="bg-amber-100 text-amber-700"
+          gradient="bg-gradient-to-r from-amber-500 to-orange-600"
         />
         <StatCard
           icon={Bell}
           label="Active Alerts"
           value={criticalPatients.length + escalations.length}
-          color="bg-red-100 text-red-700"
+          gradient="bg-gradient-to-r from-rose-500 to-red-600"
         />
       </div>
+
+      {/* Clinical Alerts Engine */}
+      <ClinicalAlertsPanel
+        patients={admittedPatients as Patient[]}
+        vitalsData={vitalsData}
+      />
 
       {/* ── Pending Intern Draft Approvals Panel ── */}
       <Card
@@ -306,7 +486,6 @@ export default function ConsultantDashboard() {
             )}
           </button>
         </CardHeader>
-
         {draftsExpanded && (
           <CardContent className="px-5 pb-4">
             {pendingDrafts.length === 0 ? (
@@ -322,7 +501,7 @@ export default function ConsultantDashboard() {
                 {pendingDrafts.map((d, idx) => (
                   <div
                     key={d.id}
-                    className="flex items-center gap-3 bg-white border border-red-200 rounded-xl px-4 py-3"
+                    className="flex items-center gap-3 bg-card border border-red-200 rounded-xl px-4 py-3"
                     data-ocid={`consultant.pending_approval.item.${idx + 1}`}
                   >
                     <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0">
@@ -387,7 +566,7 @@ export default function ConsultantDashboard() {
                     search: { id: String(p.id) },
                   })
                 }
-                className="w-full flex items-center gap-3 bg-white border border-red-200 rounded-lg px-4 py-2.5 hover:bg-red-50 transition-colors text-left"
+                className="w-full flex items-center gap-3 bg-card border border-red-200 rounded-lg px-4 py-2.5 hover:bg-red-50 transition-colors text-left"
                 data-ocid={`consultant.critical_patient.${String(p.id)}`}
               >
                 <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0">
@@ -478,8 +657,7 @@ export default function ConsultantDashboard() {
                           }
                           data-ocid={`consultant.medication_alert.acknowledge.${i + 1}`}
                         >
-                          <CheckCircle2 className="w-3 h-3" />
-                          Acknowledge
+                          <CheckCircle2 className="w-3 h-3" /> Acknowledge
                         </Button>
                       </td>
                     </tr>
@@ -490,6 +668,206 @@ export default function ConsultantDashboard() {
           </CardContent>
         </Card>
       )}
+
+      {/* ── ACTION CENTER ── */}
+      <div className="grid lg:grid-cols-3 gap-4">
+        {/* Today's OPD Queue */}
+        <Card
+          className="border-l-4 border-l-emerald-500"
+          data-ocid="consultant.opd_queue.panel"
+        >
+          <CardHeader className="pb-3 pt-4 px-5">
+            <div className="flex items-center gap-2">
+              <CalendarDays className="w-4 h-4 text-emerald-600" />
+              <h2 className="font-semibold text-foreground text-sm">
+                Today's OPD Queue
+              </h2>
+              <Badge className="ml-auto bg-emerald-100 text-emerald-800 border-emerald-200 text-xs">
+                {opdQueue.length}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="px-5 pb-4">
+            {loading ? (
+              <ActionSkeleton />
+            ) : opdQueue.length === 0 ? (
+              <div
+                className="flex flex-col items-center py-6 text-muted-foreground gap-2"
+                data-ocid="consultant.opd_queue.empty_state"
+              >
+                <CalendarDays className="w-7 h-7 opacity-30" />
+                <p className="text-sm">
+                  No appointments — you're all caught up!
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-1.5 max-h-52 overflow-y-auto">
+                {opdQueue.map((q, idx) => (
+                  <div
+                    key={q.id}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/40 border border-border"
+                    data-ocid={`consultant.opd_queue.item.${idx + 1}`}
+                  >
+                    <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-bold flex items-center justify-center shrink-0">
+                      {q.serialNumber}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {q.patientName}
+                      </p>
+                      {q.preferredTime && (
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {q.preferredTime}
+                        </p>
+                      )}
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={`text-[10px] border capitalize shrink-0 ${statusColors[q.status] ?? statusColors.pending}`}
+                    >
+                      {q.status}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Admitted Patients Needing Review */}
+        <Card
+          className="border-l-4 border-l-amber-500"
+          data-ocid="consultant.review_needed.panel"
+        >
+          <CardHeader className="pb-3 pt-4 px-5">
+            <div className="flex items-center gap-2">
+              <BedDouble className="w-4 h-4 text-amber-600" />
+              <h2 className="font-semibold text-foreground text-sm">
+                Review Needed
+              </h2>
+              {reviewNeeded.length > 0 && (
+                <Badge className="ml-auto bg-amber-500 text-white text-xs">
+                  {reviewNeeded.length}
+                </Badge>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="px-5 pb-4">
+            {loading ? (
+              <ActionSkeleton />
+            ) : reviewNeeded.length === 0 ? (
+              <div
+                className="flex flex-col items-center py-6 text-muted-foreground gap-2"
+                data-ocid="consultant.review_needed.empty_state"
+              >
+                <CheckCircle2 className="w-7 h-7 text-emerald-400" />
+                <p className="text-sm">
+                  All patients reviewed — you're all caught up!
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-1.5 max-h-52 overflow-y-auto">
+                {reviewNeeded.slice(0, 6).map((p, idx) => (
+                  <button
+                    key={String(p.id)}
+                    type="button"
+                    onClick={() =>
+                      navigate({
+                        to: "/PatientProfile",
+                        search: { id: String(p.id) },
+                      })
+                    }
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-colors text-left"
+                    data-ocid={`consultant.review_needed.item.${idx + 1}`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {p.fullName}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Bed {p.bedNumber || "—"}
+                      </p>
+                    </div>
+                    <span
+                      className={`text-[10px] font-bold shrink-0 px-1.5 py-0.5 rounded ${p.hoursSinceNote >= 48 ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`}
+                    >
+                      {p.hoursSinceNote >= 999
+                        ? "No notes"
+                        : `${p.hoursSinceNote}h ago`}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* New Investigation Results */}
+        <Card
+          className="border-l-4 border-l-blue-500"
+          data-ocid="consultant.new_results.panel"
+        >
+          <CardHeader className="pb-3 pt-4 px-5">
+            <div className="flex items-center gap-2">
+              <FlaskConical className="w-4 h-4 text-blue-600" />
+              <h2 className="font-semibold text-foreground text-sm">
+                New Results
+              </h2>
+              {newResults.length > 0 && (
+                <Badge className="ml-auto bg-blue-500 text-white text-xs">
+                  {newResults.length}
+                </Badge>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="px-5 pb-4">
+            {loading ? (
+              <ActionSkeleton />
+            ) : newResults.length === 0 ? (
+              <div
+                className="flex flex-col items-center py-6 text-muted-foreground gap-2"
+                data-ocid="consultant.new_results.empty_state"
+              >
+                <FlaskConical className="w-7 h-7 opacity-30" />
+                <p className="text-sm">No new results since last login</p>
+              </div>
+            ) : (
+              <div className="space-y-1.5 max-h-52 overflow-y-auto">
+                {newResults.map((r, idx) => (
+                  <button
+                    key={`${r.patientId}-${r.testName}-${idx}`}
+                    type="button"
+                    onClick={() =>
+                      navigate({
+                        to: "/PatientProfile",
+                        search: { id: r.patientId },
+                      })
+                    }
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-border hover:bg-muted/40 transition-colors text-left"
+                    data-ocid={`consultant.new_result.item.${idx + 1}`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {r.patientName}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {r.testName}: {r.result}
+                        {r.unit ? ` ${r.unit}` : ""}
+                      </p>
+                    </div>
+                    {r.isAbnormal && (
+                      <span className="flex items-center gap-0.5 text-[10px] font-bold text-red-600 shrink-0">
+                        <TrendingDown className="w-3 h-3" /> Abnormal
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Patient Tabs */}
       <Tabs defaultValue="ipd">

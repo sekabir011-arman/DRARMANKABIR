@@ -13,6 +13,7 @@ import {
   CreditCard,
   Download,
   FileText,
+  MessageCircle,
   Printer,
   Receipt,
   RotateCcw,
@@ -36,6 +37,7 @@ import {
   generateTypedReceiptNumber,
   loadReceipts,
   saveReceiptToStore,
+  sendReceiptWhatsApp,
 } from "./MoneyReceipt";
 
 // ── Storage helpers ──────────────────────────────────────────────────────────
@@ -462,6 +464,16 @@ function ReceiptModal({
               >
                 Close
               </Button>
+              {receipt.phone && (
+                <Button
+                  variant="outline"
+                  className="gap-1.5 border-green-300 text-green-700 hover:bg-green-50"
+                  onClick={() => sendReceiptWhatsApp(receipt)}
+                  data-ocid="inv_receipt.whatsapp_button"
+                >
+                  <MessageCircle className="w-4 h-4" /> WhatsApp
+                </Button>
+              )}
               {(receipt.paid || receipt.invoiceState === "partial") &&
                 !isRefunded && (
                   <Button
@@ -1042,6 +1054,18 @@ function PaymentHistoryView({ patientId }: { patientId: string }) {
                     <Printer className="w-3 h-3" />
                     View
                   </Button>
+                  {r.phone && (
+                    <button
+                      type="button"
+                      onClick={() => sendReceiptWhatsApp(r)}
+                      className="h-7 w-7 flex items-center justify-center rounded border border-green-200 hover:bg-green-50 transition-colors"
+                      title="Send via WhatsApp"
+                      data-ocid={`inv_payment.history.whatsapp_button.${idx + 1}`}
+                      style={{ color: "#25D366" }}
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

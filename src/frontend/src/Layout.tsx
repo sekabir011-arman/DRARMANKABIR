@@ -44,7 +44,13 @@ import { useEmailAuth } from "./hooks/useEmailAuth";
 import { useSyncStatus } from "./hooks/useMigration";
 import { useOnlineStatus } from "./hooks/useOnlineStatus";
 import { getConflictsCount } from "./lib/hybridStorage";
-import { STAFF_ROLE_COLORS, STAFF_ROLE_LABELS } from "./types";
+import {
+  STAFF_ROLE_ACTIVE_BG,
+  STAFF_ROLE_BORDER_COLOR,
+  STAFF_ROLE_COLORS,
+  STAFF_ROLE_LABELS,
+  STAFF_ROLE_TEXT_COLOR,
+} from "./types";
 import type { StaffRole } from "./types";
 
 // Roles
@@ -392,6 +398,16 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
     ? (STAFF_ROLE_COLORS[currentDoctor.role as StaffRole] ?? "")
     : "";
 
+  // Role-aware active state helpers
+  const roleBorderColor = STAFF_ROLE_BORDER_COLOR[role] ?? "#3b82f6";
+  const roleActiveBg = STAFF_ROLE_ACTIVE_BG[role] ?? "bg-blue-50";
+  const roleActiveText = STAFF_ROLE_TEXT_COLOR[role] ?? "text-blue-700";
+  const activeNavClass = cn(
+    "h-9 px-3 text-sm font-medium gap-2 border-b-2",
+    roleActiveText,
+  );
+  const inactiveNavClass =
+    "h-9 px-3 text-sm font-medium gap-2 text-muted-foreground hover:text-foreground";
   const isActive = (name: string) => {
     if (name === "Dashboard") {
       return (
@@ -419,6 +435,7 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
     isActive("ProcedurePayment") ||
     isActive("TotalIncome") ||
     isActive("OtherPayment") ||
+    isActive("OutstandingBalances") ||
     isActive("Staff");
 
   const lastSyncLabel = (() => {
@@ -539,6 +556,12 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
       href: "/TotalIncome",
       icon: BarChart3,
       label: "Total Income",
+    },
+    {
+      name: "OutstandingBalances",
+      href: "/OutstandingBalances",
+      icon: BarChart3,
+      label: "Outstanding Balances",
     },
     {
       name: "OtherPayment",
@@ -669,14 +692,23 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
               <Link to="/Dashboard" data-ocid="nav.dashboard_link">
                 <Button
                   variant="ghost"
-                  className={cn(
-                    "h-9 px-3 text-sm font-medium gap-2",
+                  style={
                     isActive("Dashboard")
-                      ? "bg-primary/10 text-primary hover:bg-primary/15"
-                      : "text-muted-foreground hover:text-foreground",
+                      ? { borderBottomColor: roleBorderColor }
+                      : {}
+                  }
+                  className={cn(
+                    isActive("Dashboard") ? activeNavClass : inactiveNavClass,
                   )}
                 >
-                  <LayoutDashboard className="w-4 h-4" />
+                  <LayoutDashboard
+                    className={cn(
+                      "w-4 h-4",
+                      isActive("Dashboard")
+                        ? roleActiveText
+                        : "text-indigo-500",
+                    )}
+                  />
                   Dashboard
                 </Button>
               </Link>
@@ -685,14 +717,21 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
               <Link to="/Patients" data-ocid="nav.patients_link">
                 <Button
                   variant="ghost"
-                  className={cn(
-                    "h-9 px-3 text-sm font-medium gap-2",
+                  style={
                     isActive("Patients")
-                      ? "bg-primary/10 text-primary hover:bg-primary/15"
-                      : "text-muted-foreground hover:text-foreground",
+                      ? { borderBottomColor: roleBorderColor }
+                      : {}
+                  }
+                  className={cn(
+                    isActive("Patients") ? activeNavClass : inactiveNavClass,
                   )}
                 >
-                  <Users className="w-4 h-4" />
+                  <Users
+                    className={cn(
+                      "w-4 h-4",
+                      isActive("Patients") ? roleActiveText : "text-blue-500",
+                    )}
+                  />
                   Patient
                   {pendingApprovalCount > 0 && (
                     <span className="min-w-[16px] h-[16px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 leading-none">
@@ -706,14 +745,25 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
               <Link to="/Appointments" data-ocid="nav.appointments_link">
                 <Button
                   variant="ghost"
-                  className={cn(
-                    "h-9 px-3 text-sm font-medium gap-2",
+                  style={
                     isActive("Appointments")
-                      ? "bg-primary/10 text-primary hover:bg-primary/15"
-                      : "text-muted-foreground hover:text-foreground",
+                      ? { borderBottomColor: roleBorderColor }
+                      : {}
+                  }
+                  className={cn(
+                    isActive("Appointments")
+                      ? activeNavClass
+                      : inactiveNavClass,
                   )}
                 >
-                  <CalendarDays className="w-4 h-4" />
+                  <CalendarDays
+                    className={cn(
+                      "w-4 h-4",
+                      isActive("Appointments")
+                        ? roleActiveText
+                        : "text-cyan-500",
+                    )}
+                  />
                   Appointment
                 </Button>
               </Link>
@@ -741,14 +791,25 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
                 >
                   <Button
                     variant="ghost"
-                    className={cn(
-                      "h-9 px-3 text-sm font-medium gap-2",
+                    style={
                       isActive("EmergencyPrescription")
-                        ? "bg-primary/10 text-primary hover:bg-primary/15"
-                        : "text-muted-foreground hover:text-foreground",
+                        ? { borderBottomColor: roleBorderColor }
+                        : {}
+                    }
+                    className={cn(
+                      isActive("EmergencyPrescription")
+                        ? activeNavClass
+                        : inactiveNavClass,
                     )}
                   >
-                    <Siren className="w-4 h-4" />
+                    <Siren
+                      className={cn(
+                        "w-4 h-4",
+                        isActive("EmergencyPrescription")
+                          ? roleActiveText
+                          : "text-red-500",
+                      )}
+                    />
                     Emergency Rx
                   </Button>
                 </Link>
@@ -777,14 +838,25 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
                   <Link to="/WardRound" data-ocid="nav.wardround_link">
                     <Button
                       variant="ghost"
-                      className={cn(
-                        "h-9 px-3 text-sm font-medium gap-2",
+                      style={
                         isActive("WardRound")
-                          ? "bg-primary/10 text-primary hover:bg-primary/15"
-                          : "text-muted-foreground hover:text-foreground",
+                          ? { borderBottomColor: roleBorderColor }
+                          : {}
+                      }
+                      className={cn(
+                        isActive("WardRound")
+                          ? activeNavClass
+                          : inactiveNavClass,
                       )}
                     >
-                      <Stethoscope className="w-4 h-4" />
+                      <Stethoscope
+                        className={cn(
+                          "w-4 h-4",
+                          isActive("WardRound")
+                            ? roleActiveText
+                            : "text-green-600",
+                        )}
+                      />
                       Ward Round
                       {pendingHandoverCount > 0 && (
                         <span className="min-w-[16px] h-[16px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 leading-none">
@@ -801,14 +873,21 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
               <Link to="/Settings" data-ocid="nav.settings_link">
                 <Button
                   variant="ghost"
-                  className={cn(
-                    "h-9 px-3 text-sm font-medium gap-2",
+                  style={
                     isActive("Settings")
-                      ? "bg-primary/10 text-primary hover:bg-primary/15"
-                      : "text-muted-foreground hover:text-foreground",
+                      ? { borderBottomColor: roleBorderColor }
+                      : {}
+                  }
+                  className={cn(
+                    isActive("Settings") ? activeNavClass : inactiveNavClass,
                   )}
                 >
-                  <UserCircle className="w-4 h-4" />
+                  <UserCircle
+                    className={cn(
+                      "w-4 h-4",
+                      isActive("Settings") ? roleActiveText : "text-slate-400",
+                    )}
+                  />
                   Settings
                 </Button>
               </Link>
@@ -818,14 +897,23 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
                 <Link to="/AuditLog" data-ocid="nav.auditlog_link">
                   <Button
                     variant="ghost"
-                    className={cn(
-                      "h-9 px-3 text-sm font-medium gap-2",
+                    style={
                       isActive("AuditLog")
-                        ? "bg-primary/10 text-primary hover:bg-primary/15"
-                        : "text-muted-foreground hover:text-foreground",
+                        ? { borderBottomColor: roleBorderColor }
+                        : {}
+                    }
+                    className={cn(
+                      isActive("AuditLog") ? activeNavClass : inactiveNavClass,
                     )}
                   >
-                    <ShieldAlert className="w-4 h-4" />
+                    <ShieldAlert
+                      className={cn(
+                        "w-4 h-4",
+                        isActive("AuditLog")
+                          ? roleActiveText
+                          : "text-slate-400",
+                      )}
+                    />
                     Audit Log
                   </Button>
                 </Link>
@@ -997,12 +1085,24 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
                     className={cn(
                       "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-colors border-l-4",
                       isHospitalGroupActive
-                        ? "bg-primary/10 text-primary border-primary"
+                        ? cn(roleActiveBg, roleActiveText, "border-current")
                         : "text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/50",
                     )}
+                    style={
+                      isHospitalGroupActive
+                        ? { borderLeftColor: roleBorderColor }
+                        : {}
+                    }
                     data-ocid="nav.hospital_management.toggle"
                   >
-                    <Hospital className="w-4 h-4" />
+                    <Hospital
+                      className={cn(
+                        "w-4 h-4",
+                        isHospitalGroupActive
+                          ? roleActiveText
+                          : "text-orange-500",
+                      )}
+                    />
                     <span className="flex-1 text-left">
                       Hospital Management
                     </span>
@@ -1204,11 +1304,21 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-2 text-sm font-semibold transition-colors border-l-4",
                   isHospitalGroupActive
-                    ? "bg-primary/10 text-primary border-primary"
+                    ? cn(roleActiveBg, roleActiveText, "border-current")
                     : "text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/40",
                 )}
+                style={
+                  isHospitalGroupActive
+                    ? { borderLeftColor: roleBorderColor }
+                    : {}
+                }
               >
-                <Hospital className="w-5 h-5 shrink-0" />
+                <Hospital
+                  className={cn(
+                    "w-5 h-5 shrink-0",
+                    isHospitalGroupActive ? roleActiveText : "text-orange-500",
+                  )}
+                />
                 {mobileSidebarExpanded && (
                   <>
                     <span className="flex-1 text-left truncate">
@@ -1605,6 +1715,9 @@ function MobileNavLink({
   disabled = false,
   disabledTitle,
   badge = 0,
+  roleBorderColor: rbc,
+  roleActiveBg: rab,
+  roleActiveText: rat,
 }: {
   name: string;
   href: string;
@@ -1616,6 +1729,9 @@ function MobileNavLink({
   disabled?: boolean;
   disabledTitle?: string;
   badge?: number;
+  roleBorderColor?: string;
+  roleActiveBg?: string;
+  roleActiveText?: string;
 }) {
   const displayLabel = label || name;
   const active = isActive(name);
@@ -1644,15 +1760,22 @@ function MobileNavLink({
     >
       <Button
         variant="ghost"
+        style={active && rbc ? { borderLeftColor: rbc } : {}}
         className={cn(
-          "w-full justify-start h-10 gap-3 text-sm transition-colors rounded-lg",
+          "w-full justify-start h-10 gap-3 text-sm transition-colors rounded-lg border-l-4",
           indent && "pl-2",
           active
-            ? "bg-primary/10 text-primary border-l-4 border-primary"
-            : "text-muted-foreground border-l-4 border-transparent hover:text-foreground hover:bg-muted/40",
+            ? cn(
+                "border-current",
+                rab ?? "bg-primary/10",
+                rat ?? "text-primary",
+              )
+            : "text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/40",
         )}
       >
-        <Icon className="w-4 h-4 shrink-0" />
+        <Icon
+          className={cn("w-4 h-4 shrink-0", active && (rat ?? "text-primary"))}
+        />
         <span className="flex-1 text-left">{displayLabel}</span>
         {badge > 0 && <NavBadge count={badge} />}
       </Button>
@@ -1673,6 +1796,9 @@ function SidebarIconItem({
   disabled = false,
   disabledTitle,
   badge = 0,
+  roleBorderColor: rbc,
+  roleActiveBg: rab,
+  roleActiveText: rat,
 }: {
   name: string;
   href: string;
@@ -1685,6 +1811,9 @@ function SidebarIconItem({
   disabled?: boolean;
   disabledTitle?: string;
   badge?: number;
+  roleBorderColor?: string;
+  roleActiveBg?: string;
+  roleActiveText?: string;
 }) {
   const displayLabel = label || name;
   const active = isActive(name);
@@ -1710,22 +1839,24 @@ function SidebarIconItem({
       onClick={onNavigate}
       data-ocid={`nav.${name.toLowerCase()}_link`}
       title={!expanded ? displayLabel : undefined}
+      style={active && rbc ? { borderLeftColor: rbc } : {}}
       className={cn(
         "relative flex items-center gap-3 px-3 py-2 text-sm font-medium transition-colors border-l-4",
         indent && "px-2",
         active
-          ? "bg-primary/10 text-primary border-primary"
+          ? cn(rab ?? "bg-primary/10", rat ?? "text-primary", "border-current")
           : "text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/40",
       )}
     >
-      <Icon className="w-5 h-5 shrink-0" />
+      <Icon
+        className={cn("w-5 h-5 shrink-0", active && (rat ?? "text-primary"))}
+      />
       {expanded && (
         <>
           <span className="flex-1 truncate">{displayLabel}</span>
           {badge > 0 && <NavBadge count={badge} />}
         </>
       )}
-      {/* Badge in icon-only mode */}
       {!expanded && badge > 0 && (
         <span className="absolute top-1 right-1 min-w-[14px] h-[14px] bg-red-500 rounded-full text-[9px] text-white flex items-center justify-center px-0.5 leading-none">
           {badge > 9 ? "9+" : badge}
