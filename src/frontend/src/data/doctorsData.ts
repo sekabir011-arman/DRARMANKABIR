@@ -12,7 +12,7 @@ export const doctors = {
     specialization: "General Surgery",
     roles: [
       "Emergency Medical Officer, Dr. Sirajul Islam Medical College Hospital",
-      "Registrar, Dept. of General Surgery uDC",
+      "Registrar, Dept. of General Surgery UDC",
     ],
     regNo: "A-105224",
     hospital: "Dr. Sirajul Islam Medical College Hospital",
