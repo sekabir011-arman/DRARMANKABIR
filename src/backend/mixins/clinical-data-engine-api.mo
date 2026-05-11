@@ -106,6 +106,22 @@ mixin (
     Lib.getObservationsByType(engineState, patientId, observationType);
   };
 
+  public query ({ caller }) func getAllObservationsSince(
+    sinceTimestamp : Int
+  ) : async [Types.Observation] {
+    let role = getCallerRole(caller);
+    if (not Lib.isClinician(role) and role != #admin) { return [] };
+    Lib.getAllObservationsSince(engineState, sinceTimestamp);
+  };
+
+  public shared ({ caller }) func bulkUpsertObservations(
+    obs : [Types.Observation]
+  ) : async [Types.Observation] {
+    let role = getCallerRole(caller);
+    if (not Lib.isClinician(role)) { return [] };
+    Lib.bulkUpsertObservations(engineState, obs);
+  };
+
   public shared ({ caller }) func acknowledgeObservationCorrection(
     id : Nat,
     newValue : Text,
@@ -345,6 +361,24 @@ mixin (
 
   public query ({ caller }) func getAllBeds() : async [Types.BedRecord] {
     Lib.getAllBeds(engineState);
+  };
+
+  public query ({ caller }) func getAllBedsSince(
+    sinceTimestamp : Int
+  ) : async [Types.BedRecord] {
+    let role = getCallerRole(caller);
+    if (not Lib.isClinician(role) and role != #admin) { return [] };
+    Lib.getAllBedsSince(engineState, sinceTimestamp);
+  };
+
+  public shared ({ caller }) func bulkUpsertBeds(
+    beds : [Types.BedRecord]
+  ) : async [Types.BedRecord] {
+    let role = getCallerRole(caller);
+    if (not Lib.canManageBeds(role)) {
+      return [];
+    };
+    Lib.bulkUpsertBeds(engineState, beds);
   };
 
   public query ({ caller }) func getAvailableBeds() : async [Types.BedRecord] {
@@ -620,6 +654,10 @@ mixin (
     Lib.getLastSyncTimestamp();
   };
 
+  public query func getServerTimestamp() : async Int {
+    Lib.getLastSyncTimestamp();
+  };
+
   // ─── Handover API ──────────────────────────────────────────────────────────
 
   public shared ({ caller }) func createHandover(
@@ -666,6 +704,22 @@ mixin (
     patientId : Nat
   ) : async [Types.HandoverEntry] {
     Lib.getHandoversByPatientId(engineState, patientId);
+  };
+
+  public query ({ caller }) func getAllHandoversSince(
+    sinceTimestamp : Int
+  ) : async [Types.HandoverEntry] {
+    let role = getCallerRole(caller);
+    if (not Lib.isClinician(role) and role != #admin) { return [] };
+    Lib.getAllHandoversSince(engineState, sinceTimestamp);
+  };
+
+  public shared ({ caller }) func bulkUpsertHandovers(
+    handovers : [Types.HandoverEntry]
+  ) : async [Types.HandoverEntry] {
+    let role = getCallerRole(caller);
+    if (not Lib.isClinician(role)) { return [] };
+    Lib.bulkUpsertHandovers(engineState, handovers);
   };
 
   public shared ({ caller }) func updateHandover(
@@ -734,6 +788,22 @@ mixin (
     patientId : Nat
   ) : async [Types.DailyProgressNote] {
     Lib.getDailyProgressNotesByPatientId(engineState, patientId);
+  };
+
+  public query ({ caller }) func getDailyProgressNotesSince(
+    sinceTimestamp : Int
+  ) : async [Types.DailyProgressNote] {
+    let role = getCallerRole(caller);
+    if (not Lib.isClinician(role) and role != #admin) { return [] };
+    Lib.getDailyProgressNotesSince(engineState, sinceTimestamp);
+  };
+
+  public shared ({ caller }) func bulkUpsertDailyProgressNotes(
+    notes : [Types.DailyProgressNote]
+  ) : async [Types.DailyProgressNote] {
+    let role = getCallerRole(caller);
+    if (not Lib.isClinician(role)) { return [] };
+    Lib.bulkUpsertDailyProgressNotes(engineState, notes);
   };
 
   public shared ({ caller }) func updateDailyProgressNote(
@@ -932,6 +1002,22 @@ mixin (
     Lib.getMedicationAdministrationsByPatient(engineState, patientId);
   };
 
+  public query ({ caller }) func getAllMedicationAdministrationsSince(
+    sinceTimestamp : Int
+  ) : async [Types.MedicationAdministration] {
+    let role = getCallerRole(caller);
+    if (not Lib.isClinician(role) and role != #admin) { return [] };
+    Lib.getAllMedicationAdministrationsSince(engineState, sinceTimestamp);
+  };
+
+  public shared ({ caller }) func bulkUpsertMedicationAdministrations(
+    records : [Types.MedicationAdministration]
+  ) : async [Types.MedicationAdministration] {
+    let role = getCallerRole(caller);
+    if (not Lib.isClinician(role)) { return [] };
+    Lib.bulkUpsertMedicationAdministrations(engineState, records);
+  };
+
   // ─── Prescription API (clinical engine — richer type with PRN, follow-up, finalization) ────
 
   public shared ({ caller }) func createClinicalPrescription(
@@ -1055,4 +1141,103 @@ mixin (
     #ok(entry);
   };
 
+  // ─── Vital Verification API ─────────────────────────────────────────────────────
+
+  public shared ({ caller }) func verifyVital(
+    observationId : Nat
+  ) : async { #ok : Types.Observation; #err : Text } {
+    let role = getCallerRole(caller);
+    Lib.verifyVital(engineState, caller, caller.toText(), role, observationId);
+  };
+
+  public shared ({ caller }) func rejectVital(
+    observationId : Nat,
+    reason : Text,
+  ) : async { #ok : Types.Observation; #err : Text } {
+    let role = getCallerRole(caller);
+    Lib.rejectVital(engineState, caller, caller.toText(), role, observationId, reason);
+  };
+
+  public query ({ caller }) func getVitalsForVerification() : async [Types.Observation] {
+    let role = getCallerRole(caller);
+    if (not Lib.canVerifyVitals(role) and role != #admin) { return [] };
+    Lib.getVitalsForVerification(engineState);
+  };
+
+  // ─── Registrar / Admission Management API ───────────────────────────────────
+
+  public query ({ caller }) func getAllAdmittedPatients(
+    consultantEmail : ?Text,
+    ward : ?Text,
+    bed : ?Text,
+    department : ?Text,
+    admissionStatus : ?Text,
+  ) : async { #ok : [Types.AdmissionRecord]; #err : Text } {
+    let role = getCallerRole(caller);
+    Lib.getAllAdmittedPatients(engineState, role, consultantEmail, ward, bed, department, admissionStatus);
+  };
+
+  public shared ({ caller }) func createAdmission(
+    patientId : Nat,
+    consultantEmail : Text,
+    bed : Text,
+    ward : Text,
+    department : Text,
+  ) : async { #ok : Types.AdmissionRecord; #err : Text } {
+    let role = getCallerRole(caller);
+    Lib.createAdmission(engineState, caller, caller.toText(), role, patientId, consultantEmail, bed, ward, department);
+  };
+
+  public shared ({ caller }) func updatePatientBedAssignment(
+    admissionId : Nat,
+    newBed : Text,
+  ) : async { #ok : Types.AdmissionRecord; #err : Text } {
+    let role = getCallerRole(caller);
+    Lib.updatePatientBedAssignment(engineState, caller, caller.toText(), role, admissionId, newBed);
+  };
+
+  public shared ({ caller }) func updateAdmissionStatus(
+    admissionId : Nat,
+    newStatus : Types.AdmissionStatus,
+  ) : async { #ok : Types.AdmissionRecord; #err : Text } {
+    let role = getCallerRole(caller);
+    Lib.updateAdmissionStatus(engineState, caller, caller.toText(), role, admissionId, newStatus);
+  };
+
+  public shared ({ caller }) func approveDischarge(
+    admissionId : Nat
+  ) : async { #ok : Types.AdmissionRecord; #err : Text } {
+    let role = getCallerRole(caller);
+    Lib.approveDischarge(engineState, caller, caller.toText(), role, admissionId);
+  };
+
+  // ─── Email Index API ─────────────────────────────────────────────────────────────
+
+  public query func isEmailRegistered(email : Text) : async Bool {
+    Lib.isEmailRegistered(engineState, email);
+  };
+
+  public shared ({ caller }) func registerEmail(email : Text) : async { #ok : (); #err : Text } {
+    Lib.registerEmail(engineState, email, caller);
+  };
+
+  public query ({ caller }) func getEmailIndex() : async { #ok : [(Text, Principal)]; #err : Text } {
+    let role = getCallerRole(caller);
+    Lib.getEmailIndex(engineState, role);
+  };
+
+  // ─── Role Change Audit API ───────────────────────────────────────────────────────
+
+  public query ({ caller }) func getRoleChangeHistory(
+    principal : Principal
+  ) : async [Types.RoleChangeEntry] {
+    let role = getCallerRole(caller);
+    if (role != #admin and caller != principal) { return [] };
+    Lib.getRoleChangeHistory(engineState, principal);
+  };
+
+  public query ({ caller }) func getAllRoleChanges() : async { #ok : [Types.RoleChangeEntry]; #err : Text } {
+    let role = getCallerRole(caller);
+    Lib.getAllRoleChanges(engineState, role);
+  };
 };

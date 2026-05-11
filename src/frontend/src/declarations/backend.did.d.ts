@@ -10,6 +10,23 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface AdmissionRecord {
+  'id' : bigint,
+  'bed' : string,
+  'status' : AdmissionStatus,
+  'consultantEmail' : string,
+  'admittedAt' : bigint,
+  'admittedBy' : Principal,
+  'patientId' : bigint,
+  'ward' : string,
+  'updatedAt' : bigint,
+  'dischargedAt' : [] | [bigint],
+  'admittedByRole' : StaffRole,
+  'department' : string,
+}
+export type AdmissionStatus = { 'discharged' : null } |
+  { 'admitted' : null } |
+  { 'transferred' : null };
 export type AlertSeverity = { 'Info' : null } |
   { 'Critical' : null } |
   { 'Warning' : null };
@@ -67,6 +84,7 @@ export interface BedRecord {
   'transferHistory' : Array<BedTransferEntry>,
   'ward' : string,
   'bedNumber' : string,
+  'updatedAt' : bigint,
   'patientName' : [] | [string],
   'dischargeDate' : [] | [bigint],
 }
@@ -286,6 +304,7 @@ export interface MedicationAdministration {
   'dose' : string,
   'createdAt' : bigint,
   'recordedBy' : string,
+  'updatedAt' : bigint,
   'recordedByRole' : string,
   'administeredAt' : [] | [bigint],
   'missedReason' : [] | [string],
@@ -312,14 +331,17 @@ export type NoteType = { 'SOAP' : null } |
 export interface Observation {
   'id' : bigint,
   'status' : ObservationStatus,
+  'enteredByRole' : [] | [StaffRole],
   'isDeleted' : boolean,
   'numericValue' : [] | [number],
+  'vitalVerificationStatus' : [] | [VitalVerificationStatus],
   'value' : string,
   'observationDate' : bigint,
   'patientId' : bigint,
   'observationType' : ObservationType,
   'code' : string,
   'unit' : string,
+  'rejectionReason' : [] | [string],
   'recordedBy' : Principal,
   'normalRange' : [] | [string],
   'recordedByName' : string,
@@ -327,6 +349,9 @@ export interface Observation {
   'interpretation' : [] | [string],
   'versionInfo' : VersionedRecord,
   'encounterId' : [] | [bigint],
+  'verifiedAt' : [] | [bigint],
+  'verifiedBy' : [] | [Principal],
+  'enteredBy' : [] | [Principal],
 }
 export type ObservationStatus = { 'Corrected' : null } |
   { 'Final' : null } |
@@ -402,6 +427,14 @@ export type QueueStatus = { 'serving' : null } |
   { 'skipped' : null } |
   { 'done' : null } |
   { 'waiting' : null };
+export interface RoleChangeEntry {
+  'id' : bigint,
+  'principal' : Principal,
+  'changedBy' : Principal,
+  'timestamp' : bigint,
+  'previousRole' : [] | [StaffRole],
+  'newRole' : StaffRole,
+}
 export interface SerialQueueEntry {
   'id' : string,
   'status' : QueueStatus,
@@ -415,14 +448,19 @@ export interface SerialQueueEntry {
   'phone' : [] | [string],
   'doctorEmail' : string,
 }
-export type StaffRole = { 'patient' : null } |
+export type StaffRole = { 'assistant_registrar' : null } |
+  { 'professor' : null } |
+  { 'patient' : null } |
   { 'admin' : null } |
   { 'doctor' : null } |
   { 'medical_officer' : null } |
   { 'intern_doctor' : null } |
+  { 'associate_professor' : null } |
+  { 'assistant_professor' : null } |
   { 'consultant_doctor' : null } |
   { 'staff' : null } |
-  { 'nurse' : null };
+  { 'nurse' : null } |
+  { 'registrar' : null };
 export interface SyncData {
   'queueEntries' : Array<SerialQueueEntry>,
   'appointments' : Array<Appointment>,
@@ -479,6 +517,11 @@ export interface VitalSigns {
   'oxygenSaturation' : [] | [string],
   'pulse' : [] | [string],
 }
+export type VitalVerificationStatus = { 'pendingMOReview' : null } |
+  { 'verifiedByMO' : null } |
+  { 'finalized' : null } |
+  { 'rejected' : null } |
+  { 'drafted' : null };
 export interface VitalsSummary {
   'bp' : [] | [string],
   'rr' : [] | [string],
@@ -525,6 +568,11 @@ export interface _SERVICE {
     { 'ok' : DailyProgressNote } |
       { 'err' : string }
   >,
+  'approveDischarge' : ActorMethod<
+    [bigint],
+    { 'ok' : AdmissionRecord } |
+      { 'err' : string }
+  >,
   'assignBed' : ActorMethod<
     [bigint, bigint, string],
     { 'ok' : BedRecord } |
@@ -536,6 +584,23 @@ export interface _SERVICE {
     [Array<Appointment>],
     { 'ok' : bigint } |
       { 'err' : string }
+  >,
+  'bulkUpsertBeds' : ActorMethod<[Array<BedRecord>], Array<BedRecord>>,
+  'bulkUpsertDailyProgressNotes' : ActorMethod<
+    [Array<DailyProgressNote>],
+    Array<DailyProgressNote>
+  >,
+  'bulkUpsertHandovers' : ActorMethod<
+    [Array<HandoverEntry>],
+    Array<HandoverEntry>
+  >,
+  'bulkUpsertMedicationAdministrations' : ActorMethod<
+    [Array<MedicationAdministration>],
+    Array<MedicationAdministration>
+  >,
+  'bulkUpsertObservations' : ActorMethod<
+    [Array<Observation>],
+    Array<Observation>
   >,
   'bulkUpsertPatients' : ActorMethod<[Array<Patient>], Array<Patient>>,
   'bulkUpsertPrescriptions' : ActorMethod<
@@ -551,6 +616,11 @@ export interface _SERVICE {
   'clearQueueByDate' : ActorMethod<
     [string, string],
     { 'ok' : bigint } |
+      { 'err' : string }
+  >,
+  'createAdmission' : ActorMethod<
+    [bigint, string, string, string, string],
+    { 'ok' : AdmissionRecord } |
       { 'err' : string }
   >,
   'createAppointment' : ActorMethod<
@@ -793,6 +863,11 @@ export interface _SERVICE {
   'getActiveAlerts' : ActorMethod<[bigint], Array<ClinicalAlert>>,
   'getActiveOrdersByPatient' : ActorMethod<[bigint], Array<ClinicalOrder>>,
   'getAlertsByPatient' : ActorMethod<[bigint], Array<ClinicalAlert>>,
+  'getAllAdmittedPatients' : ActorMethod<
+    [[] | [string], [] | [string], [] | [string], [] | [string], [] | [string]],
+    { 'ok' : Array<AdmissionRecord> } |
+      { 'err' : string }
+  >,
   'getAllAppointmentsByDoctor' : ActorMethod<
     [string],
     { 'ok' : Array<Appointment> } |
@@ -800,12 +875,24 @@ export interface _SERVICE {
   >,
   'getAllAuditEntries' : ActorMethod<[bigint, bigint], Array<AuditEntry>>,
   'getAllBeds' : ActorMethod<[], Array<BedRecord>>,
+  'getAllBedsSince' : ActorMethod<[bigint], Array<BedRecord>>,
   'getAllDiagnosisTemplates' : ActorMethod<[], Array<DiagnosisTemplate>>,
   'getAllEncounters' : ActorMethod<[], Array<Encounter>>,
+  'getAllHandoversSince' : ActorMethod<[bigint], Array<HandoverEntry>>,
+  'getAllMedicationAdministrationsSince' : ActorMethod<
+    [bigint],
+    Array<MedicationAdministration>
+  >,
+  'getAllObservationsSince' : ActorMethod<[bigint], Array<Observation>>,
   'getAllPatients' : ActorMethod<[], Array<Patient>>,
   'getAllPatientsSince' : ActorMethod<[bigint], Array<Patient>>,
   'getAllPrescriptions' : ActorMethod<[], Array<Prescription>>,
   'getAllPrescriptionsSince' : ActorMethod<[bigint], Array<Prescription>>,
+  'getAllRoleChanges' : ActorMethod<
+    [],
+    { 'ok' : Array<RoleChangeEntry> } |
+      { 'err' : string }
+  >,
   'getAllVisits' : ActorMethod<[], Array<Visit>>,
   'getAllVisitsSince' : ActorMethod<[bigint], Array<Visit>>,
   'getAppointmentById' : ActorMethod<
@@ -850,8 +937,18 @@ export interface _SERVICE {
     [bigint],
     Array<DailyProgressNote>
   >,
+  'getDailyProgressNotesSince' : ActorMethod<
+    [bigint],
+    Array<DailyProgressNote>
+  >,
   'getDiagnosisTemplate' : ActorMethod<[bigint], [] | [DiagnosisTemplate]>,
+  'getEmailIndex' : ActorMethod<
+    [],
+    { 'ok' : Array<[string, Principal]> } |
+      { 'err' : string }
+  >,
   'getEncountersByPatient' : ActorMethod<[bigint], Array<Encounter>>,
+  'getFrontPageContent' : ActorMethod<[], [] | [string]>,
   'getFullSyncData' : ActorMethod<
     [string],
     { 'ok' : SyncData } |
@@ -887,6 +984,8 @@ export interface _SERVICE {
     { 'ok' : Array<SerialQueueEntry> } |
       { 'err' : string }
   >,
+  'getRoleChangeHistory' : ActorMethod<[Principal], Array<RoleChangeEntry>>,
+  'getServerTimestamp' : ActorMethod<[], bigint>,
   'getUnacknowledgedAlerts' : ActorMethod<[], Array<ClinicalAlert>>,
   'getUpdatedData' : ActorMethod<
     [string, bigint],
@@ -896,8 +995,10 @@ export interface _SERVICE {
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'getVisit' : ActorMethod<[bigint], [] | [Visit]>,
   'getVisitsByPatientId' : ActorMethod<[bigint], Array<Visit>>,
+  'getVitalsForVerification' : ActorMethod<[], Array<Observation>>,
   'getWardRoundStatus' : ActorMethod<[string], Array<WardRoundPatientStatus>>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'isEmailRegistered' : ActorMethod<[string], boolean>,
   'migrateFromLocalStorage' : ActorMethod<
     [string, string, string, string],
     { 'ok' : string } |
@@ -925,9 +1026,15 @@ export interface _SERVICE {
     { 'ok' : MedicationAdministration } |
       { 'err' : string }
   >,
+  'registerEmail' : ActorMethod<[string], { 'ok' : null } | { 'err' : string }>,
   'rejectDraftNote' : ActorMethod<
     [bigint, bigint, string, string],
     { 'ok' : DailyProgressNote } |
+      { 'err' : string }
+  >,
+  'rejectVital' : ActorMethod<
+    [bigint, string],
+    { 'ok' : Observation } |
       { 'err' : string }
   >,
   'resolveAlert' : ActorMethod<
@@ -936,6 +1043,7 @@ export interface _SERVICE {
       { 'err' : string }
   >,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'saveFrontPageContent' : ActorMethod<[string], undefined>,
   'submitDailyNoteForReview' : ActorMethod<
     [bigint, bigint, DailyProgressNoteUpdate],
     { 'ok' : DailyProgressNote } |
@@ -945,6 +1053,11 @@ export interface _SERVICE {
   'transferBed' : ActorMethod<
     [bigint, bigint, string],
     { 'ok' : BedRecord } |
+      { 'err' : string }
+  >,
+  'updateAdmissionStatus' : ActorMethod<
+    [bigint, AdmissionStatus],
+    { 'ok' : AdmissionRecord } |
       { 'err' : string }
   >,
   'updateAppointment' : ActorMethod<
@@ -1055,6 +1168,11 @@ export interface _SERVICE {
     ],
     Patient
   >,
+  'updatePatientBedAssignment' : ActorMethod<
+    [bigint, string],
+    { 'ok' : AdmissionRecord } |
+      { 'err' : string }
+  >,
   'updatePrescription' : ActorMethod<
     [
       bigint,
@@ -1090,6 +1208,11 @@ export interface _SERVICE {
   'upsertPatient' : ActorMethod<[Patient], Patient>,
   'upsertPrescription' : ActorMethod<[Prescription], Prescription>,
   'upsertVisit' : ActorMethod<[Visit], Visit>,
+  'verifyVital' : ActorMethod<
+    [bigint],
+    { 'ok' : Observation } |
+      { 'err' : string }
+  >,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

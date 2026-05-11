@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { saveFrontPageContentWithSync } from "../lib/hybridStorage";
 
 export interface SocialLink {
   label: string;
@@ -147,8 +148,23 @@ function loadConfig(): SiteConfig {
   }
 }
 
-function saveConfig(cfg: SiteConfig) {
+function saveConfig(cfg: SiteConfig, actor?: unknown) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+  // Sync to canister so all devices see the latest front page content
+  saveFrontPageContentWithSync(actor ?? null);
+}
+
+// Helper: resolve canister actor at call time (avoids import cycle)
+function resolveActor(): unknown | null {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mod = require("../hooks/useQueries") as {
+      getCanisterActor?: () => unknown;
+    };
+    return mod.getCanisterActor?.() ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export function useSiteConfig() {
@@ -157,7 +173,7 @@ export function useSiteConfig() {
   const updateHero = useCallback((hero: Partial<HeroSection>) => {
     setConfig((prev) => {
       const next = { ...prev, heroSection: { ...prev.heroSection, ...hero } };
-      saveConfig(next);
+      saveConfig(next, resolveActor());
       return next;
     });
   }, []);
@@ -168,7 +184,7 @@ export function useSiteConfig() {
         ...prev,
         aboutSection: { ...prev.aboutSection, ...about },
       };
-      saveConfig(next);
+      saveConfig(next, resolveActor());
       return next;
     });
   }, []);
@@ -179,7 +195,7 @@ export function useSiteConfig() {
         ...prev,
         footerSection: { ...prev.footerSection, ...footer },
       };
-      saveConfig(next);
+      saveConfig(next, resolveActor());
       return next;
     });
   }, []);
@@ -188,7 +204,7 @@ export function useSiteConfig() {
     (contacts: EmergencyContact[]) => {
       setConfig((prev) => {
         const next = { ...prev, emergencyContacts: contacts };
-        saveConfig(next);
+        saveConfig(next, resolveActor());
         return next;
       });
     },
@@ -201,7 +217,7 @@ export function useSiteConfig() {
         ...prev,
         [section]: DEFAULT_SITE_CONFIG[section],
       };
-      saveConfig(next);
+      saveConfig(next, resolveActor());
       return next;
     });
   }, []);

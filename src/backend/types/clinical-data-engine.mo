@@ -9,7 +9,12 @@ module {
     #admin;
     #doctor;
     #consultant_doctor;
+    #assistant_professor;
+    #associate_professor;
+    #professor;
     #medical_officer;
+    #assistant_registrar;
+    #registrar;
     #intern_doctor;
     #nurse;
     #staff;
@@ -57,6 +62,16 @@ module {
     #DrainMonitoring;
   };
 
+  // ─── Vital Verification ───────────────────────────────────────────────────
+
+  public type VitalVerificationStatus = {
+    #drafted;          // just entered — not yet submitted for MO review
+    #pendingMOReview;  // submitted by Nurse/Intern, awaiting MO verification
+    #verifiedByMO;     // MO reviewed and accepted
+    #finalized;        // locked in record
+    #rejected;         // returned to enterer with reason
+  };
+
   public type ObservationStatus = { #Preliminary; #Final; #Corrected };
 
   public type Observation = {
@@ -71,6 +86,13 @@ module {
     interpretation : ?Text;
     normalRange : ?Text;
     status : ObservationStatus;
+    // Vital-specific verification workflow fields
+    vitalVerificationStatus : ?VitalVerificationStatus;
+    enteredBy : ?Principal;
+    enteredByRole : ?StaffRole;
+    verifiedBy : ?Principal;
+    verifiedAt : ?Int;
+    rejectionReason : ?Text;
     observationDate : Int;
     recordedBy : Principal;
     recordedByName : Text;
@@ -182,6 +204,7 @@ module {
     recordedBy : Text;
     recordedByRole : Text;
     createdAt : Int;
+    updatedAt : Int;
   };
 
   // ─── Prescription ───────────────────────────────────────────────────────────
@@ -258,6 +281,7 @@ module {
     admissionDate : ?Int;
     dischargeDate : ?Int;
     transferHistory : [BedTransferEntry];
+    updatedAt : Int;
   };
 
   // ─── Diagnosis Template ────────────────────────────────────────────────────
@@ -474,6 +498,36 @@ module {
     lastVitals : ?VitalsSummary;
     activeAlerts : [Text];
     assignedConsultant : ?Text;
+  };
+
+  // ─── Admission Record ──────────────────────────────────────────────────────
+
+  public type AdmissionStatus = { #admitted; #discharged; #transferred };
+
+  public type AdmissionRecord = {
+    id : Nat;
+    patientId : Nat;
+    consultantEmail : Text;
+    bed : Text;
+    ward : Text;
+    department : Text;
+    status : AdmissionStatus;
+    admittedAt : Int;
+    dischargedAt : ?Int;
+    admittedBy : Principal;
+    admittedByRole : StaffRole;
+    updatedAt : Int;
+  };
+
+  // ─── Role Change Audit ─────────────────────────────────────────────────────
+
+  public type RoleChangeEntry = {
+    id : Nat;
+    principal : Principal;
+    previousRole : ?StaffRole;
+    newRole : StaffRole;
+    changedBy : Principal;
+    timestamp : Int;
   };
 
   // ─── Sync Bootstrap ────────────────────────────────────────────────────────

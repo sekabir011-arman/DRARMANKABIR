@@ -28,6 +28,9 @@ module {
     dailyProgressNotes : Map.Map<Nat, Types.DailyProgressNote>;
     medicationAdministrations : Map.Map<Nat, Types.MedicationAdministration>;
     prescriptions : Map.Map<Nat, Types.Prescription>;
+    admissions : Map.Map<Nat, Types.AdmissionRecord>;
+    roleChangeLog : Map.Map<Nat, Types.RoleChangeEntry>;
+    emailIndex : Map.Map<Text, Principal>;
     var encounterIdCounter : Nat;
     var observationIdCounter : Nat;
     var orderIdCounter : Nat;
@@ -41,6 +44,8 @@ module {
     var dailyProgressNoteIdCounter : Nat;
     var medicationAdministrationIdCounter : Nat;
     var prescriptionIdCounter : Nat;
+    var admissionIdCounter : Nat;
+    var roleChangeIdCounter : Nat;
   };
 
   public func initState() : EngineState {
@@ -60,6 +65,9 @@ module {
       dailyProgressNotes = Map.empty<Nat, Types.DailyProgressNote>();
       medicationAdministrations = Map.empty<Nat, Types.MedicationAdministration>();
       prescriptions = Map.empty<Nat, Types.Prescription>();
+      admissions = Map.empty<Nat, Types.AdmissionRecord>();
+      roleChangeLog = Map.empty<Nat, Types.RoleChangeEntry>();
+      emailIndex = Map.empty<Text, Principal>();
       var encounterIdCounter = 1;
       var observationIdCounter = 1;
       var orderIdCounter = 1;
@@ -73,43 +81,77 @@ module {
       var dailyProgressNoteIdCounter = 1;
       var medicationAdministrationIdCounter = 1;
       var prescriptionIdCounter = 1;
+      var admissionIdCounter = 1;
+      var roleChangeIdCounter = 1;
     };
   };
 
   // ─── Role Helpers ──────────────────────────────────────────────────────────
 
+  // ─── Role Helpers ─────────────────────────────────────────────────────────────
+
+  // Returns true for the four Consultant-level roles
+  public func isConsultantType(role : Types.StaffRole) : Bool {
+    switch (role) {
+      case (#consultant_doctor or #assistant_professor or #associate_professor or #professor) true;
+      case (_) false;
+    };
+  };
+
+  // Returns true for roles authorized to verify vitals
+  public func canVerifyVitals(role : Types.StaffRole) : Bool {
+    switch (role) {
+      case (#medical_officer or #assistant_registrar or #registrar) true;
+      case (_) isConsultantType(role);
+    };
+  };
+
+  // Returns true for roles that can manage all admissions
+  public func canManageAllAdmissions(role : Types.StaffRole) : Bool {
+    switch (role) {
+      case (#registrar) true;
+      case (_) isConsultantType(role);
+    };
+  };
+
+  // Returns true for registrar level (view all admitted patients with edit)
+  public func isRegistrarLevel(role : Types.StaffRole) : Bool {
+    role == #registrar;
+  };
+
   public func isClinician(role : Types.StaffRole) : Bool {
     switch (role) {
-      case (#admin or #doctor or #consultant_doctor or #medical_officer or #intern_doctor or #nurse) true;
+      case (#admin or #doctor or #consultant_doctor or #assistant_professor or #associate_professor or #professor
+           or #medical_officer or #assistant_registrar or #registrar or #intern_doctor or #nurse) true;
       case (_) false;
     };
   };
 
   public func canFinalizeClinicalNote(role : Types.StaffRole) : Bool {
     switch (role) {
-      case (#admin or #doctor or #consultant_doctor or #medical_officer) true;
-      case (_) false;
+      case (#admin or #doctor or #medical_officer) true;
+      case (_) isConsultantType(role);
     };
   };
 
   public func canViewAuditTrail(role : Types.StaffRole) : Bool {
     switch (role) {
-      case (#admin or #consultant_doctor) true;
-      case (_) false;
+      case (#admin) true;
+      case (_) isConsultantType(role);
     };
   };
 
   public func canManageBeds(role : Types.StaffRole) : Bool {
     switch (role) {
-      case (#admin or #staff or #doctor or #consultant_doctor) true;
-      case (_) false;
+      case (#admin or #staff or #doctor or #medical_officer or #assistant_registrar or #registrar) true;
+      case (_) isConsultantType(role);
     };
   };
 
   public func canCompleteOrder(role : Types.StaffRole) : Bool {
     switch (role) {
-      case (#admin or #doctor or #consultant_doctor or #medical_officer or #nurse) true;
-      case (_) false;
+      case (#admin or #doctor or #medical_officer or #nurse) true;
+      case (_) isConsultantType(role);
     };
   };
 
@@ -364,6 +406,39 @@ module {
     state.encounters.values().toArray();
   };
 
+  public func getAllObservationsSince(
+    state : EngineState,
+    sinceTimestamp : Int,
+  ) : [Types.Observation] {
+    // Observation uses versionInfo.createdAt as a proxy for updatedAt
+    state.observations.values().filter(func (o) {
+      o.versionInfo.createdAt >= sinceTimestamp and not o.isDeleted
+    }).toArray();
+  };
+
+  public func bulkUpsertObservations(
+    state : EngineState,
+    obs : [Types.Observation],
+  ) : [Types.Observation] {
+    obs.map<Types.Observation, Types.Observation>(func (ob) {
+      switch (state.observations.get(ob.id)) {
+        case (?existing) {
+          if (ob.versionInfo.createdAt > existing.versionInfo.createdAt) {
+            state.observations.add(ob.id, ob);
+            ob;
+          } else { existing };
+        };
+        case (null) {
+          if (ob.id >= state.observationIdCounter) {
+            state.observationIdCounter := ob.id + 1;
+          };
+          state.observations.add(ob.id, ob);
+          ob;
+        };
+      };
+    });
+  };
+
   // ─── Observation Logic ─────────────────────────────────────────────────────
 
   public func createObservation(
@@ -385,6 +460,18 @@ module {
     let id = state.observationIdCounter;
     state.observationIdCounter += 1;
     let versionInfo = makeVersionedRecord(1, caller, callerName, callerRole, null);
+    // Vitals from Nurse/Intern go to pendingMOReview; MO/above are auto-finalized
+    let vitalStatus : ?Types.VitalVerificationStatus = switch (observationType) {
+      case (#Vital) {
+        switch (callerRole) {
+          case (#nurse or #intern_doctor) { ?#pendingMOReview };
+          case (_) {
+            if (canVerifyVitals(callerRole)) { ?#finalized } else { ?#pendingMOReview };
+          };
+        };
+      };
+      case (_) { null };
+    };
     let obs : Types.Observation = {
       id;
       patientId;
@@ -397,6 +484,12 @@ module {
       interpretation;
       normalRange;
       status = #Final;
+      vitalVerificationStatus = vitalStatus;
+      enteredBy = ?caller;
+      enteredByRole = ?callerRole;
+      verifiedBy = null;
+      verifiedAt = null;
+      rejectionReason = null;
       observationDate;
       recordedBy = caller;
       recordedByName = callerName;
@@ -448,7 +541,6 @@ module {
       case (null) { Runtime.trap("Observation not found") };
       case (?o) { o };
     };
-    // Bump version — audit trail tracks history for observations
     let newVersion = makeVersionedRecord(existing.versionInfo.version + 1, caller, callerName, callerRole, ?reason);
     let updated : Types.Observation = {
       existing with
@@ -459,6 +551,322 @@ module {
     state.observations.add(id, updated);
     addAudit(state, "Observation", id, "value", ?existing.value, newValue, caller, callerName, callerRole, ?reason);
     updated;
+  };
+
+  // ─── Vital Verification Logic ────────────────────────────────────────────────
+
+  public func verifyVital(
+    state : EngineState,
+    caller : Principal,
+    callerName : Text,
+    callerRole : Types.StaffRole,
+    observationId : Nat,
+  ) : { #ok : Types.Observation; #err : Text } {
+    if (not canVerifyVitals(callerRole)) {
+      return #err("Unauthorized: role cannot verify vitals");
+    };
+    let existing = switch (state.observations.get(observationId)) {
+      case (null) { return #err("Observation not found") };
+      case (?o) { o };
+    };
+    switch (existing.vitalVerificationStatus) {
+      case (?#pendingMOReview or ?#drafted) {};
+      case (?#finalized) { return #err("Vital is already finalized") };
+      case (?#rejected) { return #err("Vital is rejected; enterer must resubmit") };
+      case (_) { return #err("Not a vital or not pending review") };
+    };
+    let now = Time.now();
+    let newVersion = makeVersionedRecord(existing.versionInfo.version + 1, caller, callerName, callerRole, ?"verified");
+    let updated : Types.Observation = {
+      existing with
+      vitalVerificationStatus = ?#finalized;
+      verifiedBy = ?caller;
+      verifiedAt = ?now;
+      rejectionReason = null;
+      versionInfo = newVersion;
+    };
+    state.observations.add(observationId, updated);
+    addAudit(state, "Observation", observationId, "vitalVerification", ?"pendingMOReview", "finalized", caller, callerName, callerRole, null);
+    #ok(updated);
+  };
+
+  public func rejectVital(
+    state : EngineState,
+    caller : Principal,
+    callerName : Text,
+    callerRole : Types.StaffRole,
+    observationId : Nat,
+    reason : Text,
+  ) : { #ok : Types.Observation; #err : Text } {
+    if (not canVerifyVitals(callerRole)) {
+      return #err("Unauthorized: role cannot reject vitals");
+    };
+    let existing = switch (state.observations.get(observationId)) {
+      case (null) { return #err("Observation not found") };
+      case (?o) { o };
+    };
+    switch (existing.vitalVerificationStatus) {
+      case (?#pendingMOReview or ?#drafted) {};
+      case (?#finalized) { return #err("Cannot reject a finalized vital") };
+      case (_) { return #err("Not a vital entry pending review") };
+    };
+    let newVersion = makeVersionedRecord(existing.versionInfo.version + 1, caller, callerName, callerRole, ?reason);
+    let updated : Types.Observation = {
+      existing with
+      vitalVerificationStatus = ?#rejected;
+      rejectionReason = ?reason;
+      versionInfo = newVersion;
+    };
+    state.observations.add(observationId, updated);
+    addAudit(state, "Observation", observationId, "vitalVerification", ?"pendingMOReview", "rejected", caller, callerName, callerRole, ?reason);
+    #ok(updated);
+  };
+
+  public func getVitalsForVerification(state : EngineState) : [Types.Observation] {
+    state.observations.values().filter(func (o) {
+      switch (o.vitalVerificationStatus) {
+        case (?#pendingMOReview) { not o.isDeleted };
+        case (_) { false };
+      };
+    }).toArray();
+  };
+
+  // ─── Registrar Patient Management ────────────────────────────────────────────────
+
+  public func getAllAdmittedPatients(
+    state : EngineState,
+    callerRole : Types.StaffRole,
+    consultantEmail : ?Text,
+    ward : ?Text,
+    bed : ?Text,
+    department : ?Text,
+    admissionStatus : ?Text,
+  ) : { #ok : [Types.AdmissionRecord]; #err : Text } {
+    if (not isRegistrarLevel(callerRole) and not isConsultantType(callerRole) and callerRole != #admin) {
+      return #err("Unauthorized: only Registrar and above can view all admitted patients");
+    };
+    let results = state.admissions.values().filter(func (a) {
+      let matchConsultant = switch (consultantEmail) {
+        case (null) { true };
+        case (?e) { a.consultantEmail == e };
+      };
+      let matchWard = switch (ward) {
+        case (null) { true };
+        case (?w) { a.ward == w };
+      };
+      let matchBed = switch (bed) {
+        case (null) { true };
+        case (?b) { a.bed == b };
+      };
+      let matchDept = switch (department) {
+        case (null) { true };
+        case (?d) { a.department == d };
+      };
+      let matchStatus = switch (admissionStatus) {
+        case (null) { true };
+        case (?s) { debug_show(a.status) == s };
+      };
+      matchConsultant and matchWard and matchBed and matchDept and matchStatus;
+    }).toArray();
+    #ok(results);
+  };
+
+  public func createAdmission(
+    state : EngineState,
+    caller : Principal,
+    callerName : Text,
+    callerRole : Types.StaffRole,
+    patientId : Nat,
+    consultantEmail : Text,
+    bed : Text,
+    ward : Text,
+    department : Text,
+  ) : { #ok : Types.AdmissionRecord; #err : Text } {
+    switch (callerRole) {
+      case (#medical_officer or #assistant_registrar or #registrar or #admin) {};
+      case (_) {
+        if (not isConsultantType(callerRole)) {
+          return #err("Unauthorized: cannot create admissions");
+        };
+      };
+    };
+    let id = state.admissionIdCounter;
+    state.admissionIdCounter += 1;
+    let now = Time.now();
+    let record : Types.AdmissionRecord = {
+      id;
+      patientId;
+      consultantEmail;
+      bed;
+      ward;
+      department;
+      status = #admitted;
+      admittedAt = now;
+      dischargedAt = null;
+      admittedBy = caller;
+      admittedByRole = callerRole;
+      updatedAt = now;
+    };
+    state.admissions.add(id, record);
+    addAudit(state, "Admission", id, "created", null, "patient=" # patientId.toText() # " bed=" # bed, caller, callerName, callerRole, null);
+    #ok(record);
+  };
+
+  public func updatePatientBedAssignment(
+    state : EngineState,
+    caller : Principal,
+    callerName : Text,
+    callerRole : Types.StaffRole,
+    admissionId : Nat,
+    newBed : Text,
+  ) : { #ok : Types.AdmissionRecord; #err : Text } {
+    switch (callerRole) {
+      case (#medical_officer or #assistant_registrar or #registrar or #admin) {};
+      case (_) { return #err("Unauthorized: cannot change bed assignment") };
+    };
+    let existing = switch (state.admissions.get(admissionId)) {
+      case (null) { return #err("Admission not found") };
+      case (?a) { a };
+    };
+    let updated : Types.AdmissionRecord = {
+      existing with
+      bed = newBed;
+      updatedAt = Time.now();
+    };
+    state.admissions.add(admissionId, updated);
+    addAudit(state, "Admission", admissionId, "bed", ?existing.bed, newBed, caller, callerName, callerRole, null);
+    #ok(updated);
+  };
+
+  public func updateAdmissionStatus(
+    state : EngineState,
+    caller : Principal,
+    callerName : Text,
+    callerRole : Types.StaffRole,
+    admissionId : Nat,
+    newStatus : Types.AdmissionStatus,
+  ) : { #ok : Types.AdmissionRecord; #err : Text } {
+    if (not isRegistrarLevel(callerRole) and not isConsultantType(callerRole) and callerRole != #admin) {
+      return #err("Unauthorized: cannot change admission status");
+    };
+    let existing = switch (state.admissions.get(admissionId)) {
+      case (null) { return #err("Admission not found") };
+      case (?a) { a };
+    };
+    let dischargedAt : ?Int = switch (newStatus) {
+      case (#discharged) { ?Time.now() };
+      case (_) { existing.dischargedAt };
+    };
+    let updated : Types.AdmissionRecord = {
+      existing with
+      status = newStatus;
+      dischargedAt;
+      updatedAt = Time.now();
+    };
+    state.admissions.add(admissionId, updated);
+    addAudit(state, "Admission", admissionId, "status", ?debug_show(existing.status), debug_show(newStatus), caller, callerName, callerRole, null);
+    #ok(updated);
+  };
+
+  public func approveDischarge(
+    state : EngineState,
+    caller : Principal,
+    callerName : Text,
+    callerRole : Types.StaffRole,
+    admissionId : Nat,
+  ) : { #ok : Types.AdmissionRecord; #err : Text } {
+    if (not isRegistrarLevel(callerRole) and not isConsultantType(callerRole) and callerRole != #admin) {
+      return #err("Unauthorized: only Registrar or Consultant can approve discharge");
+    };
+    let existing = switch (state.admissions.get(admissionId)) {
+      case (null) { return #err("Admission not found") };
+      case (?a) { a };
+    };
+    if (existing.status == #discharged) {
+      return #err("Patient is already discharged");
+    };
+    let now = Time.now();
+    let updated : Types.AdmissionRecord = {
+      existing with
+      status = #discharged;
+      dischargedAt = ?now;
+      updatedAt = now;
+    };
+    state.admissions.add(admissionId, updated);
+    addAudit(state, "Admission", admissionId, "status", ?"admitted", "discharged", caller, callerName, callerRole, ?"discharge approved");
+    #ok(updated);
+  };
+
+  // ─── Email Index (Unique Email Enforcement) ───────────────────────────────────────
+
+  public func isEmailRegistered(state : EngineState, email : Text) : Bool {
+    state.emailIndex.get(email) != null;
+  };
+
+  public func registerEmail(
+    state : EngineState,
+    email : Text,
+    principal : Principal,
+  ) : { #ok : (); #err : Text } {
+    switch (state.emailIndex.get(email)) {
+      case (?existing) {
+        if (existing == principal) { #ok(()) }
+        else { #err("Email already in use") };
+      };
+      case (null) {
+        state.emailIndex.add(email, principal);
+        #ok(());
+      };
+    };
+  };
+
+  public func getEmailIndex(
+    state : EngineState,
+    callerRole : Types.StaffRole,
+  ) : { #ok : [(Text, Principal)]; #err : Text } {
+    if (callerRole != #admin) {
+      return #err("Unauthorized: only admin can view email index");
+    };
+    #ok(state.emailIndex.entries().toArray());
+  };
+
+  // ─── Role Change Audit ────────────────────────────────────────────────────────
+
+  public func logRoleChange(
+    state : EngineState,
+    principal : Principal,
+    previousRole : ?Types.StaffRole,
+    newRole : Types.StaffRole,
+    changedBy : Principal,
+  ) {
+    let id = state.roleChangeIdCounter;
+    state.roleChangeIdCounter += 1;
+    let entry : Types.RoleChangeEntry = {
+      id;
+      principal;
+      previousRole;
+      newRole;
+      changedBy;
+      timestamp = Time.now();
+    };
+    state.roleChangeLog.add(id, entry);
+  };
+
+  public func getRoleChangeHistory(
+    state : EngineState,
+    principal : Principal,
+  ) : [Types.RoleChangeEntry] {
+    state.roleChangeLog.values().filter(func (e) { e.principal == principal }).toArray();
+  };
+
+  public func getAllRoleChanges(
+    state : EngineState,
+    callerRole : Types.StaffRole,
+  ) : { #ok : [Types.RoleChangeEntry]; #err : Text } {
+    if (callerRole != #admin) {
+      return #err("Unauthorized: only admin can view all role changes");
+    };
+    #ok(state.roleChangeLog.values().toArray());
   };
 
   // ─── Clinical Order Logic ──────────────────────────────────────────────────
@@ -813,6 +1221,7 @@ module {
       admissionDate = null;
       dischargeDate = null;
       transferHistory = [];
+      updatedAt = Time.now();
     };
     state.beds.add(id, bed);
     bed;
@@ -843,6 +1252,7 @@ module {
       patientName = ?patientName;
       admissionDate = ?Time.now();
       dischargeDate = null;
+      updatedAt = Time.now();
     };
     state.beds.add(bedId, updated);
     updated;
@@ -886,6 +1296,7 @@ module {
       patientId = null;
       patientName = null;
       dischargeDate = ?Time.now();
+      updatedAt = Time.now();
     };
     state.beds.add(bedId, freedSource);
     // Occupy target bed
@@ -898,6 +1309,7 @@ module {
       admissionDate = sourceBed.admissionDate;
       dischargeDate = null;
       transferHistory = newHistory;
+      updatedAt = Time.now();
     };
     state.beds.add(newBedId, occupiedTarget);
     occupiedTarget;
@@ -922,9 +1334,40 @@ module {
       patientId = null;
       patientName = null;
       dischargeDate = ?Time.now();
+      updatedAt = Time.now();
     };
     state.beds.add(bedId, updated);
     updated;
+  };
+
+  public func getAllBedsSince(
+    state : EngineState,
+    sinceTimestamp : Int,
+  ) : [Types.BedRecord] {
+    state.beds.values().filter(func (b) { b.updatedAt >= sinceTimestamp }).toArray();
+  };
+
+  public func bulkUpsertBeds(
+    state : EngineState,
+    beds : [Types.BedRecord],
+  ) : [Types.BedRecord] {
+    beds.map<Types.BedRecord, Types.BedRecord>(func (bed) {
+      switch (state.beds.get(bed.id)) {
+        case (?existing) {
+          if (bed.updatedAt > existing.updatedAt) {
+            state.beds.add(bed.id, bed);
+            bed;
+          } else { existing };
+        };
+        case (null) {
+          if (bed.id >= state.bedIdCounter) {
+            state.bedIdCounter := bed.id + 1;
+          };
+          state.beds.add(bed.id, bed);
+          bed;
+        };
+      };
+    });
   };
 
   public func getAllBeds(state : EngineState) : [Types.BedRecord] {
@@ -1556,6 +1999,36 @@ module {
     state.handovers.values().filter(func (h) { h.patientId == patientId }).toArray();
   };
 
+  public func getAllHandoversSince(
+    state : EngineState,
+    sinceTimestamp : Int,
+  ) : [Types.HandoverEntry] {
+    state.handovers.values().filter(func (h) { h.updatedAt >= sinceTimestamp }).toArray();
+  };
+
+  public func bulkUpsertHandovers(
+    state : EngineState,
+    handovers : [Types.HandoverEntry],
+  ) : [Types.HandoverEntry] {
+    handovers.map<Types.HandoverEntry, Types.HandoverEntry>(func (h) {
+      switch (state.handovers.get(h.id)) {
+        case (?existing) {
+          if (h.updatedAt > existing.updatedAt) {
+            state.handovers.add(h.id, h);
+            h;
+          } else { existing };
+        };
+        case (null) {
+          if (h.id >= state.handoverIdCounter) {
+            state.handoverIdCounter := h.id + 1;
+          };
+          state.handovers.add(h.id, h);
+          h;
+        };
+      };
+    });
+  };
+
   public func updateHandover(
     state : EngineState,
     caller : Principal,
@@ -1579,8 +2052,9 @@ module {
       case (null) { Runtime.trap("Handover not found") };
       case (?h) { h };
     };
-    // Only the creator or admin can edit a draft; submitted handovers can only be commented on by consultant
-    if (existing.status == #submitted and callerRole != #admin and callerRole != #consultant_doctor) {
+    // Submitted handovers can only be commented on by consultant/registrar/admin
+    let canEditSubmitted = callerRole == #admin or callerRole == #registrar or isConsultantType(callerRole);
+    if (existing.status == #submitted and not canEditSubmitted) {
       Runtime.trap("Unauthorized: submitted handovers cannot be edited");
     };
     let newVersion = makeVersionedRecord(existing.versionInfo.version + 1, caller, callerName, callerRole, null);
@@ -1698,6 +2172,41 @@ module {
     }).toArray();
   };
 
+  public func getDailyProgressNotesSince(
+    state : EngineState,
+    sinceTimestamp : Int,
+  ) : [Types.DailyProgressNote] {
+    state.dailyProgressNotes.values().filter(func (n) {
+      n.updatedAt >= sinceTimestamp and not n.isDeleted
+    }).toArray();
+  };
+
+  public func bulkUpsertDailyProgressNotes(
+    state : EngineState,
+    notes : [Types.DailyProgressNote],
+  ) : [Types.DailyProgressNote] {
+    notes.map<Types.DailyProgressNote, Types.DailyProgressNote>(func (note) {
+      switch (state.dailyProgressNotes.get(note.id)) {
+        case (?existing) {
+          // Finalized notes are immutable — only accept addenda (higher version)
+          if (existing.noteState == #finalized and note.noteState != #finalized) {
+            existing;
+          } else if (note.updatedAt > existing.updatedAt) {
+            state.dailyProgressNotes.add(note.id, note);
+            note;
+          } else { existing };
+        };
+        case (null) {
+          if (note.id >= state.dailyProgressNoteIdCounter) {
+            state.dailyProgressNoteIdCounter := note.id + 1;
+          };
+          state.dailyProgressNotes.add(note.id, note);
+          note;
+        };
+      };
+    });
+  };
+
   public func updateDailyProgressNote(
     state : EngineState,
     caller : Principal,
@@ -1787,10 +2296,13 @@ module {
     noteId : Nat,
     noteContent : Types.DailyProgressNoteUpdate,
   ) : { #ok : Types.DailyProgressNote; #err : Text } {
-    // Only intern and MO can submit for review
-    switch (callerRole) {
-      case (#intern_doctor or #medical_officer) {};
-      case (_) { return #err("Unauthorized: only Intern or MO can submit notes for review") };
+    // Intern, MO, and any registrar/consultant-type can submit for review
+    let canSubmit = switch (callerRole) {
+      case (#intern_doctor or #medical_officer or #assistant_registrar or #registrar) { true };
+      case (_) { isConsultantType(callerRole) or callerRole == #admin };
+    };
+    if (not canSubmit) {
+      return #err("Unauthorized: only Intern, MO, or above can submit notes for review");
     };
     let existing = switch (state.dailyProgressNotes.get(noteId)) {
       case (null) { return #err("Daily progress note not found") };
@@ -1804,7 +2316,7 @@ module {
     };
     let targetState : Types.DailyNoteState = switch (callerRole) {
       case (#intern_doctor) { #submittedToMO };
-      case (_) { #moReviewComplete }; // medical_officer
+      case (_) { #moReviewComplete };
     };
     let now = Time.now();
     let archiveId = state.dailyProgressNoteIdCounter;
@@ -1863,9 +2375,13 @@ module {
     consultantComments : Text,
     finalSOAP : Types.DailyProgressNoteUpdate,
   ) : { #ok : Types.DailyProgressNote; #err : Text } {
-    switch (callerRole) {
-      case (#consultant_doctor or #admin or #doctor) {};
-      case (_) { return #err("Unauthorized: only Consultant can finalize a ward round note") };
+    // Consultant-type roles, admin, MO, or Registrar can finalize
+    let canFinalize = switch (callerRole) {
+      case (#admin or #doctor or #medical_officer or #registrar) { true };
+      case (_) { isConsultantType(callerRole) };
+    };
+    if (not canFinalize) {
+      return #err("Unauthorized: only Consultant or MO can finalize a ward round note");
     };
     let existing = switch (state.dailyProgressNotes.get(noteId)) {
       case (null) { return #err("Daily progress note not found") };
@@ -1927,9 +2443,12 @@ module {
     reviewerEmail : Text,
     rejectionReason : Text,
   ) : { #ok : Types.DailyProgressNote; #err : Text } {
-    switch (callerRole) {
-      case (#consultant_doctor or #medical_officer or #admin or #doctor) {};
-      case (_) { return #err("Unauthorized: only MO or Consultant can reject notes") };
+    let canReject = switch (callerRole) {
+      case (#medical_officer or #admin or #doctor or #registrar or #assistant_registrar) { true };
+      case (_) { isConsultantType(callerRole) };
+    };
+    if (not canReject) {
+      return #err("Unauthorized: only MO or Consultant can reject notes");
     };
     let existing = switch (state.dailyProgressNotes.get(noteId)) {
       case (null) { return #err("Daily progress note not found") };
@@ -2069,9 +2588,12 @@ module {
     noteId : Nat,
     addendumText : Text,
   ) : { #ok : Types.DailyProgressNote; #err : Text } {
-    switch (callerRole) {
-      case (#consultant_doctor or #admin or #doctor) {};
-      case (_) { return #err("Unauthorized: only Consultant can add addenda to finalized notes") };
+    let canAddendum = switch (callerRole) {
+      case (#admin or #doctor) { true };
+      case (_) { isConsultantType(callerRole) };
+    };
+    if (not canAddendum) {
+      return #err("Unauthorized: only Consultant can add addenda to finalized notes");
     };
     let existing = switch (state.dailyProgressNotes.get(noteId)) {
       case (null) { return #err("Daily progress note not found") };
@@ -2080,7 +2602,6 @@ module {
     if (existing.patientId != patientId) {
       return #err("Note does not belong to this patient");
     };
-    // Only finalized notes accept addenda; non-finalized notes should use regular update
     if (existing.noteState != #finalized) {
       return #err("Addenda can only be appended to finalized notes");
     };
@@ -2131,6 +2652,7 @@ module {
       recordedBy;
       recordedByRole;
       createdAt = now;
+      updatedAt = now;
     };
     state.medicationAdministrations.add(id, record);
 
@@ -2189,6 +2711,38 @@ module {
     state.medicationAdministrations.values()
       .filter(func (r) { r.patientId == patientId })
       .toArray();
+  };
+
+  public func getAllMedicationAdministrationsSince(
+    state : EngineState,
+    sinceTimestamp : Int,
+  ) : [Types.MedicationAdministration] {
+    state.medicationAdministrations.values()
+      .filter(func (r) { r.updatedAt >= sinceTimestamp })
+      .toArray();
+  };
+
+  public func bulkUpsertMedicationAdministrations(
+    state : EngineState,
+    records : [Types.MedicationAdministration],
+  ) : [Types.MedicationAdministration] {
+    records.map<Types.MedicationAdministration, Types.MedicationAdministration>(func (rec) {
+      switch (state.medicationAdministrations.get(rec.id)) {
+        case (?existing) {
+          if (rec.updatedAt > existing.updatedAt) {
+            state.medicationAdministrations.add(rec.id, rec);
+            rec;
+          } else { existing };
+        };
+        case (null) {
+          if (rec.id >= state.medicationAdministrationIdCounter) {
+            state.medicationAdministrationIdCounter := rec.id + 1;
+          };
+          state.medicationAdministrations.add(rec.id, rec);
+          rec;
+        };
+      };
+    });
   };
 
   // ─── Prescription Logic ────────────────────────────────────────────────────

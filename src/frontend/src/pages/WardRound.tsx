@@ -49,6 +49,7 @@ import {
   type VitalAlertResult,
   checkVitalAlerts,
 } from "../lib/clinicalIntelligence";
+import { isConsultantType } from "../types";
 import type { ClinicalAlert, Patient, StaffRole } from "../types";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -1145,7 +1146,7 @@ function WardPatientCard({
     vitalAlerts.some((a) => a.severity === "critical") ||
     alerts.some((a) => a.severity === "Critical" && !a.isAcknowledged);
   const isConsultant =
-    role === "consultant_doctor" || role === "admin" || role === "doctor";
+    isConsultantType(role) || role === "admin" || role === "registrar";
 
   // Load latest vitals from storage
   const vitals = useMemo(() => {

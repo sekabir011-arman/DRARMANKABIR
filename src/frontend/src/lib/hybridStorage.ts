@@ -19,7 +19,13 @@ export type SyncQueueItemType =
   | "upsertVisit"
   | "upsertPrescription"
   | "upsertAppointment"
-  | "upsertQueueEntry";
+  | "upsertQueueEntry"
+  | "upsertObservation"
+  | "upsertBed"
+  | "upsertDailyProgressNote"
+  | "upsertHandover"
+  | "upsertMedicationAdministration"
+  | "upsertFrontPageContent";
 
 export interface SyncQueueItem {
   id: string;
@@ -342,6 +348,157 @@ function removeFromQueue(type: SyncQueueItemType, ids: Set<string>): void {
   saveSyncQueue(remaining);
 }
 
+// ─── Clinical entity sync helpers ───────────────────────────────────────────
+
+/** Key used for the merged clinical entity store (observations, beds, etc.) */
+const CLINICAL_STORE_KEY = "medicare_clinical_data";
+
+function loadClinicalEntityStore(): Record<string, unknown[]> {
+  try {
+    const raw = localStorage.getItem(CLINICAL_STORE_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw) as Record<string, unknown[]>;
+  } catch {
+    return {};
+  }
+}
+
+function saveClinicalEntityStore(store: Record<string, unknown[]>): void {
+  try {
+    localStorage.setItem(CLINICAL_STORE_KEY, JSON.stringify(store));
+  } catch {}
+}
+
+/**
+ * Read entities of a given type from the shared clinical store.
+ * Exported so saveClinicalEntitiesWithSync can be imported from useQueries.ts.
+ */
+export function readClinicalEntities<T>(entityType: string): T[] {
+  const store = loadClinicalEntityStore();
+  return (store[entityType] ?? []) as T[];
+}
+
+/**
+ * Write entities of a given type to the shared clinical store,
+ * then enqueue them for cloud sync based on the entity type.
+ * This replaces the local-only saveClinicalEntities() in useQueries.ts.
+ */
+export function saveClinicalEntitiesWithSync<
+  T extends { id: unknown; updatedAt?: unknown },
+>(
+  entityType: string,
+  items: T[],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  actor?: any | null,
+): void {
+  // 1. Always write locally first (offline-first)
+  const store = loadClinicalEntityStore();
+  store[entityType] = items as unknown[];
+  saveClinicalEntityStore(store);
+
+  // 2. Map entity type to sync queue type
+  const syncTypeMap: Record<string, SyncQueueItemType | null> = {
+    observations: "upsertObservation",
+    beds: "upsertBed",
+    dailyProgressNotes: "upsertDailyProgressNote",
+    handovers: "upsertHandover",
+    medicationAdministrations: "upsertMedicationAdministration",
+    // TODO: diagnosisTemplates, auditTrail, orders, encounters — computed / high-frequency, local-only for now
+    diagnosisTemplates: null,
+    auditTrail: null,
+    orders: null,
+    encounters: null,
+    alerts: null,
+    clinicalNotes: null,
+  };
+
+  const syncType = syncTypeMap[entityType];
+  if (!syncType) return; // local-only entity type
+
+  // 3. If online and actor available, attempt direct canister write
+  if (actor && isNetworkOnline()) {
+    const bulkMethodMap: Record<string, string> = {
+      upsertObservation: "bulkUpsertObservations",
+      upsertBed: "bulkUpsertBeds",
+      upsertDailyProgressNote: "bulkUpsertDailyProgressNotes",
+      upsertHandover: "bulkUpsertHandovers",
+      upsertMedicationAdministration: "bulkUpsertMedicationAdministrations",
+    };
+    const method = bulkMethodMap[syncType];
+    if (method && typeof actor[method] === "function") {
+      (actor[method](items) as Promise<unknown>).catch((err: unknown) => {
+        console.warn(`[sync] Direct ${method} failed, queuing:`, err);
+        // Enqueue each item individually on failure
+        for (const item of items) {
+          enqueueSync({
+            timestamp: Date.now(),
+            type: syncType,
+            entityId: String((item as Record<string, unknown>).id ?? ""),
+            data: item,
+          });
+        }
+      });
+      return;
+    }
+  }
+
+  // 4. Offline or no actor — enqueue everything
+  for (const item of items) {
+    enqueueSync({
+      timestamp: Date.now(),
+      type: syncType,
+      entityId: String((item as Record<string, unknown>).id ?? ""),
+      data: item,
+    });
+  }
+}
+
+/**
+ * Save front page content to localStorage and sync to canister.
+ * Called from useSiteConfig and useDoctorContent after every admin edit.
+ */
+export function saveFrontPageContentWithSync(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  actor?: any | null,
+): void {
+  // Collect all front-page localStorage keys into a single blob
+  const allContent: Record<string, unknown> = {};
+  const fpKeys = ["siteConfig", "doctorContentOverrides"];
+  for (const k of fpKeys) {
+    try {
+      const raw = localStorage.getItem(k);
+      if (raw) allContent[k] = JSON.parse(raw);
+    } catch {}
+  }
+
+  const serialized = JSON.stringify(allContent);
+
+  if (
+    actor &&
+    isNetworkOnline() &&
+    typeof actor.saveFrontPageContent === "function"
+  ) {
+    (actor.saveFrontPageContent(serialized) as Promise<unknown>).catch(
+      (err: unknown) => {
+        console.warn("[sync] saveFrontPageContent failed, queuing:", err);
+        enqueueSync({
+          timestamp: Date.now(),
+          type: "upsertFrontPageContent",
+          entityId: "frontPageContent",
+          data: serialized,
+        });
+      },
+    );
+  } else {
+    enqueueSync({
+      timestamp: Date.now(),
+      type: "upsertFrontPageContent",
+      entityId: "frontPageContent",
+      data: serialized,
+    });
+  }
+}
+
 // ─── Bootstrap: full hydration from canister on first load ───────────────────
 
 /**
@@ -445,9 +602,164 @@ export async function bootstrapFromCanister(
       }
     }
 
+    // ── Clinical entities: observations, beds, daily notes, handovers, MAR ───
+    const bootstrapClinical = async () => {
+      const store = loadClinicalEntityStore();
+
+      try {
+        if (typeof actor.getAllBeds === "function") {
+          const remoteBeds = (await actor.getAllBeds()) as unknown[];
+          if (Array.isArray(remoteBeds) && remoteBeds.length > 0) {
+            const local = (store.beds ?? []) as Array<{
+              id: unknown;
+              updatedAt?: unknown;
+            }>;
+            store.beds = mergeByIdLastWriterWins(
+              local,
+              remoteBeds as typeof local,
+              "bed",
+            );
+            recordsLoaded += remoteBeds.length;
+          }
+        }
+      } catch {
+        /* non-fatal */
+      }
+
+      try {
+        if (typeof actor.getAllObservationsSince === "function") {
+          const remoteObs = (await actor.getAllObservationsSince(
+            0n,
+          )) as unknown[];
+          if (Array.isArray(remoteObs) && remoteObs.length > 0) {
+            const local = (store.observations ?? []) as Array<{
+              id: unknown;
+              updatedAt?: unknown;
+            }>;
+            store.observations = mergeByIdLastWriterWins(
+              local,
+              remoteObs as typeof local,
+              "observation",
+            );
+            recordsLoaded += remoteObs.length;
+          }
+        }
+      } catch {
+        /* non-fatal */
+      }
+
+      try {
+        if (typeof actor.getDailyProgressNotesSince === "function") {
+          const remoteNotes = (await actor.getDailyProgressNotesSince(
+            0n,
+          )) as unknown[];
+          if (Array.isArray(remoteNotes) && remoteNotes.length > 0) {
+            const local = (store.dailyProgressNotes ?? []) as Array<{
+              id: unknown;
+              updatedAt?: unknown;
+            }>;
+            store.dailyProgressNotes = mergeByIdLastWriterWins(
+              local,
+              remoteNotes as typeof local,
+              "dailyProgressNote",
+            );
+            recordsLoaded += remoteNotes.length;
+          }
+        }
+      } catch {
+        /* non-fatal */
+      }
+
+      try {
+        if (typeof actor.getAllHandoversSince === "function") {
+          const remoteHandovers = (await actor.getAllHandoversSince(
+            0n,
+          )) as unknown[];
+          if (Array.isArray(remoteHandovers) && remoteHandovers.length > 0) {
+            const local = (store.handovers ?? []) as Array<{
+              id: unknown;
+              updatedAt?: unknown;
+            }>;
+            store.handovers = mergeByIdLastWriterWins(
+              local,
+              remoteHandovers as typeof local,
+              "handover",
+            );
+            recordsLoaded += remoteHandovers.length;
+          }
+        }
+      } catch {
+        /* non-fatal */
+      }
+
+      try {
+        if (typeof actor.getAllMedicationAdministrationsSince === "function") {
+          const remoteMAR = (await actor.getAllMedicationAdministrationsSince(
+            0n,
+          )) as unknown[];
+          if (Array.isArray(remoteMAR) && remoteMAR.length > 0) {
+            const local = (store.medicationAdministrations ?? []) as Array<{
+              id: unknown;
+              updatedAt?: unknown;
+            }>;
+            store.medicationAdministrations = mergeByIdLastWriterWins(
+              local,
+              remoteMAR as typeof local,
+              "mar",
+            );
+            recordsLoaded += remoteMAR.length;
+          }
+        }
+      } catch {
+        /* non-fatal */
+      }
+
+      saveClinicalEntityStore(store);
+    };
+    await bootstrapClinical();
+
+    // ── Front page content ───────────────────────────────────────────────────
+    try {
+      if (typeof actor.getFrontPageContent === "function") {
+        const maybeContent = await actor.getFrontPageContent();
+        // Canister returns ?Text → [] or [text] in Motoko opt
+        const raw: string | null =
+          Array.isArray(maybeContent) && maybeContent.length > 0
+            ? (maybeContent[0] as string)
+            : typeof maybeContent === "string"
+              ? maybeContent
+              : null;
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw) as Record<string, unknown>;
+            if (parsed.siteConfig) {
+              localStorage.setItem(
+                "siteConfig",
+                JSON.stringify(parsed.siteConfig),
+              );
+            }
+            if (parsed.doctorContentOverrides) {
+              localStorage.setItem(
+                "doctorContentOverrides",
+                JSON.stringify(parsed.doctorContentOverrides),
+              );
+            }
+          } catch {
+            /* malformed content — skip */
+          }
+        }
+      }
+    } catch {
+      /* non-fatal */
+    }
+
     // ── Update timestamp ────────────────────────────────────────────────────
     try {
-      const ts = (await actor.getLastSyncTimestamp()) as bigint;
+      const ts = (
+        (await actor.getServerTimestamp) !== undefined
+          ? actor.getServerTimestamp()
+          : actor.getLastSyncTimestamp()
+      ) as bigint;
       setLastSyncTs(ts);
     } catch {
       setLastSyncTs(BigInt(Date.now()) * 1_000_000n);
@@ -584,14 +896,144 @@ export async function pollAndUpdateFromCanister(
       updated += remoteQueue.length;
     }
 
-    // ── Update timestamp only on full success ────────────────────────────────
+    // ── Clinical entities: incremental pull ─────────────────────────────────
+    // Each fetch is independent — error count tracked, timestamp only advanced
+    // if ALL fetches succeed (prevents re-pulling on next cycle if partial).
+    let clinicalErrorCount = 0;
+    const store = loadClinicalEntityStore();
+
     try {
-      const ts = (await actor.getLastSyncTimestamp()) as bigint;
-      setLastSyncTs(ts);
+      if (typeof actor.getAllObservationsSince === "function") {
+        const remoteObs = (await actor.getAllObservationsSince(
+          lastTs,
+        )) as unknown[];
+        if (Array.isArray(remoteObs) && remoteObs.length > 0) {
+          const local = (store.observations ?? []) as Array<{
+            id: unknown;
+            updatedAt?: unknown;
+          }>;
+          store.observations = mergeByIdLastWriterWins(
+            local,
+            remoteObs as typeof local,
+            "observation",
+          );
+          updated += remoteObs.length;
+        }
+      }
     } catch {
-      // Use current time as fallback so next poll doesn't re-pull everything
-      setLastSyncTs(BigInt(Date.now()) * 1_000_000n);
+      clinicalErrorCount++;
     }
+
+    try {
+      if (typeof actor.getAllBedsSince === "function") {
+        const remoteBeds = (await actor.getAllBedsSince(lastTs)) as unknown[];
+        if (Array.isArray(remoteBeds) && remoteBeds.length > 0) {
+          const local = (store.beds ?? []) as Array<{
+            id: unknown;
+            updatedAt?: unknown;
+          }>;
+          store.beds = mergeByIdLastWriterWins(
+            local,
+            remoteBeds as typeof local,
+            "bed",
+          );
+          updated += remoteBeds.length;
+        }
+      }
+    } catch {
+      clinicalErrorCount++;
+    }
+
+    try {
+      if (typeof actor.getDailyProgressNotesSince === "function") {
+        const remoteNotes = (await actor.getDailyProgressNotesSince(
+          lastTs,
+        )) as unknown[];
+        if (Array.isArray(remoteNotes) && remoteNotes.length > 0) {
+          const local = (store.dailyProgressNotes ?? []) as Array<{
+            id: unknown;
+            updatedAt?: unknown;
+          }>;
+          store.dailyProgressNotes = mergeByIdLastWriterWins(
+            local,
+            remoteNotes as typeof local,
+            "dailyProgressNote",
+          );
+          updated += remoteNotes.length;
+        }
+      }
+    } catch {
+      clinicalErrorCount++;
+    }
+
+    try {
+      if (typeof actor.getAllHandoversSince === "function") {
+        const remoteHandovers = (await actor.getAllHandoversSince(
+          lastTs,
+        )) as unknown[];
+        if (Array.isArray(remoteHandovers) && remoteHandovers.length > 0) {
+          const local = (store.handovers ?? []) as Array<{
+            id: unknown;
+            updatedAt?: unknown;
+          }>;
+          store.handovers = mergeByIdLastWriterWins(
+            local,
+            remoteHandovers as typeof local,
+            "handover",
+          );
+          updated += remoteHandovers.length;
+        }
+      }
+    } catch {
+      clinicalErrorCount++;
+    }
+
+    try {
+      if (typeof actor.getAllMedicationAdministrationsSince === "function") {
+        const remoteMAR = (await actor.getAllMedicationAdministrationsSince(
+          lastTs,
+        )) as unknown[];
+        if (Array.isArray(remoteMAR) && remoteMAR.length > 0) {
+          const local = (store.medicationAdministrations ?? []) as Array<{
+            id: unknown;
+            updatedAt?: unknown;
+          }>;
+          store.medicationAdministrations = mergeByIdLastWriterWins(
+            local,
+            remoteMAR as typeof local,
+            "mar",
+          );
+          updated += remoteMAR.length;
+        }
+      }
+    } catch {
+      clinicalErrorCount++;
+    }
+
+    if (Object.keys(store).length > 0) saveClinicalEntityStore(store);
+
+    // ── Update timestamp only if all fetches succeeded ───────────────────────
+    // clinicalErrorCount > 0 means we keep the old timestamp so the next poll retries
+    // Count fetch errors from the main parallel block (null means .catch returned null)
+    const existingBaseErrorCount =
+      (remotePatients === null ? 1 : 0) +
+      (remoteVisits === null ? 1 : 0) +
+      (remotePrescriptions === null ? 1 : 0);
+
+    if (clinicalErrorCount === 0 && existingBaseErrorCount === 0) {
+      try {
+        const ts = (
+          typeof actor.getServerTimestamp === "function"
+            ? await actor.getServerTimestamp()
+            : await actor.getLastSyncTimestamp()
+        ) as bigint;
+        setLastSyncTs(ts);
+      } catch {
+        // Use current time as fallback so next poll doesn't re-pull everything
+        setLastSyncTs(BigInt(Date.now()) * 1_000_000n);
+      }
+    }
+    // else: keep old timestamp — next poll will retry from the same point
 
     return { success: true, updated };
   } catch (err) {
@@ -774,6 +1216,135 @@ export async function flushSyncQueue(
     }
   }
 
+  // ── Bulk upsert observations ──────────────────────────────────────────────
+  const observations = queue.filter((q) => q.type === "upsertObservation");
+  if (observations.length > 0) {
+    try {
+      const payloads = observations.map((q) => q.data);
+      if (typeof actor.bulkUpsertObservations === "function") {
+        await actor.bulkUpsertObservations(payloads);
+      }
+      for (const q of observations) {
+        const id =
+          q.entityId ?? String((q.data as Record<string, unknown>)?.id ?? "");
+        successfulIds.add(`upsertObservation:${id}`);
+      }
+      totalSuccess += observations.length;
+    } catch (err) {
+      console.warn("[sync] bulkUpsertObservations failed, will retry:", err);
+      totalFailed += observations.length;
+    }
+  }
+
+  // ── Bulk upsert beds ──────────────────────────────────────────────────────
+  const beds = queue.filter((q) => q.type === "upsertBed");
+  if (beds.length > 0) {
+    try {
+      const payloads = beds.map((q) => q.data);
+      if (typeof actor.bulkUpsertBeds === "function") {
+        await actor.bulkUpsertBeds(payloads);
+      }
+      for (const q of beds) {
+        const id =
+          q.entityId ?? String((q.data as Record<string, unknown>)?.id ?? "");
+        successfulIds.add(`upsertBed:${id}`);
+      }
+      totalSuccess += beds.length;
+    } catch (err) {
+      console.warn("[sync] bulkUpsertBeds failed, will retry:", err);
+      totalFailed += beds.length;
+    }
+  }
+
+  // ── Bulk upsert daily progress notes ─────────────────────────────────────
+  const dailyNotes = queue.filter((q) => q.type === "upsertDailyProgressNote");
+  if (dailyNotes.length > 0) {
+    try {
+      const payloads = dailyNotes.map((q) => q.data);
+      if (typeof actor.bulkUpsertDailyProgressNotes === "function") {
+        await actor.bulkUpsertDailyProgressNotes(payloads);
+      }
+      for (const q of dailyNotes) {
+        const id =
+          q.entityId ?? String((q.data as Record<string, unknown>)?.id ?? "");
+        successfulIds.add(`upsertDailyProgressNote:${id}`);
+      }
+      totalSuccess += dailyNotes.length;
+    } catch (err) {
+      console.warn(
+        "[sync] bulkUpsertDailyProgressNotes failed, will retry:",
+        err,
+      );
+      totalFailed += dailyNotes.length;
+    }
+  }
+
+  // ── Bulk upsert handovers ─────────────────────────────────────────────────
+  const handovers = queue.filter((q) => q.type === "upsertHandover");
+  if (handovers.length > 0) {
+    try {
+      const payloads = handovers.map((q) => q.data);
+      if (typeof actor.bulkUpsertHandovers === "function") {
+        await actor.bulkUpsertHandovers(payloads);
+      }
+      for (const q of handovers) {
+        const id =
+          q.entityId ?? String((q.data as Record<string, unknown>)?.id ?? "");
+        successfulIds.add(`upsertHandover:${id}`);
+      }
+      totalSuccess += handovers.length;
+    } catch (err) {
+      console.warn("[sync] bulkUpsertHandovers failed, will retry:", err);
+      totalFailed += handovers.length;
+    }
+  }
+
+  // ── Bulk upsert medication administrations (MAR) ──────────────────────────
+  const marRecords = queue.filter(
+    (q) => q.type === "upsertMedicationAdministration",
+  );
+  if (marRecords.length > 0) {
+    try {
+      const payloads = marRecords.map((q) => q.data);
+      if (typeof actor.bulkUpsertMedicationAdministrations === "function") {
+        await actor.bulkUpsertMedicationAdministrations(payloads);
+      }
+      for (const q of marRecords) {
+        const id =
+          q.entityId ?? String((q.data as Record<string, unknown>)?.id ?? "");
+        successfulIds.add(`upsertMedicationAdministration:${id}`);
+      }
+      totalSuccess += marRecords.length;
+    } catch (err) {
+      console.warn(
+        "[sync] bulkUpsertMedicationAdministrations failed, will retry:",
+        err,
+      );
+      totalFailed += marRecords.length;
+    }
+  }
+
+  // ── Front page content ────────────────────────────────────────────────────
+  const fpItems = queue.filter((q) => q.type === "upsertFrontPageContent");
+  if (fpItems.length > 0) {
+    // Only send the latest item (they're deduplicated by entityId = "frontPageContent")
+    const latest = fpItems[fpItems.length - 1];
+    try {
+      if (typeof actor.saveFrontPageContent === "function") {
+        await actor.saveFrontPageContent(latest.data as string);
+      }
+      for (const q of fpItems) {
+        successfulIds.add(
+          `upsertFrontPageContent:${q.entityId ?? "frontPageContent"}`,
+        );
+      }
+      totalSuccess += fpItems.length;
+    } catch (err) {
+      console.warn("[sync] saveFrontPageContent failed, will retry:", err);
+      totalFailed += fpItems.length;
+    }
+  }
+
   // Remove successfully synced items from the queue
   if (successfulIds.size > 0) {
     const remaining = queue.filter((q) => {
@@ -795,6 +1366,10 @@ export async function flushSyncQueue(
     saveSyncQueue(remaining);
     if (totalSuccess > 0) {
       localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());
+      // Fire a custom event so the SyncStatusBadge updates immediately
+      window.dispatchEvent(
+        new CustomEvent("syncComplete", { detail: { flushed: totalSuccess } }),
+      );
     }
   }
 

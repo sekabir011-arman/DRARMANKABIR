@@ -1,5 +1,6 @@
 import type { Principal } from "@icp-sdk/core/principal";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { saveClinicalEntitiesWithSync } from "../lib/hybridStorage";
 import type {
   AdmissionHistory,
   AuditEntry,
@@ -1010,21 +1011,17 @@ function getClinicalStore(): Record<string, unknown[]> {
   }
 }
 
-function saveClinicalStore(store: Record<string, unknown[]>): void {
-  try {
-    localStorage.setItem(CLINICAL_STORAGE_KEY, JSON.stringify(store));
-  } catch {}
-}
-
 function getClinicalEntities<T>(entityType: string): T[] {
   const store = getClinicalStore();
   return (store[entityType] ?? []) as T[];
 }
 
-function saveClinicalEntities<T>(entityType: string, items: T[]): void {
-  const store = getClinicalStore();
-  store[entityType] = items as unknown[];
-  saveClinicalStore(store);
+function saveClinicalEntities<T extends { id: unknown; updatedAt?: unknown }>(
+  entityType: string,
+  items: T[],
+): void {
+  // Sync-aware write: writes locally AND enqueues/pushes to canister for all syncable entity types
+  saveClinicalEntitiesWithSync(entityType, items, _canisterActor);
 }
 
 function nextClinicalId<T extends { id: bigint }>(items: T[]): bigint {
@@ -1701,6 +1698,22 @@ export function savePrescriptionRecords(
       prescriptionRecordsKey(patientId),
       JSON.stringify(records),
     );
+    // Enqueue finalized records for cloud sync so other devices see them
+    const syncable = records.filter(
+      (r) => r.status === "active" || r.status === "approved",
+    );
+    if (syncable.length > 0) {
+      import("../lib/hybridStorage").then(({ enqueueSync }) => {
+        for (const rec of syncable) {
+          enqueueSync({
+            timestamp: Date.now(),
+            type: "upsertPrescription",
+            entityId: rec.id,
+            data: rec,
+          });
+        }
+      });
+    }
   } catch {}
 }
 

@@ -13,7 +13,34 @@ export type StaffRole =
   | "nurse"
   | "staff"
   | "doctor"
-  | "patient";
+  | "patient"
+  | "assistant_registrar"
+  | "registrar"
+  | "assistant_professor"
+  | "associate_professor"
+  | "professor";
+
+/** Returns true for all consultant-type roles that can finalize, approve, admit */
+export function isConsultantType(role: StaffRole): boolean {
+  return (
+    role === "consultant_doctor" ||
+    role === "doctor" ||
+    role === "assistant_professor" ||
+    role === "associate_professor" ||
+    role === "professor"
+  );
+}
+
+/** Returns true for roles that can verify vitals (MO level and above) */
+export function canVerifyVitals(role: StaffRole): boolean {
+  return (
+    role === "medical_officer" ||
+    role === "assistant_registrar" ||
+    role === "registrar" ||
+    isConsultantType(role) ||
+    role === "admin"
+  );
+}
 
 export const STAFF_ROLE_LABELS: Record<
   Exclude<StaffRole, "admin" | "patient">,
@@ -25,7 +52,27 @@ export const STAFF_ROLE_LABELS: Record<
   nurse: "Nurse",
   staff: "Staff / Reception",
   doctor: "Consultant Doctor",
+  assistant_registrar: "Assistant Registrar",
+  registrar: "Registrar",
+  assistant_professor: "Assistant Professor",
+  associate_professor: "Associate Professor",
+  professor: "Professor",
 };
+
+/** Ordered hierarchy for display (lowest → highest) */
+export const ROLE_HIERARCHY_ORDER: Exclude<StaffRole, "admin" | "patient">[] = [
+  "nurse",
+  "intern_doctor",
+  "medical_officer",
+  "assistant_registrar",
+  "registrar",
+  "consultant_doctor",
+  "doctor",
+  "assistant_professor",
+  "associate_professor",
+  "professor",
+  "staff",
+];
 
 export const STAFF_ROLE_COLORS: Record<
   Exclude<StaffRole, "admin" | "patient">,
@@ -37,6 +84,11 @@ export const STAFF_ROLE_COLORS: Record<
   nurse: "bg-rose-600 text-white border-rose-600",
   staff: "bg-amber-600 text-white border-amber-600",
   doctor: "bg-emerald-600 text-white border-emerald-600",
+  assistant_registrar: "bg-emerald-500 text-white border-emerald-500",
+  registrar: "bg-green-700 text-white border-green-700",
+  assistant_professor: "bg-sky-600 text-white border-sky-600",
+  associate_professor: "bg-indigo-600 text-white border-indigo-600",
+  professor: "bg-purple-700 text-white border-purple-700",
 };
 
 /** Active sidebar background tint per role */
@@ -51,6 +103,11 @@ export const STAFF_ROLE_ACTIVE_BG: Record<
   nurse: "bg-rose-50",
   staff: "bg-amber-50",
   doctor: "bg-emerald-50",
+  assistant_registrar: "bg-emerald-50",
+  registrar: "bg-green-50",
+  assistant_professor: "bg-sky-50",
+  associate_professor: "bg-indigo-50",
+  professor: "bg-purple-50",
 };
 
 /** Active sidebar border-color per role (as inline CSS hex for dynamic border) */
@@ -65,6 +122,11 @@ export const STAFF_ROLE_BORDER_COLOR: Record<
   nurse: "#e11d48",
   staff: "#d97706",
   doctor: "#059669",
+  assistant_registrar: "#10b981",
+  registrar: "#15803d",
+  assistant_professor: "#0284c7",
+  associate_professor: "#4338ca",
+  professor: "#7e22ce",
 };
 
 /** Active text color class per role */
@@ -79,7 +141,20 @@ export const STAFF_ROLE_TEXT_COLOR: Record<
   nurse: "text-rose-700",
   staff: "text-amber-700",
   doctor: "text-emerald-700",
+  assistant_registrar: "text-emerald-700",
+  registrar: "text-green-700",
+  assistant_professor: "text-sky-700",
+  associate_professor: "text-indigo-700",
+  professor: "text-purple-700",
 };
+
+/** VitalVerificationStatus for the vital review workflow */
+export type VitalVerificationStatus =
+  | "drafted"
+  | "pendingMOReview"
+  | "verifiedByMO"
+  | "finalized"
+  | "rejected";
 
 export type Gender = "male" | "female" | "other";
 

@@ -68,13 +68,18 @@ import OutstandingBalances from "./pages/OutstandingBalances";
 import PatientDashboard from "./pages/PatientDashboard";
 import Patients from "./pages/Patients";
 import ProcedurePayment from "./pages/ProcedurePayment";
+import RegistrarDashboard from "./pages/RegistrarDashboard";
 import SerialDisplay from "./pages/SerialDisplay";
 import Settings from "./pages/Settings";
 import Staff from "./pages/Staff";
 import TotalIncome from "./pages/TotalIncome";
 import VisitPage from "./pages/VisitPage";
 import WardRound from "./pages/WardRound";
-import { STAFF_ROLE_LABELS } from "./types";
+import {
+  ROLE_HIERARCHY_ORDER,
+  STAFF_ROLE_COLORS,
+  STAFF_ROLE_LABELS,
+} from "./types";
 import type { StaffRole } from "./types";
 
 // ── Route tree ────────────────────────────────────────────────────────────────
@@ -185,6 +190,11 @@ const otherPaymentRoute = createRoute({
   path: "/OtherPayment",
   component: OtherPayment,
 });
+const registrarDashboardRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/RegistrarDashboard",
+  component: RegistrarDashboard,
+});
 const outstandingBalancesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/OutstandingBalances",
@@ -210,6 +220,7 @@ const routeTree = rootRoute.addChildren([
   totalIncomeRoute,
   otherPaymentRoute,
   outstandingBalancesRoute,
+  registrarDashboardRoute,
 ]);
 const router = createRouter({ routeTree });
 
@@ -429,9 +440,14 @@ function StaffAuthContent() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {(Object.keys(STAFF_ROLE_LABELS) as StaffRole[]).map((r) => (
+                {ROLE_HIERARCHY_ORDER.map((r) => (
                   <SelectItem key={r} value={r}>
-                    {STAFF_ROLE_LABELS[r]}
+                    <span className="flex items-center gap-2">
+                      <span
+                        className={`w-2 h-2 rounded-full ${(STAFF_ROLE_COLORS[r] ?? "").split(" ")[0]}`}
+                      />
+                      {STAFF_ROLE_LABELS[r]}
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -839,16 +855,29 @@ function PendingApprovalsPanel() {
   };
 
   const doReassign = (id: string) => {
-    const role = reassignMap[id];
-    if (!role) return;
+    const newRole = reassignMap[id];
+    if (!newRole) return;
     const reg = loadRegistry();
     const idx = reg.findIndex((d) => d.id === id);
     if (idx >= 0) {
-      reg[idx] = { ...reg[idx], role };
+      const oldRole = reg[idx].role as StaffRole;
+      const staffName = reg[idx].name;
+      reg[idx] = { ...reg[idx], role: newRole };
       saveRegistry(reg);
+      // Append audit log entry
+      appendAuditLog({
+        timestamp: new Date().toISOString(),
+        userRole: "admin",
+        userName: "Admin",
+        action: `Role changed from ${STAFF_ROLE_LABELS[oldRole] ?? oldRole} → ${STAFF_ROLE_LABELS[newRole]}`,
+        target: staffName,
+      });
       refresh();
       import("sonner").then(({ toast }) =>
-        toast.success(`Role updated to ${STAFF_ROLE_LABELS[role]}`),
+        toast.success(
+          `${staffName}: ${STAFF_ROLE_LABELS[oldRole] ?? oldRole} → ${STAFF_ROLE_LABELS[newRole]}`,
+          { description: "Role change has been logged in the audit trail." },
+        ),
       );
     }
   };
@@ -914,13 +943,16 @@ function PendingApprovalsPanel() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {(Object.keys(STAFF_ROLE_LABELS) as StaffRole[]).map(
-                            (r) => (
-                              <SelectItem key={r} value={r} className="text-xs">
+                          {ROLE_HIERARCHY_ORDER.map((r) => (
+                            <SelectItem key={r} value={r} className="text-xs">
+                              <span className="flex items-center gap-1.5">
+                                <span
+                                  className={`w-2 h-2 rounded-full ${(STAFF_ROLE_COLORS[r] ?? "").split(" ")[0]}`}
+                                />
                                 {STAFF_ROLE_LABELS[r]}
-                              </SelectItem>
-                            ),
-                          )}
+                              </span>
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -1053,13 +1085,16 @@ function PendingApprovalsPanel() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {(Object.keys(STAFF_ROLE_LABELS) as StaffRole[]).map(
-                      (r) => (
-                        <SelectItem key={r} value={r} className="text-xs">
+                    {ROLE_HIERARCHY_ORDER.map((r) => (
+                      <SelectItem key={r} value={r} className="text-xs">
+                        <span className="flex items-center gap-1.5">
+                          <span
+                            className={`w-2 h-2 rounded-full ${(STAFF_ROLE_COLORS[r] ?? "").split(" ")[0]}`}
+                          />
                           {STAFF_ROLE_LABELS[r]}
-                        </SelectItem>
-                      ),
-                    )}
+                        </span>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <Button
@@ -1242,6 +1277,9 @@ function AppInner() {
     queryClient.invalidateQueries({ queryKey: ["orders"] });
     queryClient.invalidateQueries({ queryKey: ["clinicalNotes"] });
     queryClient.invalidateQueries({ queryKey: ["alerts"] });
+    queryClient.invalidateQueries({ queryKey: ["beds"] });
+    queryClient.invalidateQueries({ queryKey: ["prescriptionRecords"] });
+    queryClient.invalidateQueries({ queryKey: ["admissionHistory"] });
   }, [queryClient]);
 
   // ── Migration toast ──────────────────────────────────────────────────────────

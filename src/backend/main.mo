@@ -10,6 +10,7 @@ import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 import ClinicalDataEngineLib "lib/clinical-data-engine";
 import ClinicalDataEngineMixin "mixins/clinical-data-engine-api";
+import Migration "migration";
 
 
 
@@ -20,6 +21,10 @@ import ClinicalDataEngineMixin "mixins/clinical-data-engine-api";
 
 
 
+
+
+
+(with migration = Migration.run)
 actor {
   ///////////////////////////////
   // Custom Types and Modules  //
@@ -134,6 +139,12 @@ actor {
   ////////////////////////////
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
+
+  ////////////////////////////
+  // Front Page Content     //
+  ////////////////////////////
+
+  var frontPageContent : ?Text = null;
 
   public type CurrentUser = {
     principal : Principal;
@@ -564,6 +575,17 @@ actor {
       Runtime.trap("Unauthorized: Only users can sync prescriptions");
     };
     prescriptions.values().toArray().filter(func(p) { p.updatedAt >= sinceTimestamp });
+  };
+
+  public shared ({ caller }) func saveFrontPageContent(content : Text) : async () {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only admin can save front page content");
+    };
+    frontPageContent := ?content;
+  };
+
+  public query func getFrontPageContent() : async ?Text {
+    frontPageContent;
   };
 
   // getSerialQueue — convenience alias over getQueueByDateAndDoctor; provided by mixin.

@@ -7,62 +7,158 @@ export interface None {
     __kind__: "None";
 }
 export type Option<T> = Some<T> | None;
-export interface Medication {
-    duration: string;
-    dose: string;
-    name: string;
-    instructions: string;
-    frequency: string;
-}
-export interface DailyProgressNote {
+export interface AuditEntry {
     id: bigint;
-    moAssessment: string;
+    changedByName: string;
+    changedByRole: StaffRole;
+    changedAt: bigint;
+    changedBy: Principal;
+    entityId: bigint;
+    afterValue: string;
+    beforeValue?: string;
+    entityType: string;
+    fieldName: string;
+    ipAddress?: string;
+    reason?: string;
+}
+export interface Encounter {
+    id: bigint;
+    status: EncounterStatus;
+    encounterType: EncounterType;
+    endDate?: bigint;
+    patientId: bigint;
+    previousVersions: Array<VersionedRecord>;
+    providerName: string;
+    providerId: Principal;
+    versionInfo: VersionedRecord;
+    encounterId: string;
+    locationNotes?: string;
+    startDate: bigint;
+}
+export interface AdmissionRecord {
+    id: bigint;
+    bed: string;
+    status: AdmissionStatus;
+    consultantEmail: string;
+    admittedAt: bigint;
+    admittedBy: Principal;
+    patientId: bigint;
+    ward: string;
+    updatedAt: bigint;
+    dischargedAt?: bigint;
+    admittedByRole: StaffRole;
+    department: string;
+}
+export interface MedicationAdministration {
+    id: bigint;
+    status: MedicationAdministrationStatus;
+    medicationName: string;
+    patientId: bigint;
+    scheduledTime: bigint;
+    dose: string;
+    createdAt: bigint;
+    recordedBy: string;
+    updatedAt: bigint;
+    recordedByRole: string;
+    administeredAt?: bigint;
+    missedReason?: string;
+}
+export interface ClinicalNote {
+    id: bigint;
     isDeleted: boolean;
-    drainMonitoring?: string;
-    internObjective: string;
+    content: string;
     patientId: bigint;
     authorId: Principal;
-    consultantComments: string;
-    submittedByRole?: StaffRole;
-    consultantOverrides: string;
     createdAt: bigint;
     authorName: string;
-    reviewedByMO?: string;
     authorRole: StaffRole;
-    noteDate: string;
+    noteType: NoteType;
+    isDraft: boolean;
+    previousVersionIds: Array<bigint>;
+    versionInfo: VersionedRecord;
+    encounterId?: bigint;
+    noteSubtype?: string;
+}
+export interface Observation {
+    id: bigint;
+    status: ObservationStatus;
+    enteredByRole?: StaffRole;
+    isDeleted: boolean;
+    numericValue?: number;
+    vitalVerificationStatus?: VitalVerificationStatus;
+    value: string;
+    observationDate: bigint;
+    patientId: bigint;
+    observationType: ObservationType;
+    code: string;
+    unit: string;
     rejectionReason?: string;
+    recordedBy: Principal;
+    normalRange?: string;
+    recordedByName: string;
+    recordedByRole: StaffRole;
+    interpretation?: string;
+    versionInfo: VersionedRecord;
+    encounterId?: bigint;
+    verifiedAt?: bigint;
+    verifiedBy?: Principal;
+    enteredBy?: Principal;
+}
+export interface VitalsSummary {
+    bp?: string;
+    rr?: string;
+    rbs?: string;
+    spo2?: string;
+    temp?: string;
+    recordedAt: bigint;
+    pulse?: string;
+}
+export interface BedRecord {
+    id: bigint;
+    status: BedStatus;
+    patientId?: bigint;
+    admissionDate?: bigint;
+    transferHistory: Array<BedTransferEntry>;
+    ward: string;
+    bedNumber: string;
+    updatedAt: bigint;
+    patientName?: string;
+    dischargeDate?: bigint;
+}
+export interface BedTransferEntry {
+    toBed: string;
+    date: bigint;
+    fromBed: string;
+    reason: string;
+}
+export interface WardRoundPatientStatus {
+    admissionDay: bigint;
+    patientId: string;
+    todayNoteState?: string;
+    assignedConsultant?: string;
+    ward: string;
+    bedNumber: string;
+    activeAlerts: Array<string>;
+    patientName: string;
+    lastVitals?: VitalsSummary;
+}
+export interface DailyProgressNoteUpdate {
+    moAssessment: string;
+    drainMonitoring?: string;
+    internObjective: string;
+    consultantComments: string;
+    consultantOverrides: string;
     objectiveVitals?: string;
     assessmentText: string;
     subjectiveComplaints: Array<string>;
-    isDraft: boolean;
-    updatedAt: bigint;
     activeDiagnoses: Array<string>;
     internSubjective: string;
-    progressType: DailyProgressType;
     activeComplaints: Array<string>;
     moPlan: string;
-    noteState: DailyNoteState;
-    previousVersionIds: Array<bigint>;
-    reviewedByConsultant?: string;
-    versionChain: Array<string>;
-    versionInfo: VersionedRecord;
-    submitTimestamp?: bigint;
-    encounterId?: bigint;
     planText: string;
     systemReview?: string;
     intakeOutput?: string;
     investigations: Array<string>;
-}
-export type Time = bigint;
-export interface Medication__1 {
-    duration: string;
-    dose: string;
-    name: string;
-    prnCondition?: string;
-    instructions?: string;
-    frequency: string;
-    isPRN: boolean;
-    route: string;
 }
 export interface ClinicalAlert {
     id: bigint;
@@ -97,19 +193,40 @@ export interface Appointment {
     doctorEmail: string;
     timeSlot?: string;
 }
-export interface AuditEntry {
+export interface SerialQueueEntry {
+    id: string;
+    status: QueueStatus;
+    date: string;
+    createdAt: bigint;
+    registerNumber?: string;
+    calledAt?: bigint;
+    updatedAt: bigint;
+    serialNumber: bigint;
+    patientName: string;
+    phone?: string;
+    doctorEmail: string;
+}
+export interface UserProfile {
+    name: string;
+}
+export type Time = bigint;
+export interface Medication__1 {
+    duration: string;
+    dose: string;
+    name: string;
+    prnCondition?: string;
+    instructions?: string;
+    frequency: string;
+    isPRN: boolean;
+    route: string;
+}
+export interface RoleChangeEntry {
     id: bigint;
-    changedByName: string;
-    changedByRole: StaffRole;
-    changedAt: bigint;
+    principal: Principal;
     changedBy: Principal;
-    entityId: bigint;
-    afterValue: string;
-    beforeValue?: string;
-    entityType: string;
-    fieldName: string;
-    ipAddress?: string;
-    reason?: string;
+    timestamp: bigint;
+    previousRole?: StaffRole;
+    newRole: StaffRole;
 }
 export interface ClinicalOrder {
     id: bigint;
@@ -127,20 +244,6 @@ export interface ClinicalOrder {
     orderedByRole: StaffRole;
     versionInfo: VersionedRecord;
     encounterId?: bigint;
-}
-export interface Encounter {
-    id: bigint;
-    status: EncounterStatus;
-    encounterType: EncounterType;
-    endDate?: bigint;
-    patientId: bigint;
-    previousVersions: Array<VersionedRecord>;
-    providerName: string;
-    providerId: Principal;
-    versionInfo: VersionedRecord;
-    encounterId: string;
-    locationNotes?: string;
-    startDate: bigint;
 }
 export interface Patient {
     id: bigint;
@@ -210,33 +313,6 @@ export interface VitalSigns {
     oxygenSaturation?: string;
     pulse?: string;
 }
-export interface MedicationAdministration {
-    id: bigint;
-    status: MedicationAdministrationStatus;
-    medicationName: string;
-    patientId: bigint;
-    scheduledTime: bigint;
-    dose: string;
-    createdAt: bigint;
-    recordedBy: string;
-    recordedByRole: string;
-    administeredAt?: bigint;
-    missedReason?: string;
-}
-export interface Visit {
-    id: bigint;
-    vitalSigns: VitalSigns;
-    patientId: bigint;
-    createdAt: Time;
-    visitDate: Time;
-    visitType: VisitType;
-    diagnosis?: string;
-    updatedAt: Time;
-    historyOfPresentIllness?: string;
-    notes?: string;
-    physicalExamination?: string;
-    chiefComplaint: string;
-}
 export interface HandoverEntry {
     id: bigint;
     status: HandoverStatus;
@@ -271,6 +347,20 @@ export interface HandoverEntry {
     shiftStartTime: bigint;
     actionableItems: Array<string>;
 }
+export interface Visit {
+    id: bigint;
+    vitalSigns: VitalSigns;
+    patientId: bigint;
+    createdAt: Time;
+    visitDate: Time;
+    visitType: VisitType;
+    diagnosis?: string;
+    updatedAt: Time;
+    historyOfPresentIllness?: string;
+    notes?: string;
+    physicalExamination?: string;
+    chiefComplaint: string;
+}
 export interface DiagnosisTemplate {
     id: bigint;
     createdAt: bigint;
@@ -284,113 +374,49 @@ export interface DiagnosisTemplate {
     diagnosisName: string;
     defaultAdviceBn: Array<string>;
 }
-export interface ClinicalNote {
-    id: bigint;
-    isDeleted: boolean;
-    content: string;
-    patientId: bigint;
-    authorId: Principal;
-    createdAt: bigint;
-    authorName: string;
-    authorRole: StaffRole;
-    noteType: NoteType;
-    isDraft: boolean;
-    previousVersionIds: Array<bigint>;
-    versionInfo: VersionedRecord;
-    encounterId?: bigint;
-    noteSubtype?: string;
-}
-export interface Observation {
-    id: bigint;
-    status: ObservationStatus;
-    isDeleted: boolean;
-    numericValue?: number;
-    value: string;
-    observationDate: bigint;
-    patientId: bigint;
-    observationType: ObservationType;
-    code: string;
-    unit: string;
-    recordedBy: Principal;
-    normalRange?: string;
-    recordedByName: string;
-    recordedByRole: StaffRole;
-    interpretation?: string;
-    versionInfo: VersionedRecord;
-    encounterId?: bigint;
-}
-export interface VitalsSummary {
-    bp?: string;
-    rr?: string;
-    rbs?: string;
-    spo2?: string;
-    temp?: string;
-    recordedAt: bigint;
-    pulse?: string;
-}
-export interface BedRecord {
-    id: bigint;
-    status: BedStatus;
-    patientId?: bigint;
-    admissionDate?: bigint;
-    transferHistory: Array<BedTransferEntry>;
-    ward: string;
-    bedNumber: string;
-    patientName?: string;
-    dischargeDate?: bigint;
-}
 export interface SyncData {
     queueEntries: Array<SerialQueueEntry>;
     appointments: Array<Appointment>;
     timestamp: bigint;
 }
-export interface BedTransferEntry {
-    toBed: string;
-    date: bigint;
-    fromBed: string;
-    reason: string;
-}
-export interface WardRoundPatientStatus {
-    admissionDay: bigint;
-    patientId: string;
-    todayNoteState?: string;
-    assignedConsultant?: string;
-    ward: string;
-    bedNumber: string;
-    activeAlerts: Array<string>;
-    patientName: string;
-    lastVitals?: VitalsSummary;
-}
-export interface DailyProgressNoteUpdate {
+export interface DailyProgressNote {
+    id: bigint;
     moAssessment: string;
+    isDeleted: boolean;
     drainMonitoring?: string;
     internObjective: string;
+    patientId: bigint;
+    authorId: Principal;
     consultantComments: string;
+    submittedByRole?: StaffRole;
     consultantOverrides: string;
+    createdAt: bigint;
+    authorName: string;
+    reviewedByMO?: string;
+    authorRole: StaffRole;
+    noteDate: string;
+    rejectionReason?: string;
     objectiveVitals?: string;
     assessmentText: string;
     subjectiveComplaints: Array<string>;
+    isDraft: boolean;
+    updatedAt: bigint;
     activeDiagnoses: Array<string>;
     internSubjective: string;
+    progressType: DailyProgressType;
     activeComplaints: Array<string>;
     moPlan: string;
+    noteState: DailyNoteState;
+    previousVersionIds: Array<bigint>;
+    reviewedByConsultant?: string;
+    versionChain: Array<string>;
+    versionInfo: VersionedRecord;
+    submitTimestamp?: bigint;
+    encounterId?: bigint;
     planText: string;
     systemReview?: string;
     intakeOutput?: string;
     investigations: Array<string>;
-}
-export interface SerialQueueEntry {
-    id: string;
-    status: QueueStatus;
-    date: string;
-    createdAt: bigint;
-    registerNumber?: string;
-    calledAt?: bigint;
-    updatedAt: bigint;
-    serialNumber: bigint;
-    patientName: string;
-    phone?: string;
-    doctorEmail: string;
 }
 export interface Prescription {
     id: bigint;
@@ -409,8 +435,17 @@ export interface UpdatedData {
     timestamp: bigint;
     patients: Array<bigint>;
 }
-export interface UserProfile {
+export interface Medication {
+    duration: string;
+    dose: string;
     name: string;
+    instructions: string;
+    frequency: string;
+}
+export enum AdmissionStatus {
+    discharged = "discharged",
+    admitted = "admitted",
+    transferred = "transferred"
 }
 export enum AlertSeverity {
     Info = "Info",
@@ -529,19 +564,31 @@ export enum QueueStatus {
     waiting = "waiting"
 }
 export enum StaffRole {
+    assistant_registrar = "assistant_registrar",
+    professor = "professor",
     patient = "patient",
     admin = "admin",
     doctor = "doctor",
     medical_officer = "medical_officer",
     intern_doctor = "intern_doctor",
+    associate_professor = "associate_professor",
+    assistant_professor = "assistant_professor",
     consultant_doctor = "consultant_doctor",
     staff = "staff",
-    nurse = "nurse"
+    nurse = "nurse",
+    registrar = "registrar"
 }
 export enum UserRole {
     admin = "admin",
     user = "user",
     guest = "guest"
+}
+export enum VitalVerificationStatus {
+    pendingMOReview = "pendingMOReview",
+    verifiedByMO = "verifiedByMO",
+    finalized = "finalized",
+    rejected = "rejected",
+    drafted = "drafted"
 }
 export interface backendInterface {
     acknowledgeAlert(id: bigint): Promise<{
@@ -573,6 +620,13 @@ export interface backendInterface {
         __kind__: "err";
         err: string;
     }>;
+    approveDischarge(admissionId: bigint): Promise<{
+        __kind__: "ok";
+        ok: AdmissionRecord;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     assignBed(bedId: bigint, patientId: bigint, patientName: string): Promise<{
         __kind__: "ok";
         ok: BedRecord;
@@ -589,6 +643,11 @@ export interface backendInterface {
         __kind__: "err";
         err: string;
     }>;
+    bulkUpsertBeds(beds: Array<BedRecord>): Promise<Array<BedRecord>>;
+    bulkUpsertDailyProgressNotes(notes: Array<DailyProgressNote>): Promise<Array<DailyProgressNote>>;
+    bulkUpsertHandovers(handovers: Array<HandoverEntry>): Promise<Array<HandoverEntry>>;
+    bulkUpsertMedicationAdministrations(records: Array<MedicationAdministration>): Promise<Array<MedicationAdministration>>;
+    bulkUpsertObservations(obs: Array<Observation>): Promise<Array<Observation>>;
     bulkUpsertPatients(pats: Array<Patient>): Promise<Array<Patient>>;
     bulkUpsertPrescriptions(prescs: Array<Prescription>): Promise<Array<Prescription>>;
     bulkUpsertQueueEntries(entries: Array<SerialQueueEntry>): Promise<{
@@ -602,6 +661,13 @@ export interface backendInterface {
     clearQueueByDate(date: string, doctorEmail: string): Promise<{
         __kind__: "ok";
         ok: bigint;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    createAdmission(patientId: bigint, consultantEmail: string, bed: string, ward: string, department: string): Promise<{
+        __kind__: "ok";
+        ok: AdmissionRecord;
     } | {
         __kind__: "err";
         err: string;
@@ -755,6 +821,13 @@ export interface backendInterface {
     getActiveAlerts(patientId: bigint): Promise<Array<ClinicalAlert>>;
     getActiveOrdersByPatient(patientId: bigint): Promise<Array<ClinicalOrder>>;
     getAlertsByPatient(patientId: bigint): Promise<Array<ClinicalAlert>>;
+    getAllAdmittedPatients(consultantEmail: string | null, ward: string | null, bed: string | null, department: string | null, admissionStatus: string | null): Promise<{
+        __kind__: "ok";
+        ok: Array<AdmissionRecord>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getAllAppointmentsByDoctor(doctorEmail: string): Promise<{
         __kind__: "ok";
         ok: Array<Appointment>;
@@ -764,12 +837,23 @@ export interface backendInterface {
     }>;
     getAllAuditEntries(limit: bigint, offset: bigint): Promise<Array<AuditEntry>>;
     getAllBeds(): Promise<Array<BedRecord>>;
+    getAllBedsSince(sinceTimestamp: bigint): Promise<Array<BedRecord>>;
     getAllDiagnosisTemplates(): Promise<Array<DiagnosisTemplate>>;
     getAllEncounters(): Promise<Array<Encounter>>;
+    getAllHandoversSince(sinceTimestamp: bigint): Promise<Array<HandoverEntry>>;
+    getAllMedicationAdministrationsSince(sinceTimestamp: bigint): Promise<Array<MedicationAdministration>>;
+    getAllObservationsSince(sinceTimestamp: bigint): Promise<Array<Observation>>;
     getAllPatients(): Promise<Array<Patient>>;
     getAllPatientsSince(sinceTimestamp: bigint): Promise<Array<Patient>>;
     getAllPrescriptions(): Promise<Array<Prescription>>;
     getAllPrescriptionsSince(sinceTimestamp: bigint): Promise<Array<Prescription>>;
+    getAllRoleChanges(): Promise<{
+        __kind__: "ok";
+        ok: Array<RoleChangeEntry>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getAllVisits(): Promise<Array<Visit>>;
     getAllVisitsSince(sinceTimestamp: bigint): Promise<Array<Visit>>;
     getAppointmentById(id: string): Promise<{
@@ -805,8 +889,17 @@ export interface backendInterface {
     getCurrentUser(): Promise<CurrentUser>;
     getDailyNotesByPatient(patientId: bigint, dateFilter: string | null): Promise<Array<DailyProgressNote>>;
     getDailyProgressNotesByPatientId(patientId: bigint): Promise<Array<DailyProgressNote>>;
+    getDailyProgressNotesSince(sinceTimestamp: bigint): Promise<Array<DailyProgressNote>>;
     getDiagnosisTemplate(id: bigint): Promise<DiagnosisTemplate | null>;
+    getEmailIndex(): Promise<{
+        __kind__: "ok";
+        ok: Array<[string, Principal]>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getEncountersByPatient(patientId: bigint): Promise<Array<Encounter>>;
+    getFrontPageContent(): Promise<string | null>;
     getFullSyncData(doctorEmail: string): Promise<{
         __kind__: "ok";
         ok: SyncData;
@@ -842,6 +935,8 @@ export interface backendInterface {
         __kind__: "err";
         err: string;
     }>;
+    getRoleChangeHistory(principal: Principal): Promise<Array<RoleChangeEntry>>;
+    getServerTimestamp(): Promise<bigint>;
     getUnacknowledgedAlerts(): Promise<Array<ClinicalAlert>>;
     getUpdatedData(doctorEmail: string, sinceTimestamp: bigint): Promise<{
         __kind__: "ok";
@@ -853,8 +948,10 @@ export interface backendInterface {
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     getVisit(id: bigint): Promise<Visit | null>;
     getVisitsByPatientId(patientId: bigint): Promise<Array<Visit>>;
+    getVitalsForVerification(): Promise<Array<Observation>>;
     getWardRoundStatus(date: string): Promise<Array<WardRoundPatientStatus>>;
     isCallerAdmin(): Promise<boolean>;
+    isEmailRegistered(email: string): Promise<boolean>;
     migrateFromLocalStorage(patientsJson: string, visitsJson: string, prescriptionsJson: string, appointmentsJson: string): Promise<{
         __kind__: "ok";
         ok: string;
@@ -877,9 +974,23 @@ export interface backendInterface {
         __kind__: "err";
         err: string;
     }>;
+    registerEmail(email: string): Promise<{
+        __kind__: "ok";
+        ok: null;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     rejectDraftNote(patientId: bigint, noteId: bigint, reviewerEmail: string, rejectionReason: string): Promise<{
         __kind__: "ok";
         ok: DailyProgressNote;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    rejectVital(observationId: bigint, reason: string): Promise<{
+        __kind__: "ok";
+        ok: Observation;
     } | {
         __kind__: "err";
         err: string;
@@ -892,6 +1003,7 @@ export interface backendInterface {
         err: string;
     }>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    saveFrontPageContent(content: string): Promise<void>;
     submitDailyNoteForReview(patientId: bigint, noteId: bigint, noteContent: DailyProgressNoteUpdate): Promise<{
         __kind__: "ok";
         ok: DailyProgressNote;
@@ -909,6 +1021,13 @@ export interface backendInterface {
     transferBed(bedId: bigint, newBedId: bigint, reason: string): Promise<{
         __kind__: "ok";
         ok: BedRecord;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    updateAdmissionStatus(admissionId: bigint, newStatus: AdmissionStatus): Promise<{
+        __kind__: "ok";
+        ok: AdmissionRecord;
     } | {
         __kind__: "err";
         err: string;
@@ -963,6 +1082,13 @@ export interface backendInterface {
         err: string;
     }>;
     updatePatient(id: bigint, fullName: string, nameBn: string | null, dateOfBirth: Time | null, gender: Gender, phone: string | null, email: string | null, address: string | null, bloodGroup: string | null, weight: number | null, height: number | null, allergies: Array<string>, chronicConditions: Array<string>, pastSurgicalHistory: string | null, patientType: PatientType, consultantEmail: string | null, consultantName: string | null): Promise<Patient>;
+    updatePatientBedAssignment(admissionId: bigint, newBed: string): Promise<{
+        __kind__: "ok";
+        ok: AdmissionRecord;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     updatePrescription(id: bigint, patientId: bigint, visitId: bigint | null, prescriptionDate: Time, diagnosis: string | null, medications: Array<Medication>, notes: string | null): Promise<Prescription>;
     updateQueueEntry(id: string, status: QueueStatus, calledAt: bigint | null): Promise<{
         __kind__: "ok";
@@ -975,4 +1101,11 @@ export interface backendInterface {
     upsertPatient(patient: Patient): Promise<Patient>;
     upsertPrescription(prescription: Prescription): Promise<Prescription>;
     upsertVisit(visit: Visit): Promise<Visit>;
+    verifyVital(observationId: bigint): Promise<{
+        __kind__: "ok";
+        ok: Observation;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
 }

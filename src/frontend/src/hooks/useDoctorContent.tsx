@@ -1,6 +1,7 @@
 import { doctors } from "@/data/doctorsData";
 import type { DoctorKey } from "@/data/doctorsData";
 import { useCallback, useState } from "react";
+import { saveFrontPageContentWithSync } from "../lib/hybridStorage";
 
 const STORAGE_KEY = "doctorContentOverrides";
 
@@ -17,6 +18,16 @@ function loadOverrides(): Overrides {
 
 function saveOverrides(overrides: Overrides) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
+  // Sync to canister so all devices see the latest doctor content overrides
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mod = require("../hooks/useQueries") as {
+      getCanisterActor?: () => unknown;
+    };
+    saveFrontPageContentWithSync(mod.getCanisterActor?.() ?? null);
+  } catch {
+    saveFrontPageContentWithSync(null);
+  }
 }
 
 // dynamic deep merge for doctor content overrides

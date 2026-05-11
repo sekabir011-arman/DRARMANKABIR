@@ -43,6 +43,7 @@ import { useAdminAuth } from "./hooks/useAdminAuth";
 import { useEmailAuth } from "./hooks/useEmailAuth";
 import { useSyncStatus } from "./hooks/useMigration";
 import { useOnlineStatus } from "./hooks/useOnlineStatus";
+import { getPermissionsForRole } from "./hooks/useRolePermissions";
 import { getConflictsCount } from "./lib/hybridStorage";
 import {
   STAFF_ROLE_ACTIVE_BG,
@@ -60,6 +61,11 @@ const EMERGENCY_RX_ROLES: StaffRole[] = [
   "medical_officer",
   "doctor",
   "admin",
+  "assistant_professor",
+  "associate_professor",
+  "professor",
+  "registrar",
+  "assistant_registrar",
 ];
 const WARD_ROUND_ROLES: StaffRole[] = [
   "doctor",
@@ -68,6 +74,11 @@ const WARD_ROUND_ROLES: StaffRole[] = [
   "intern_doctor",
   "nurse",
   "admin",
+  "assistant_professor",
+  "associate_professor",
+  "professor",
+  "registrar",
+  "assistant_registrar",
 ];
 const BED_ROLES: StaffRole[] = [
   "admin",
@@ -75,6 +86,8 @@ const BED_ROLES: StaffRole[] = [
   "consultant_doctor",
   "medical_officer",
   "staff",
+  "registrar",
+  "assistant_registrar",
 ];
 const STAFF_MGMT_ROLES: StaffRole[] = ["admin", "consultant_doctor"];
 
@@ -244,11 +257,13 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
   const syncStatus = useSyncStatus();
 
   const role = (currentDoctor?.role ?? "staff") as StaffRole;
+  const rolePerms = getPermissionsForRole(role);
   const canWardRound = WARD_ROUND_ROLES.includes(role) || isAdmin;
   const canBedManagement = BED_ROLES.includes(role) || isAdmin;
   const canEmergencyRx = EMERGENCY_RX_ROLES.includes(role) || isAdmin;
   const canStaffMgmt = STAFF_MGMT_ROLES.includes(role) || isAdmin;
   const showMedAlertBell = MED_ALERT_ROLES.includes(role);
+  const canRegistrarDashboard = rolePerms.canViewAllAdmittedPatients || isAdmin;
 
   const toggleHospitalGroup = () => {
     const next = !hospitalGroupOpen;
@@ -869,6 +884,38 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
                   </Link>
                 ))}
 
+              {/* All Admitted Patients — Registrar/Admin only */}
+              {canRegistrarDashboard && (
+                <Link
+                  to="/RegistrarDashboard"
+                  data-ocid="nav.registrar_dashboard_link"
+                >
+                  <Button
+                    variant="ghost"
+                    style={
+                      isActive("RegistrarDashboard")
+                        ? { borderBottomColor: roleBorderColor }
+                        : {}
+                    }
+                    className={cn(
+                      isActive("RegistrarDashboard")
+                        ? activeNavClass
+                        : inactiveNavClass,
+                    )}
+                  >
+                    <Users
+                      className={cn(
+                        "w-4 h-4",
+                        isActive("RegistrarDashboard")
+                          ? roleActiveText
+                          : "text-green-700",
+                      )}
+                    />
+                    All Patients
+                  </Button>
+                </Link>
+              )}
+
               {/* Settings */}
               <Link to="/Settings" data-ocid="nav.settings_link">
                 <Button
@@ -1205,6 +1252,18 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
                 />
               )}
 
+              {/* All Admitted Patients — Registrar only */}
+              {canRegistrarDashboard && (
+                <MobileNavLink
+                  name="RegistrarDashboard"
+                  href="/RegistrarDashboard"
+                  icon={Users}
+                  label="All Patients"
+                  isActive={isActive}
+                  onClose={() => setMobileMenuOpen(false)}
+                />
+              )}
+
               <MobileNavLink
                 name="Settings"
                 href="/Settings"
@@ -1431,6 +1490,19 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
               disabled={wardRoundDisabled}
               disabledTitle="No admitted patients currently"
               badge={pendingHandoverCount}
+            />
+          )}
+
+          {/* All Admitted Patients — Registrar only */}
+          {canRegistrarDashboard && (
+            <SidebarIconItem
+              name="RegistrarDashboard"
+              href="/RegistrarDashboard"
+              icon={Users}
+              label="All Patients"
+              isActive={isActive}
+              expanded={mobileSidebarExpanded}
+              onNavigate={closeMobileSidebar}
             />
           )}
 
