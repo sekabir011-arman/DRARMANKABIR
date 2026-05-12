@@ -138,10 +138,10 @@ export const doctors = {
     roles: ["FCPS Part 2 Trainee, Dept. of Gynae & Obs, Dhaka Medical College"],
     regNo: "",
     hospital: "Dhaka Medical College",
-    phone: "+8801957212210",
+    phone: "+88000000",
     phone2: "",
     email: "samiashikder33@gmail.com",
-    whatsapp: "+8801957212210",
+    whatsapp: "+880000000",
     photo: null as string | null,
     cvPdfUrl: "/assets/uploads/CV_Samia-Shikder-16.3.2026-1.pdf" as
       | string
@@ -156,7 +156,7 @@ export const doctors = {
         address: "Dept. of Gynae & Obs, Dhaka Medical College Hospital, Dhaka",
         visitingHours: "Sunday\u2013Thursday: 4:00 PM \u2013 8:00 PM",
         phone: "+8801957212210",
-        emergencyPhone: "+8801957212210",
+        emergencyPhone: "+880000000",
         lat: 23.7261,
         lng: 90.396,
       },
