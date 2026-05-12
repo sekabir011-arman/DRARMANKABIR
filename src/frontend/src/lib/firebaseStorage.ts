@@ -1,58 +1,54 @@
-import { ref, uploadBytes, downloadUrl, getBytes } from 'firebase/storage';
-import { storage } from './firebase';
+import {
+  ref,
+  uploadBytes,
+  deleteObject,
+  getDownloadURL,
+  UploadMetadata,
+  StorageReference,
+} from 'firebase/storage';
+import { storage } from '@/lib/firebase';
 
-/**
- * Firebase Storage service for file operations
- */
 export class FirebaseStorageService {
-  private storageInstance = storage;
+  constructor(private storageRef: any) {}
 
-  private ensureStorage() {
-    if (!this.storageInstance) {
-      throw new Error('Firebase Storage is not initialized. Check Firebase configuration.');
+  async uploadFile(
+    path: string,
+    file: Blob | File,
+    metadata?: UploadMetadata
+  ): Promise<string> {
+    if (!this.storageRef) {
+      throw new Error('Firebase Storage not initialized');
     }
+
+    const fileRef = ref(this.storageRef, path);
+    const snapshot = await uploadBytes(fileRef, file, metadata);
+    return getDownloadURL(snapshot.ref);
   }
 
-  /**
-   * Upload a file to Firebase Storage
-   */
-  async uploadFile(filePath: string, file: File | Blob): Promise<string> {
-    this.ensureStorage();
-    const fileRef = ref(this.storageInstance!, filePath);
-    const snapshot = await uploadBytes(fileRef, file);
-    return snapshot.ref.fullPath;
-  }
+  async deleteFile(path: string): Promise<void> {
+    if (!this.storageRef) {
+      throw new Error('Firebase Storage not initialized');
+    }
 
-  /**
-   * Delete a file from Firebase Storage
-   */
-  async deleteFile(filePath: string): Promise<void> {
-    this.ensureStorage();
-    const fileRef = ref(this.storageInstance!, filePath);
-    // Note: deleteObject requires importing from firebase/storage
-    const { deleteObject } = await import('firebase/storage');
+    const fileRef = ref(this.storageRef, path);
     await deleteObject(fileRef);
   }
 
-  /**
-   * Get download URL for a file
-   */
-  async getDownloadUrl(filePath: string): Promise<string> {
-    this.ensureStorage();
-    const fileRef = ref(this.storageInstance!, filePath);
-    const { getDownloadURL } = await import('firebase/storage');
+  async getDownloadUrl(path: string): Promise<string> {
+    if (!this.storageRef) {
+      throw new Error('Firebase Storage not initialized');
+    }
+
+    const fileRef = ref(this.storageRef, path);
     return getDownloadURL(fileRef);
   }
 
-  /**
-   * Download file as Blob
-   */
-  async downloadFile(filePath: string): Promise<Blob> {
-    this.ensureStorage();
-    const fileRef = ref(this.storageInstance!, filePath);
-    const bytes = await getBytes(fileRef);
-    return new Blob([bytes]);
+  async downloadFile(path: string): Promise<Blob> {
+    const url = await this.getDownloadUrl(path);
+    const response = await fetch(url);
+    return response.blob();
   }
 }
 
-export const firebaseStorageService = new FirebaseStorageService();
+// Export singleton instance
+export const firebaseStorageService = new FirebaseStorageService(storage);
