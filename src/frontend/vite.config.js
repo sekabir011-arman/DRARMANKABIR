@@ -21,6 +21,21 @@ export default defineConfig({
     emptyOutDir: true,
     sourcemap: false,
     minify: "esbuild",
+
+    chunkSizeWarningLimit: 2000,
+
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ["react", "react-dom"],
+          dfinity: [
+            "@dfinity/agent",
+            "@dfinity/auth-client",
+            "@dfinity/principal",
+          ],
+        },
+      },
+    },
   },
 
   css: {
