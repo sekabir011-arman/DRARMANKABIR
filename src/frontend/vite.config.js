@@ -3,25 +3,30 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import environment from "vite-plugin-environment";
 
-const ii_url =
-  process.env.DFX_NETWORK === "local"
-    ? `http://rdmx6-jaaaa-aaaaa-aaadq-cai.localhost:8081/`
-    : `https://identity.internetcomputer.org/`;
+const isLocal = process.env.DFX_NETWORK === "local";
+
+const ii_url = isLocal
+  ? "http://rdmx6-jaaaa-aaaaa-aaadq-cai.localhost:4943/"
+  : "https://identity.internetcomputer.org/";
 
 process.env.II_URL = process.env.II_URL || ii_url;
+
 process.env.STORAGE_GATEWAY_URL =
   process.env.STORAGE_GATEWAY_URL || "https://blob.caffeine.ai";
 
 export default defineConfig({
-  logLevel: "error",
+  logLevel: "info",
+
   build: {
     emptyOutDir: true,
     sourcemap: false,
-    minify: false,
+    minify: "esbuild",
   },
+
   css: {
     postcss: "./postcss.config.js",
   },
+
   optimizeDeps: {
     esbuildOptions: {
       define: {
@@ -29,14 +34,18 @@ export default defineConfig({
       },
     },
   },
-  server: {
-    proxy: {
-      "/api": {
-        target: "http://127.0.0.1:4943",
-        changeOrigin: true,
-      },
-    },
-  },
+
+  server: isLocal
+    ? {
+        proxy: {
+          "/api": {
+            target: "http://127.0.0.1:4943",
+            changeOrigin: true,
+          },
+        },
+      }
+    : undefined,
+
   plugins: [
     environment("all", { prefix: "CANISTER_" }),
     environment("all", { prefix: "DFX_" }),
@@ -44,17 +53,20 @@ export default defineConfig({
     environment(["STORAGE_GATEWAY_URL"]),
     react(),
   ],
+
   resolve: {
     alias: [
       {
         find: "declarations",
-        replacement: fileURLToPath(new URL("../declarations", import.meta.url)),
+        replacement: fileURLToPath(
+          new URL("../declarations", import.meta.url)
+        ),
       },
       {
         find: "@",
         replacement: fileURLToPath(new URL("./src", import.meta.url)),
       },
     ],
-    dedupe: ["@dfinity/agent"]
+    dedupe: ["@dfinity/agent"],
   },
 });
