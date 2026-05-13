@@ -3,11 +3,15 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import environment from "vite-plugin-environment";
 
-// Safe runtime-only fallback (NO process mutation)
+
 const ii_url =
   process.env.DFX_NETWORK === "local"
-    ? "http://rdmx6-jaaaa-aaaaa-aaadq-cai.localhost:8081/"
-    : "https://identity.internetcomputer.org/";
+    ? `http://rdmx6-jaaaa-aaaaa-aaadq-cai.localhost:8081/`
+    : `https://identity.internetcomputer.org/`;
+
+process.env.II_URL = process.env.II_URL || ii_url;
+process.env.STORAGE_GATEWAY_URL =
+  process.env.STORAGE_GATEWAY_URL || "https://blob.caffeine.ai";
 
 export default defineConfig({
   logLevel: "error",
@@ -15,7 +19,7 @@ export default defineConfig({
   build: {
     emptyOutDir: true,
     sourcemap: false,
-    minify: "esbuild", // ✅ production safe
+    minify: false,
   },
 
   css: {
@@ -33,15 +37,14 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://127.0.0.1:4943",
-        changeOrigin: true,
+@@ -37,24 +38,26 @@
       },
     },
   },
 
   plugins: [
-    environment(["CANISTER_*"]),
-    environment(["DFX_*"]),
+    environment("all", { prefix: "CANISTER_" }),
+    environment("all", { prefix: "DFX_" }),
     environment(["II_URL"]),
     environment(["STORAGE_GATEWAY_URL"]),
 
@@ -49,15 +52,16 @@ export default defineConfig({
   ],
 
   resolve: {
-    alias: {
-      "@": fileURLToPath(new URL("./src", import.meta.url)),
-
-      // ✅ safer for Vercel builds
-      declarations: fileURLToPath(
-        new URL("./declarations", import.meta.url)
-      ),
-    },
-
-    dedupe: ["@dfinity/agent"],
+    alias: [
+      {
+        find: "declarations",
+        replacement: fileURLToPath(new URL("../declarations", import.meta.url)),
+      },
+      {
+        find: "@",
+        replacement: fileURLToPath(new URL("./src", import.meta.url)),
+      },
+    ],
+    dedupe: ["@dfinity/agent"]
   },
 });
