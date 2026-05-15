@@ -25,3 +25,20 @@ export const config = {
   frontendOrigin:
     import.meta.env.VITE_FRONTEND_ORIGIN || "",
 };
+
+// Validation: Warn if critical config is missing
+if (!config.canisterId) {
+  console.warn(
+    "⚠️ WARNING: VITE_CANISTER_ID_BACKEND environment variable is not set. " +
+    "Backend sync will fail. Please set it in your .env file."
+  );
+}
+
+if (!config.frontendOrigin) {
+  console.warn(
+    "⚠️ WARNING: VITE_FRONTEND_ORIGIN environment variable is not set. " +
+    "Authentication redirects may not work correctly."
+  );
+}
+
+export default config;
