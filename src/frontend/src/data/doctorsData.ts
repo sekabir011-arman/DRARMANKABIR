@@ -29,9 +29,7 @@ export const doctors = {
         addressBn:
           "নিচ তলা (সেন্চুরি আর্কেড মার্কেট)\n১২০/এ, আউটার সার্কুলার রোড\nমগবাজার, ঢাকা",
         address:
-          "University Dental College & Hospital, 
-          Ground Floor (Century Arcade Market),
-           120/A, Outer Circular Road, Moghbazar, Dhaka",
+          "University Dental College & Hospital, Ground Floor (Century Arcade Market),120/A, Outer Circular Road, Moghbazar, Dhaka",
         visitingHours: "Saturday\u2013Thursday: 5:00 PM \u2013 9:00 PM",
         phone: "01751959262",
         emergencyPhone: "01751959262",
