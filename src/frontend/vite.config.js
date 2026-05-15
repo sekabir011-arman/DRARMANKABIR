@@ -5,13 +5,13 @@ import environment from "vite-plugin-environment";
 
 const ii_url =
   process.env.DFX_NETWORK === "local"
-    ? `http://rdmx6-jaaaa-aaaaa-aaadq-cai.localhost:8081/`
-    : `https://identity.internetcomputer.org/`;
+    ? "http://rdmx6-jaaaa-aaaaa-aaadq-cai.localhost:8081/"
+    : "https://identity.internetcomputer.org/";
 
 const storage_gateway =
   process.env.STORAGE_GATEWAY_URL || "https://blob.caffeine.ai";
 
-// Resolve canister ID from multiple platforms
+// Resolve canister ID from multiple sources (Vercel + local + ICP)
 const resolvedCanisterId =
   process.env.VITE_CANISTER_ID_BACKEND ||
   process.env.CANISTER_ID_BACKEND ||
@@ -27,27 +27,26 @@ export default defineConfig({
   },
 
   define: {
-    // ICP Canister ID (Vercel + Vite standard)
+    // ICP Canister ID (Vercel + Vite)
     "import.meta.env.VITE_CANISTER_ID_BACKEND": JSON.stringify(
       process.env.VITE_CANISTER_ID_BACKEND ||
         process.env.CANISTER_ID_BACKEND ||
         ""
     ),
 
-    // fallback raw canister ID
     "import.meta.env.CANISTER_ID_BACKEND": JSON.stringify(
       process.env.CANISTER_ID_BACKEND ||
         process.env.VITE_CANISTER_ID_BACKEND ||
         ""
     ),
 
-    // Internet Identity URL
+    // Internet Identity URL (safe fallback)
     "import.meta.env.II_URL": JSON.stringify(ii_url),
 
-    // Storage gateway (used in backend uploads)
+    // Storage gateway
     "import.meta.env.STORAGE_GATEWAY_URL": JSON.stringify(storage_gateway),
 
-    // expose resolved ID globally for fallback logic
+    // Global fallback for runtime
     "window.__RESOLVED_CANISTER_ID_BACKEND": JSON.stringify(
       resolvedCanisterId
     ),
@@ -75,10 +74,10 @@ export default defineConfig({
   },
 
   plugins: [
+    // ONLY safe environment injection (no strict required vars)
     environment("all", { prefix: "CANISTER_" }),
     environment("all", { prefix: "DFX_" }),
-    environment(["II_URL"]),
-    environment(["STORAGE_GATEWAY_URL"]),
+
     react(),
   ],
 
