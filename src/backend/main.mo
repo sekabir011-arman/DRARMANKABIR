@@ -4,6 +4,8 @@ import Order "mo:core/Order";
 import Runtime "mo:core/Runtime";
 import Nat "mo:core/Nat";
 import Principal "mo:core/Principal";
+import Array "mo:core/Array";
+import Buffer "mo:core/Buffer";
 
 import MixinAuthorization "authorization/MixinAuthorization/lib";
 import AccessControl "authorization/access-control/lib";
@@ -11,6 +13,14 @@ import ClinicalDataEngineLib "lib/clinical-data-engine";
 import ClinicalDataEngineMixin "mixins/clinical-data-engine-api";
 
 actor {
+  ///////////////////////////////
+  // Configuration Constants    //
+  ///////////////////////////////
+  
+  let MAX_CALLS_PER_WINDOW = 100;
+  let RATE_LIMIT_WINDOW_SECONDS = 60;
+  let MAX_AUDIT_LOGS = 10000;
+  
   ///////////////////////////////
   // Custom Types and Modules  //
   ///////////////////////////////
@@ -106,6 +116,50 @@ actor {
     name : Text;
   };
 
+  // API Result Types
+  public type ApiError = {
+    #notFound : Text;
+    #unauthorized : Text;
+    #validationError : Text;
+    #internalError : Text;
+    #rateLimited : Text;
+  };
+
+  public type Result<T, E> = {
+    #ok : T;
+    #err : E;
+  };
+
+  public type AuditLog = {
+    id : Nat;
+    action : Text;
+    actor : Principal;
+    timestamp : Time.Time;
+    details : Text;
+    success : Bool;
+  };
+
+  public type PaginationParams = {
+    limit : Nat;
+    offset : Nat;
+  };
+
+  public type PaginatedResult<T> = {
+    items : [T];
+    total : Nat;
+    limit : Nat;
+    offset : Nat;
+  };
+
+  public type CanisterStatus = {
+    memory_size : Nat;
+    cycles_balance : Nat;
+    total_patients : Nat;
+    total_visits : Nat;
+    total_prescriptions : Nat;
+    total_audit_logs : Nat;
+  };
+
   ////////////////////////////
   // Core Data Structures   //
   ////////////////////////////
@@ -114,10 +168,62 @@ actor {
   let visits = Map.empty<Nat, Visit>();
   let prescriptions = Map.empty<Nat, Prescription>();
   let userProfiles = Map.empty<Principal, UserProfile>();
+  let auditLogs = Map.empty<Nat, AuditLog>();
+  let userCallCounts = Map.empty<Principal, Nat>();
+  let callResetTime = Map.empty<Principal, Time.Time>();
 
   var patientIdCounter = 1;
   var visitIdCounter = 1;
   var prescriptionIdCounter = 1;
+  var auditLogIdCounter = 1;
+
+  ////////////////////////////
+  // Stable Storage         //
+  ////////////////////////////
+
+  stable var stablePatients : [(Nat, Patient)] = [];
+  stable var stableVisits : [(Nat, Visit)] = [];
+  stable var stablePrescriptions : [(Nat, Prescription)] = [];
+  stable var stableUserProfiles : [(Principal, UserProfile)] = [];
+  stable var stableAuditLogs : [(Nat, AuditLog)] = [];
+  stable var stablePatientIdCounter = 1;
+  stable var stableVisitIdCounter = 1;
+  stable var stablePrescriptionIdCounter = 1;
+  stable var stableAuditLogIdCounter = 1;
+
+  system func preupgrade() {
+    stablePatients := patients.toArray();
+    stableVisits := visits.toArray();
+    stablePrescriptions := prescriptions.toArray();
+    stableUserProfiles := userProfiles.toArray();
+    stableAuditLogs := auditLogs.toArray();
+    stablePatientIdCounter := patientIdCounter;
+    stableVisitIdCounter := visitIdCounter;
+    stablePrescriptionIdCounter := prescriptionIdCounter;
+    stableAuditLogIdCounter := auditLogIdCounter;
+  };
+
+  system func postupgrade() {
+    for ((id, patient) in stablePatients.vals()) {
+      patients.add(id, patient);
+    };
+    for ((id, visit) in stableVisits.vals()) {
+      visits.add(id, visit);
+    };
+    for ((id, prescription) in stablePrescriptions.vals()) {
+      prescriptions.add(id, prescription);
+    };
+    for ((principal, profile) in stableUserProfiles.vals()) {
+      userProfiles.add(principal, profile);
+    };
+    for ((id, log) in stableAuditLogs.vals()) {
+      auditLogs.add(id, log);
+    };
+    patientIdCounter := stablePatientIdCounter;
+    visitIdCounter := stableVisitIdCounter;
+    prescriptionIdCounter := stablePrescriptionIdCounter;
+    auditLogIdCounter := stableAuditLogIdCounter;
+  };
 
   ////////////////////////////
   // Authorization         //
@@ -136,9 +242,96 @@ actor {
     role : AccessControl.UserRole;
   };
 
+  ////////////////////////////
+  // Validation Functions  //
+  ////////////////////////////
+
+  func isValidEmail(email : Text) : Bool {
+    let emailPattern = "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}";
+    let chars = email.chars();
+    let hasAt = email.contains("@");
+    let hasDot = email.contains(".");
+    hasAt and hasDot and email.size() > 5;
+  };
+
+  func isValidPhone(phone : Text) : Bool {
+    phone.size() >= 10 and phone.size() <= 20;
+  };
+
+  ////////////////////////////
+  // Rate Limiting         //
+  ////////////////////////////
+
+  func checkRateLimit(caller : Principal) : Result<(), ApiError> {
+    let now = Time.now();
+    let resetTime = switch (callResetTime.get(caller)) {
+      case (?t) { t };
+      case (null) { now };
+    };
+
+    if (now - resetTime > (RATE_LIMIT_WINDOW_SECONDS * 1_000_000_000 : Int)) {
+      userCallCounts.add(caller, 1);
+      callResetTime.add(caller, now);
+      return #ok();
+    };
+
+    let count = switch (userCallCounts.get(caller)) {
+      case (?c) { c };
+      case (null) { 0 };
+    };
+
+    if (count < MAX_CALLS_PER_WINDOW) {
+      userCallCounts.add(caller, count + 1);
+      return #ok();
+    };
+
+    #err(#rateLimited("Rate limit exceeded. Max 100 requests per 60 seconds."));
+  };
+
+  ////////////////////////////
+  // Audit Logging         //
+  ////////////////////////////
+
+  func logAction(caller : Principal, action : Text, details : Text, success : Bool) {
+    if (auditLogIdCounter > MAX_AUDIT_LOGS) {
+      let allLogs = auditLogs.toArray();
+      let recentLogs = Array.drop<(Nat, AuditLog)>(allLogs, MAX_AUDIT_LOGS / 2);
+      auditLogs.clear();
+      for ((id, log) in recentLogs.vals()) {
+        auditLogs.add(id, log);
+      };
+      auditLogIdCounter := MAX_AUDIT_LOGS / 2;
+    };
+
+    auditLogs.add(auditLogIdCounter, {
+      id = auditLogIdCounter;
+      action;
+      actor = caller;
+      timestamp = Time.now();
+      details;
+      success;
+    });
+    auditLogIdCounter += 1;
+  };
+
+  ////////////////////////////
+  // System Functions      //
+  ////////////////////////////
+
   public shared ({ caller }) func getCurrentUser() : async CurrentUser {
     let role = AccessControl.getUserRole(accessControlState, caller);
     { principal = caller; role };
+  };
+
+  public query func getCanisterStatus() : async CanisterStatus {
+    {
+      memory_size = Runtime.memory();
+      cycles_balance = Runtime.cycles();
+      total_patients = patients.size();
+      total_visits = visits.size();
+      total_prescriptions = prescriptions.size();
+      total_audit_logs = auditLogs.size();
+    };
   };
 
   ////////////////////////////
@@ -151,25 +344,33 @@ actor {
   // User Profile Functions //
   ////////////////////////////
 
-  public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
+  public query ({ caller }) func getCallerUserProfile() : async Result<?UserProfile, ApiError> {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can view profiles");
+      return #err(#unauthorized("Only users can view profiles"));
     };
-    userProfiles.get(caller);
+    #ok(userProfiles.get(caller));
   };
 
-  public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
+  public query ({ caller }) func getUserProfile(user : Principal) : async Result<?UserProfile, ApiError> {
     if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Can only view your own profile");
+      return #err(#unauthorized("Can only view your own profile"));
     };
-    userProfiles.get(user);
+    #ok(userProfiles.get(user));
   };
 
-  public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
+  public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async Result<(), ApiError> {
+    switch (checkRateLimit(caller)) {
+      case (#err(e)) { return #err(e) };
+      case (#ok()) {};
+    };
+
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can save profiles");
+      logAction(caller, "saveCallerUserProfile", "Unauthorized", false);
+      return #err(#unauthorized("Only users can save profiles"));
     };
     userProfiles.add(caller, profile);
+    logAction(caller, "saveCallerUserProfile", "Profile saved", true);
+    #ok();
   };
 
   ////////////////////////////
@@ -193,9 +394,37 @@ actor {
     patientType : PatientType,
     consultantEmail : ?Text,
     consultantName : ?Text
-  ) : async Patient {
+  ) : async Result<Patient, ApiError> {
+    switch (checkRateLimit(caller)) {
+      case (#err(e)) { return #err(e) };
+      case (#ok()) {};
+    };
+
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can create patients");
+      logAction(caller, "createPatient", "Unauthorized", false);
+      return #err(#unauthorized("Only users can create patients"));
+    };
+
+    if (fullName == "") {
+      return #err(#validationError("Full name cannot be empty"));
+    };
+
+    switch (email) {
+      case (?e) {
+        if (not isValidEmail(e)) {
+          return #err(#validationError("Invalid email format"));
+        };
+      };
+      case (null) {};
+    };
+
+    switch (phone) {
+      case (?p) {
+        if (not isValidPhone(p)) {
+          return #err(#validationError("Invalid phone format"));
+        };
+      };
+      case (null) {};
     };
 
     let patient : Patient = {
@@ -222,21 +451,43 @@ actor {
 
     patients.add(patientIdCounter, patient);
     patientIdCounter += 1;
-    patient;
+    logAction(caller, "createPatient", "Created patient: " # fullName, true);
+    #ok(patient);
   };
 
-  public query ({ caller }) func getPatient(id : Nat) : async ?Patient {
+  public query ({ caller }) func getPatient(id : Nat) : async Result<?Patient, ApiError> {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can get patients");
+      return #err(#unauthorized("Only users can get patients"));
     };
-    patients.get(id);
+    #ok(patients.get(id));
   };
 
-  public query ({ caller }) func getAllPatients() : async [Patient] {
+  public query ({ caller }) func getAllPatients() : async Result<[Patient], ApiError> {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can get patients");
+      return #err(#unauthorized("Only users can get patients"));
     };
-    patients.values().toArray().sort();
+    #ok(patients.values().toArray());
+  };
+
+  public query ({ caller }) func getPatientsPageinated(params : PaginationParams) : async Result<PaginatedResult<Patient>, ApiError> {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      return #err(#unauthorized("Only users can get patients"));
+    };
+
+    let all = patients.values().toArray();
+    let total = all.size();
+    let start = params.offset;
+    let end = if (start + params.limit > total) { total } else { start + params.limit };
+    let items = if (start >= total) { [] } else { 
+      Array.subArray<Patient>(all, start, end - start)
+    };
+
+    #ok({
+      items;
+      total;
+      limit = params.limit;
+      offset = params.offset;
+    });
   };
 
   public shared ({ caller }) func updatePatient(
@@ -257,13 +508,23 @@ actor {
     patientType : PatientType,
     consultantEmail : ?Text,
     consultantName : ?Text
-  ) : async Patient {
+  ) : async Result<Patient, ApiError> {
+    switch (checkRateLimit(caller)) {
+      case (#err(e)) { return #err(e) };
+      case (#ok()) {};
+    };
+
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can update patients");
+      logAction(caller, "updatePatient", "Unauthorized", false);
+      return #err(#unauthorized("Only users can update patients"));
+    };
+
+    if (fullName == "") {
+      return #err(#validationError("Full name cannot be empty"));
     };
 
     let existingPatient = switch (patients.get(id)) {
-      case (null) { Runtime.trap("Patient does not exist") };
+      case (null) { return #err(#notFound("Patient not found")) };
       case (?patient) { patient };
     };
 
@@ -290,20 +551,27 @@ actor {
     };
 
     patients.add(id, updatedPatient);
-    updatedPatient;
+    logAction(caller, "updatePatient", "Updated patient ID: " # Nat.toText(id), true);
+    #ok(updatedPatient);
   };
 
   public shared ({ caller }) func assignConsultant(
     patientId : Nat,
     consultantEmail : Text,
     consultantName : Text
-  ) : async Patient {
+  ) : async Result<Patient, ApiError> {
+    switch (checkRateLimit(caller)) {
+      case (#err(e)) { return #err(e) };
+      case (#ok()) {};
+    };
+
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can assign consultants");
+      logAction(caller, "assignConsultant", "Unauthorized", false);
+      return #err(#unauthorized("Only users can assign consultants"));
     };
 
     let existingPatient = switch (patients.get(patientId)) {
-      case (null) { Runtime.trap("Patient does not exist") };
+      case (null) { return #err(#notFound("Patient not found")) };
       case (?patient) { patient };
     };
 
@@ -315,14 +583,24 @@ actor {
     };
 
     patients.add(patientId, updatedPatient);
-    updatedPatient;
+    logAction(caller, "assignConsultant", "Assigned consultant to patient ID: " # Nat.toText(patientId), true);
+    #ok(updatedPatient);
   };
 
-  public shared ({ caller }) func deletePatient(id : Nat) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can delete patients");
+  public shared ({ caller }) func deletePatient(id : Nat) : async Result<(), ApiError> {
+    switch (checkRateLimit(caller)) {
+      case (#err(e)) { return #err(e) };
+      case (#ok()) {};
     };
-    patients.remove(id);
+
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      logAction(caller, "deletePatient", "Unauthorized", false);
+      return #err(#unauthorized("Only users can delete patients"));
+    };
+
+    let _ = patients.remove(id);
+    logAction(caller, "deletePatient", "Deleted patient ID: " # Nat.toText(id), true);
+    #ok();
   };
 
   ////////////////////////////
@@ -339,9 +617,19 @@ actor {
     diagnosis : ?Text,
     notes : ?Text,
     visitType : VisitType
-  ) : async Visit {
+  ) : async Result<Visit, ApiError> {
+    switch (checkRateLimit(caller)) {
+      case (#err(e)) { return #err(e) };
+      case (#ok()) {};
+    };
+
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can create visits");
+      logAction(caller, "createVisit", "Unauthorized", false);
+      return #err(#unauthorized("Only users can create visits"));
+    };
+
+    if (chiefComplaint == "") {
+      return #err(#validationError("Chief complaint cannot be empty"));
     };
 
     let visit : Visit = {
@@ -361,28 +649,51 @@ actor {
 
     visits.add(visitIdCounter, visit);
     visitIdCounter += 1;
-    visit;
+    logAction(caller, "createVisit", "Created visit for patient ID: " # Nat.toText(patientId), true);
+    #ok(visit);
   };
 
-  public query ({ caller }) func getVisit(id : Nat) : async ?Visit {
+  public query ({ caller }) func getVisit(id : Nat) : async Result<?Visit, ApiError> {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can get visits");
+      return #err(#unauthorized("Only users can get visits"));
     };
-    visits.get(id);
+    #ok(visits.get(id));
   };
 
-  public query ({ caller }) func getAllVisits() : async [Visit] {
+  public query ({ caller }) func getAllVisits() : async Result<[Visit], ApiError> {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can get visits");
+      return #err(#unauthorized("Only users can get visits"));
     };
-    visits.values().toArray().sort();
+    #ok(visits.values().toArray());
   };
 
-  public query ({ caller }) func getVisitsByPatientId(patientId : Nat) : async [Visit] {
+  public query ({ caller }) func getVisitsPageinated(params : PaginationParams) : async Result<PaginatedResult<Visit>, ApiError> {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can get visits");
+      return #err(#unauthorized("Only users can get visits"));
     };
-    visits.values().toArray().filter(func(v) { v.patientId == patientId });
+
+    let all = visits.values().toArray();
+    let total = all.size();
+    let start = params.offset;
+    let end = if (start + params.limit > total) { total } else { start + params.limit };
+    let items = if (start >= total) { [] } else { 
+      Array.subArray<Visit>(all, start, end - start)
+    };
+
+    #ok({
+      items;
+      total;
+      limit = params.limit;
+      offset = params.offset;
+    });
+  };
+
+  public query ({ caller }) func getVisitsByPatientId(patientId : Nat) : async Result<[Visit], ApiError> {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      return #err(#unauthorized("Only users can get visits"));
+    };
+    let filtered = visits.values().toArray().filter(func(v) { v.patientId == patientId });
+    #ok(filtered);
   };
 
   public shared ({ caller }) func updateVisit(
@@ -396,13 +707,23 @@ actor {
     diagnosis : ?Text,
     notes : ?Text,
     visitType : VisitType
-  ) : async Visit {
+  ) : async Result<Visit, ApiError> {
+    switch (checkRateLimit(caller)) {
+      case (#err(e)) { return #err(e) };
+      case (#ok()) {};
+    };
+
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can update visits");
+      logAction(caller, "updateVisit", "Unauthorized", false);
+      return #err(#unauthorized("Only users can update visits"));
+    };
+
+    if (chiefComplaint == "") {
+      return #err(#validationError("Chief complaint cannot be empty"));
     };
 
     let existingVisit = switch (visits.get(id)) {
-      case (null) { Runtime.trap("Visit does not exist") };
+      case (null) { return #err(#notFound("Visit not found")) };
       case (?visit) { visit };
     };
 
@@ -422,14 +743,24 @@ actor {
     };
 
     visits.add(id, updatedVisit);
-    updatedVisit;
+    logAction(caller, "updateVisit", "Updated visit ID: " # Nat.toText(id), true);
+    #ok(updatedVisit);
   };
 
-  public shared ({ caller }) func deleteVisit(id : Nat) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can delete visits");
+  public shared ({ caller }) func deleteVisit(id : Nat) : async Result<(), ApiError> {
+    switch (checkRateLimit(caller)) {
+      case (#err(e)) { return #err(e) };
+      case (#ok()) {};
     };
-    visits.remove(id);
+
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      logAction(caller, "deleteVisit", "Unauthorized", false);
+      return #err(#unauthorized("Only users can delete visits"));
+    };
+
+    let _ = visits.remove(id);
+    logAction(caller, "deleteVisit", "Deleted visit ID: " # Nat.toText(id), true);
+    #ok();
   };
 
   ////////////////////////////
@@ -443,9 +774,19 @@ actor {
     diagnosis : ?Text,
     medications : [Medication],
     notes : ?Text
-  ) : async Prescription {
+  ) : async Result<Prescription, ApiError> {
+    switch (checkRateLimit(caller)) {
+      case (#err(e)) { return #err(e) };
+      case (#ok()) {};
+    };
+
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can create prescriptions");
+      logAction(caller, "createPrescription", "Unauthorized", false);
+      return #err(#unauthorized("Only users can create prescriptions"));
+    };
+
+    if (medications.size() == 0) {
+      return #err(#validationError("At least one medication is required"));
     };
 
     let prescription : Prescription = {
@@ -462,35 +803,64 @@ actor {
 
     prescriptions.add(prescriptionIdCounter, prescription);
     prescriptionIdCounter += 1;
-    prescription;
+    logAction(caller, "createPrescription", "Created prescription for patient ID: " # Nat.toText(patientId), true);
+    #ok(prescription);
   };
 
-  public query ({ caller }) func getPrescription(id : Nat) : async ?Prescription {
+  public query ({ caller }) func getPrescription(id : Nat) : async Result<?Prescription, ApiError> {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can get prescriptions");
+      return #err(#unauthorized("Only users can get prescriptions"));
     };
-    prescriptions.get(id);
+    #ok(prescriptions.get(id));
   };
 
-  public query ({ caller }) func getAllPrescriptions() : async [Prescription] {
+  public query ({ caller }) func getAllPrescriptions() : async Result<[Prescription], ApiError> {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can get prescriptions");
+      return #err(#unauthorized("Only users can get prescriptions"));
     };
-    prescriptions.values().toArray().sort();
+    #ok(prescriptions.values().toArray());
   };
 
-  public query ({ caller }) func getPrescriptionsByPatientId(patientId : Nat) : async [Prescription] {
+  public query ({ caller }) func getPrescriptionsPageinated(params : PaginationParams) : async Result<PaginatedResult<Prescription>, ApiError> {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can get prescriptions");
+      return #err(#unauthorized("Only users can get prescriptions"));
     };
-    prescriptions.values().toArray().filter(func(p) { p.patientId == patientId });
+
+    let all = prescriptions.values().toArray();
+    let total = all.size();
+    let start = params.offset;
+    let end = if (start + params.limit > total) { total } else { start + params.limit };
+    let items = if (start >= total) { [] } else { 
+      Array.subArray<Prescription>(all, start, end - start)
+    };
+
+    #ok({
+      items;
+      total;
+      limit = params.limit;
+      offset = params.offset;
+    });
   };
 
-  public query ({ caller }) func getPrescriptionsByVisitId(visitId : Nat) : async [Prescription] {
+  public query ({ caller }) func getPrescriptionsByPatientId(patientId : Nat) : async Result<[Prescription], ApiError> {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can get prescriptions");
+      return #err(#unauthorized("Only users can get prescriptions"));
     };
-    prescriptions.values().toArray().filter(func(p) { switch (p.visitId) { case (?id) { id == visitId }; case (null) { false } } });
+    let filtered = prescriptions.values().toArray().filter(func(p) { p.patientId == patientId });
+    #ok(filtered);
+  };
+
+  public query ({ caller }) func getPrescriptionsByVisitId(visitId : Nat) : async Result<[Prescription], ApiError> {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      return #err(#unauthorized("Only users can get prescriptions"));
+    };
+    let filtered = prescriptions.values().toArray().filter(func(p) { 
+      switch (p.visitId) { 
+        case (?id) { id == visitId }; 
+        case (null) { false } 
+      } 
+    });
+    #ok(filtered);
   };
 
   public shared ({ caller }) func updatePrescription(
@@ -501,13 +871,23 @@ actor {
     diagnosis : ?Text,
     medications : [Medication],
     notes : ?Text
-  ) : async Prescription {
+  ) : async Result<Prescription, ApiError> {
+    switch (checkRateLimit(caller)) {
+      case (#err(e)) { return #err(e) };
+      case (#ok()) {};
+    };
+
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can update prescriptions");
+      logAction(caller, "updatePrescription", "Unauthorized", false);
+      return #err(#unauthorized("Only users can update prescriptions"));
+    };
+
+    if (medications.size() == 0) {
+      return #err(#validationError("At least one medication is required"));
     };
 
     let existingPrescription = switch (prescriptions.get(id)) {
-      case (null) { Runtime.trap("Prescription does not exist") };
+      case (null) { return #err(#notFound("Prescription not found")) };
       case (?prescription) { prescription };
     };
 
@@ -524,98 +904,150 @@ actor {
     };
 
     prescriptions.add(id, updatedPrescription);
-    updatedPrescription;
+    logAction(caller, "updatePrescription", "Updated prescription ID: " # Nat.toText(id), true);
+    #ok(updatedPrescription);
   };
 
-  public shared ({ caller }) func deletePrescription(id : Nat) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can delete prescriptions");
+  public shared ({ caller }) func deletePrescription(id : Nat) : async Result<(), ApiError> {
+    switch (checkRateLimit(caller)) {
+      case (#err(e)) { return #err(e) };
+      case (#ok()) {};
     };
-    prescriptions.remove(id);
+
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      logAction(caller, "deletePrescription", "Unauthorized", false);
+      return #err(#unauthorized("Only users can delete prescriptions"));
+    };
+
+    let _ = prescriptions.remove(id);
+    logAction(caller, "deletePrescription", "Deleted prescription ID: " # Nat.toText(id), true);
+    #ok();
+  };
+
+  ////////////////////////////
+  // Audit Log Functions    //
+  ////////////////////////////
+
+  public query ({ caller }) func getAuditLogs(params : PaginationParams) : async Result<PaginatedResult<AuditLog>, ApiError> {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      return #err(#unauthorized("Only admins can view audit logs"));
+    };
+
+    let all = auditLogs.values().toArray();
+    let total = all.size();
+    let start = params.offset;
+    let end = if (start + params.limit > total) { total } else { start + params.limit };
+    let items = if (start >= total) { [] } else { 
+      Array.subArray<AuditLog>(all, start, end - start)
+    };
+
+    #ok({
+      items;
+      total;
+      limit = params.limit;
+      offset = params.offset;
+    });
   };
 
   ////////////////////////////
   // Sync Methods           //
   ////////////////////////////
 
-  // Returns all patients modified at or after sinceTimestamp.
-  public query ({ caller }) func getAllPatientsSince(sinceTimestamp : Int) : async [Patient] {
+  public query ({ caller }) func getAllPatientsSince(sinceTimestamp : Int) : async Result<[Patient], ApiError> {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can sync patients");
+      return #err(#unauthorized("Only users can sync patients"));
     };
-    patients.values().toArray().filter(func(p) { p.updatedAt >= sinceTimestamp });
+    let filtered = patients.values().toArray().filter(func(p) { p.updatedAt >= sinceTimestamp });
+    #ok(filtered);
   };
 
-  // Returns all visits modified at or after sinceTimestamp.
-  public query ({ caller }) func getAllVisitsSince(sinceTimestamp : Int) : async [Visit] {
+  public query ({ caller }) func getAllVisitsSince(sinceTimestamp : Int) : async Result<[Visit], ApiError> {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can sync visits");
+      return #err(#unauthorized("Only users can sync visits"));
     };
-    visits.values().toArray().filter(func(v) { v.updatedAt >= sinceTimestamp });
+    let filtered = visits.values().toArray().filter(func(v) { v.updatedAt >= sinceTimestamp });
+    #ok(filtered);
   };
 
-  // Returns all prescriptions modified at or after sinceTimestamp.
-  public query ({ caller }) func getAllPrescriptionsSince(sinceTimestamp : Int) : async [Prescription] {
+  public query ({ caller }) func getAllPrescriptionsSince(sinceTimestamp : Int) : async Result<[Prescription], ApiError> {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can sync prescriptions");
+      return #err(#unauthorized("Only users can sync prescriptions"));
     };
-    prescriptions.values().toArray().filter(func(p) { p.updatedAt >= sinceTimestamp });
+    let filtered = prescriptions.values().toArray().filter(func(p) { p.updatedAt >= sinceTimestamp });
+    #ok(filtered);
   };
 
-  public shared ({ caller }) func saveFrontPageContent(content : Text) : async () {
+  ////////////////////////////
+  // Front Page Content     //
+  ////////////////////////////
+
+  public shared ({ caller }) func saveFrontPageContent(content : Text) : async Result<(), ApiError> {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Only admin can save front page content");
+      logAction(caller, "saveFrontPageContent", "Unauthorized", false);
+      return #err(#unauthorized("Only admin can save front page content"));
     };
     frontPageContent := ?content;
+    logAction(caller, "saveFrontPageContent", "Updated front page content", true);
+    #ok();
   };
 
   public query func getFrontPageContent() : async ?Text {
     frontPageContent;
   };
 
-  // getSerialQueue — convenience alias over getQueueByDateAndDoctor; provided by mixin.
-  // getAppointments — convenience alias over getAllAppointmentsByDoctor; provided by mixin.
-  // syncData, getUpdatedData, addAuditEntry, getAuditLog, getActiveAlerts, dismissAlert,
-  // createHandover, getHandover, getHandoversByPatientId, updateHandover,
-  // createDailyProgressNote, getDailyProgressNotesByPatientId, updateDailyProgressNote
-  // — all exposed by ClinicalDataEngineMixin above.
+  ////////////////////////////
+  // Upsert Methods         //
+  ////////////////////////////
 
-  // Idempotent upsert: if record exists and incoming updatedAt is newer, update; else if absent, create.
-  public shared ({ caller }) func upsertPatient(patient : Patient) : async Patient {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can upsert patients");
+  public shared ({ caller }) func upsertPatient(patient : Patient) : async Result<Patient, ApiError> {
+    switch (checkRateLimit(caller)) {
+      case (#err(e)) { return #err(e) };
+      case (#ok()) {};
     };
+
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      return #err(#unauthorized("Only users can upsert patients"));
+    };
+
     switch (patients.get(patient.id)) {
       case (?existing) {
         if (patient.updatedAt > existing.updatedAt) {
           patients.add(patient.id, patient);
-          patient;
+          logAction(caller, "upsertPatient", "Upserted patient ID: " # Nat.toText(patient.id), true);
+          return #ok(patient);
         } else {
-          existing;
+          return #ok(existing);
         };
       };
       case (null) {
-        // Ensure counter stays ahead of any imported id
         if (patient.id >= patientIdCounter) {
           patientIdCounter := patient.id + 1;
         };
         patients.add(patient.id, patient);
-        patient;
+        logAction(caller, "upsertPatient", "Created patient ID: " # Nat.toText(patient.id), true);
+        return #ok(patient);
       };
     };
   };
 
-  public shared ({ caller }) func upsertVisit(visit : Visit) : async Visit {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can upsert visits");
+  public shared ({ caller }) func upsertVisit(visit : Visit) : async Result<Visit, ApiError> {
+    switch (checkRateLimit(caller)) {
+      case (#err(e)) { return #err(e) };
+      case (#ok()) {};
     };
+
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      return #err(#unauthorized("Only users can upsert visits"));
+    };
+
     switch (visits.get(visit.id)) {
       case (?existing) {
         if (visit.updatedAt > existing.updatedAt) {
           visits.add(visit.id, visit);
-          visit;
+          logAction(caller, "upsertVisit", "Upserted visit ID: " # Nat.toText(visit.id), true);
+          return #ok(visit);
         } else {
-          existing;
+          return #ok(existing);
         };
       };
       case (null) {
@@ -623,22 +1055,30 @@ actor {
           visitIdCounter := visit.id + 1;
         };
         visits.add(visit.id, visit);
-        visit;
+        logAction(caller, "upsertVisit", "Created visit ID: " # Nat.toText(visit.id), true);
+        return #ok(visit);
       };
     };
   };
 
-  public shared ({ caller }) func upsertPrescription(prescription : Prescription) : async Prescription {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can upsert prescriptions");
+  public shared ({ caller }) func upsertPrescription(prescription : Prescription) : async Result<Prescription, ApiError> {
+    switch (checkRateLimit(caller)) {
+      case (#err(e)) { return #err(e) };
+      case (#ok()) {};
     };
+
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      return #err(#unauthorized("Only users can upsert prescriptions"));
+    };
+
     switch (prescriptions.get(prescription.id)) {
       case (?existing) {
         if (prescription.updatedAt > existing.updatedAt) {
           prescriptions.add(prescription.id, prescription);
-          prescription;
+          logAction(caller, "upsertPrescription", "Upserted prescription ID: " # Nat.toText(prescription.id), true);
+          return #ok(prescription);
         } else {
-          existing;
+          return #ok(existing);
         };
       };
       case (null) {
@@ -646,24 +1086,35 @@ actor {
           prescriptionIdCounter := prescription.id + 1;
         };
         prescriptions.add(prescription.id, prescription);
-        prescription;
+        logAction(caller, "upsertPrescription", "Created prescription ID: " # Nat.toText(prescription.id), true);
+        return #ok(prescription);
       };
     };
   };
 
-  // Batch upsert — efficient for sync queue flush.
-  public shared ({ caller }) func bulkUpsertPatients(pats : [Patient]) : async [Patient] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can bulk upsert patients");
+  ////////////////////////////
+  // Bulk Upsert Methods    //
+  ////////////////////////////
+
+  public shared ({ caller }) func bulkUpsertPatients(pats : [Patient]) : async Result<[Patient], ApiError> {
+    switch (checkRateLimit(caller)) {
+      case (#err(e)) { return #err(e) };
+      case (#ok()) {};
     };
-    pats.map<Patient, Patient>(func(patient) {
+
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      return #err(#unauthorized("Only users can bulk upsert patients"));
+    };
+
+    let results = Buffer.Buffer<Patient>(pats.size());
+    for (patient in pats.vals()) {
       switch (patients.get(patient.id)) {
         case (?existing) {
           if (patient.updatedAt > existing.updatedAt) {
             patients.add(patient.id, patient);
-            patient;
+            results.add(patient);
           } else {
-            existing;
+            results.add(existing);
           };
         };
         case (null) {
@@ -671,24 +1122,34 @@ actor {
             patientIdCounter := patient.id + 1;
           };
           patients.add(patient.id, patient);
-          patient;
+          results.add(patient);
         };
       };
-    });
+    };
+
+    logAction(caller, "bulkUpsertPatients", "Bulk upserted " # Nat.toText(pats.size()) # " patients", true);
+    #ok(results.toArray());
   };
 
-  public shared ({ caller }) func bulkUpsertVisits(vs : [Visit]) : async [Visit] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can bulk upsert visits");
+  public shared ({ caller }) func bulkUpsertVisits(vs : [Visit]) : async Result<[Visit], ApiError> {
+    switch (checkRateLimit(caller)) {
+      case (#err(e)) { return #err(e) };
+      case (#ok()) {};
     };
-    vs.map<Visit, Visit>(func(visit) {
+
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      return #err(#unauthorized("Only users can bulk upsert visits"));
+    };
+
+    let results = Buffer.Buffer<Visit>(vs.size());
+    for (visit in vs.vals()) {
       switch (visits.get(visit.id)) {
         case (?existing) {
           if (visit.updatedAt > existing.updatedAt) {
             visits.add(visit.id, visit);
-            visit;
+            results.add(visit);
           } else {
-            existing;
+            results.add(existing);
           };
         };
         case (null) {
@@ -696,24 +1157,34 @@ actor {
             visitIdCounter := visit.id + 1;
           };
           visits.add(visit.id, visit);
-          visit;
+          results.add(visit);
         };
       };
-    });
+    };
+
+    logAction(caller, "bulkUpsertVisits", "Bulk upserted " # Nat.toText(vs.size()) # " visits", true);
+    #ok(results.toArray());
   };
 
-  public shared ({ caller }) func bulkUpsertPrescriptions(prescs : [Prescription]) : async [Prescription] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can bulk upsert prescriptions");
+  public shared ({ caller }) func bulkUpsertPrescriptions(prescs : [Prescription]) : async Result<[Prescription], ApiError> {
+    switch (checkRateLimit(caller)) {
+      case (#err(e)) { return #err(e) };
+      case (#ok()) {};
     };
-    prescs.map<Prescription, Prescription>(func(prescription) {
+
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      return #err(#unauthorized("Only users can bulk upsert prescriptions"));
+    };
+
+    let results = Buffer.Buffer<Prescription>(prescs.size());
+    for (prescription in prescs.vals()) {
       switch (prescriptions.get(prescription.id)) {
         case (?existing) {
           if (prescription.updatedAt > existing.updatedAt) {
             prescriptions.add(prescription.id, prescription);
-            prescription;
+            results.add(prescription);
           } else {
-            existing;
+            results.add(existing);
           };
         };
         case (null) {
@@ -721,10 +1192,13 @@ actor {
             prescriptionIdCounter := prescription.id + 1;
           };
           prescriptions.add(prescription.id, prescription);
-          prescription;
+          results.add(prescription);
         };
       };
-    });
+    };
+
+    logAction(caller, "bulkUpsertPrescriptions", "Bulk upserted " # Nat.toText(prescs.size()) # " prescriptions", true);
+    #ok(results.toArray());
   };
 
 };
