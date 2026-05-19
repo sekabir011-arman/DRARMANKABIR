@@ -1,3 +1,10 @@
+import { useEffect } from "react";
+import { startSyncEngine } from "./lib/sync/SyncEngine";
+
+useEffect(() => {
+  startSyncEngine();
+}, []);
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
