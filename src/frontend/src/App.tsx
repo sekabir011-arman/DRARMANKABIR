@@ -262,6 +262,7 @@ function PatientProfileWrapper() {
 const DESIGNATIONS = ["Dr.", "Prof.", "Assoc. Prof.", "Mr.", "Ms.", "Mrs."];
 
 function StaffAuthContent() {
+  const [tab, setTab] = useState<"signin" | "signup">("signin");
   const { signIn, signUp, isLoggingIn, authError } = useEmailAuth();
 
   const [siEmail, setSiEmail] = useState("");
@@ -335,7 +336,7 @@ function StaffAuthContent() {
   };
 
   return (
-    <Tabs defaultValue="signin">
+    <Tabs value={tab} onValueChange={setTab}>
       <TabsList className="w-full mb-5">
         <TabsTrigger
           value="signin"
@@ -576,8 +577,7 @@ function StaffAuthContent() {
 function PatientAuthContent() {
   const { patientSignIn, patientSignUp, isLoggingIn, authError } =
     useEmailAuth();
-
-  const [tab, setTab] = useState("signin");
+  const [tab, setTab] = useState<"signin" | "signup">("signin");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
