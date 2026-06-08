@@ -9,12 +9,14 @@ This frontend is now fully configured to work with Supabase backend.
    cp src/frontend/.env.local.example src/frontend/.env.local
    ```
 
-2. Fill in your Supabase credentials:
+2. Fill in your Supabase credentials and backend API URL:
    ```
    VITE_SUPABASE_URL=https://your-project.supabase.co
    VITE_SUPABASE_ANON_KEY=your-anon-key
-   VITE_API_URL=http://localhost:3000
+   VITE_API_URL=https://your-backend-host.com
    ```
+
+> For Vercel deployments, add these variables to your Vercel project settings rather than committing `.env.local`.
 
 ## Key Files Added
 
