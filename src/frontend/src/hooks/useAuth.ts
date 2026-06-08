@@ -24,11 +24,15 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const getApiUrl = () =>
+    import.meta.env.VITE_API_URL ||
+    (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
+
   const login = useCallback(async (credentials: LoginCredentials) => {
     setLoading(true);
     setError(null);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -59,7 +63,7 @@ export const useAuth = () => {
     setLoading(true);
     setError(null);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/api/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

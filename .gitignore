@@ -5,3 +5,8 @@ dist/
 .platform/
 .pnpm-store/
 .cache/
+.env
+.env.local
+.env.*
+!.env.example
+!.env.local.example
