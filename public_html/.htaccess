@@ -68,6 +68,12 @@
   </IfModule>
 </FilesMatch>
 
+# Allow PHP in /api/ directory (server-side data sync)
+<IfModule mod_rewrite.c>
+  RewriteCond %{REQUEST_URI} ^/api/
+  RewriteRule ^ - [L]
+</IfModule>
+
 # Prevent access to .env and config files
 <FilesMatch "\.(env|env\.json|config\.js|php)$">
   <IfModule mod_authz_core.c>
