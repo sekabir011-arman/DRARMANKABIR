@@ -74,8 +74,8 @@
   RewriteRule ^ - [L]
 </IfModule>
 
-# Prevent access to .env and config files
-<FilesMatch "\.(env|env\.json|config\.js|php)$">
+# Prevent access to .env and config files (but allow /api/ PHP endpoints)
+<FilesMatch "\.(env|env\.json|config\.js)$">
   <IfModule mod_authz_core.c>
     Require all denied
   </IfModule>
@@ -84,6 +84,12 @@
     Deny from all
   </IfModule>
 </FilesMatch>
+
+# Allow PHP files in /api/ directory only
+<IfModule mod_rewrite.c>
+  RewriteCond %{REQUEST_URI} !^/api/ [NC]
+  RewriteRule \.php$ - [F,L]
+</IfModule>
 
 # Prevent direct access to node_modules or source maps
 <FilesMatch "\.map$">
