@@ -68,13 +68,19 @@
   </IfModule>
 </FilesMatch>
 
-# Allow PHP in /api/ directory (server-side data sync)
+# Allow PHP in /api/ directory for data sync
 <IfModule mod_rewrite.c>
   RewriteCond %{REQUEST_URI} ^/api/
   RewriteRule ^ - [L]
 </IfModule>
 
-# Prevent access to .env and config files (but allow /api/ PHP endpoints)
+# Only block PHP files outside /api/
+<IfModule mod_rewrite.c>
+  RewriteCond %{REQUEST_URI} !^/api/ [NC]
+  RewriteRule \.php$ - [F,L]
+</IfModule>
+
+# Prevent access to .env and config files
 <FilesMatch "\.(env|env\.json|config\.js)$">
   <IfModule mod_authz_core.c>
     Require all denied
@@ -85,13 +91,7 @@
   </IfModule>
 </FilesMatch>
 
-# Allow PHP files in /api/ directory only
-<IfModule mod_rewrite.c>
-  RewriteCond %{REQUEST_URI} !^/api/ [NC]
-  RewriteRule \.php$ - [F,L]
-</IfModule>
-
-# Prevent direct access to node_modules or source maps
+# Prevent direct access to source maps
 <FilesMatch "\.map$">
   <IfModule mod_authz_core.c>
     Require all denied
@@ -101,9 +101,3 @@
     Deny from all
   </IfModule>
 </FilesMatch>
-
-# Allow PhpMyAdmin (if installed)
-<IfModule mod_rewrite.c>
-  RewriteCond %{REQUEST_URI} ^/phpmyadmin [NC]
-  RewriteRule ^ - [L]
-</IfModule>
