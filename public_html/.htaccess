@@ -34,15 +34,19 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
-  
+
+  # Allow API PHP endpoints - don't rewrite or block
+  RewriteCond %{REQUEST_URI} ^/api/ [NC]
+  RewriteRule ^ - [L]
+
   # Don't rewrite if it's a real file
   RewriteCond %{REQUEST_FILENAME} -f
   RewriteRule ^ - [L]
-  
+
   # Don't rewrite if it's a real directory
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
-  
+
   # Rewrite everything else to index.html
   RewriteRule ^ index.html [L]
 </IfModule>
@@ -68,19 +72,7 @@
   </IfModule>
 </FilesMatch>
 
-# Allow PHP in /api/ directory for data sync
-<IfModule mod_rewrite.c>
-  RewriteCond %{REQUEST_URI} ^/api/
-  RewriteRule ^ - [L]
-</IfModule>
-
-# Only block PHP files outside /api/
-<IfModule mod_rewrite.c>
-  RewriteCond %{REQUEST_URI} !^/api/ [NC]
-  RewriteRule \.php$ - [F,L]
-</IfModule>
-
-# Prevent access to .env and config files
+# Prevent access to .env and config files (but NOT php - API needs it)
 <FilesMatch "\.(env|env\.json|config\.js)$">
   <IfModule mod_authz_core.c>
     Require all denied
@@ -90,6 +82,12 @@
     Deny from all
   </IfModule>
 </FilesMatch>
+
+# Block PHP files EXCEPT in the /api/ directory
+<IfModule mod_rewrite.c>
+  RewriteCond %{REQUEST_URI} !^/api/ [NC]
+  RewriteRule \.php$ - [F,L]
+</IfModule>
 
 # Prevent direct access to source maps
 <FilesMatch "\.map$">
