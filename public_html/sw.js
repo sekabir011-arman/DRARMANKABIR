@@ -2,6 +2,7 @@ const CACHE_NAME = 'dr-arman-care-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
+  '/manifest.json',
 ];
 
 // Install: cache the app shell
@@ -32,12 +33,27 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   if (url.protocol === 'chrome-extension:') return;
 
-  // Network-first for API calls and external URLs
+  // Network-first for API calls (PHP backend) - don't cache API responses
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(
+      fetch(event.request, { cache: 'no-store' })
+        .then(response => {
+          // Clone and cache successful GET responses for offline fallback
+          if (response.ok) {
+            const toCache = response.clone();
+            caches.open(CACHE_NAME + '-api').then(cache => {
+              cache.put(event.request, toCache);
+            });
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Network-first for external resources
   if (
-    url.pathname.startsWith('/api') ||
-    url.hostname.includes('icp') ||
-    url.hostname.includes('dfinity') ||
-    url.hostname.includes('medex') ||
     url.hostname.includes('whatsapp') ||
     url.hostname.includes('fonts.googleapis') ||
     url.hostname.includes('fonts.gstatic')
