@@ -57,7 +57,7 @@
         }
     ],
     "created_at": 1783713221,
-    "updated_at": 1783740259,
+    "updated_at": 1783740278,
     "messages": [
         {
             "id": "msg_e8198b1d1a",
@@ -2741,6 +2741,52 @@
             "content": "Successfully wrote 9076 bytes (261 lines) to public_html\/api\/helpers.php",
             "is_error": false,
             "time": 1783740259
+        },
+        {
+            "id": "msg_a894e40624",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now let me create the authentication system - this is critical. I need:\n\n1. Auth middleware (verify session token)\n2. Login API\n3. Logout API\n4. Verify session API\n5. Auth helper functions"
+                },
+                {
+                    "type": "text",
+                    "text": "Now the authentication middleware:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_V9i4paCYiqLTYw1vSWo10088",
+                    "name": "write_file",
+                    "input": {
+                        "path": "public_html\/api\/auth\/middleware.php",
+                        "content": "<?php\n\/**\n * Authentication Middleware\n * \n * Validates session tokens and provides current user context.\n * Include this at the top of any protected API endpoint.\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\n\n\/**\n * Get the authenticated user from the session token.\n * Returns user array or null if not authenticated.\n *\/\nfunction getAuthUser(): ?array {\n    $token = getBearerToken();\n    if (!$token) return null;\n    \n    try {\n        $db = Database::getInstance();\n        \n        \/\/ Find valid session\n        $stmt = $db->prepare('\n            SELECT u.*, s.token, s.expires_at \n            FROM user_sessions s \n            JOIN users u ON s.user_id = u.id \n            WHERE s.token = :token \n              AND s.expires_at > NOW() \n              AND u.is_active = 1\n            LIMIT 1\n        ');\n        $stmt->execute([':token' => $token]);\n        $user = $stmt->fetch();\n        \n        if ($user) {\n            \/\/ Update last activity\n            $updateStmt = $db->prepare('UPDATE user_sessions SET last_activity = NOW() WHERE token = :token');\n            $updateStmt->execute([':token' => $token]);\n        }\n        \n        return $user ?: null;\n    } catch (\\Exception $e) {\n        error_log('Auth middleware error: ' . $e->getMessage());\n        return null;\n    }\n}\n\n\/**\n * Require authentication. Sends 401 if not authenticated.\n *\/\nfunction requireAuth(): array {\n    $user = getAuthUser();\n    if (!$user) {\n        errorResponse('Authentication required. Please log in.', 401);\n    }\n    return $user;\n}\n\n\/**\n * Require specific role(s). Sends 403 if not authorized.\n *\/\nfunction requireRole(array $allowedRoles): array {\n    $user = requireAuth();\n    \n    if (!in_array($user['role'], $allowedRoles)) {\n        errorResponse('Access denied. Insufficient permissions.', 403, [\n            'required_roles' => $allowedRoles,\n            'your_role' => $user['role'],\n        ]);\n    }\n    \n    return $user;\n}\n\n\/**\n * Require admin role.\n *\/\nfunction requireAdmin(): array {\n    return requireRole(['admin']);\n}\n\n\/**\n * Check if user has a specific permission based on role.\n *\/\nfunction hasPermission(array $user, string $permission): bool {\n    \/\/ Role-based permissions\n    $permissions = [\n        'admin' => [\n            'manage_users', 'manage_settings', 'view_all_patients',\n            'view_all_finances', 'manage_beds', 'view_audit_logs',\n            'export_data', 'delete_data',\n        ],\n        'consultant_doctor' => [\n            'view_assigned_patients', 'view_all_patients',\n            'create_prescription', 'edit_prescription',\n            'view_appointments', 'manage_appointments',\n            'create_visit', 'edit_visit',\n            'order_investigations', 'view_results',\n            'finalize_diagnosis', 'admit_patient', 'discharge_patient',\n        ],\n        'medical_officer' => [\n            'view_assigned_patients', 'view_all_patients',\n            'create_prescription', 'edit_prescription',\n            'view_appointments',\n            'create_visit', 'edit_visit',\n            'order_investigations', 'view_results',\n            'verify_vitals',\n        ],\n        'assistant_registrar' => [\n            'view_assigned_patients', 'view_all_patients',\n            'create_prescription', 'edit_prescription',\n            'view_appointments',\n            'create_visit',\n            'order_investigations', 'view_results',\n            'verify_vitals',\n        ],\n        'registrar' => [\n            'view_assigned_patients', 'view_all_patients',\n            'create_prescription', 'edit_prescription',\n            'view_appointments', 'manage_appointments',\n            'create_visit', 'edit_visit',\n            'order_investigations', 'view_results',\n            'verify_vitals',\n        ],\n        'assistant_professor' => [\n            'view_assigned_patients', 'view_all_patients',\n            'create_prescription', 'edit_prescription',\n            'view_appointments', 'manage_appointments',\n            'create_visit', 'edit_visit',\n            'order_investigations', 'view_results',\n            'finalize_diagnosis', 'admit_patient', 'discharge_patient',\n        ],\n        'associate_professor' => [\n            'view_assigned_patients', 'view_all_patients',\n            'create_prescription', 'edit_prescription',\n            'view_appointments', 'manage_appointments',\n            'create_visit', 'edit_visit',\n            'order_investigations', 'view_results',\n            'finalize_diagnosis', 'admit_patient', 'discharge_patient',\n        ],\n        'professor' => [\n            'view_assigned_patients', 'view_all_patients',\n            'create_prescription', 'edit_prescription',\n            'view_appointments', 'manage_appointments',\n            'create_visit', 'edit_visit',\n            'order_investigations', 'view_results',\n            'finalize_diagnosis', 'admit_patient', 'discharge_patient',\n        ],\n        'intern_doctor' => [\n            'view_assigned_patients',\n            'create_prescription',\n            'view_appointments',\n            'create_visit',\n            'record_vitals',\n            'view_results',\n        ],\n        'nurse' => [\n            'view_assigned_patients',\n            'view_appointments',\n            'record_vitals',\n            'administer_medication',\n            'view_prescriptions',\n            'record_mar',\n            'create_handover',\n        ],\n        'staff' => [\n            'view_patients',\n            'register_patient',\n            'view_appointments',\n            'manage_appointments',\n            'process_payments',\n            'view_finances',\n        ],\n        'reception' => [\n            'view_patients',\n            'register_patient',\n            'view_appointments',\n            'manage_appointments',\n            'process_payments',\n        ],\n        'doctor' => [\n            'view_assigned_patients', 'view_all_patients',\n            'create_prescription', 'edit_prescription',\n            'view_appointments', 'manage_appointments',\n            'create_visit', 'edit_visit',\n            'order_investigations', 'view_results',\n            'finalize_diagnosis',\n        ],\n    ];\n    \n    return in_array($permission, $permissions[$user['role']] ?? []);\n}\n\n\/**\n * Get Bearer token from Authorization header\n *\/\nfunction getBearerToken(): ?string {\n    $headers = '';\n    \n    if (isset($_SERVER['HTTP_AUTHORIZATION'])) {\n        $headers = $_SERVER['HTTP_AUTHORIZATION'];\n    } elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {\n        $headers = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];\n    } elseif (function_exists('apache_request_headers')) {\n        $requestHeaders = apache_request_headers();\n        $headers = $requestHeaders['Authorization'] ?? $requestHeaders['authorization'] ?? '';\n    }\n    \n    if (empty($headers)) {\n        \/\/ Also check POST\/GET for token\n        return getParam('token', null);\n    }\n    \n    if (preg_match('\/Bearer\\s(\\S+)\/', $headers, $matches)) {\n        return $matches[1];\n    }\n    \n    return null;\n}\n\n\/**\n * Create a new session for a user\n *\/\nfunction createSession(int $userId): string {\n    $db = Database::getInstance();\n    \n    \/\/ Generate secure token\n    $token = bin2hex(random_bytes(64));\n    $refreshToken = bin2hex(random_bytes(64));\n    $expiresAt = date('Y-m-d H:i:s', time() + SESSION_LIFETIME);\n    \n    $stmt = $db->prepare('\n        INSERT INTO user_sessions (user_id, token, refresh_token, ip_address, user_agent, expires_at)\n        VALUES (:user_id, :token, :refresh_token, :ip_address, :user_agent, :expires_at)\n    ');\n    $stmt->execute([\n        ':user_id' => $userId,\n        ':token' => $token,\n        ':refresh_token' => $refreshToken,\n        ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? null,\n        ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,\n        ':expires_at' => $expiresAt,\n    ]);\n    \n    return $token;\n}\n\n\/**\n * Destroy a session (logout)\n *\/\nfunction destroySession(string $token): void {\n    $db = Database::getInstance();\n    $stmt = $db->prepare('DELETE FROM user_sessions WHERE token = :token');\n    $stmt->execute([':token' => $token]);\n}\n\n\/**\n * Clean up expired sessions\n *\/\nfunction cleanupExpiredSessions(): void {\n    $db = Database::getInstance();\n    $db->query('DELETE FROM user_sessions WHERE expires_at < NOW()');\n}\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 101600,
+                "completion_tokens": 2142,
+                "total_tokens": 103742,
+                "prompt_cache_hit_tokens": 101504,
+                "prompt_cache_miss_tokens": 96,
+                "prompt_tokens_details": {
+                    "cached_tokens": 101504
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 46
+                }
+            },
+            "time": 1783740277
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_V9i4paCYiqLTYw1vSWo10088",
+            "content": "Successfully wrote 8351 bytes (265 lines) to public_html\/api\/auth\/middleware.php",
+            "is_error": false,
+            "time": 1783740278
         }
     ]
 }
