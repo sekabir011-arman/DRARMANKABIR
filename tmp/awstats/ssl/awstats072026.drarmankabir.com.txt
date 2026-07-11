@@ -8,35 +8,35 @@ AWSTATS DATA FILE 8.0 (build 20240604)
 # update).
 BEGIN_MAP 28
 POS_GENERAL 2088                
-POS_TIME 2744                
-POS_VISITOR 7915                
-POS_DAY 7987                
-POS_DOMAIN 3351                
-POS_LOGIN 3562                
-POS_ROBOT 3717                
-POS_WORMS 3878                
-POS_EMAILSENDER 4009                
-POS_EMAILRECEIVER 4152                
-POS_SESSION 8043                
-POS_FILESIZE 8241                
-POS_REQUESTTIME 8363                
-POS_SIDER 8180                
-POS_FILETYPES 4287                
-POS_DOWNLOADS 4351                
-POS_OS 4399                
-POS_BROWSER 4464                
-POS_SCREENSIZE 4514                
-POS_UNKNOWNREFERER 4588                
-POS_UNKNOWNREFERERBROWSER 4675                
-POS_ORIGIN 4757                
-POS_SEREFERRALS 4887                
-POS_PAGEREFS 5031                
-POS_SEARCHWORDS 5179                
-POS_KEYWORDS 5331                
-POS_MISC 2408                
-POS_ERRORS 5390                
-POS_CLUSTER 3418                
-POS_SIDER_404 5511                
+POS_TIME 2756                
+POS_VISITOR 9302                
+POS_DAY 10708               
+POS_DOMAIN 3425                
+POS_LOGIN 3787                
+POS_ROBOT 3942                
+POS_WORMS 4273                
+POS_EMAILSENDER 4404                
+POS_EMAILRECEIVER 4547                
+POS_SESSION 10791               
+POS_FILESIZE 12271               
+POS_REQUESTTIME 12413               
+POS_SIDER 10987               
+POS_FILETYPES 4682                
+POS_DOWNLOADS 4868                
+POS_OS 4916                
+POS_BROWSER 5087                
+POS_SCREENSIZE 5588                
+POS_UNKNOWNREFERER 5662                
+POS_UNKNOWNREFERERBROWSER 5749                
+POS_ORIGIN 5831                
+POS_SEREFERRALS 5966                
+POS_PAGEREFS 6110                
+POS_SEARCHWORDS 6258                
+POS_KEYWORDS 6410                
+POS_MISC 2420                
+POS_ERRORS 6469                
+POS_CLUSTER 3643                
+POS_SIDER_404 6590                
 END_MAP
 
 # LastLine    = Date of last record processed - Last record line number in last log - Last record offset in last log - Last record signature value
@@ -48,61 +48,73 @@ END_MAP
 # MonthHostsKnown   = Number of hosts known
 # MonthHostsUnKnown = Number of hosts unknown
 BEGIN_GENERAL 8
-LastLine 20260710105549 133 26579 14890385203146
+LastLine 20260711105224 442 90067 9850336577692
 FirstTime 0
-LastTime 0
-LastUpdate 20260710105834 133 0 133 0 0
-TotalVisits 0                   
-TotalUnique 0                   
+LastTime 20260711105224
+LastUpdate 20260711111238 442 0 442 0 0
+TotalVisits 36                  
+TotalUnique 33                  
 MonthHostsKnown 0                   
-MonthHostsUnknown 0                   
+MonthHostsUnknown 33                  
 END_GENERAL
 
 # Misc ID - Pages - Hits - Bandwidth
 BEGIN_MISC 10
-AddToFavourites 0 5 0
-FlashSupport 0 0 0
-PDFSupport 0 0 0
-JavascriptDisabled 0 0 0
-WindowsMediaPlayerSupport 0 0 0
 RealPlayerSupport 0 0 0
+WindowsMediaPlayerSupport 0 0 0
 TotalMisc 0 0 0
-DirectorSupport 0 0 0
+JavascriptDisabled 0 0 0
 QuickTimeSupport 0 0 0
 JavaEnabled 0 0 0
+PDFSupport 0 0 0
+FlashSupport 0 0 0
+DirectorSupport 0 0 0
+AddToFavourites 0 8 0
 END_MISC
 
 # Hour - Pages - Hits - Bandwidth - Not viewed Pages - Not viewed Hits - Not viewed Bandwidth
 BEGIN_TIME 24
-0 0 0 0 11 15 17442
-1 0 0 0 7 8 9963
-2 0 0 0 39 40 48618
-3 0 0 0 10 13 16191
-4 0 0 0 13 15 18666
-5 0 0 0 10 10 12429
-6 0 0 0 6 6 7470
-7 0 0 0 8 13 12447
-8 0 0 0 25 26 31230
-9 0 0 0 8 9 11205
-10 0 0 0 30 36 34014
-11 0 0 0 68 69 61392
-12 0 0 0 97 98 82593
-13 0 0 0 17 19 17508
-14 0 0 0 9 9 10335
-15 0 0 0 14 15 14361
-16 0 0 0 69 69 60486
-17 0 0 0 22 23 27387
-18 0 0 0 13 16 16926
-19 0 0 0 31 37 34537
-20 0 0 0 19 21 25791
-21 0 0 0 17 23 26907
-22 0 0 0 7 8 9963
-23 0 0 0 26 26 32463
+0 4 28 577883 26 37 2444462
+1 9 33 762603 13 140 1914586
+2 3 3 1416 39 40 48618
+3 1 1 973 10 14 16489
+4 1 1 973 14 16 18964
+5 23 23 10719 10 10 12429
+6 7 55 1344209 7 8 8741
+7 3 3 1859 8 14 12513
+8 3 3 1714 25 26 31230
+9 1 1 973 9 11 11801
+10 9 11 458077 39 45 42717
+11 0 0 0 72 74 67620
+12 0 0 0 100 103 87570
+13 0 0 0 19 22 21252
+14 0 0 0 30 30 36570
+15 0 0 0 17 18 18096
+16 0 0 0 72 73 65463
+17 0 0 0 24 26 31131
+18 0 0 0 36 39 45663
+19 0 0 0 53 62 63238
+20 0 0 0 23 26 32028
+21 0 0 0 20 28 33144
+22 0 0 0 12 13 16173
+23 0 0 0 29 29 36198
 END_TIME
 
 # Domain - Pages - Hits - Bandwidth
 # The 25 first Pages must be first (order not required for others)
-BEGIN_DOMAIN 0
+BEGIN_DOMAIN 12
+us 26 74 1354216
+in 14 62 1339956
+gb 6 8 456218
+jp 4 4 1772
+ro 4 4 3362
+de 3 3 2919
+cl 2 2 886
+ru 1 1 443
+kr 1 1 298
+za 1 1 443
+cn 1 1 443
+pt 1 1 443
 END_DOMAIN
 
 # Cluster ID - Pages - Hits - Bandwidth
@@ -116,8 +128,13 @@ END_LOGIN
 
 # Robot ID - Hits - Bandwidth - Last visit - Hits on robots.txt
 # The 25 first Hits must be first (order not required for others)
-BEGIN_ROBOT 1
-curl 3 4993 20260707190848 0
+BEGIN_ROBOT 6
+crawl 113 918403 20260711012945 0
+curl 20 2427045 20260711005601 0
+Googlebot/ 15 984548 20260711012655 1
+php 4 1192 20260711093856 0
+no_user_agent 3 973 20260711104415 1
+robot 2 596 20260711090208 2
 END_ROBOT
 
 # Worm ID - Hits - Bandwidth - Last visit
@@ -136,7 +153,14 @@ BEGIN_EMAILRECEIVER 0
 END_EMAILRECEIVER
 
 # Files type - Hits - Bandwidth - Bandwidth without compression - Bandwidth after compression
-BEGIN_FILETYPES 0
+BEGIN_FILETYPES 7
+css 4 106302 0 0
+php 22 9746 0 0
+json 5 1328 0 0
+html 30 14909 0 0
+woff2 4 447756 0 0
+Unknown 3 894 0 0
+js 94 2580464 0 0
 END_FILETYPES
 
 # Downloads - Hits - Bandwidth
@@ -144,11 +168,42 @@ BEGIN_DOWNLOADS 0
 END_DOWNLOADS
 
 # OS ID - Hits
-BEGIN_OS ID - Hits - Pages 0
+BEGIN_OS ID - Hits - Pages 8
+macintosh 1 1
+linux 3 3
+android12 2 2
+ios_iphone 8 8
+macosx15 72 24
+macosx 6 4
+win10 41 17
+android10 29 5
 END_OS
 
 # Browser ID - Hits - Pages
-BEGIN_BROWSER 0
+BEGIN_BROWSER 23
+safari17.0 3 3
+chrome99.0.4844.58 2 2
+firefox125.0 1 1
+chrome109.0.5414.119 1 1
+chrome147.0.0.0 2 2
+chrome119.0.0.0 1 1
+chrome101.0.4951.67 2 2
+chrome101.0.4951.64 1 1
+safari15.5 2 2
+safari26.0 4 3
+chrome150.0.0.0 29 5
+safari13.0.3 3 3
+chrome99.0.4844.51 1 1
+chrome120.0.0.0 2 2
+safari17.2 5 5
+chrome116.0.0.0 2 2
+chrome93.0.4577.0 64 16
+firefox105.0 1 1
+firefox149.0 2 1
+chrome149.0.0.0 31 7
+chrome123.0.0.0 1 1
+chrome104.0.0.0 1 1
+firefox122.0 1 1
 END_BROWSER
 
 # Screen size - Hits
@@ -165,11 +220,11 @@ END_UNKNOWNREFERERBROWSER
 
 # Origin - Pages - Hits 
 BEGIN_ORIGIN 6
-From0 0 0
+From0 52 120
 From1 0 0
 From2 0 0
 From3 0 0
-From4 0 0
+From4 12 42
 From5 0 0
 END_ORIGIN
 
@@ -194,90 +249,164 @@ END_KEYWORDS
 
 # Errors - Hits - Bandwidth
 BEGIN_ERRORS 3
-404 157 196407
+404 225 281475
 503 269 216276
-403 181 222318
+403 232 285660
 END_ERRORS
 
 # URL with 404 errors - Hits - Last URL referrer
-BEGIN_SIDER_404 49
-/xmlrpc.php 2 -
-/wp-includes/php-ai-client/src/Messages/DTO/apc.php 6 -
-/wp-content/plugins/ranktool/src/modules/seostats.opensiteexplorer.php 3 -
-//wordpress/wp-includes/wlwmanifest.xml 1 -
-/wp-includes/cron.php 1 -
-//wp-includes/ID3/license.txt 1 -
-/wp-content/plugins/adresskorrektur-autocomplete-fuer-woo/drum.php 3 -
-/wp-includes/SimplePie/library/SimplePie/HTTP/core_functions.php 4 -
-/wp-includes/sodium_compat/src/Core/AEGIS/logo.php 2 -
-//blog/wp-includes/wlwmanifest.xml 1 -
-/wp-content/plugins/validar-certificados-de-cursos/admin/partials/retries.php 3 -
-/wp-includes/js/dist/script-modules/block-library/accordion/code3.php 4 -
-/wp-includes/class-wp-block-parser.php 1 -
+BEGIN_SIDER_404 57
+/wp-includes/sodium_compat/src/Core/AEGIS/logo.php 3 -
 /assets/hero-enhancement.css 1 -
-/wp-content/plugins/additional-charge/bind.php 8 -
-/wp-content/themes/main.php 3 -
-/robots.txt 18 -
-/th1s_1s_a_4o4.html 3 -
-/wp-includes/php-ai-client/src/Providers/Models/VideoGeneration/Contracts/messagee.php 5 -
-/wp-includes/css/buttons.css 1 http://drarmankabir.com/wp-includes/css/buttons.css
-//2021/wp-includes/wlwmanifest.xml 1 -
-/6999DJjf 1 -
-//wp/wp-includes/wlwmanifest.xml 1 -
-/wp-content/plugins/ranktool/startmenu.php 2 -
-/wp-json/ 3 -
-//shop/wp-includes/wlwmanifest.xml 1 -
-//wp-includes/wlwmanifest.xml 1 -
-//2020/wp-includes/wlwmanifest.xml 1 -
-/assets/main.js 2 http://www.google.com/url
-//xmlrpc.php 1 -
-/wp-content/themes/drum.php 1 -
-/wp-content/themes/srtain.php 4 -
-/wp-content/plugins/wc-zeus-gateway/admin/assets/css/curl.php 1 -
-/wp-content/themes/retries.php 2 -
-//wp1/wp-includes/wlwmanifest.xml 1 -
-/wp-admin/install.php 37 -
-//feed/ 1 -
-/wp-login.php 2 -
-//test/wp-includes/wlwmanifest.xml 1 -
-//web/wp-includes/wlwmanifest.xml 1 -
-//cms/wp-includes/wlwmanifest.xml 1 -
-//2019/wp-includes/wlwmanifest.xml 1 -
-/assets/auth-bridge.js 1 -
-/wp-content/plugins/reset-thumbnails/assets/css/bind.php 6 -
 /wp-content/plugins/updraftplus/readme.txt 1 -
-/wp-includes/php-ai-client/src/Operations/Enums/monitor.php 6 -
+//wp-includes/wlwmanifest.xml 2 -
+/wp-includes/sodium_compat/src/Core/Poly1305/NS.php 1 -
+//website/wp-includes/wlwmanifest.xml 1 -
+/assets/main.js 3 http://www.google.com/url
+/wp-content/plugins/ranktool/src/modules/seostats.opensiteexplorer.php 4 -
+/xmlrpc.php 3 -
+/assets/auth-bridge.js 1 -
+/wp-content/plugins/formlayer/main/settings/shop_inventory.php 4 -
+/wp-content/themes/retries.php 2 -
+/wp-includes/php-ai-client/src/Operations/Enums/monitor.php 7 -
+//web/wp-includes/wlwmanifest.xml 3 -
+//cms/wp-includes/wlwmanifest.xml 3 -
+/wp-content/plugins/ranktool/startmenu.php 2 -
+/wp-content/themes/main.php 4 -
+/wp-includes/cron.php 1 -
+/robots.txt 25 -
+/wp-content/plugins/wc-zeus-gateway/admin/assets/css/curl.php 1 -
+/wp-content/plugins/additional-charge/bind.php 10 -
+/wp-json/ 3 -
+/wp-content/plugins/validar-certificados-de-cursos/admin/partials/retries.php 4 -
+//test/wp-includes/wlwmanifest.xml 3 -
+/th1s_1s_a_4o4.html 4 -
+/wp-admin/install.php 45 -
+//feed/ 2 -
+//news/wp-includes/wlwmanifest.xml 1 -
+/wp-includes/class-wp-block-parser.php 2 -
+/wp-includes/js/dist/script-modules/block-library/accordion/code3.php 5 -
+//2020/wp-includes/wlwmanifest.xml 2 -
+//wp-includes/ID3/license.txt 2 -
+/wp-includes/css/buttons.css 1 http://drarmankabir.com/wp-includes/css/buttons.css
+/wp-content/plugins/adresskorrektur-autocomplete-fuer-woo/drum.php 3 -
+/wp-includes/php-ai-client/src/Messages/DTO/apc.php 6 -
+/wp-includes/SimplePie/library/SimplePie/HTTP/core_functions.php 4 -
+//sito/wp-includes/wlwmanifest.xml 1 -
+/wp-content/plugins/reset-thumbnails/assets/css/bind.php 7 -
+/6999DJjf 1 -
+/wp-includes/php-ai-client/src/Providers/Models/VideoGeneration/Contracts/messagee.php 7 -
+//blog/wp-includes/wlwmanifest.xml 3 -
+/wp-content/themes/srtain.php 5 -
+//site/wp-includes/wlwmanifest.xml 3 -
+//xmlrpc.php 3 -
+//media/wp-includes/wlwmanifest.xml 1 -
+/wp-login.php 2 -
 /assets/advice-enhancement.js 1 -
-//site/wp-includes/wlwmanifest.xml 1 -
-/wp-content/plugins/formlayer/main/settings/shop_inventory.php 3 -
+//2021/wp-includes/wlwmanifest.xml 2 -
+/api/.env 1 -
+//wordpress/wp-includes/wlwmanifest.xml 3 -
+//shop/wp-includes/wlwmanifest.xml 3 -
+//wp1/wp-includes/wlwmanifest.xml 3 -
+//wp/wp-includes/wlwmanifest.xml 3 -
+//wp2/wp-includes/wlwmanifest.xml 1 -
+//2019/wp-includes/wlwmanifest.xml 3 -
+/wp-content/themes/drum.php 2 -
+//2018/wp-includes/wlwmanifest.xml 1 -
 END_SIDER_404
 
 # Host - Pages - Hits - Bandwidth - Last visit date - [Start date of last visit] - [Last page of last visit]
 # [Start date of last visit] and [Last page of last visit] are saved only if session is not finished
 # The 25 first Hits must be first (order not required for others)
-BEGIN_VISITOR 0
+BEGIN_VISITOR 33
+103.120.222.11 12 60 1339070 20260711021510
+2.24.206.103 6 8 456218 20260711105224 20260711105215 /.aws/credentials
+154.38.188.63 6 54 1343236 20260711063044
+178.156.186.30 3 3 2919 20260711091150
+148.66.159.112 2 2 886 20260711053742
+154.38.190.94 2 2 1946 20260711041212
+131.72.236.123 2 2 886 20260711053614
+199.189.225.167 2 2 886 20260711053550
+103.82.20.130 2 2 886 20260711053852
+154.38.191.87 2 2 1946 20260711101231 20260711101231 /
+160.187.68.214 2 2 886 20260711055056
+72.167.50.103 2 2 886 20260711055516
+129.204.188.64 1 1 443 20260711075435
+176.116.30.54 1 1 443 20260711104341 20260711104341 /
+16.148.131.235 1 1 443 20260711004712
+2.81.199.210 1 1 443 20260711053403
+54.145.93.205 1 1 443 20260711055029
+161.123.115.82 1 1 298 20260711083323
+72.167.132.114 1 1 443 20260711055004
+62.146.225.69 1 1 973 20260711021222
+142.252.33.66 1 1 443 20260711104416 20260711104416 /
+107.172.58.36 1 1 443 20260711073416
+107.175.94.125 1 1 443 20260711051312
+139.155.134.17 1 1 443 20260711024955
+67.207.94.191 1 1 443 20260711051732
+3.223.127.185 1 1 443 20260711053822
+157.66.26.183 1 1 443 20260711053806
+97.74.93.24 1 1 443 20260711052042
+154.0.166.254 1 1 443 20260711055138
+62.146.227.42 1 1 973 20260711011136
+43.160.219.138 1 1 443 20260711081244
+62.146.226.43 1 1 973 20260711081239
+79.112.109.195 1 1 443 20260711054120
 END_VISITOR
 
 # Date - Pages - Hits - Bandwidth - Visits
-BEGIN_DAY 0
+BEGIN_DAY 1
+20260711 64 162 3161399 36
 END_DAY
 
 # Session range - Number of visits
-BEGIN_SESSION 0
+BEGIN_SESSION 6
+30mn-1h 1
+2mn-5mn 2
+1h+ 1
+15mn-30mn 1
+0s-30s 24
+5mn-15mn 3
 END_SESSION
 
 # URL - Pages - Bandwidth - Entry - Exit
 # The 25 first Pages must be first (order not required for others)
-BEGIN_SIDER 0
+BEGIN_SIDER 24
+/ 30 14909 20 15
+/env.json 4 1030 0 0
+/wp-includes/cron.php 3 1329 1 2
+/wp-content/plugins/ranktool/startmenu.php 2 886 2 1
+/assets/fonts/BricolageGrotesque.woff2 2 344446 0 1
+/wp-includes/php-ai-client/src/Operations/Enums/monitor.php 2 886 1 2
+/assets/fonts/PlusJakartaSans.woff2 2 103310 0 0
+/wp-content/plugins/validar-certificados-de-cursos/admin/partials/retries.php 2 886 1 2
+/wp-includes/sodium_compat/src/Core/AEGIS/logo.php 2 886 1 2
+/wp-content/plugins/additional-charge/bind.php 1 443 1 1
+/wp-content/themes/srtain.php 1 443 1 1
+/wp-content/themes/retries.php 1 443 1 0
+/wp-content/plugins/ranktool/src/modules/seostats.opensiteexplorer.php 1 443 1 1
+/wp-content/plugins/adresskorrektur-autocomplete-fuer-woo/drum.php 1 443 1 0
+/wp-includes/php-ai-client/src/Messages/DTO/apc.php 1 443 1 0
+/wp-includes/SimplePie/library/SimplePie/HTTP/core_functions.php 1 443 1 1
+/wp-includes/sodium_compat/src/Core/Poly1305/NS.php 1 443 0 1
+/config.json 1 298 0 0
+/env 1 298 0 0
+/wp-includes/class-wp-block-parser.php 1 443 1 0
+/.aws/credentials 1 298 0 0
+/.env.development 1 298 0 0
+/wp-includes/js/dist/script-modules/block-library/accordion/code3.php 1 443 1 1
+/wp-includes/Text/Diff/Engine/forgot_password.php 1 443 1 1
 END_SIDER
 
 # Payload Range - Payload Frequency
-BEGIN_FILESIZE 5
-1K-2K 347
-500-1K 268
-0-44 3
-2K-5K 1
-44-100 5
+BEGIN_FILESIZE 7
+500-1K 289
+5K+ 42
+100-500 228
+0-44 22
+1K-2K 470
+2K-5K 7
+44-100 8
 END_FILESIZE
 
 # Request Time Range - Request Time Frequency
