@@ -1,0 +1,260 @@
+<?php
+/**
+ * API Helper Functions
+ * 
+ * Common utilities for all API endpoints.
+ */
+
+require_once __DIR__ . '/../config.php';
+
+// ─── Response Helpers ─────────────────────────────────────────────────────
+
+function jsonResponse(mixed $data, int $statusCode = 200): void {
+    http_response_code($statusCode);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+function successResponse(mixed $data = null, string $message = 'Success'): void {
+    jsonResponse([
+        'success' => true,
+        'message' => $message,
+        'data' => $data,
+        'timestamp' => date('c'),
+    ]);
+}
+
+function errorResponse(string $message, int $statusCode = 400, mixed $errors = null): void {
+    $response = [
+        'success' => false,
+        'message' => $message,
+        'timestamp' => date('c'),
+    ];
+    if ($errors !== null) {
+        $response['errors'] = $errors;
+    }
+    jsonResponse($response, $statusCode);
+}
+
+// ─── Request Helpers ──────────────────────────────────────────────────────
+
+function getJsonInput(): array {
+    $raw = file_get_contents('php://input');
+    if (empty($raw)) return [];
+    $data = json_decode($raw, true);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        errorResponse('Invalid JSON input', 400);
+    }
+    return $data ?? [];
+}
+
+function getParam(string $key, mixed $default = null): mixed {
+    // Check GET, POST, then JSON body
+    if (isset($_GET[$key])) return $_GET[$key];
+    if (isset($_POST[$key])) return $_POST[$key];
+    
+    static $jsonInput = null;
+    if ($jsonInput === null) {
+        $jsonInput = getJsonInput();
+    }
+    return $jsonInput[$key] ?? $default;
+}
+
+function getMethod(): string {
+    return $_SERVER['REQUEST_METHOD'];
+}
+
+function requireMethod(string ...$methods): void {
+    if (!in_array(getMethod(), $methods)) {
+        errorResponse('Method not allowed. Allowed: ' . implode(', ', $methods), 405);
+    }
+}
+
+// ─── Rate Limiting ─────────────────────────────────────────────────────────
+
+function checkRateLimit(string $identifier = ''): void {
+    if (empty($identifier)) {
+        $identifier = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    }
+    
+    $rateLimitDir = __DIR__ . '/../../server-data/ratelimit';
+    if (!is_dir($rateLimitDir)) {
+        mkdir($rateLimitDir, 0755, true);
+    }
+    
+    $file = $rateLimitDir . '/' . md5($identifier) . '.json';
+    $max = RATE_LIMIT_MAX;
+    $window = RATE_LIMIT_WINDOW;
+    
+    $data = ['count' => 0, 'reset' => time() + $window];
+    if (file_exists($file)) {
+        $existing = json_decode(file_get_contents($file), true);
+        if ($existing && isset($existing['reset'])) {
+            if (time() < $existing['reset']) {
+                $data = $existing;
+            }
+        }
+    }
+    
+    $data['count']++;
+    
+    if ($data['count'] > $max) {
+        $retryAfter = $data['reset'] - time();
+        header('Retry-After: ' . $retryAfter);
+        errorResponse('Rate limit exceeded. Try again later.', 429, [
+            'retry_after' => $retryAfter,
+            'limit' => $max,
+            'window' => $window,
+        ]);
+    }
+    
+    file_put_contents($file, json_encode($data), LOCK_EX);
+}
+
+// ─── Input Validation ──────────────────────────────────────────────────────
+
+function validateRequired(array $data, array $fields): ?array {
+    $missing = [];
+    foreach ($fields as $field) {
+        if (!isset($data[$field]) || (is_string($data[$field]) && trim($data[$field]) === '')) {
+            $missing[] = $field;
+        }
+    }
+    return empty($missing) ? null : $missing;
+}
+
+function sanitizeString(string $value): string {
+    $value = strip_tags($value);
+    $value = trim($value);
+    return htmlspecialchars($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+}
+
+function sanitizeEmail(string $email): string {
+    $email = filter_var($email, FILTER_SANITIZE_EMAIL);
+    return filter_var($email, FILTER_VALIDATE_EMAIL) ? strtolower($email) : '';
+}
+
+function sanitizePhone(string $phone): string {
+    return preg_replace('/[^0-9+\-\(\) ]/', '', trim($phone));
+}
+
+// ─── Pagination ────────────────────────────────────────────────────────────
+
+function getPaginationParams(): array {
+    $page = max(1, (int) getParam('page', 1));
+    $limit = min(100, max(1, (int) getParam('limit', 20)));
+    $offset = ($page - 1) * $limit;
+    
+    return [
+        'page' => $page,
+        'limit' => $limit,
+        'offset' => $offset,
+    ];
+}
+
+function paginatedResponse(array $items, int $total, int $page, int $limit): void {
+    $totalPages = ceil($total / $limit);
+    
+    successResponse([
+        'items' => $items,
+        'pagination' => [
+            'page' => $page,
+            'limit' => $limit,
+            'total' => $total,
+            'total_pages' => $totalPages,
+            'has_more' => $page < $totalPages,
+        ],
+    ]);
+}
+
+// ─── CSRF Protection ───────────────────────────────────────────────────────
+
+function generateCsrfToken(): string {
+    return bin2hex(random_bytes(32));
+}
+
+function validateCsrfToken(string $token): bool {
+    $sessionToken = $_SESSION['csrf_token'] ?? '';
+    return hash_equals($sessionToken, $token);
+}
+
+// ─── File Upload Helpers ───────────────────────────────────────────────────
+
+function handleFileUpload(string $fieldName, string $subDir = ''): ?string {
+    if (!isset($_FILES[$fieldName]) || $_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) {
+        return null;
+    }
+    
+    $file = $_FILES[$fieldName];
+    
+    // Validate file size
+    if ($file['size'] > MAX_UPLOAD_SIZE) {
+        errorResponse('File too large. Maximum: ' . (MAX_UPLOAD_SIZE / 1024 / 1024) . 'MB', 413);
+    }
+    
+    // Validate extension
+    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    if (!in_array($ext, ALLOWED_EXTENSIONS)) {
+        errorResponse('File type not allowed. Allowed: ' . implode(', ', ALLOWED_EXTENSIONS), 415);
+    }
+    
+    // Create upload directory
+    $uploadDir = UPLOAD_DIR . '/' . ($subDir ? $subDir . '/' : '');
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0755, true);
+    }
+    
+    // Generate unique filename
+    $filename = uniqid() . '_' . bin2hex(random_bytes(8)) . '.' . $ext;
+    $filepath = $uploadDir . $filename;
+    
+    if (!move_uploaded_file($file['tmp_name'], $filepath)) {
+        errorResponse('Failed to save uploaded file', 500);
+    }
+    
+    return '/uploads/' . ($subDir ? $subDir . '/' : '') . $filename;
+}
+
+// ─── Logging ───────────────────────────────────────────────────────────────
+
+function logAudit(
+    int|null $userId,
+    int|null $patientId,
+    string $action,
+    string $entityType,
+    int|null $entityId = null,
+    mixed $oldValues = null,
+    mixed $newValues = null
+): void {
+    try {
+        $db = Database::getInstance();
+        $stmt = $db->prepare('
+            INSERT INTO audit_logs (user_id, patient_id, action, entity_type, entity_id, old_values, new_values, ip_address, user_agent)
+            VALUES (:user_id, :patient_id, :action, :entity_type, :entity_id, :old_values, :new_values, :ip_address, :user_agent)
+        ');
+        $stmt->execute([
+            ':user_id' => $userId,
+            ':patient_id' => $patientId,
+            ':action' => $action,
+            ':entity_type' => $entityType,
+            ':entity_id' => $entityId,
+            ':old_values' => $oldValues ? json_encode($oldValues) : null,
+            ':new_values' => $newValues ? json_encode($newValues) : null,
+            ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? null,
+            ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,
+        ]);
+    } catch (\Exception $e) {
+        error_log('Audit log failed: ' . $e->getMessage());
+    }
+}
+
+// ─── CORS & Pre-flight ─────────────────────────────────────────────────────
+
+function handleCors(): void {
+    // CORS is handled in .htaccess, but ensure pre-flight works
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(204);
+        exit;
+    }
+}
