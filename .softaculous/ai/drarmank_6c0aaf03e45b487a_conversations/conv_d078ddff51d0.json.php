@@ -47,7 +47,7 @@
         }
     ],
     "created_at": 1783713221,
-    "updated_at": 1783762634,
+    "updated_at": 1783762652,
     "messages": [
         {
             "id": "msg_compact",
@@ -2417,6 +2417,89 @@
             "content": "Successfully wrote 1414 bytes (48 lines) to public_html\/api\/notifications\/create.php",
             "is_error": false,
             "time": 1783762634
+        },
+        {
+            "id": "msg_1d1a42f07d",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now let me create the data migration script from localStorage to MySQL, the production env.json, and the final deployment preparation files."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_u31Tu8rPRPSsmAX2RUUA7780",
+                    "name": "write_file",
+                    "input": {
+                        "content": "<?php\n\/**\n * Data Migration Script: localStorage \u2192 MySQL\n * \n * This script helps migrate existing data from a user's browser localStorage\n * into the new MySQL database. It accepts JSON payloads of exported data.\n * \n * Usage:\n *   Admin exports data from browser DevTools \u2192 localStorage\n *   Then POSTs to this endpoint to import into MySQL\n * \n * POST \/api\/migrate\/import.php\n * Body: { \"patients\": [...], \"visits\": [...], \"prescriptions\": [...], \"appointments\": [...] }\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\nrequire_once __DIR__ . '\/..\/auth\/middleware.php';\n\nhandleCors();\nrequireMethod('POST');\n\n$user = requireAdmin(); \/\/ Only admin can run migration\n\n$input = getJsonInput();\n\nif (empty($input)) {\n    errorResponse('No data provided', 400);\n}\n\ntry {\n    $db = Database::getInstance();\n    $db->beginTransaction();\n    \n    $stats = [\n        'patients_imported' => 0,\n        'patients_skipped' => 0,\n        'visits_imported' => 0,\n        'prescriptions_imported' => 0,\n        'appointments_imported' => 0,\n    ];\n    \n    \/\/ \u2500\u2500\u2500 Import Patients \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n    if (isset($input['patients']) && is_array($input['patients'])) {\n        $stmt = $db->prepare('\n            INSERT INTO patients (full_name, name_bn, date_of_birth, gender, phone, email, address, blood_group, weight, height, patient_type, status, created_at)\n            VALUES (:full_name, :name_bn, :date_of_birth, :gender, :phone, :email, :address, :blood_group, :weight, :height, :patient_type, :status, :created_at)\n            ON DUPLICATE KEY UPDATE id=id\n        ');\n        \n        foreach ($input['patients'] as $patient) {\n            \/\/ Map from localStorage format\n            $fullName = $patient['fullName'] ?? $patient['full_name'] ?? '';\n            if (empty($fullName)) continue;\n            \n            \/\/ Check if already exists\n            $check = $db->prepare('SELECT id FROM patients WHERE full_name = :fn AND (phone = :ph OR (:ph IS NULL AND phone IS NULL)) LIMIT 1');\n            $check->execute([':fn' => $fullName, ':ph' => $patient['phone'] ?? null]);\n            if ($check->fetch()) {\n                $stats['patients_skipped']++;\n                continue;\n            }\n            \n            $stmt->execute([\n                ':full_name' => $fullName,\n                ':name_bn' => $patient['nameBn'] ?? $patient['name_bn'] ?? null,\n                ':date_of_birth' => $patient['dateOfBirth'] ?? null,\n                ':gender' => $patient['gender'] ?? 'male',\n                ':phone' => $patient['phone'] ?? null,\n                ':email' => $patient['email'] ?? null,\n                ':address' => $patient['address'] ?? null,\n                ':blood_group' => $patient['bloodGroup'] ?? $patient['blood_group'] ?? null,\n                ':weight' => $patient['weight'] ?? null,\n                ':height' => $patient['height'] ?? null,\n                ':patient_type' => $patient['patientType'] ?? $patient['patient_type'] ?? 'outdoor',\n                ':status' => $patient['status'] ?? 'Active',\n                ':created_at' => $patient['createdAt'] ?? date('Y-m-d H:i:s'),\n            ]);\n            $stats['patients_imported']++;\n        }\n    }\n    \n    \/\/ \u2500\u2500\u2500 Import Visits \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n    if (isset($input['visits']) && is_array($input['visits'])) {\n        $stmt = $db->prepare('\n            INSERT INTO visits (patient_id, visit_date, chief_complaint, history_of_present_illness, physical_examination, diagnosis, notes, visit_type, created_at)\n            VALUES (:patient_id, :visit_date, :chief_complaint, :hpI, :pe, :diagnosis, :notes, :visit_type, :created_at)\n        ');\n        \n        foreach ($input['visits'] as $visit) {\n            $stmt->execute([\n                ':patient_id' => (int)($visit['patientId'] ?? $visit['patient_id'] ?? 0),\n                ':visit_date' => $visit['visitDate'] ?? $visit['visit_date'] ?? date('Y-m-d'),\n                ':chief_complaint' => $visit['chiefComplaint'] ?? $visit['chief_complaint'] ?? '',\n                ':hpI' => $visit['historyOfPresentIllness'] ?? $visit['history_of_present_illness'] ?? null,\n                ':pe' => $visit['physicalExamination'] ?? $visit['physical_examination'] ?? null,\n                ':diagnosis' => $visit['diagnosis'] ?? null,\n                ':notes' => $visit['notes'] ?? null,\n                ':visit_type' => $visit['visitType'] ?? $visit['visit_type'] ?? 'outpatient',\n                ':created_at' => $visit['createdAt'] ?? date('Y-m-d H:i:s'),\n            ]);\n            $stats['visits_imported']++;\n        }\n    }\n    \n    \/\/ \u2500\u2500\u2500 Import Prescriptions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n    if (isset($input['prescriptions']) && is_array($input['prescriptions'])) {\n        foreach ($input['prescriptions'] as $rx) {\n            $rxStmt = $db->prepare('\n                INSERT INTO prescriptions (patient_id, visit_id, prescription_date, diagnosis, notes, created_at)\n                VALUES (:patient_id, :visit_id, :rx_date, :diagnosis, :notes, :created_at)\n            ');\n            $rxStmt->execute([\n                ':patient_id' => (int)($rx['patientId'] ?? $rx['patient_id'] ?? 0),\n                ':visit_id' => isset($rx['visitId']) ? (int)$rx['visitId'] : null,\n                ':rx_date' => $rx['prescriptionDate'] ?? $rx['prescription_date'] ?? date('Y-m-d'),\n                ':diagnosis' => $rx['diagnosis'] ?? null,\n                ':notes' => $rx['notes'] ?? null,\n                ':created_at' => $rx['createdAt'] ?? date('Y-m-d H:i:s'),\n            ]);\n            \n            $prescriptionId = (int)$db->lastInsertId();\n            \n            \/\/ Import medications\n            if (isset($rx['medications']) && is_array($rx['medications'])) {\n                $medStmt = $db->prepare('\n                    INSERT INTO prescription_medications (prescription_id, name, dose, frequency, duration, instructions, sort_order)\n                    VALUES (:pid, :name, :dose, :frequency, :duration, :instructions, :sort_order)\n                ');\n                \n                foreach ($rx['medications'] as $idx => $med) {\n                    $medStmt->execute([\n                        ':pid' => $prescriptionId,\n                        ':name' => $med['name'] ?? '',\n                        ':dose' => $med['dose'] ?? null,\n                        ':frequency' => $med['frequency'] ?? null,\n                        ':duration' => $med['duration'] ?? null,\n                        ':instructions' => $med['instructions'] ?? null,\n                        ':sort_order' => $idx,\n                    ]);\n                }\n            }\n            \n            $stats['prescriptions_imported']++;\n        }\n    }\n    \n    \/\/ \u2500\u2500\u2500 Import Appointments \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n    if (isset($input['appointments']) && is_array($input['appointments'])) {\n        $stmt = $db->prepare('\n            INSERT INTO appointments (patient_id, patient_name, patient_phone, doctor_id, appointment_date, appointment_time, serial_number, type, status, chief_complaint, notes, created_at)\n            VALUES (:patient_id, :patient_name, :patient_phone, :doctor_id, :app_date, :app_time, :serial, :type, :status, :complaint, :notes, :created_at)\n        ');\n        \n        foreach ($input['appointments'] as $apt) {\n            $stmt->execute([\n                ':patient_id' => isset($apt['patientId']) ? (int)$apt['patientId'] : null,\n                ':patient_name' => $apt['patientName'] ?? $apt['patient_name'] ?? null,\n                ':patient_phone' => $apt['patientPhone'] ?? $apt['patient_phone'] ?? null,\n                ':doctor_id' => isset($apt['doctorId']) ? (int)$apt['doctorId'] : null,\n                ':app_date' => $apt['appointmentDate'] ?? $apt['appointment_date'] ?? date('Y-m-d'),\n                ':app_time' => $apt['appointmentTime'] ?? $apt['appointment_time'] ?? null,\n                ':serial' => $apt['serialNumber'] ?? $apt['serial_number'] ?? null,\n                ':type' => $apt['type'] ?? 'regular',\n                ':status' => $apt['status'] ?? 'scheduled',\n                ':complaint' => $apt['chiefComplaint'] ?? $apt['chief_complaint'] ?? null,\n                ':notes' => $apt['notes'] ?? null,\n                ':created_at' => $apt['createdAt'] ?? date('Y-m-d H:i:s'),\n            ]);\n            $stats['appointments_imported']++;\n        }\n    }\n    \n    $db->commit();\n    \n    logAudit($user['id'], null, 'migrate', 'data', null, null, $stats);\n    \n    successResponse($stats, 'Data migration completed successfully');\n} catch (\\Exception $e) {\n    if (isset($db) && $db->inTransaction()) {\n        $db->rollBack();\n    }\n    error_log('Migration error: ' . $e->getMessage());\n    errorResponse('Migration failed: ' . $e->getMessage(), 500);\n}\n",
+                        "path": "public_html\/api\/migrate\/import.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 61787,
+                "completion_tokens": 2304,
+                "total_tokens": 64091,
+                "prompt_cache_hit_tokens": 61696,
+                "prompt_cache_miss_tokens": 91,
+                "prompt_tokens_details": {
+                    "cached_tokens": 61696
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 25
+                }
+            },
+            "time": 1783762648
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_u31Tu8rPRPSsmAX2RUUA7780",
+            "content": "Path outside project directory",
+            "is_error": true,
+            "time": 1783762649
+        },
+        {
+            "id": "msg_73b24f35ef",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The path keeps going outside project directory because I'm specifying the full path. Let me fix this - I need to use paths relative to the project root which is \/home\/drarmank."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_TRxCrmKtmoZL5K9H4mjI9998",
+                    "name": "bash",
+                    "input": {
+                        "command": "mkdir -p \/home\/drarmank\/public_html\/api\/migrate"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 64107,
+                "completion_tokens": 96,
+                "total_tokens": 64203,
+                "prompt_cache_hit_tokens": 64000,
+                "prompt_cache_miss_tokens": 107,
+                "prompt_tokens_details": {
+                    "cached_tokens": 64000
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 39
+                }
+            },
+            "time": 1783762652
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_TRxCrmKtmoZL5K9H4mjI9998",
+            "content": "[Command completed successfully with no output]",
+            "is_error": false,
+            "time": 1783762652
         }
     ]
 }
