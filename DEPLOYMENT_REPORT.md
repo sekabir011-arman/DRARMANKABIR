@@ -256,6 +256,33 @@ npm run build
 - [x] Legacy data import endpoint
 - [x] Health check / info endpoint
 
+## 🗄️ PHPMYADMIN DATABASE MANAGEMENT
+
+phpMyAdmin 5.2.3 has been installed and configured at:
+
+```
+https://drarmankabir.com/phpmyadmin/
+```
+
+**Login**: Use your MySQL database credentials (set in `config.php`)
+
+**Configuration**:
+- Blowfish secret generated for cookie encryption
+- Cookie-based authentication (no auto-login)
+- Export directory: `/home/drarmank/server-data/exports`
+- Temp directory: `/home/drarmank/server-data/tmp`
+- Setup, examples, and doc directories blocked via .htaccess
+- Sensitive file types (JSON, MD, lock files) blocked
+
+**Security**:
+- phpMyAdmin has its own `.htaccess` with access restrictions
+- For production, consider adding HTTP Basic Auth:
+  ```bash
+  # Create password file
+  htpasswd -c /home/drarmank/server-data/.htpasswd drarmank_admin
+  # Then uncomment the Auth blocks in phpmyadmin/.htaccess
+  ```
+
 ## 📝 NOTES
 
 - The `sync.php` file is kept for backward compatibility but is NOT used by the new system
