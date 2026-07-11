@@ -57,7 +57,7 @@
         }
     ],
     "created_at": 1783713221,
-    "updated_at": 1783740325,
+    "updated_at": 1783740336,
     "messages": [
         {
             "id": "msg_e8198b1d1a",
@@ -3047,6 +3047,48 @@
             "content": "Successfully wrote 1595 bytes (54 lines) to public_html\/api\/patients\/get.php",
             "is_error": false,
             "time": 1783740325
+        },
+        {
+            "id": "msg_532a5149cf",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me create the patient update API, then move on to creating the rest quickly. I'll batch the remaining important ones: visits, prescriptions, appointments, and then the React update."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_hZ2vrKmzfycoRbggS1Lm4867",
+                    "name": "write_file",
+                    "input": {
+                        "path": "public_html\/api\/patients\/update.php",
+                        "content": "<?php\n\/**\n * Update Patient API\n * \n * POST \/api\/patients\/update.php\n * Body: { id, fullName, nameBn, dateOfBirth, gender, phone, email, ... }\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\nrequire_once __DIR__ . '\/..\/auth\/middleware.php';\n\nhandleCors();\nrequireMethod('POST');\n\n$user = requireAuth();\n$input = getJsonInput();\n\n$id = (int)($input['id'] ?? 0);\nif (!$id) {\n    errorResponse('Patient ID is required', 400);\n}\n\ntry {\n    $db = Database::getInstance();\n    \n    \/\/ Fetch existing patient\n    $stmt = $db->prepare('SELECT * FROM patients WHERE id = :id');\n    $stmt->execute([':id' => $id]);\n    $existing = $stmt->fetch();\n    \n    if (!$existing) {\n        errorResponse('Patient not found', 404);\n    }\n    \n    \/\/ Build update fields\n    $updates = [];\n    $params = [':id' => $id];\n    \n    $fields = [\n        'full_name' => 'fullName',\n        'name_bn' => 'nameBn',\n        'gender' => 'gender',\n        'phone' => 'phone',\n        'email' => 'email',\n        'address' => 'address',\n        'blood_group' => 'bloodGroup',\n        'patient_type' => 'patientType',\n        'photo_url' => 'photo',\n        'status' => 'status',\n    ];\n    \n    foreach ($fields as $dbField => $inputKey) {\n        if (isset($input[$inputKey])) {\n            $value = null;\n            if ($inputKey === 'gender') {\n                $value = in_array($input[$inputKey], ['male', 'female', 'other']) ? $input[$inputKey] : 'male';\n            } elseif ($inputKey === 'patientType') {\n                $value = in_array($input[$inputKey], ['outdoor', 'indoor', 'emergency', 'admitted']) ? $input[$inputKey] : 'outdoor';\n            } elseif ($inputKey === 'phone') {\n                $value = sanitizePhone($input[$inputKey]);\n            } elseif ($inputKey === 'email') {\n                $value = sanitizeEmail($input[$inputKey]);\n            } elseif ($inputKey === 'bloodGroup') {\n                $value = $input[$inputKey] === 'unknown' ? null : sanitizeString($input[$inputKey]);\n            } else {\n                $value = sanitizeString($input[$inputKey]);\n            }\n            $updates[] = \"$db_field = :$dbField\";\n            $params[\":$dbField\"] = $value ?: null;\n        }\n    }\n    \n    \/\/ Handle numeric fields\n    if (isset($input['weight'])) {\n        $updates[] = 'weight = :weight';\n        $params[':weight'] = floatval($input['weight']) ?: null;\n    }\n    if (isset($input['height'])) {\n        $updates[] = 'height = :height';\n        $params[':height'] = floatval($input['height']) ?: null;\n    }\n    if (isset($input['dateOfBirth'])) {\n        $updates[] = 'date_of_birth = :date_of_birth';\n        $params[':date_of_birth'] = $input['dateOfBirth'] ?: null;\n    }\n    \n    \/\/ Handle JSON fields\n    if (isset($input['allergies'])) {\n        $updates[] = 'allergies = :allergies';\n        $params[':allergies'] = json_encode($input['allergies']);\n    }\n    if (isset($input['chronicConditions'])) {\n        $updates[] = 'chronic_conditions = :chronic_conditions';\n        $params[':chronic_conditions'] = json_encode($input['chronicConditions']);\n    }\n    if (isset($input['pastSurgicalHistory'])) {\n        $updates[] = 'past_surgical_history = :past_surgical_history';\n        $params[':past_surgical_history'] = sanitizeString($input['pastSurgicalHistory']);\n    }\n    \n    if (empty($updates)) {\n        errorResponse('No fields to update', 400);\n    }\n    \n    $updates[] = 'updated_at = NOW()';\n    $updateStr = implode(', ', $updates);\n    \n    $db->beginTransaction();\n    \n    $updateStmt = $db->prepare(\"UPDATE patients SET $updateStr WHERE id = :id\");\n    $updateStmt->execute($params);\n    \n    \/\/ Fetch updated patient\n    $fetchStmt = $db->prepare('SELECT * FROM patients WHERE id = :id');\n    $fetchStmt->execute([':id' => $id]);\n    $updated = $fetchStmt->fetch();\n    \n    $db->commit();\n    \n    logAudit($user['id'], $id, 'update', 'patient', $id, $existing, $updated);\n    \n    successResponse($updated, 'Patient updated successfully');\n    \n} catch (\\Exception $e) {\n    if (isset($db) && $db->inTransaction()) {\n        $db->rollBack();\n    }\n    error_log('Update patient error: ' . $e->getMessage());\n    errorResponse('Failed to update patient', 500);\n}\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 108334,
+                "completion_tokens": 1264,
+                "total_tokens": 109598,
+                "prompt_cache_hit_tokens": 108288,
+                "prompt_cache_miss_tokens": 46,
+                "prompt_tokens_details": {
+                    "cached_tokens": 108288
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 37
+                }
+            },
+            "time": 1783740335
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_hZ2vrKmzfycoRbggS1Lm4867",
+            "content": "Successfully wrote 4246 bytes (132 lines) to public_html\/api\/patients\/update.php",
+            "is_error": false,
+            "time": 1783740336
         }
     ]
 }
