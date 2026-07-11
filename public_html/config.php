@@ -6,21 +6,42 @@
  * On cPanel, place this outside public_html or protect with .htaccess.
  */
 
+// ─── Environment Detection ─────────────────────────────────────────────────
+// On cPanel, you can set these in .env file outside public_html
+// or directly in your cPanel environment variables.
+// The priority is: getenv() > .env file > config defaults
+
+$dotenvFile = __DIR__ . '/../.env';
+if (file_exists($dotenvFile)) {
+    $lines = file($dotenvFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (str_starts_with(trim($line), '#')) continue;
+        if (str_contains($line, '=')) {
+            [$key, $value] = explode('=', $line, 2);
+            $key = trim($key);
+            $value = trim($value, " \t\n\r\0\x0B\"'");
+            if (!getenv($key)) {
+                putenv("$key=$value");
+            }
+        }
+    }
+}
+
 // ─── Database Configuration ────────────────────────────────────────────────
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'drarmank_care');
-define('DB_USER', 'drarmank_care_user');
-define('DB_PASS', ''); // Set via environment variable or secure config
+define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_NAME', getenv('DB_NAME') ?: 'drarmank_care');
+define('DB_USER', getenv('DB_USER') ?: 'drarmank_care_user');
+define('DB_PASS', getenv('DB_PASS') ?: '');
 define('DB_CHARSET', 'utf8mb4');
 
 // ─── Application Configuration ─────────────────────────────────────────────
 define('APP_NAME', 'Dr. Arman Kabir Care');
 define('APP_VERSION', '2.0.0');
-define('APP_URL', 'https://drarmankabir.com');
+define('APP_URL', getenv('APP_URL') ?: 'https://drarmankabir.com');
 define('API_URL', APP_URL . '/api');
 
 // ─── Security Configuration ────────────────────────────────────────────────
-define('JWT_SECRET', ''); // Generate: bin2hex(random_bytes(32))
+define('JWT_SECRET', getenv('JWT_SECRET') ?: 'change-this-to-a-random-secret-in-production');
 define('JWT_EXPIRY', 86400); // 24 hours in seconds
 define('SESSION_LIFETIME', 86400 * 7); // 7 days
 define('CSRF_TOKEN_LIFETIME', 3600); // 1 hour
