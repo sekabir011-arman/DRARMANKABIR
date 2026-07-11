@@ -47,7 +47,7 @@
         }
     ],
     "created_at": 1783713221,
-    "updated_at": 1783762588,
+    "updated_at": 1783762594,
     "messages": [
         {
             "id": "msg_compact",
@@ -3090,6 +3090,48 @@
             "content": "Successfully wrote 1865 bytes (67 lines) to public_html\/api\/info.php",
             "is_error": false,
             "time": 1783762588
+        },
+        {
+            "id": "msg_b684be2dd2",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now let me create the remaining APIs - invoices, handovers, notifications, and update the appointments update endpoint. Let me also create the env.json for production and a data migration script."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_hKlnHcKYMNQbkL20fT3w1641",
+                    "name": "write_file",
+                    "input": {
+                        "content": "<?php\n\/**\n * Appointments API - Update\n * \n * POST \/api\/appointments\/update.php\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\nrequire_once __DIR__ . '\/..\/auth\/middleware.php';\n\nhandleCors();\nrequireMethod('POST');\n\n$user = requireAuth();\n$input = getJsonInput();\n\n$id = (int)($input['id'] ?? 0);\nif (!$id) {\n    errorResponse('Appointment ID is required', 400);\n}\n\ntry {\n    $db = Database::getInstance();\n    \n    $updates = [];\n    $params = [':id' => $id];\n    \n    $allowedFields = [\n        'status' => 'status',\n        'appointment_time' => 'appointment_time',\n        'chief_complaint' => 'chief_complaint',\n        'notes' => 'notes',\n        'patient_id' => 'patient_id',\n        'patient_name' => 'patient_name',\n        'patient_phone' => 'patient_phone',\n        'serial_number' => 'serial_number',\n    ];\n    \n    foreach ($allowedFields as $inputKey => $dbField) {\n        if (isset($input[$inputKey])) {\n            $updates[] = \"$dbField = :$dbField\";\n            $params[\":$dbField\"] = $input[$inputKey];\n        }\n    }\n    \n    if (empty($updates)) {\n        errorResponse('No fields to update', 400);\n    }\n    \n    $updates[] = 'updated_at = NOW()';\n    $updateStr = implode(', ', $updates);\n    \n    $stmt = $db->prepare(\"UPDATE appointments SET $updateStr WHERE id = :id\");\n    $stmt->execute($params);\n    \n    logAudit($user['id'], null, 'update', 'appointment', $id);\n    \n    successResponse(null, 'Appointment updated successfully');\n} catch (\\Exception $e) {\n    error_log('Update appointment error: ' . $e->getMessage());\n    errorResponse('Failed to update appointment', 500);\n}\n",
+                        "path": "public_html\/api\/appointments\/update.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 93927,
+                "completion_tokens": 556,
+                "total_tokens": 94483,
+                "prompt_cache_hit_tokens": 93824,
+                "prompt_cache_miss_tokens": 103,
+                "prompt_tokens_details": {
+                    "cached_tokens": 93824
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 37
+                }
+            },
+            "time": 1783762594
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_hKlnHcKYMNQbkL20fT3w1641",
+            "content": "Successfully wrote 1655 bytes (64 lines) to public_html\/api\/appointments\/update.php",
+            "is_error": false,
+            "time": 1783762594
         }
     ]
 }
