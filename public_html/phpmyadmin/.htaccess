@@ -1,0 +1,44 @@
+# ─── phpMyAdmin Security ───────────────────────────────────────────────────
+
+# Require authentication for phpMyAdmin access
+# Uncomment and configure for additional security:
+# AuthType Basic
+# AuthName "Restricted Access - phpMyAdmin"
+# AuthUserFile /home/drarmank/server-data/.htpasswd
+# Require valid-user
+
+# Deny access to setup directory
+RewriteRule ^setup/ - [F,L]
+RewriteRule ^examples/ - [F,L]
+RewriteRule ^doc/ - [F,L]
+RewriteRule ^locale/ - [F,L]
+RewriteRule ^sql/ - [F,L]
+RewriteRule ^templates/ - [F,L]
+RewriteRule ^vendor/ - [F,L]
+
+# Deny access to configuration files
+<FilesMatch "config\.inc\.php$">
+    Require all granted
+</FilesMatch>
+<FilesMatch "config\.sample\.inc\.php$">
+    Require all denied
+</FilesMatch>
+
+# Deny access to dot files
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# Deny access to JSON, MD, and other non-essential files
+<FilesMatch "\.(json|md|yml|lock|txt|dist)$">
+    Require all denied
+</FilesMatch>
+
+# Protect setup directory
+<DirectoryMatch "^setup/">
+    Require all denied
+</DirectoryMatch>
+
+# Only allow GET and POST methods
+RewriteCond %{REQUEST_METHOD} !^(GET|POST)$
+RewriteRule .* - [F,L]
