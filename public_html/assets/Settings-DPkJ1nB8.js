@@ -4055,11 +4055,11 @@ function Footer() {
     /* @__PURE__ */ jsxRuntimeExports.jsx(
       "a",
       {
-        href: `https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`,
+        href: `https://drarmankabir.com
         target: "_blank",
         rel: "noopener noreferrer",
         className: "hover:text-primary transition-colors",
-        children: "caffeine.ai"
+        children: "Dr. Arman Kabir Care"
       }
     )
   ] });

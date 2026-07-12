@@ -7385,11 +7385,11 @@ function LandingPage({
               /* @__PURE__ */ jsxRuntimeExports.jsx(
                 "a",
                 {
-                  href: `https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(typeof window !== "undefined" ? window.location.hostname : "")}`,
+                  href: `https://drarmankabir.com"undefined" ? window.location.hostname : "")}`,
                   target: "_blank",
                   rel: "noopener noreferrer",
                   className: "underline hover:text-slate-200",
-                  children: "caffeine.ai"
+                  children: "Dr. Arman Kabir Care"
                 }
               )
             ] }),

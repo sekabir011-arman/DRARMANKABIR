@@ -1,7 +1,7 @@
-# Webalizer V2.23-08 Incremental Data - 07/11/2026 10:52:24
-2026 7 11 10 52 24
-1064 321 295 168 16 108 8291865 365 282 0
-45 20 169 7 11
+# Webalizer V2.23-08 Incremental Data - 07/12/2026 11:06:45
+2026 7 12 11 6 45
+1412 654 349 228 18 133 18035373 437 343 0
+33 4 169 7 12
 0 0 0 0 0 0
 0 0 0 0 0 0
 0 0 0 0 0 0
@@ -12,7 +12,8 @@
 127 0 158382 70 57 54
 126 0 157068 80 65 61
 171 0 210672 97 86 81
-332 313 7505525 45 51 34
+601 572 15689914 95 89 65
+79 74 1559119 33 34 30
 0 0 0 0 0 0
 0 0 0 0 0 0
 0 0 0 0 0 0
@@ -32,52 +33,51 @@
 0 0 0 0 0 0
 0 0 0 0 0 0
 0 0 0 0 0 0
-0 0 0 0 0 0
-61 41 606687 23
-177 163 5095349 17
-43 2 51285 23
-15 2 17462 9
-16 2 18686 12
-34 23 24399 11
-63 57 1352950 7
-17 4 18125 10
-29 3 34195 9
-12 3 12774 7
-55 16 501238 35
-75 0 68427 20
-103 0 88821 11
-22 0 21252 7
-30 0 36570 10
-18 0 19347 12
-73 0 65463 51
-26 0 31131 7
-39 0 46914 14
-42 2 49481 16
-31 3 29522 18
-41 0 49416 16
-7 0 8712 5
-35 0 43659 15
+72 52 1128063 29
+179 164 5096322 19
+46 5 52999 24
+16 3 18435 10
+18 4 19957 13
+64 53 564277 16
+66 60 1355194 8
+20 7 19839 11
+34 6 38161 11
+17 7 14931 10
+65 26 982675 42
+82 6 72087 26
+105 2 90237 13
+74 52 798321 18
+81 50 274628 12
+20 2 20618 14
+75 2 66734 52
+29 1 34588 8
+47 6 49522 15
+128 86 1665647 20
+74 45 2665886 24
+46 3 52227 17
+8 1 9685 6
+46 11 2944340 19
 0
 0
 0
-321
-0
-0
-0
-0
+654
 0
 0
 0
 0
 0
 0
-6
+0
+0
+0
+0
+16
 0
 0
 0
 0
 0
-231
+236
 237
 0
 0
@@ -100,348 +100,474 @@
 0
 # -urls- 
 /assets/assets/video-h2z_1vJH.js
-0 1 93846515839376 298 0 0
+0 1 7814716426037852777 298 0 0
 /assets/assets/building-2-CMX9_teL.js
-0 1 93846515833632 298 0 0
+0 1 3545231401822794029 298 0 0
 /wp-includes/php-ai-client/src/Operations/Enums/monitor.php
-0 2 0 886 0 0
+0 7 7310309088484945519 3101 0 0
+/assets/printer-BQUreT8L.js
+0 1 94838393529600 359 0 0
+/sitemap.xml
+0 1 94838393415136 973 0 0
 /assets/VisitPage-5feiJJvC.js
-0 1 93846515842080 43487 0 0
+0 1 17179869184 43487 0 0
+/assets/monitor-play-DHOzn285.js
+0 1 94838393529856 388 0 0
 /assets/AppointmentPayment-DTL8YvMS.js
-0 1 93846515838592 10361 0 0
+0 1 7814716426037852777 10361 0 0
 /assets/assets/InvestigationPaymentPage-DbUqWJ51.js
-0 1 93846515836816 298 0 0
+0 1 140611706354336 298 0 0
 /assets/heart-CnN_F_j3.js
-0 4 93846515828576 1656 0 0
+0 9 456661472769 3656 0 0
 /assets/assets/OutstandingBalances-Bl_iWFFm.js
-0 1 93846515836128 298 0 0
+0 1 3329624889621886509 298 0 0
+/.well-known/security.txt
+0 1 94838393415776 973 0 0
 /assets/assets/eye-DZPhoU57.js
-0 1 93846515785584 298 0 0
+0 1 0 298 0 0
 /assets/assets/skeleton-DqU5IOMD.js
-0 1 93846515834144 298 0 0
+0 1 94838393418336 298 0 0
 /wp-includes/SimplePie/library/SimplePie
-0 1 93846515843104 443 1 0
+0 4 0 1772 4 0
 /assets/assets/EmergencyPrescription-Bi3knV-p.js
-0 1 93846515836544 298 0 0
+0 1 0 298 0 0
 /wp-includes/class-wp-block-parser.php
-0 1 93846515844128 443 0 0
+0 3 0 1329 0 0
 /wp-content/plugins/ranktool/startmenu.php
-0 2 93846515844544 886 0 0
+0 2 0 886 0 0
 /assets/assets/generateCategoricalChart-Dou_1HkF.js
 0 1 0 298 0 0
 /assets/assets/ProcedurePayment-B362PKCB.js
-0 1 93846515838176 298 0 0
+0 1 0 298 0 0
+/assets/sun-7_ce8Kaj.js
+0 1 94838393526912 436 0 0
 /assets/assets/Staff-CTNepX6G.js
-0 1 93846515840144 298 0 0
+0 1 0 298 0 0
 /wp-content/themes/retries.php
-0 1 93846515843840 443 0 0
+0 3 0 1329 0 0
 /assets/assets/trash-2-B3l-ZhdV.js
-0 1 93846515829824 298 0 0
+0 1 0 298 0 0
 /assets/assets/map-pin-BVGvB4pd.js
-0 1 93846515836000 298 0 0
+0 1 0 298 0 0
+/wp-content/plugins/reset-thumbnails/assets/css/bind.php
+0 1 0 443 0 0
+/ads.txt
+0 1 94838393415248 973 0 0
 /assets/OtherPayment-B9VCHD6a.js
-0 1 93846515841184 7947 0 0
+0 1 0 7947 0 0
+/assets/clinicalIntelligence-B4u_Xj_J.js
+0 1 94838393527280 7564 0 0
 /settings
-0 1 93846515789152 973 0 0
+0 1 0 973 0 0
 /assets/assets/bed-double-DSQN6_I2.js
-0 1 93846515831504 298 0 0
+0 1 0 298 0 0
+/assets/shield-D-es88Nw.js
+0 1 94838393530112 349 0 0
 /config.json
-0 1 93846515851312 298 0 0
+0 1 0 298 0 0
+/assets/message-square-gLkdQm4U.js
+0 1 94838393527152 277 0 0
 /assets/assets/banknote-BqiHnhGo.js
-0 1 93846515787632 298 0 0
+0 1 0 298 0 0
 /assets/file-text-DJrK52te.js
-0 5 93846515824752 1726 0 0
+0 10 0 3386 0 0
+/assets/formatDistanceToNow-C2IQJfe9.js
+0 1 94838393528576 1502 0 0
 /assets/download-qc_8yQ5r.js
-0 5 93846515749136 1564 0 0
+0 10 0 3054 0 0
 /wp-includes/Text/Diff/Engine/forgot_password.php
-0 1 93846515847104 443 0 0
+0 3 0 1329 0 0
 /assets/TotalIncome-7BTVq9wM.js
-0 1 93846515841696 7878 0 0
+0 2 0 15756 0 0
 /assets/assets/funnel-BTA0vRsb.js
-0 1 93846515745936 298 0 0
+0 1 0 298 0 0
 /assets/assets/monitor-play-DHOzn285.js
-0 1 93846515840016 298 0 0
+0 1 0 298 0 0
 /assets/table-CnbMZ7S8.js
-0 4 93846515789424 2266 0 0
+0 9 0 4941 0 0
 /assets/assets/BedManagement-B6IsYOJd.js
-0 1 93846515832160 298 0 0
+0 1 3760836874607604323 298 0 0
+/assets/info-DjKKOoM3.js
+0 1 94838393527424 290 0 0
 /assets/card-COhiAhz1.js
-0 4 93846515789040 1872 0 0
+0 9 4048227236760664115 4087 0 0
 /assets/BedManagement-B6IsYOJd.js
-0 1 93846515840528 13021 0 0
+0 2 87030941879775534 26042 0 0
 /assets/assets/save-DzMd4SiT.js
-0 1 93846515835216 298 0 0
+0 1 3329908546592780545 298 0 0
 /assets/send-cdrsuHAc.js
-0 4 93846515788912 1510 0 0
+0 9 7018130443722519341 3330 0 0
 /assets/assets/database-Ck9e-_FX.js
-0 1 93846515834016 298 0 0
+0 1 8314047835892875264 298 0 0
 /assets/index-DJeWhCy-.js
-0 12 93846515823680 6122718 0 0
+0 22 3328215314956550144 14626474 0 0
 /assets/index-JEdqxkTH.css
-0 6 93846515829184 131640 0 0
+0 15 94838393396416 535474 0 0
+/assets/UpgradedPrescriptionEMR-CvNofdGu.js
+0 1 94838393531136 60864 0 0
 /assets/assets/download-qc_8yQ5r.js
-0 1 93846515785472 298 0 0
+0 1 0 298 0 0
 /assets/phone-Co67JhRS.js
-0 5 93846515748688 1819 0 0
+0 10 0 3584 0 0
 /assets/assets/Patients-B0bSwJv4.js
-0 1 93846515839760 298 0 0
+0 1 0 298 0 0
 /assets/assets/thermometer-CrPE917O.js
-0 1 93846515839504 298 0 0
+0 1 0 298 0 0
+/assets/user-plus-BJkC4ige.js
+0 1 94838393527024 356 0 0
 /assets/rotate-ccw-DEYXgLqp.js
-0 5 93846515789872 1545 0 0
+0 10 0 3030 0 0
 /assets/assets/pencil-BZAaPpo6.js
-0 1 93846515830992 298 0 0
+0 1 0 298 0 0
+/assets/layers-DwYKTjmE.js
+0 1 94838393528448 361 0 0
 /.aws/credentials
-0 1 93846515851424 298 0 0
+0 1 0 298 0 0
+/administrator/components/com_sppagebuilder/sppagebuilder.xml
+0 1 3907004757599153769 443 0 0
 /assets/EmergencyPrescription-Bi3knV-p.js
-0 1 93846515840784 23550 0 0
+0 2 0 47100 0 0
 /assets/fonts/PlusJakartaSans.woff2
-0 2 93846515825776 103310 0 0
+0 3 0 154965 0 0
 /assets/assets/Appointments-CiXOz8vL.js
-0 1 93846515831120 298 0 0
+0 1 0 298 0 0
+/components/com_sppagebuilder/sppagebuilder.xml
+0 1 94838393417200 443 0 0
 /assets/useDoctorContent-Cx8T-OwA.js
-0 4 93846515789984 14518 0 0
+0 9 0 32273 0 0
 /assets/assets/file-text-DJrK52te.js
-0 1 93846515832032 298 0 0
+0 1 0 298 0 0
 /wp-includes/sodium_compat/src/Core/Poly1305/NS.php
-0 1 93846515847936 443 0 0
+0 1 0 443 0 0
+/assets/video-h2z_1vJH.js
+0 1 94838393529088 341 0 0
 /wp-includes/cron.php
-0 3 93846515844816 1329 0 0
+0 3 0 1329 0 0
 /assets/assets/settings-2-Bp-4AVPw.js
-0 1 93846515747360 298 0 0
+0 1 0 298 0 0
+/th1s_1s_a_4o4.html
+0 1 94838393538336 973 0 0
+/wp-content/themes/main.php
+0 1 94838393536656 443 0 0
 /env.json
-0 6 93846515826912 1262 0 0
+0 11 0 3392 0 0
 /assets/AuditLog-BszF6XcX.js
-0 1 93846515840656 18365 0 0
+0 1 0 18365 0 0
 /assets/assets/sun-7_ce8Kaj.js
-0 1 93846515833232 298 0 0
+0 1 0 298 0 0
 /favicon.ico
-0 8 7814716426037852777 528 0 0
+0 10 0 660 0 0
 /assets/assets/BarChart-Ch6XFCj8.js
-0 1 93846515832304 298 0 0
+0 1 0 298 0 0
+/wp-includes/css/buttons.css
+0 2 94838393532080 886 0 0
 /assets/assets/SystemicExaminationSection-CCL-4QQD.js
-0 1 93846515837888 298 0 0
+0 1 0 298 0 0
+/assets/trending-up-B6DQx806.js
+0 1 94838393530880 282 0 0
 /assets/assets/Dashboard-DyrPRUEp.js
-0 1 93846515822944 298 0 0
+0 1 0 298 0 0
 /assets/SerialDisplay-DAWJgUIZ.js
-0 1 93846515841312 10151 0 0
+0 1 0 10151 0 0
 /assets/mail-yvZvzeI4.js
-0 4 0 1302 0 0
+0 9 0 2837 0 0
 /assets/assets/formatDistanceToNow-C2IQJfe9.js
-0 1 93846515832688 298 0 0
+0 1 0 298 0 0
+/llms.txt
+0 1 94838393415360 973 0 0
+/security.txt
+0 1 94838393415664 973 0 0
 /assets/assets/textarea-BQiWEu5n.js
-0 1 93846515827136 298 0 0
+0 1 0 298 0 0
 /.env.development
-0 1 93846515851024 298 0 0
+0 1 0 298 0 0
 /wp-admin/install.php
-0 4 93846515788576 1192 0 0
+0 18 0 5364 0 0
 /assets/assets/sunset-B1zSdVi8.js
-0 1 93846515834688 298 0 0
+0 1 0 298 0 0
+/assets/droplets-Dr40MrVb.js
+0 1 94838393526512 408 0 0
 /assets/assets/lock-BfuJZcFd.js
-0 1 93846515830736 298 0 0
+0 1 0 298 0 0
 /wp-content/themes/twentytwentyfour/style.css
-0 2 8443744845367685427 2402 0 0
+0 2 0 2402 0 0
+/assets/checkbox-ByWwQWzS.js
+0 1 94838393528960 2676 0 0
 /assets/assets/PatientForm-BCKQSbNc.js
-0 1 93846515787760 298 0 0
+0 1 0 298 0 0
 /assets/assets/whatsappTemplates-BiipONU2.js
 0 1 0 298 0 0
 /assets/RegistrarDashboard-CdC5G3Yl.js
-0 1 93846515840928 8334 0 0
+0 1 0 8334 0 0
+/administrator/components/com_jce/
+0 2 94838393416656 886 1 1
 /assets/assets/AppointmentPayment-DTL8YvMS.js
-0 1 93846515745616 298 0 0
+0 1 0 298 0 0
+/assets/whatsappTemplates-BiipONU2.js
+0 1 94838393530624 478 0 0
 /assets/Settings-DPkJ1nB8.js
-0 1 93846515841440 23371 0 0
+0 2 0 46742 0 0
+/assets/InvestigationPayment-BfpQZUDn.js
+0 1 94838393529456 9174 0 0
+/assets/settings-2-Bp-4AVPw.js
+0 1 94838393530368 312 0 0
 /assets/assets/phone-Co67JhRS.js
-0 1 93846515835744 298 0 0
+0 1 0 298 0 0
 /wp-includes/sodium_compat/src/Core/AEGIS/logo.php
-0 2 93846515847504 886 0 0
+0 3 0 1329 0 0
 /assets/ProcedurePayment-B362PKCB.js
-0 1 93846515841056 9627 0 0
+0 1 0 9627 0 0
+/media/system/js/core.js
+0 1 94838393416832 443 0 0
 /assets/assets/clinicalIntelligence-B4u_Xj_J.js
-0 1 93846515834272 298 0 0
+0 1 0 298 0 0
 /dashboard
 0 2 0 973 0 1
 /wp-content/plugins/adresskorrektur-autocomplete-fuer-woo/drum.php
-0 1 0 443 0 0
+0 3 0 1329 0 0
 /assets/assets/plus-CHPIrJ6M.js
-0 1 93846515831376 298 0 0
+0 1 0 298 0 0
 /assets/assets/DailyProgressNote-dVntCN7J.js
-0 1 93846515837616 298 0 0
+0 1 0 298 0 0
 /assets/assets/chart-no-axes-column-aUF3iGvH.js
-0 1 93846515832832 298 0 0
+0 1 0 298 0 0
+/assets/chart-no-axes-column-aUF3iGvH.js
+0 1 94838393526768 313 0 0
 /assets/assets/test-tube-AQ_p65EL.js
-0 1 93846515834816 298 0 0
-/wp-content/plugins/additional-charge/bind.php
-0 1 93846515842704 443 0 0
+0 1 0 298 0 0
+/Patients
+0 3 94838393531424 298 3 2
 /assets/assets/receipt-DqXr-L3S.js
-0 1 93846515830864 298 0 0
-/env
-0 1 93846515850672 298 0 0
+0 1 0 298 0 0
+/wp-content/plugins/additional-charge/bind.php
+0 6 0 2658 0 0
 /assets/assets/RegistrarDashboard-CdC5G3Yl.js
-0 1 93846515838320 298 0 0
+0 1 0 298 0 0
+/env
+0 1 0 298 0 0
 /assets/assets/SerialDisplay-DAWJgUIZ.js
-0 1 93846515838032 298 0 0
+0 1 0 298 0 0
+/assets/circle-alert-3N-VW3xt.js
+0 1 94838393528192 306 0 0
+/assets/bed-double-DSQN6_I2.js
+0 1 94838393527680 324 0 0
 /assets/assets/mail-yvZvzeI4.js
-0 1 93846515835872 298 0 0
+0 1 0 298 0 0
 /wp-content/plugins/ranktool/src/modules/seostats.opensiteexplorer.php
-0 1 0 443 0 0
+0 2 0 886 0 0
 /assets/OutstandingBalances-Bl_iWFFm.js
-0 1 93846515839120 5255 0 0
+0 1 0 5255 0 0
 /assets/eye-DZPhoU57.js
-0 4 93846515746336 1362 0 0
+0 9 0 2992 0 0
 /assets/assets/book-open-Bi6sJ5u3.js
-0 1 93846515837488 298 0 0
+0 1 0 298 0 0
 /js/config.js
-0 1 93846515851536 298 0 0
+0 1 0 298 0 0
 /assets/Staff-CTNepX6G.js
-0 1 93846515841568 13433 0 0
+0 1 0 13433 0 0
 /assets/assets/OtherPayment-B9VCHD6a.js
-0 1 93846515836272 298 0 0
+0 1 0 298 0 0
+/wp-login.php
+0 15 94838393532480 2972 0 0
 /assets/map-pin-BVGvB4pd.js
-0 4 93846515826032 1476 0 0
+0 9 0 3251 0 0
 /patients
-0 2 93846515823808 973 0 0
+0 2 0 973 0 0
+/assets/message-circle-qSON-RM2.js
+0 1 94838393529728 266 0 0
+/assets/skeleton-DqU5IOMD.js
+0 1 94838393526640 211 0 0
+/humans.txt
+0 1 94838393415904 973 0 0
 /wp-includes/js/dist/script-modules/block-library/accordion/code3.php
-0 1 0 443 0 0
+0 3 0 1329 0 0
 /assets/assets/search-BLymxia-.js
 0 1 0 298 0 0
 /wp-content/themes/srtain.php
-0 1 93846515846432 443 0 0
+0 2 1133235608172432640 886 0 0
 /wp-includes/php-ai-client/src/Messages/DTO/apc.php
-0 1 93846515845680 443 0 0
+0 3 459655715185821359 1329 0 0
 /assets/assets/rotate-ccw-DEYXgLqp.js
-0 1 93846515785360 298 0 0
+0 1 0 298 0 0
+/assets/arrow-left-D0QK_o3f.js
+0 1 94838393531008 275 0 0
 /assets/plus-CHPIrJ6M.js
-0 4 0 1118 0 0
+0 9 0 2438 0 0
 /assets/assets/shield-D-es88Nw.js
-0 1 93846515837760 298 0 0
+0 1 0 298 0 0
+/assets/sparkles-BXWJULex.js
+0 1 94838393528320 433 0 0
 /assets/assets/NurseDueMeds-C04LCd8h.js
-0 1 93846515834560 298 0 0
+0 1 0 298 0 0
 /assets/assets/external-link-YRWS9f1T.js
-0 1 93846515834944 298 0 0
+0 1 0 298 0 0
 /nonexistent-file-xyz.js
-0 1 93846515789648 0 0 0
+0 1 0 0 0 0
 /assets/assets/checkbox-ByWwQWzS.js
-0 1 93846515837088 298 0 0
+0 1 0 298 0 0
+/xmlrpc.php
+0 1 94838393488720 973 0 0
 /assets/assets/pen-CfMhwJvZ.js
 0 1 0 298 0 0
 /assets/assets/sparkles-BXWJULex.js
-0 1 93846515832432 298 0 0
+0 1 0 298 0 0
 /assets/assets/UpgradedPrescriptionEMR-CvNofdGu.js
-0 1 93846515833360 298 0 0
+0 1 0 298 0 0
 /assets/external-link-YRWS9f1T.js
-0 4 93846515825040 1308 0 0
+0 9 3329622699355943473 2853 0 0
 /assets/assets/TotalIncome-7BTVq9wM.js
-0 1 93846515840272 298 0 0
+0 1 8027435666737739565 298 0 0
 /assets/assets/user-search-CBqVxlq_.js
-0 1 93846515831632 298 0 0
+0 1 7628142 298 0 0
 /assets/assets/printer-BQUreT8L.js
-0 1 93846515824144 298 0 0
+0 1 8243121332002582393 298 0 0
+/assets/database-Ck9e-_FX.js
+0 1 94838393527808 315 0 0
 /assets/search-BLymxia-.js
-0 5 93846515823424 1469 0 0
+0 10 7017281539041026560 2874 0 0
 /assets/assets/message-square-gLkdQm4U.js
-0 1 93846515834416 298 0 0
+0 1 7885630522610513011 298 0 0
+/assets/sunset-B1zSdVi8.js
+0 1 94838393527552 369 0 0
 /assets/assets/VisitPage-5feiJJvC.js
-0 1 93846515838464 298 0 0
+0 1 7277816997830721536 298 0 0
 /assets/fonts/BricolageGrotesque.woff2
-0 2 93846515828240 344446 0 0
+0 3 0 516669 0 0
 /assets/assets/circle-alert-3N-VW3xt.js
-0 1 93846515787280 298 0 0
+0 1 15242715720424763446 298 0 0
 /assets/assets/table-CnbMZ7S8.js
-0 1 93846515788016 298 0 0
+0 1 8286623314361712640 298 0 0
+/assets/receipt-DqXr-L3S.js
+0 1 94838393529984 333 0 0
+/plugins/editors/jce/jce.xml
+0 2 94838393416304 886 0 0
+/assets/PatientForm-BCKQSbNc.js
+0 1 94838393526256 4375 0 0
 /assets/assets/scroll-area-DUDQuZCi.js
-0 1 93846515831760 298 0 0
+0 1 7815822822239895552 298 0 0
 /
-0 40 93846515717264 20340 241 81
+0 103 7018065568237237042 60658 295 111
 /assets/assets/Settings-DPkJ1nB8.js
-0 1 93846515839888 298 0 0
+0 1 3543830645516939316 298 0 0
 /assets/book-open-Bi6sJ5u3.js
-0 5 93846515789280 1756 0 0
+0 10 3977010756300385848 3456 0 0
 /assets/textarea-BQiWEu5n.js
-0 5 93846515790112 2080 0 0
+0 10 3690472300018139136 4030 0 0
 /assets/assets/MoneyReceipt-CSWlD73e.js
-0 1 93846515825392 298 0 0
+0 1 1952804398 298 0 0
 /assets/assets/card-COhiAhz1.js
-0 1 93846515832560 298 0 0
+0 1 3474017134146760035 298 0 0
 /assets/assets/log-out-BVpvzsgE.js
-0 1 93846515833760 298 0 0
+0 1 3486974019581604720 298 0 0
+/assets/user-search-CBqVxlq_.js
+0 1 94838393530752 332 0 0
 /assets/assets/arrow-right-left-DxaL83fz.js
-0 1 93846515831888 298 0 0
+0 1 3976169616949968896 298 0 0
+/assets/pen-CfMhwJvZ.js
+0 1 94838393529216 326 0 0
+/assets/calendar-BL7xJRSg.js
+0 1 94838393529328 317 0 0
+/assets/save-DzMd4SiT.js
+0 1 94838393528832 359 0 0
 /assets/DailyProgressNote-dVntCN7J.js
-0 1 93846515841824 28035 0 0
+0 1 3832056615012466688 28035 0 0
 /appointments
-0 1 93846515830512 973 0 0
+0 1 0 973 0 0
+/assets/activity-BRRgo98q.js
+0 1 94838393526384 319 0 0
+/assets/scroll-area-DUDQuZCi.js
+0 1 94838393527936 5963 0 0
 /assets/assets/send-cdrsuHAc.js
-0 1 93846515835616 298 0 0
+0 1 0 298 0 0
 /assets/assets/trending-up-B6DQx806.js
-0 1 93846515839632 298 0 0
+0 1 0 298 0 0
+/assets/test-tube-AQ_p65EL.js
+0 1 94838393530240 517 0 0
+/assets/MoneyReceipt-CSWlD73e.js
+0 1 94838393530496 9327 0 0
 /assets/InvestigationPaymentPage-DbUqWJ51.js
-0 1 93846515838848 12600 0 0
+0 1 0 12600 0 0
 /assets/assets/user-plus-BJkC4ige.js
-0 1 93846515831248 298 0 0
-/assets/assets/useDoctorContent-Cx8T-OwA.js
-0 1 93846515837216 298 0 0
+0 1 0 298 0 0
 /assets/assets/activity-BRRgo98q.js
-0 1 93846515833888 298 0 0
+0 1 0 298 0 0
+/assets/assets/useDoctorContent-Cx8T-OwA.js
+0 1 0 298 0 0
 /assets/assets/upload-10Urw3kY.js
-0 1 93846515836688 298 0 0
+0 1 0 298 0 0
 /assets/Dashboard-DyrPRUEp.js
-0 1 93846515840400 24277 0 0
+0 2 0 48554 0 0
+/wp-includes/php-ai-client/src/Providers/Models/VideoGeneration/Contracts/messagee.php
+0 2 94838393535152 886 0 0
 /assets/assets/droplets-Dr40MrVb.js
-0 1 93846515833104 298 0 0
+0 1 0 298 0 0
 /assets/Patients-B0bSwJv4.js
-0 1 93846515839248 3797 0 0
+0 2 0 7594 0 0
+/assets/camera-DpsioLhp.js
+0 1 94838393526128 338 0 0
 /assets/building-2-CMX9_teL.js
-0 4 93846515830048 1512 0 0
+0 9 0 3297 0 0
 /robots.txt
-0 4 93846515788800 1867 0 0
+0 15 0 6785 0 0
 /assets/assets/LandingPage-Dv8SefYP.js
-0 1 93846515835344 298 0 0
+0 1 0 298 0 0
 /assets/assets/message-circle-qSON-RM2.js
-0 1 93846515828832 298 0 0
+0 1 0 298 0 0
 /assets/assets/layers-DwYKTjmE.js
-0 1 93846515833504 298 0 0
+0 1 0 298 0 0
 /assets/pencil-BZAaPpo6.js
-0 4 93846515826688 1482 0 0
+0 9 0 3257 0 0
 /assets/assets/format-C8K1a6Fc.js
-0 1 93846515786560 298 0 0
+0 1 0 298 0 0
 /assets/assets/InvestigationPayment-BfpQZUDn.js
-0 1 93846515835472 298 0 0
+0 1 0 298 0 0
 /assets/trash-2-B3l-ZhdV.js
-0 4 93846515748464 1518 0 0
+0 9 0 3338 0 0
 /assets/assets/info-DjKKOoM3.js
-0 1 93846515832976 298 0 0
+0 1 0 298 0 0
 /wp-content/plugins/validar-certificados-de-cursos/admin/partials/retries.php
-0 2 93846515844976 886 0 0
+0 3 0 1329 0 0
 /assets/Appointments-CiXOz8vL.js
-0 1 93846515838720 16390 0 0
+0 2 0 32780 0 0
 /assets/PatientDashboard-Cuwbdual.js
-0 1 93846515838992 105395 0 0
+0 1 0 105395 0 0
 /assets/assets/calendar-BL7xJRSg.js
-0 1 93846515836960 298 0 0
+0 1 0 298 0 0
 /assets/upload-10Urw3kY.js
-0 4 0 1272 0 0
+0 9 0 2772 0 0
 /assets/LandingPage-Dv8SefYP.js
-0 6 93846515747808 286978 0 0
+0 11 0 521643 0 0
 /assets/assets/heart-CnN_F_j3.js
-0 1 93846515837360 298 0 0
+0 1 0 298 0 0
+/wp-content/themes/drum.php
+0 1 94838393537952 443 0 0
+/assets/format-C8K1a6Fc.js
+0 1 94838393528704 7818 0 0
 /assets/assets/PatientDashboard-Cuwbdual.js
-0 1 93846515836400 298 0 0
+0 1 0 298 0 0
 /assets/assets/arrow-left-D0QK_o3f.js
-0 1 93846515835088 298 0 0
+0 1 0 298 0 0
 /assets/assets/AuditLog-BszF6XcX.js
-0 1 93846515786928 298 0 0
+0 1 0 298 0 0
 /assets/NurseDueMeds-C04LCd8h.js
-0 1 93846515841952 4648 0 0
+0 2 0 9296 0 0
+/assets/log-out-BVpvzsgE.js
+0 1 94838393528064 302 0 0
 /assets/assets/camera-DpsioLhp.js
-0 1 93846515785824 298 0 0
+0 1 0 298 0 0
 # End Of Table - urls
 # -sites- (monthly)
+profejuank.com.ar
+0 3 2 741 0 0
+-
 176.65.148.30.ptr.pfcloud.network
 0 6 0 6600 1 1783439521
 -
 8.217.108.67
-0 4 0 3672 0 0
+0 5 1 4115 0 0
+-
+138.197.152.102
+0 1 1 443 0 0
 -
 185.70.185.130
 0 2 0 1614 0 0
@@ -450,22 +576,28 @@
 0 1 0 1242 1 1783710314
 /
 vmi2518562.contaboserver.net
-0 5 2 5672 5 1783743132
+0 7 4 7618 7 1783800762
 /
 host1.onepatient.org
-0 3 0 2865 0 0
--
+0 7 4 4637 1 1783801687
+/wp-includes/SimplePie/library/SimplePie
+23.27.145.191
+0 1 0 1242 1 1783488911
+/
 server.procloudify.com
 0 30 21 2434446 4 1783732371
 /
-23.27.145.191
-0 1 0 1242 1 1783488911
+0.148.216.162.bc.googleusercontent.com
+0 5 5 2419046 2 1783813087
 /
 95.236.188.35.bc.googleusercontent.com
 0 1 0 807 1 1783452876
 /
 vmi2139340.contaboserver.net
 0 1 0 1242 1 1783678337
+/
+vmi2137675.contaboserver.net
+0 1 1 973 1 1783811573
 /
 ec2-16-148-131-235.us-west-2.compute.amazonaws.com
 0 1 1 443 1 1783730832
@@ -474,11 +606,14 @@ ec2-16-148-131-235.us-west-2.compute.amazonaws.com
 0 1 0 1242 1 1783651949
 /
 static.139.236.156.178.clients.your-server.de
-0 4 0 4968 4 1783714345
+0 5 1 5941 5 1783782771
 /
 crawl-192-178-6-7.googlebot.com
-0 5 0 6228 3 1783687203
+0 7 2 6824 4 1783798474
 /
+103.90.233.75
+0 1 1 443 0 0
+-
 43.133.60.94
 0 1 0 1242 1 1783505438
 /
@@ -497,18 +632,27 @@ delta-2.camoo.net
 vmi1963991.contaboserver.net
 0 1 0 1242 1 1783707138
 /
+74.7.241.45
+0 3 3 518412 1 1783817679
+/
 172-245-252-195-host.colocrossing.com
 0 1 0 1242 1 1783650477
 /
 43.160.219.138
 0 1 1 443 1 1783757564
 /
+iad1-shared-b8-27.dreamhost.com
+0 2 1 298 0 0
+-
 139.59.184.99
 0 1 0 1251 0 0
 -
 146.56.199.139
 0 1 0 807 1 1783444202
 -
+161.115.235.1
+0 26 26 537721 1 1783835429
+/
 s11642.sgp1.stableserver.net
 0 1 0 1251 0 0
 -
@@ -527,6 +671,9 @@ kuukococo1.example.com
 ec2-18-61-192-253.ap-south-2.compute.amazonaws.com
 0 2 0 2502 0 0
 -
+149.57.180.194
+0 1 1 443 1 1783834617
+/
 49.157.204.35.bc.googleusercontent.com
 0 1 0 1242 1 1783459306
 /
@@ -566,6 +713,9 @@ placeholder-phx.sitelock.com
 192.71.142.146
 0 1 0 1242 1 1783681774
 /
+d7859.lon1.stableserver.net
+0 2 2 886 0 0
+-
 103.120.220.249
 0 8 2 5853 3 1783506093
 /
@@ -599,8 +749,17 @@ server104.orangehost.com
 180.153.236.40
 0 1 0 807 1 1783426418
 -
+103.75.185.95
+0 1 1 443 0 0
+-
 static.41.174.156.178.clients.your-server.de
 0 5 0 5340 5 1783685530
+/
+devsites.rebornconsultants.com
+0 2 1 298 0 0
+-
+47.103.148.210
+0 1 1 443 1 1783775557
 /
 220.48.196.104.bc.googleusercontent.com
 0 1 0 1242 1 1783730287
@@ -614,15 +773,24 @@ gwc.cluster100.hosting.ovh.net
 43.163.206.70
 0 1 0 1242 1 1783657017
 /
+136.144.35.157
+0 1 1 443 0 0
+-
+67.205.178.228
+0 1 0 1242 0 0
+-
 vmi2323733.contaboserver.net
 0 1 0 807 0 0
 -
 vmi2139341.contaboserver.net
 0 1 1 973 1 1783732296
 /
+104.43.52.173
+0 1 1 443 1 1783801716
+/wp-includes/SimplePie/library/SimplePie
 placeholder.sitelock.com
-0 9 0 11241 2 1783641870
--
+0 13 4 2630531 3 1783801547
+/th1s_1s_a_4o4.html
 cloud98.p80.com.br
 0 1 0 1251 0 0
 -
@@ -633,28 +801,31 @@ d7101.lon1.stableserver.net
 0 1 0 1242 1 1783508124
 /
 bl20-199-210.dsl.telepac.pt
-0 2 1 1694 0 0
+0 3 2 2137 0 0
 -
 ec2-100-26-66-245.compute-1.amazonaws.com
 0 1 0 1251 0 0
 -
 static.34.190.156.178.clients.your-server.de
-0 6 0 7017 6 1783667539
+0 9 3 9936 9 1783833170
 /
 104.210.140.140
+0 2 0 2502 0 0
+-
+104.210.140.136
+0 1 1 298 0 0
+-
+103.74.116.219
 0 2 0 2502 0 0
 -
 192-3-241-84-host.colocrossing.com
 0 1 0 1242 1 1783593769
 /
-103.74.116.219
-0 2 0 2502 0 0
--
 crawl-66-249-76-38.googlebot.com
 0 2 0 2493 1 1783711761
 /
 110.42.208.131
-0 1 0 1242 1 1783601474
+0 2 1 1685 2 1783832891
 /
 107-173-179-68-host.colocrossing.com
 0 1 0 1242 1 1783656732
@@ -665,14 +836,14 @@ crawl-66-249-76-38.googlebot.com
 104.210.140.129
 0 2 0 2502 0 0
 -
-74.7.230.3
-0 4 1 4051 0 0
--
 vps3427027.trouble-free.net
 0 2 0 2502 0 0
 -
+74.7.230.3
+0 5 2 4349 0 0
+-
 static.154.72.161.5.clients.your-server.de
-0 11 0 13227 11 1783710730
+0 14 3 16146 14 1783843960
 /
 crawl-192-178-6-8.googlebot.com
 0 2 0 1614 0 0
@@ -680,12 +851,12 @@ crawl-192-178-6-8.googlebot.com
 170.106.165.186
 0 1 0 1242 1 1783558548
 /
-232.128.90.34.bc.googleusercontent.com
-0 1 0 1242 1 1783701769
-/
 180.153.236.188
 0 1 0 807 1 1783423117
 -
+232.128.90.34.bc.googleusercontent.com
+0 1 0 1242 1 1783701769
+/
 ip66-179-208-74.pbiaas.com
 0 1 0 1251 0 0
 -
@@ -695,12 +866,18 @@ ec2-3-228-43-166.compute-1.amazonaws.com
 103.120.222.11
 0 64 55 1342871 5 1783736110
 /
+172.252.111.21
+0 2 2 443 1 1783853244
+/
 170.130.115.229
 0 1 0 1242 1 1783651952
 /
 175.29.8.88
 0 1 0 1242 1 1783646393
 /
+149-210-223-24.colo.transip.net
+0 2 2 886 0 0
+-
 91.92.241.196
 0 3 0 3726 0 0
 -
@@ -708,8 +885,8 @@ ec2-3-228-43-166.compute-1.amazonaws.com
 0 1 0 807 0 0
 -
 crawl-192-178-6-5.googlebot.com
-0 1 0 1251 0 0
--
+0 64 63 1535008 1 1783798498
+/
 cdffb2c5b1.scan.leakix.org
 0 30 0 25080 4 1783440623
 -
@@ -719,18 +896,21 @@ vmi1568129.contaboserver.net
 ns5013626.ip-15-235-145.net
 0 1 0 1251 0 0
 -
+82.155.45.199.censys-scanner.com
+0 2 2 509 1 1783844101
+/
 98.70.32.248
 0 1 0 1251 0 0
 -
 vmi2137677.contaboserver.net
-0 4 1 3829 4 1783757559
+0 6 3 5775 6 1783807963
+/
+93.152.221.21
+0 1 0 1242 1 1783642631
 /
 ip194-164-170-191.pbiaas.com
 0 1 0 1251 0 0
 -
-93.152.221.21
-0 1 0 1242 1 1783642631
-/
 69.172.232.190
 0 1 0 1242 1 1783654120
 /
@@ -740,6 +920,9 @@ ip194-164-170-191.pbiaas.com
 srv52.hostserv.co.za
 0 1 0 1251 0 0
 -
+static.144.124.161.5.clients.your-server.de
+0 1 1 973 1 1783854743
+/
 crawl-66-249-74-3.googlebot.com
 0 12 12 983654 0 0
 -
@@ -747,7 +930,7 @@ crawl-66-249-74-3.googlebot.com
 0 1 1 298 1 1783758803
 /
 vmi1648084.contaboserver.net
-0 6 0 7452 6 1783728735
+0 8 2 9398 8 1783836771
 /
 157.66.26.183
 0 11 1 8513 0 0
@@ -768,11 +951,14 @@ d7082.lon1.stableserver.net
 0 1 0 1242 1 1783656735
 /
 edition93.onesepxmaileight.com
-0 1 1 443 0 0
+0 2 2 886 0 0
 -
 129.204.188.64
 0 1 1 443 1 1783756475
 /
+server.tourgoodturkey.com
+0 1 1 443 0 0
+-
 crawl-66-249-76-37.googlebot.com
 0 1 0 1242 1 1783711763
 /
@@ -810,7 +996,7 @@ scale-test-1777667353964-83f7a927.mongo.ondigitalocean.com
 0 1 0 1251 0 0
 -
 vmi1648085.contaboserver.net
-0 3 0 3726 3 1783602734
+0 5 2 5672 5 1783847565
 /
 ip217-160-228-98.pbiaas.com
 0 1 0 807 0 0
@@ -839,6 +1025,9 @@ static.240.227.156.178.clients.your-server.de
 185.149.195.75
 0 1 0 1242 1 1783554346
 /
+static.vnpt.vn
+0 1 1 443 0 0
+-
 192.36.109.98
 0 1 0 1242 1 1783659809
 /
@@ -855,7 +1044,7 @@ lindale.cumbria.sch.uk
 0 10 0 8070 1 1783423280
 -
 1office.vn
-0 1 0 1251 0 0
+0 2 1 1549 0 0
 -
 198-46-214-47-host.colocrossing.com
 0 1 0 1242 1 1783654123
@@ -867,7 +1056,7 @@ lindale.cumbria.sch.uk
 0 1 0 807 1 1783455156
 /
 2a06:98c0:3600::103
-0 55 4 61885 0 0
+0 69 18 66057 0 0
 -
 ip217-154-144-42.pbiaas.com
 0 2 0 2484 1 1783479087
@@ -875,11 +1064,11 @@ ip217-154-144-42.pbiaas.com
 msnbot-40-77-167-243.search.msn.com
 0 1 0 1242 1 1783682137
 /
-vmi1648087.contaboserver.net
-0 4 0 4968 4 1783699922
-/
 159.65.26.1
 0 2 0 2493 1 1783621579
+/
+vmi1648087.contaboserver.net
+0 4 0 4968 4 1783699922
 /
 103.74.121.5
 0 1 0 1251 0 0
@@ -911,6 +1100,9 @@ ec2-16-174-22-118.ca-west-1.compute.amazonaws.com
 f894f8ec11.scan.leakix.org
 0 30 0 25080 2 1783440595
 -
+161.115.234.120
+0 1 1 298 1 1783835428
+/
 vps.outreachrz.com
 0 1 0 1251 0 0
 -
@@ -932,6 +1124,9 @@ broadband.actcorp.in
 202.51.202.242
 0 2 0 2502 0 0
 -
+43.157.191.20
+0 1 1 443 1 1783853587
+/
 static.30.186.156.178.clients.your-server.de
 0 7 3 7887 7 1783761110
 /
@@ -942,8 +1137,14 @@ static.30.186.156.178.clients.your-server.de
 0 1 0 1242 1 1783465937
 /
 74.7.244.39
-0 3 1 2800 0 0
+0 5 3 3396 0 0
 -
+grid.metrovps.com
+0 1 1 443 0 0
+-
+172.252.175.67
+0 2 2 443 1 1783853264
+/
 43.166.1.243
 0 1 0 1242 1 1783602816
 /
@@ -971,8 +1172,20 @@ ec2-44-226-204-8.us-west-2.compute.amazonaws.com
 45.55.65.84
 0 4 0 3228 0 0
 -
+74.7.227.172
+0 3 3 478837 1 1783853253
+/
 197.215.141.34.bc.googleusercontent.com
 0 1 0 1242 1 1783649432
+/
+ec2-34-253-232-204.eu-west-1.compute.amazonaws.com
+0 1 1 973 1 1783768868
+/
+162.141.167.57
+0 2 0 2484 0 0
+-
+96.155.45.199.censys-scanner.com
+0 2 2 509 1 1783816829
 /
 43.167.236.228
 0 1 0 1242 1 1783677344
@@ -982,6 +1195,9 @@ ec2-44-226-204-8.us-west-2.compute.amazonaws.com
 /
 74.7.227.173
 0 1 0 1242 1 1783590792
+/
+124.221.163.189
+0 1 1 443 1 1783815805
 /
 103.74.116.239
 0 1 0 807 0 0
@@ -1008,49 +1224,55 @@ fwdproxy-eag-018.fbsv.net
 0 114 113 919645 1 1783733384
 /
 vmi1648088.contaboserver.net
-0 6 0 7452 6 1783696340
+0 7 1 8425 7 1783829565
 /
 vmi3374979.contaboserver.net
-0 1 0 1251 0 0
+0 2 1 1694 0 0
 -
 43.130.141.193
 0 1 0 1242 1 1783576616
 /
 crawl-192-178-6-6.googlebot.com
-0 1 0 807 0 0
+0 15 14 80455 0 0
 -
 198.46.152.106
 0 1 0 807 0 0
 -
 vmi1648086.contaboserver.net
-0 4 0 4533 4 1783692762
+0 5 1 5506 5 1783851143
 /
 mail.ck.inf.br
 0 2 0 2058 0 0
 -
+crawl-149-56-150-146.dataproviderbot.com
+0 31 31 762226 1 1783776944
+/
+msnbot-40-77-167-67.search.msn.com
+0 1 1 298 1 1783811571
+/
 ip87-106-67-224.pbiaas.com
 0 1 0 1251 1 1783585625
 -
-din-170-81-82-10.telecab.com.br
+gwc.cluster105.hosting.ovh.net
 0 1 0 1251 0 0
 -
-gwc.cluster105.hosting.ovh.net
+din-170-81-82-10.telecab.com.br
 0 1 0 1251 0 0
 -
 servidor.webspararesidencias.info
 0 2 0 2502 0 0
 -
-static.26.235.156.178.clients.your-server.de
-0 5 0 5775 5 1783703534
-/
 107-174-249-68-host.colocrossing.com
 0 1 0 1242 1 1783651963
+/
+static.26.235.156.178.clients.your-server.de
+0 7 2 7721 7 1783825968
 /
 8.152.4.116
 0 1 0 1251 1 1783639092
 -
 srv65.benzahosting.cl
-0 2 2 886 0 0
+0 3 3 1329 0 0
 -
 ec2-3-20-255-114.us-east-2.compute.amazonaws.com
 0 2 0 2484 1 1783725147
@@ -1064,6 +1286,9 @@ node1.grabersites.com
 vmi1685998.contaboserver.net
 0 55 55 1344209 1 1783751439
 /
+gator3231.hostgator.com
+0 2 1 298 0 0
+-
 216.194.174.116
 0 2 0 1614 0 0
 -
@@ -1076,8 +1301,11 @@ mail2.daintybella.shop
 20.185.96.226
 0 1 0 807 0 0
 -
+230.33.62.166.host.secureserver.net
+0 1 1 443 0 0
+-
 static.62.86.161.5.clients.your-server.de
-0 2 0 2484 2 1783642349
+0 3 1 3457 3 1783815123
 /
 103.250.189.146
 0 1 0 1242 0 0
@@ -1089,6 +1317,9 @@ static.62.86.161.5.clients.your-server.de
 0 1 0 1242 1 1783661759
 /
 iconiquebrands1.dedicated.co.za
+0 1 1 443 0 0
+-
+167.71.25.230
 0 1 1 443 0 0
 -
 mail.shadowvps.in
@@ -1103,6 +1334,9 @@ ec2-3-223-127-185.compute-1.amazonaws.com
 104.210.140.141
 0 2 0 2502 0 0
 -
+38.253.224.42
+0 4 4 886 2 1783854405
+/
 106.52.49.148
 0 2 0 2484 2 1783699513
 /
@@ -1112,6 +1346,9 @@ crawl-66-249-74-4.googlebot.com
 crawl-66-249-74-5.googlebot.com
 0 1 1 298 1 1783733176
 /
+srv1207425.hstgr.cloud
+0 1 1 443 1 1783801744
+/wp-includes/SimplePie/library/SimplePie
 srv1813758.hstgr.cloud
 0 15 8 464921 1 1783767143
 /env
@@ -1122,7 +1359,7 @@ dedicated.vsys.host
 0 2 0 2493 1 1783563168
 /
 msnbot-40-77-167-101.search.msn.com
-0 1 0 1251 0 0
+0 2 1 1549 0 0
 -
 43.165.127.225
 0 1 0 807 1 1783452183
@@ -1136,27 +1373,36 @@ fwdproxy-atn-034.fbsv.net
 msnbot-52-167-144-25.search.msn.com
 0 1 0 1242 1 1783635143
 /
-syn-098-156-100-191.res.spectrum.com
-0 1 0 1251 0 0
--
 unassigned.psychz.net
 0 1 0 1242 1 1783651955
 /
+syn-098-156-100-191.res.spectrum.com
+0 1 0 1251 0 0
+-
+vps98-5.quangtrungidc.com
+0 1 1 443 0 0
+-
 142.93.10.93
 0 1 0 807 0 0
--
-162.62.213.187
-0 1 0 1242 1 1783589414
-/
-167.71.218.184
-0 1 0 1251 0 0
 -
 vh456.timeweb.ru
 0 1 0 1251 0 0
 -
+167.71.218.184
+0 1 0 1251 0 0
+-
+162.62.213.187
+0 1 0 1242 1 1783589414
+/
 146.56.229.214
 0 1 0 1242 1 1783563121
 /
+crawl-149-56-150-131.dataproviderbot.com
+0 10 10 9730 1 1783776931
+/
+dashboard.integraluna.net
+0 1 1 443 0 0
+-
 node4.grabersites.com
 0 8 0 10008 0 0
 -
@@ -1166,12 +1412,18 @@ node4.grabersites.com
 ec2-13-200-127-26.ap-south-1.compute.amazonaws.com
 0 1 0 1251 0 0
 -
+193.148.56.134
+0 8 8 3399 2 1783777396
+/
 185.252.86.65
 0 1 0 807 1 1783423305
 -
 vmi1568117.contaboserver.net
 0 1 0 1242 1 1783725147
 /
+cobblec.vservers.es
+0 2 2 886 0 0
+-
 43.164.3.23
 0 1 0 1242 1 1783650567
 /
@@ -1179,7 +1431,7 @@ vmi1568117.contaboserver.net
 0 1 0 807 1 1783436846
 -
 cloudhost-10347448.us-midwest-2.nxcli.net
-0 2 2 886 0 0
+0 3 3 1329 0 0
 -
 196.58.229.82
 0 1 0 1242 1 1783650482
@@ -1196,27 +1448,33 @@ cloudhost-10347448.us-midwest-2.nxcli.net
 43.160.219.206
 0 1 0 807 1 1783449754
 -
-139.155.134.17
-0 1 1 443 1 1783738195
-/
+msnbot-40-77-167-22.search.msn.com
+0 2 2 479768 0 0
+-
 128.199.203.39
 0 1 0 1251 0 0
 -
+139.155.134.17
+0 1 1 443 1 1783738195
+/
 mm-196-49-121-178.mgts.dynamic.pppoe.byfly.by
 0 3 0 3735 2 1783615411
 /
 vps-be8d03b3.vps.ovh.ca
 0 1 0 1251 0 0
 -
+dynamic-adsl.movitel.co.mz
+0 1 1 973 0 0
+-
 170.106.192.3
 0 1 0 1242 1 1783518915
+/
+170.106.113.159
+0 1 0 1242 1 1783680790
 /
 ns3037907.ip-164-132-200.eu
 0 1 0 1251 0 0
 -
-170.106.113.159
-0 1 0 1242 1 1783680790
-/
 43.159.149.56
 0 1 0 1242 1 1783477010
 /
@@ -1226,8 +1484,14 @@ ns3037907.ip-164-132-200.eu
 43.164.1.211
 0 1 0 1242 1 1783491122
 /
+43.164.0.21
+0 1 1 443 1 1783847140
+/
+ec2-44-208-214-205.compute-1.amazonaws.com
+0 1 1 443 0 0
+-
 43.161.233.190
-0 2 0 2484 2 1783631739
+0 3 1 2927 3 1783773332
 /
 43.134.236.36
 0 1 0 1242 1 1783605458
@@ -1236,19 +1500,28 @@ ns3037907.ip-164-132-200.eu
 0 1 0 1242 1 1783532289
 /
 24.93.74.97.host.secureserver.net
-0 3 1 2945 0 0
+0 5 3 3831 0 0
 -
 vmi2518564.contaboserver.net
-0 5 2 5237 5 1783764751
+0 8 5 8156 8 1783840357
 /
 62.38.167.72.host.secureserver.net
 0 1 0 1251 0 0
+-
+140.248.75.102
+0 2 0 2484 0 0
+-
+ams1-shared-01.dreamhost.com
+0 1 1 443 0 0
 -
 38.253.224.30
 0 1 0 1242 1 1783572851
 /
 ec2-54-145-93-205.compute-1.amazonaws.com
 0 1 1 443 0 0
+-
+74.235.96.117
+0 4 3 1184 0 0
 -
 162.14.66.219
 0 1 0 1242 1 1783542697
@@ -1265,9 +1538,15 @@ gablini.hu
 192.175.111.240
 0 1 0 1242 1 1783692783
 /
+srv1525509.hstgr.cloud
+0 1 1 443 0 0
+-
 67.207.94.191
 0 1 1 443 1 1783747052
 /wp-includes/SimplePie/library/SimplePie
+host-26-214.mirnet.com.bd
+0 53 49 237085 5 1783854862
+/Patients
 1.14.110.85
 0 1 0 1242 1 1783621836
 /
@@ -1289,17 +1568,20 @@ gablini.hu
 5.31.188.210
 0 1 0 1251 0 0
 -
-smtp.hivichico.site
-0 5 2 4639 0 0
--
 40.88.21.235
 0 2 0 2493 1 1783497147
 /
+smtp.hivichico.site
+0 5 2 4639 0 0
+-
 43.165.198.5
 0 1 0 1242 1 1783545090
 /
+103.133.216.219
+0 3 2 741 0 0
+-
 103.50.167.72.host.secureserver.net
-0 3 2 2137 0 0
+0 4 3 2580 0 0
 -
 43.130.228.73
 0 1 0 1242 1 1783618920
@@ -1313,189 +1595,161 @@ nc-ph-0602-10.kaitlynessays.com
 195.178.110.242
 0 2 0 1614 0 0
 -
-wp.layerbrandingltd.com
-0 1 0 1251 0 0
--
 172.252.175.4
 0 2 0 1242 1 1783680704
 /
+wp.layerbrandingltd.com
+0 1 0 1251 0 0
+-
 42.115.192.253
 0 88 0 71016 0 0
 -
 # End Of Table - sites (monthly)
 # -sites- (daily)
-vmi2518562.contaboserver.net
-0 2 2 1946 2 1783743132
-/
-server.procloudify.com
-0 18 17 2423294 2 1783732371
-/
-ec2-16-148-131-235.us-west-2.compute.amazonaws.com
-0 1 1 443 1 1783730832
-/
-176.116.30.54
-0 2 2 443 1 1783766621
-/
-43.160.219.138
-0 1 1 443 1 1783757564
-/
-220.48.196.104.bc.googleusercontent.com
-0 1 0 1242 1 1783730287
-/
-vmi2139341.contaboserver.net
-0 1 1 973 1 1783732296
-/
-bl20-199-210.dsl.telepac.pt
+138.197.152.102
 0 1 1 443 0 0
 -
+74.7.241.45
+0 3 3 518412 1 1783817679
+/
+161.115.235.1
+0 26 26 537721 1 1783835429
+/
+149.57.180.194
+0 1 1 443 1 1783834617
+/
+static.34.190.156.178.clients.your-server.de
+0 1 1 973 1 1783833170
+/
+110.42.208.131
+0 1 1 443 1 1783832891
+/
 74.7.230.3
 0 1 1 298 0 0
 -
-103.120.222.11
-0 61 55 1339136 3 1783736110
+static.154.72.161.5.clients.your-server.de
+0 1 1 973 1 1783843960
 /
-vmi2137677.contaboserver.net
-0 1 1 973 1 1783757559
+172.252.111.21
+0 2 2 443 1 1783853244
 /
-crawl-66-249-74-3.googlebot.com
-0 12 12 983654 0 0
--
-161.123.115.82
-0 1 1 298 1 1783758803
+82.155.45.199.censys-scanner.com
+0 2 2 509 1 1783844101
+/
+static.144.124.161.5.clients.your-server.de
+0 1 1 973 1 1783854743
 /
 vmi1648084.contaboserver.net
-0 1 0 1242 1 1783728735
+0 1 1 973 1 1783836771
 /
-157.66.26.183
-0 1 1 443 0 0
--
-142.252.33.66
-0 2 2 443 2 1783766655
-/
-edition93.onesepxmaileight.com
-0 1 1 443 0 0
--
-129.204.188.64
-0 1 1 443 1 1783756475
-/
-112.159.66.148.host.secureserver.net
-0 2 2 886 0 0
--
-64.227.109.175
-0 2 0 2493 1 1783729081
+vmi1648085.contaboserver.net
+0 1 1 973 1 1783847565
 /
 2a06:98c0:3600::103
-0 4 4 1192 0 0
+0 6 6 1788 0 0
 -
-145.192.234.8.bc.googleusercontent.com
-0 1 0 1242 1 1783728779
+161.115.234.120
+0 1 1 298 1 1783835428
 /
-static.30.186.156.178.clients.your-server.de
-0 3 3 2919 3 1783761110
+43.157.191.20
+0 1 1 443 1 1783853587
 /
 74.7.244.39
 0 1 1 298 0 0
 -
-185.93.89.147
-0 113 113 918403 1 1783733384
+172.252.175.67
+0 2 2 443 1 1783853264
 /
-srv65.benzahosting.cl
-0 2 2 886 0 0
--
-node1.grabersites.com
-0 2 2 886 0 0
--
-vmi1685998.contaboserver.net
-0 55 55 1344209 1 1783751439
+74.7.227.172
+0 3 3 478837 1 1783853253
 /
-mail2.daintybella.shop
-0 2 2 509 1 1783755256
+96.155.45.199.censys-scanner.com
+0 2 2 509 1 1783816829
 /
-114.132.167.72.host.secureserver.net
+124.221.163.189
+0 1 1 443 1 1783815805
+/
+vmi1648088.contaboserver.net
+0 1 1 973 1 1783829565
+/
+vmi1648086.contaboserver.net
+0 1 1 973 1 1783851143
+/
+static.26.235.156.178.clients.your-server.de
+0 1 1 973 1 1783825968
+/
+static.62.86.161.5.clients.your-server.de
+0 1 1 973 1 1783815123
+/
+167.71.25.230
 0 1 1 443 0 0
 -
-iconiquebrands1.dedicated.co.za
-0 1 1 443 0 0
--
-ec2-3-223-127-185.compute-1.amazonaws.com
-0 1 1 443 0 0
--
-crawl-66-249-74-4.googlebot.com
-0 3 3 662 1 1783733176
+38.253.224.42
+0 4 4 886 2 1783854405
 /
-crawl-66-249-74-5.googlebot.com
-0 1 1 298 1 1783733176
-/
-srv1813758.hstgr.cloud
-0 15 8 464921 1 1783767143
-/env
-cloudhost-10347448.us-midwest-2.nxcli.net
-0 2 2 886 0 0
+dynamic-adsl.movitel.co.mz
+0 1 1 973 0 0
 -
-139.155.134.17
-0 1 1 443 1 1783738195
+43.164.0.21
+0 1 1 443 1 1783847140
 /
-24.93.74.97.host.secureserver.net
+ec2-44-208-214-205.compute-1.amazonaws.com
 0 1 1 443 0 0
 -
 vmi2518564.contaboserver.net
-0 2 2 1946 2 1783764751
+0 3 3 2919 3 1783840357
 /
-ec2-54-145-93-205.compute-1.amazonaws.com
-0 1 1 443 0 0
+140.248.75.102
+0 2 0 2484 0 0
 -
-vmi2139339.contaboserver.net
-0 1 1 973 1 1783735942
-/
-67.207.94.191
-0 1 1 443 1 1783747052
-/wp-includes/SimplePie/library/SimplePie
-79-112-109-195.digimobil.es
-0 1 1 443 0 0
--
-smtp.hivichico.site
-0 2 2 886 0 0
--
-103.50.167.72.host.secureserver.net
-0 2 2 886 0 0
--
+host-26-214.mirnet.com.bd
+0 3 0 0 3 1783854862
+/Patients
 # End Of Table - sites (daily)
 # -referrers- 
 https://www.drarmankabir.com/wp-login.php
 0 1
 http://drarmankabir.com/wp-includes/css/buttons.css
-0 1
+0 2
 http://www.google.com/url
-0 7
+0 9
 http://www.drarmankabir.com/
 0 1
 https://www.drarmankabir.com/
-0 32
+0 37
 https://www.drarmankabir.com/assets/index-JEdqxkTH.css
-0 2
+0 4
 https://www.google.com/
-0 2
+0 3
 - (Direct Request)
-0 881
+0 1125
 http://drarmankabir.com/
 0 6
 https://drarmankabir.com/assets/index-JEdqxkTH.css
 0 2
 http://drarmankabir.com
-0 32
+0 34
 https://server.procloudify.com:2083/
 0 1
+https://www.google.com
+0 1
 http://www.drarmankabir.com
-0 32
+0 36
 https://drarmankabir.com/wp-login.php
-0 25
+0 31
+http://www.drarmankabir.com/wp-includes/css/buttons.css
+0 1
 http://drarmankabir.com/favicon.ico
 0 1
 https://drarmankabir.com/
-0 38
+0 117
 # End Of Table - referrers
 # -agents- 
+Mozilla/5.0
+0 2
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Agency/93.8.2
+0 1
+python-requests/2.32.5
 0 1
 User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Ed
 0 2
@@ -1503,32 +1757,50 @@ Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) 
 0 1
 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36
 0 6
+Mozilla/5.0 (iPhone; CPU iPhone OS 26_4_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/148.0.7778.47 Mobile/
+0 2
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36
-0 9
+0 12
+Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+0 2
 Mozilla/5.0 (compatible; CT-WP-Scanner/1.0; +https://example.com/bot)
 0 6
+Mozilla/5.0 (Linux; Android 10; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.162 Mobile Safari/537.36
+0 1
 Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/6.0)
-0 7
+0 9
+Mozilla/5.0 (compatible; NetcraftSurveyAgent/1.0; +info@netcraft.com)
+0 1
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36
 0 2
 Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36
 0 1
+Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm) Chrome/136.0.0.
+0 2
 Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.7871.46 Mobile 
-0 5
+0 56
 SiteLockSpider [en] (WinNT; I ;Nav)
-0 7
+0 9
 Mozilla/5.0 (Windows NT 6.2; arm64) AppleWebKit/537.36 (KHTML, like Gecko) Opera/77.0.0.0 Safari/537.36
 0 1
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Edg/121.0.0.0 Safari/537.36
 0 1
+Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0
+0 2
+Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Mobile Safari/537.36
+0 2
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.197 Safari/537.36
 0 1
 Mozilla/5.0 (iPhone; CPU iPhone OS 26_5_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) GSA/428.4.939275213 Mobile/
 0 1
+Mozilla/5.0 (compatible; Dataprovider.com)
+0 40
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36 Edg/101.0
-0 5
+0 9
+Mozilla/5.0 (X11; Linux x86_64; rv:131.0) Gecko/20100101 Firefox/131.0
+0 3
 Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Mobile S
-0 1
+0 2
 Mozilla/5.0 (Windows NT 6.3; x64) AppleWebKit/537.36 (KHTML, like Gecko) Opera/68.0.0.0 Safari/537.36
 0 1
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36
@@ -1544,17 +1816,21 @@ Mozilla/5.0 (compatible; Softaculous AI/1.0)
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36
 0 30
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36
-0 5
+0 6
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0
 0 1
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0
 0 4
 Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)
-0 9
+0 13
 Mozilla/5.0 (Macintosh; Intel Mac OS X 15_7_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15
 0 6
+Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36
+0 1
+Mozilla/5.0 (compatible; CensysInspect/1.1; +https://about.censys.io/)
+0 4
 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36; compat
-0 15
+0 19
 Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0
 0 1
 Mozilla/5.0 (compatible; jscrawler/0.1; +https://github.com/)
@@ -1568,15 +1844,15 @@ Mozilla/5.0 (Macintosh; iMac G3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/1
 curl/8.3.0
 0 1
 Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
-0 2
+0 3
 Googlebot-Image/1.0
 0 2
 Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm) Chrome/116.0.19
-0 3
+0 5
 Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.3
 0 1
 http://drarmankabir.com/wp-admin/install.php?step=1
-0 55
+0 69
 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Safari/605.1.15
 0 6
 Mozilla/5.0 (X11; Linux x86_64; rv:105.0) Gecko/20100101 Firefox/105.0
@@ -1584,15 +1860,15 @@ Mozilla/5.0 (X11; Linux x86_64; rv:105.0) Gecko/20100101 Firefox/105.0
 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36
 0 2
 Mozilla/5.0 (Linux; Android 12; Pixel 6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.58 Mobile Safari/537.36
-0 14
+0 16
 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Safari/605.1.15
-0 12
+0 16
 Go-http-client/2.0
-0 1
+0 3
 Mozilla/5.0 (Macintosh; Intel Mac OS X 15.7; rv:149.0) Gecko/20100101 Firefox/149.0
 0 3
 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.0 Safari/537.36
-0 150
+0 175
 Mozilla/5.0 (compatible; LeadForge/1.0; +mailto:opt-out@newsitelead.com)
 0 1
 DuckDuckBot/1.1; (+http://duckduckgo.com/duckduckbot.html)
@@ -1604,8 +1880,16 @@ Mozilla/5.0 (l9scan/2.0.8343e22383e22313e29343; +https://leakix.net)
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/129.0.0.0 Safari/537.36
 0 1
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36
-0 10
+0 11
+Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36
+0 1
+Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.119 Safari/537.36
+0 1
+python-requests/2.34.2
+0 4
 Mozilla/5.0 (X11; Linux i686; rv:109.0) Gecko/20100101 Firefox/120.0
+0 3
+Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
 0 2
 facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)
 0 2
@@ -1614,23 +1898,29 @@ Mozilla/5.0 (Linux; Android 10; x86) AppleWebKit/537.36 (KHTML, like Gecko) Chro
 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.3.1 Safari/605.1.1
 0 1
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.67 Safari/537.36
-0 8
+0 9
 Mozilla/5.0 (X11; Linux x86_64; rv:142.0) Gecko/20100101 Firefox/142.0
 0 4
 Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E14
-0 56
+0 62
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36
-0 4
+0 7
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
 0 1
 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36
-0 9
+0 10
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0
 0 10
+git/2.39.2
+0 2
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36
 0 29
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36
+0 2
 NewSiteLeadBot/1.0 (+https://newsitelead.com/bot)
 0 2
+Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
+0 4
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/146.0.385
 0 3
 Mozilla/5.0 (X11; Ubuntu; Linux x86_64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36
@@ -1640,18 +1930,22 @@ Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)
 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:51.0) Gecko/20100101 Firefox/51.0
 0 1
 Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36
-0 30
+0 31
 curl/7.61.1
 0 29
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
-0 8
+0 10
+Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7; x86) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.0.0 Safari/537.36
+0 1
 Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15
 0 1
 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/600.2.5 (KHTML, like Gecko) Version/8.0.2 Safari/600.2.5 (Gort)
-0 4
+0 5
 Hello from Palo Alto Networks, find out more about our scans in https://docs-cortex.paloaltonetworks.com/r/1/Cortex-Xpanse/Sc
 0 2
 Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safa
+0 2
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
 0 2
 Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Amazonbot/0.1; +https://developer.amazon.com/support/amazonbot
 0 1
@@ -1665,48 +1959,54 @@ Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/14
 0 6
 Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0
 0 1
-Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/150.0.7
-0 11
 Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Sa
 0 2
+Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/150.0.7
+0 36
 Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.13014 YaBrowser/13.12.1599.13014 Safari/
 0 1
 Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.5359.124 Safari/537.36
-0 1
+0 2
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36
 0 1
 Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.4; +https://openai.com/gptbot)
-0 2
+0 8
 Mozilla/5.0 (compatible; wpbot/1.4; +https://forms.gle/ajBaxygz9jSR8p8G9)
 0 2
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36
-0 10
+0 12
+Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:149.0) Gecko/20100101 Firefox/149.0
+0 1
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
-0 38
+0 90
 Mozilla/5.0 (compatible; GitFinder/1.0)
 0 1
 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15
-0 22
+0 25
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36
-0 9
+0 10
 Java/21.0.11
 0 2
 Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Sa
-0 13
+0 16
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.5938.132 Safari/537.36
 0 4
 Mozilla/5.0 (Windows NT 6.0; rv:49.0) Gecko/20100101 Firefox/49.0
 0 1
 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
 0 6
+Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+0 1
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko; compatible; BuiltWith/1.4; rb.gy/xprgqj) Chr
 0 1
-Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.3 Safari/605.1.15
-0 5
 Mozilla/5.0 (compatible; CMS-Checker/1.0; +https://example.com)
 0 6
+Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.3 Safari/605.1.15
+0 8
+Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36
+0 1
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36 Edg/99.0.1
-0 12
+0 16
 Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36
 0 2
 Scrapy/2.16.0 (+https://scrapy.org)
