@@ -63952,8 +63952,124 @@ function AppInner() {
   const [canisterActorState, setCanisterActorState] = reactExports.useState(null);
   const [backendDisconnected, setBackendDisconnected] = reactExports.useState(false);
   reactExports.useEffect(() => {
-    // ICP canister disabled — PHP/MySQL backend used instead
-    setBackendDisconnected(false);
+    if (canisterActorRef.current) return;
+    function resolveCanisterId2() {
+      var _a3;
+      const w2 = window;
+      const p0 = w2.__RESOLVED_CANISTER_ID_BACKEND;
+      if (p0 && p0 !== "undefined" && p0 !== "") return p0;
+      const p3 = w2.CANISTER_ID_BACKEND;
+      if (p3 && p3 !== "undefined" && p3 !== "") return p3;
+      const p4 = w2.__CANISTER_ID_BACKEND;
+      if (p4 && p4 !== "undefined" && p4 !== "") return p4;
+      const envObj = w2.__ENV__;
+      const p5 = envObj == null ? void 0 : envObj.CANISTER_ID_BACKEND;
+      if (p5 && p5 !== "undefined" && p5 !== "") return p5;
+      const p5v = envObj == null ? void 0 : envObj.VITE_CANISTER_ID_BACKEND;
+      if (p5v && p5v !== "undefined" && p5v !== "") return p5v;
+      try {
+        const metaVal = (_a3 = document.querySelector('meta[name="canister-id-backend"]')) == null ? void 0 : _a3.getAttribute("content");
+        if (metaVal && metaVal !== "undefined" && metaVal !== "")
+          return metaVal;
+      } catch {
+      }
+      try {
+        const scripts = document.querySelectorAll("script");
+        for (const script of Array.from(scripts)) {
+          const text = script.textContent ?? "";
+          if (!text.includes("CANISTER_ID_BACKEND")) continue;
+          const m1 = text.match(
+            /CANISTER_ID_BACKEND\s*[=:]\s*["']([a-z0-9-]{5,})["']/
+          );
+          if ((m1 == null ? void 0 : m1[1]) && m1[1] !== "undefined") return m1[1];
+          try {
+            const jsonMatch = text.match(/\{[^}]*CANISTER_ID_BACKEND[^}]*\}/);
+            if (jsonMatch) {
+              const parsed = JSON.parse(jsonMatch[0]);
+              if (parsed.CANISTER_ID_BACKEND && parsed.CANISTER_ID_BACKEND !== "undefined")
+                return parsed.CANISTER_ID_BACKEND;
+            }
+          } catch {
+          }
+        }
+      } catch {
+      }
+      try {
+        const g8 = globalThis.__CANISTER_ID_BACKEND;
+        if (g8 && g8 !== "undefined" && g8 !== "") return g8;
+      } catch {
+      }
+      return "";
+    }
+    function tryCreateActor() {
+      if (canisterActorRef.current) return true;
+      const canisterId = resolveCanisterId2();
+      if (!canisterId) return false;
+      try {
+        const actor = createActor(
+          canisterId,
+          async (file) => {
+            const bytes = await file.getBytes();
+            return new Uint8Array(bytes.buffer);
+          },
+          async (bytes) => {
+            const { ExternalBlob: ExternalBlob2 } = await __vitePreload(async () => {
+              const { ExternalBlob: ExternalBlob3 } = await Promise.resolve().then(() => backend);
+              return { ExternalBlob: ExternalBlob3 };
+            }, true ? void 0 : void 0);
+            return ExternalBlob2.fromBytes(
+              new Uint8Array(bytes.buffer)
+            );
+          }
+        );
+        if (!actor) {
+          console.error(
+            "[sync] createActor() returned null/undefined — setCanisterActor not called. Verify the canister ID is correct and the backend is reachable."
+          );
+          return false;
+        }
+        canisterActorRef.current = actor;
+        setCanisterActorState(actor);
+        setCanisterActor(actor);
+        setBackendDisconnected(false);
+        console.info(
+          `[sync] Canister actor initialized with ID: ${canisterId}`
+        );
+        window.__debugSync = () => console.log("canisterId:", canisterId, "actor:", getCanisterActor());
+        return true;
+      } catch (err) {
+        console.error("[sync] Could not create canister actor:", err);
+        return false;
+      }
+    }
+    if (tryCreateActor()) {
+      window.dispatchEvent(new CustomEvent("canisterReady"));
+      return;
+    }
+    console.warn(
+      "[sync] CANISTER_ID_BACKEND not yet available — will retry every 5s (up to 40 attempts).\nIf this is a Vercel deployment: add VITE_CANISTER_ID_BACKEND to your Vercel project\nEnvironment Variables and redeploy. The value is the canister ID from the Caffeine platform."
+    );
+    setBackendDisconnected(true);
+    let retries = 0;
+    const MAX_RETRIES = 40;
+    const retryInterval = setInterval(() => {
+      retries++;
+      if (tryCreateActor()) {
+        clearInterval(retryInterval);
+        window.dispatchEvent(new CustomEvent("canisterReady"));
+        return;
+      }
+      if (retries >= MAX_RETRIES) {
+        clearInterval(retryInterval);
+        console.error(
+          `[sync] CANISTER_ID_BACKEND could not be resolved after ${MAX_RETRIES} attempts. Sync is disabled.
+FIX FOR VERCEL: Set VITE_CANISTER_ID_BACKEND in Vercel project Environment Variables.
+FIX FOR CAFFEINE: Ensure the backend canister is deployed and the platform has injected CANISTER_ID_BACKEND.
+Tried: __RESOLVED_CANISTER_ID_BACKEND, VITE_CANISTER_ID_BACKEND (env), CANISTER_ID_BACKEND (env), window.CANISTER_ID_BACKEND, window.__CANISTER_ID_BACKEND, __ENV__.CANISTER_ID_BACKEND, <meta name="canister-id-backend">, <script> tag scan, globalThis.__CANISTER_ID_BACKEND`
+        );
+      }
+    }, 5e3);
+    return () => clearInterval(retryInterval);
   }, []);
   const invalidateAll = reactExports.useCallback(() => {
     queryClient2.invalidateQueries({ queryKey: ["patients"] });
@@ -64253,7 +64369,15 @@ function AppInner() {
   reactExports.useEffect(() => {
     if (!backendDisconnected) setBannerDismissed(false);
   }, [backendDisconnected]);
-  const [showVercelHint] = reactExports.useState(false);
+  const [showVercelHint, setShowVercelHint] = reactExports.useState(false);
+  reactExports.useEffect(() => {
+    if (!backendDisconnected) {
+      setShowVercelHint(false);
+      return;
+    }
+    const t = setTimeout(() => setShowVercelHint(true), 5e4);
+    return () => clearTimeout(t);
+  }, [backendDisconnected]);
   const isSerialDisplay = typeof window !== "undefined" && window.location.pathname === "/serial-display";
   if (isSerialDisplay) return /* @__PURE__ */ jsxRuntimeExports.jsx(SerialDisplay, {});
   const handleAdminLogin = (e) => {
@@ -64710,6 +64834,32 @@ function AppInner() {
               ]
             }
           ),
+          showVercelHint && /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "div",
+            {
+              className: "flex items-start gap-3 px-4 py-2.5 text-amber-900 text-xs font-medium border-b border-amber-300",
+              style: { background: "#fef3c7" },
+              "data-ocid": "sync.vercel_hint_banner",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-base shrink-0", children: "⚠️" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "leading-snug", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: "Vercel deployment detected:" }),
+                  " Cloud sync is unavailable because",
+                  " ",
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("code", { className: "bg-amber-200 px-1 rounded font-mono", children: "VITE_CANISTER_ID_BACKEND" }),
+                  " ",
+                  "is not set. Go to your",
+                  " ",
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: "Vercel project → Settings → Environment Variables" }),
+                  ", add",
+                  " ",
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("code", { className: "bg-amber-200 px-1 rounded font-mono", children: "VITE_CANISTER_ID_BACKEND" }),
+                  " ",
+                  "with your canister ID value, then redeploy. Local data is safe until then."
+                ] })
+              ]
+            }
+          )
         ]
       }
     ),

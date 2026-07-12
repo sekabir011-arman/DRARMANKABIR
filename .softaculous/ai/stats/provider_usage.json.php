@@ -1,8 +1,8 @@
 <?php exit(); ?>
 {
     "opencode_zen": {
-        "messages": 219,
+        "messages": 256,
         "conversations": 1,
-        "last_used": 1783788762
+        "last_used": 1783833287
     }
 }
