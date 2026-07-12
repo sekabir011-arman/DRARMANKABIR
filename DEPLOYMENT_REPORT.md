@@ -256,6 +256,40 @@ npm run build
 - [x] Legacy data import endpoint
 - [x] Health check / info endpoint
 
+## 🔧 POST-DEPLOYMENT FIXES
+
+### Browser Console Errors Fixed
+
+After deployment, the following issues were identified and fixed:
+
+| Issue | Root Cause | Fix |
+|-------|-----------|-----|
+| `CANISTER_ID_BACKEND is not set` error loop | Frontend bundle had infinite retry loop trying to resolve ICP canister ID from env vars, meta tags, and `window.CANISTER_ID_BACKEND` | Removed `tryResolveCanisterId()` function and replaced with static `null`. Replaced the entire retry `useEffect` with `useState(null)`. |
+| `_canisterActor.getAllPatients()` errors | Appointments and Settings chunks called `_canisterActorRef()` which returned `null` after our fix, but the guard `if (!actor)` prevented crashes | Verified all chunks guard against null actor — the guard was already in place for offline mode. |
+| `window.__canisterActorForQueue` error | SerialDisplay chunk tried to use global canister actor reference that was never set | The guard `if (!actor)` catches this gracefully. |
+| Vercel hint banner flickering | After 50s of failed canister ID resolution, a yellow "Vercel deployment detected" banner appeared telling users to set `VITE_CANISTER_ID_BACKEND` | Removed `showVercelHint` state/effect and the associated JSX block from the deployed bundle. |
+| `blob.caffeine.ai` storage gateway fallback | The `loadConfig()` function defaulted to `https://blob.caffeine.ai` which is not accessible | The config loading function is never called after our fix. Default values remain but are dead code. |
+| `fonts.googleapis.com` blocked by CSP | Google Fonts @import in CSS was blocked by `style-src 'self'` | Added `https://fonts.googleapis.com` to `style-src` and `https://fonts.gstatic.com` to `font-src` in CSP. |
+| Google Maps blocked by CSP | Any Google Maps iframes or images would be blocked | Added `frame-src https://maps.google.com https://www.google.com` and `img-src https://maps.gstatic.com https://maps.googleapis.com`. |
+
+### Files Patched (Deployed)
+
+| File | Change |
+|------|--------|
+| `public_html/.htaccess` | Updated CSP to allow Google Fonts (`fonts.googleapis.com`, `fonts.gstatic.com`) and Google Maps |
+| `public_html/env.json` | Added `backend_canister_id: ""` and `project_id: ""` to prevent `loadConfig()` from throwing |
+| `public_html/assets/index-DJeWhCy-.js` | (1) Replaced canister retry `useEffect` with `useState(null)`, (2) Removed `showVercelHint` state/effect, (3) Removed Vercel hint JSX block, (4) Replaced Caffeine.ai footer links with "Dr. Arman Kabir Care" |
+| `public_html/assets/LandingPage-Dv8SefYP.js` | Replaced Caffeine.ai footer link |
+| `public_html/assets/Settings-DPkJ1nB8.js` | Replaced Caffeine.ai footer link |
+
+### Source Files Cleaned (for future rebuild)
+
+All ICP, Caffeine, and Vercel references removed from the frontend source code:
+
+- **Removed files**: `canisterActors.tsx`, `backend.d.ts`, `declarations/` directory
+- **Cleaned files**: `main.tsx`, `App.tsx`, `Layout.tsx`, `hooks/useMigration.ts`, `hooks/useCanisterSync.ts`, `pages/LandingPage.tsx`, `pages/Settings.tsx`, `pages/PatientProfile.tsx`, `pages/WardRound.tsx`, `types/index.ts`, `package.json`
+- **Deletions**: 7 ICP/Caffeine npm dependencies, 2 declaration files, entire declarations directory
+
 ## 🗄️ PHPMYADMIN DATABASE MANAGEMENT
 
 phpMyAdmin 5.2.3 has been installed and configured at:
