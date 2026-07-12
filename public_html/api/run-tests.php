@@ -76,6 +76,22 @@ function assertTest(string $name, array $result): void {
     $tests[] = $result;
 }
 
+function assertError(string $name, array $result, int $expectedHttp = 400): void {
+    // For negative tests: we expect success=false and specific HTTP code
+    global $pass, $fail, $tests;
+    $ok = !$result['success'] && $result['http'] === $expectedHttp;
+    if ($ok) {
+        echo "  ✅ $name (correctly rejected with HTTP {$result['http']})\n";
+        $pass++;
+    } else {
+        echo "  ❌ $name\n";
+        echo "     Expected: HTTP=$expectedHttp success=false | Got: HTTP={$result['http']} success=" . ($result['success'] ? 'YES' : 'NO') . "\n";
+        echo "     Message: {$result['message']}\n";
+        $fail++;
+    }
+    $tests[] = $result;
+}
+
 echo "═══════════════════════════════════════════════════════════\n";
 echo "  Dr. Arman Kabir Care - End-to-End Test Suite\n";
 echo "  " . date('Y-m-d H:i:s') . "\n";
