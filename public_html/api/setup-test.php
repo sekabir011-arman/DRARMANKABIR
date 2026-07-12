@@ -96,13 +96,13 @@ function runMigrations($host, $port, $user, $pass, $dbname, $fresh = false, $see
         $pdo->exec("USE `$dbname`");
         $output[] = "✓ Database '$dbname' ready";
         
-        // Run schema
+        // Run schema - DDL statements cannot be wrapped in transactions (MySQL implicit commit)
         $schemaFile = __DIR__ . '/../../server-data/migrations/001_schema.sql';
         if (file_exists($schemaFile)) {
             $sql = file_get_contents($schemaFile);
-            $statements = explode(';', $sql);
+            // Split by semicolons, but be careful with generated column definitions
+            $statements = preg_split('/;\s*$/m', $sql);
             $count = 0;
-            $pdo->beginTransaction();
             foreach ($statements as $stmt) {
                 $stmt = trim($stmt);
                 if (!empty($stmt)) {
@@ -110,26 +110,23 @@ function runMigrations($host, $port, $user, $pass, $dbname, $fresh = false, $see
                     $count++;
                 }
             }
-            $pdo->commit();
             $output[] = "✓ Schema executed ($count statements)";
         } else {
             $output[] = "⚠ Schema file not found: $schemaFile";
         }
         
-        // Run seed
+        // Run seed - has INSERT statements (DML), can use transaction
         if ($seed) {
             $seedFile = __DIR__ . '/../../server-data/migrations/002_seed.sql';
             if (file_exists($seedFile)) {
                 $sql = file_get_contents($seedFile);
-                $statements = explode(';', $sql);
-                $pdo->beginTransaction();
+                $statements = preg_split('/;\s*$/m', $sql);
                 foreach ($statements as $stmt) {
                     $stmt = trim($stmt);
                     if (!empty($stmt)) {
                         $pdo->exec($stmt);
                     }
                 }
-                $pdo->commit();
                 $output[] = "✓ Seed data loaded";
             } else {
                 $output[] = "⚠ Seed file not found: $seedFile";
