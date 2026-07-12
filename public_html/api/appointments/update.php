@@ -45,6 +45,14 @@ try {
         'serial_number' => 'serial_number',
     ];
     
+    // Validate status value if provided
+    if (isset($input['status'])) {
+        $allowedStatuses = ['scheduled', 'confirmed', 'checked_in', 'in_progress', 'completed', 'cancelled', 'no_show'];
+        if (!in_array($input['status'], $allowedStatuses)) {
+            errorResponse('Invalid appointment status. Allowed: ' . implode(', ', $allowedStatuses), 400);
+        }
+    }
+    
     foreach ($allowedFields as $inputKey => $dbField) {
         if (isset($input[$inputKey])) {
             $updates[] = "$dbField = :$dbField";

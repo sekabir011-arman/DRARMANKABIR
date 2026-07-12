@@ -1,0 +1,4 @@
+[12-Jul-2026 23:33:01 Asia/Dhaka] Database connection failed: SQLSTATE[HY000] [1045] Access denied for user 'drarmank_care_user'@'localhost' (using password: NO)
+[12-Jul-2026 23:33:41 Asia/Dhaka] Database connection failed: SQLSTATE[28000] [1045] Access denied for user 'drarmank_care_user'@'localhost' (using password: NO)
+[12-Jul-2026 23:34:14 Asia/Dhaka] Database connection failed: SQLSTATE[28000] [1045] Access denied for user 'drarmank_care_user'@'localhost' (using password: NO)
+[13-Jul-2026 01:12:12 Asia/Dhaka] Database connection failed: SQLSTATE[28000] [1045] Access denied for user 'drarmank_care_user'@'localhost' (using password: NO)

@@ -1,0 +1,12 @@
+[12-Jul-2026 17:32:55 UTC] PHP Warning:  require_once(/tmp/public_html/api/database.php): Failed to open stream: No such file or directory in /tmp/ai_php_7h69c7fll2tn7h1oKxW on line 4
+[12-Jul-2026 17:32:55 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/tmp/public_html/api/database.php' (include_path='.:/opt/cpanel/ea-php81/root/usr/share/pear') in /tmp/ai_php_7h69c7fll2tn7h1oKxW:4
+Stack trace:
+#0 {main}
+  thrown in /tmp/ai_php_7h69c7fll2tn7h1oKxW on line 4
+[12-Jul-2026 19:11:41 UTC] PHP Warning:  scandir(/var/cpanel/mysql): Failed to open directory: Permission denied in Command line code on line 13
+[12-Jul-2026 19:11:41 UTC] PHP Warning:  scandir(): (errno 13): Permission denied in Command line code on line 13
+[12-Jul-2026 19:11:41 UTC] PHP Fatal error:  Uncaught TypeError: array_diff(): Argument #1 ($array) must be of type array, bool given in Command line code:14
+Stack trace:
+#0 Command line code(14): array_diff(false, Array)
+#1 {main}
+  thrown in Command line code on line 14
