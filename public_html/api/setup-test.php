@@ -100,32 +100,61 @@ function runMigrations($host, $port, $user, $pass, $dbname, $fresh = false, $see
         $schemaFile = __DIR__ . '/../../server-data/migrations/001_schema.sql';
         if (file_exists($schemaFile)) {
             $sql = file_get_contents($schemaFile);
-            // Split by semicolons, but be careful with generated column definitions
-            $statements = preg_split('/;\s*$/m', $sql);
+            // Skip comment lines and split by semicolons
+            $lines = explode("\n", $sql);
+            $currentStmt = '';
             $count = 0;
-            foreach ($statements as $stmt) {
-                $stmt = trim($stmt);
-                if (!empty($stmt)) {
-                    $pdo->exec($stmt);
-                    $count++;
+            foreach ($lines as $line) {
+                $trimmed = trim($line);
+                // Skip comment lines
+                if (empty($trimmed) || str_starts_with($trimmed, '--') || str_starts_with($trimmed, '#')) {
+                    continue;
                 }
+                $currentStmt .= $line . "\n";
+                if (str_ends_with(trim($line), ';')) {
+                    $stmt = trim($currentStmt);
+                    if (!empty($stmt)) {
+                        $pdo->exec($stmt);
+                        $count++;
+                    }
+                    $currentStmt = '';
+                }
+            }
+            // Handle any remaining statement
+            $stmt = trim($currentStmt);
+            if (!empty($stmt)) {
+                $pdo->exec($stmt);
+                $count++;
             }
             $output[] = "✓ Schema executed ($count statements)";
         } else {
             $output[] = "⚠ Schema file not found: $schemaFile";
         }
         
-        // Run seed - has INSERT statements (DML), can use transaction
+        // Run seed
         if ($seed) {
             $seedFile = __DIR__ . '/../../server-data/migrations/002_seed.sql';
             if (file_exists($seedFile)) {
                 $sql = file_get_contents($seedFile);
-                $statements = preg_split('/;\s*$/m', $sql);
-                foreach ($statements as $stmt) {
-                    $stmt = trim($stmt);
-                    if (!empty($stmt)) {
-                        $pdo->exec($stmt);
+                $lines = explode("\n", $sql);
+                $currentStmt = '';
+                foreach ($lines as $line) {
+                    $trimmed = trim($line);
+                    if (empty($trimmed) || str_starts_with($trimmed, '--') || str_starts_with($trimmed, '#')) {
+                        continue;
                     }
+                    $currentStmt .= $line . "\n";
+                    if (str_ends_with(trim($line), ';')) {
+                        $stmt = trim($currentStmt);
+                        if (!empty($stmt)) {
+                            $pdo->exec($stmt);
+                        }
+                        $currentStmt = '';
+                    }
+                }
+                $stmt = trim($currentStmt);
+                if (!empty($stmt)) {
+                    $pdo->exec($stmt);
                 }
                 $output[] = "✓ Seed data loaded";
             } else {
@@ -156,10 +185,7 @@ function runMigrations($host, $port, $user, $pass, $dbname, $fresh = false, $see
         return ['success' => true, 'message' => 'Database setup complete!', 'details' => implode("\n", $output)];
         
     } catch (Exception $e) {
-        if (isset($pdo) && $pdo->inTransaction()) {
-            $pdo->rollBack();
-        }
-        return ['success' => false, 'message' => 'Migration failed: ' . $e->getMessage(), 'details' => implode("\n", $output)];
+        return ['success' => false, 'message' => 'Migration failed at: ' . ($stmt ?? 'unknown') . ' - Error: ' . $e->getMessage(), 'details' => implode("\n", $output)];
     }
 }
 
