@@ -2,13 +2,10 @@
 -- Dr. Arman Kabir Care - Complete MySQL Database Schema
 -- Version: 2.0.0 (cPanel Production Migration)
 -- Engine: InnoDB | Charset: utf8mb4 | Collation: utf8mb4_unicode_ci
+--
+-- NOTE: Database creation and USE statements are handled by migrate.php/setup.
+-- This file contains only CREATE TABLE statements.
 -- ============================================================================
-
-CREATE DATABASE IF NOT EXISTS drarmank_care
-    CHARACTER SET utf8mb4
-    COLLATE utf8mb4_unicode_ci;
-
-USE drarmank_care;
 
 -- ============================================================================
 -- 1. USERS & AUTHENTICATION
