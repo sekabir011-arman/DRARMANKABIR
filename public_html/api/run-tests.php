@@ -136,14 +136,14 @@ $token = $login['data']['token'] ?? '';
 $badLogin = test('Invalid Password', 'POST', '/api/auth/login.php', [
     'email' => 'admin@drarmankabir.com',
     'password' => 'wrongpassword'
-]);
-assertTest('Login with wrong password returns error', $badLogin);
+], null, 401);
+assertError('Login with wrong password returns 401', $badLogin, 401);
 
 // 1.3 Login with missing fields
 $missingLogin = test('Missing Fields', 'POST', '/api/auth/login.php', [
     'email' => 'admin@drarmankabir.com'
-]);
-assertTest('Login with missing fields returns error', $missingLogin);
+], null, 400);
+assertError('Login with missing fields returns 400', $missingLogin, 400);
 
 // 1.4 Verify session
 $verify = test('Verify Session', 'GET', '/api/auth/verify.php', null, $token);
