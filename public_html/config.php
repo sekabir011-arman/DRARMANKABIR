@@ -48,8 +48,9 @@ define('CSRF_TOKEN_LIFETIME', 3600); // 1 hour
 
 // ─── Upload Configuration ──────────────────────────────────────────────────
 define('UPLOAD_DIR', __DIR__ . '/uploads');
+define('UPLOAD_URL', '/uploads');
 define('MAX_UPLOAD_SIZE', 10 * 1024 * 1024); // 10MB
-define('ALLOWED_EXTENSIONS', ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx']);
+define('ALLOWED_EXTENSIONS', ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx']);
 
 // ─── Rate Limiting ─────────────────────────────────────────────────────────
 define('RATE_LIMIT_MAX', 100);
