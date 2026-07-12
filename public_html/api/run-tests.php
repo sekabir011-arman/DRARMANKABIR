@@ -135,17 +135,17 @@ echo "\n─── Patient Module ───────────────�
 
 // 2.1 Create patient
 $createPatient = test('Create Patient', 'POST', '/api/patients/create.php', [
-    'full_name' => 'Rahim Mia',
-    'name_bn' => 'রহিম মিয়া',
+    'fullName' => 'Rahim Mia',
+    'nameBn' => 'রহিম মিয়া',
     'phone' => '+8801712345678',
     'email' => 'rahim@example.com',
     'gender' => 'male',
-    'date_of_birth' => '1985-06-20',
+    'dateOfBirth' => '1985-06-20',
     'address' => '42, Mohakhali, Dhaka',
-    'blood_group' => 'B+',
+    'bloodGroup' => 'B+',
     'weight' => 72.5,
     'height' => 170,
-    'patient_type' => 'outdoor',
+    'patientType' => 'outdoor',
 ], $token);
 assertTest('Create patient with all fields', $createPatient);
 $patientId = $createPatient['data']['id'] ?? 0;
