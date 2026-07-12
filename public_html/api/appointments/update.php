@@ -26,6 +26,14 @@ try {
     $updates = [];
     $params = [':id' => $id];
     
+    // Validate status if provided
+    if (isset($input['status'])) {
+        $allowedStatuses = ['scheduled', 'confirmed', 'checked_in', 'in_progress', 'completed', 'cancelled', 'no_show'];
+        if (!in_array($input['status'], $allowedStatuses)) {
+            errorResponse('Invalid appointment status. Allowed: ' . implode(', ', $allowedStatuses), 400);
+        }
+    }
+    
     $allowedFields = [
         'status' => 'status',
         'appointment_time' => 'appointment_time',

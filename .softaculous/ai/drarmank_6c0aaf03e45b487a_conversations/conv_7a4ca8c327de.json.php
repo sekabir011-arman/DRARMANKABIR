@@ -87,7 +87,7 @@
         }
     ],
     "created_at": 1783713036,
-    "updated_at": 1783871514,
+    "updated_at": 1783876122,
     "messages": [
         {
             "id": "msg_compact",
@@ -341,6 +341,20 @@
             "content": "    1 | <?php\n    2 | \/**\n    3 |  * Appointments API - Update\n    4 |  * \n    5 |  * POST \/api\/appointments\/update.php\n    6 |  *\/\n    7 | \n    8 | require_once __DIR__ . '\/..\/database.php';\n    9 | require_once __DIR__ . '\/..\/helpers.php';\n   10 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   11 | \n   12 | handleCors();\n   13 | requireMethod('POST');\n   14 | \n   15 | $user = requireAuth();\n   16 | $input = getJsonInput();\n   17 | \n   18 | $id = (int)($input['id'] ?? 0);\n   19 | if (!$id) {\n   20 |     errorResponse('Appointment ID is required', 400);\n   21 | }\n   22 | \n   23 | try {\n   24 |     $db = Database::getInstance();\n   25 |     \n   26 |     $updates = [];\n   27 |     $params = [':id' => $id];\n   28 |     \n   29 |     $allowedFields = [\n   30 |         'status' => 'status',\n   31 |         'appointment_time' => 'appointment_time',\n   32 |         'chief_complaint' => 'chief_complaint',\n   33 |         'notes' => 'notes',\n   34 |         'patient_id' => 'patient_id',\n   35 |         'patient_name' => 'patient_name',\n   36 |         'patient_phone' => 'patient_phone',\n   37 |         'serial_number' => 'serial_number',\n   38 |     ];\n   39 |     \n   40 |     foreach ($allowedFields as $inputKey => $dbField) {\n   41 |         if (isset($input[$inputKey])) {\n   42 |             $updates[] = \"$dbField = :$dbField\";\n   43 |             $params[\":$dbField\"] = $input[$inputKey];\n   44 |         }\n   45 |     }\n   46 |     \n   47 |     if (empty($updates)) {\n   48 |         errorResponse('No fields to update', 400);\n   49 |     }\n   50 |     \n   51 |     $updates[] = 'updated_at = NOW()';\n   52 |     $updateStr = implode(', ', $updates);\n   53 |     \n   54 |     $stmt = $db->prepare(\"UPDATE appointments SET $updateStr WHERE id = :id\");\n   55 |     $stmt->execute($params);\n   56 |     \n   57 |     logAudit($user['id'], null, 'update', 'appointment', $id);\n   58 |     \n   59 |     successResponse(null, 'Appointment updated successfully');\n   60 | } catch (\\Exception $e) {\n   61 |     error_log('Update appointment error: ' . $e->getMessage());\n   62 |     errorResponse('Failed to update appointment', 500);\n   63 | }\n   64 |",
             "is_error": false,
             "time": 1783871514
+        },
+        {
+            "id": "msg_e3ef4ae84d",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1783871796
+        },
+        {
+            "id": "msg_bdf709057e",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1783876122
         }
     ]
 }
