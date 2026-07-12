@@ -27,7 +27,7 @@ try {
         FROM vital_signs v
         LEFT JOIN users u ON v.recorded_by = u.id
         WHERE v.patient_id = :patient_id
-        ORDER BY v.created_at DESC
+        ORDER BY v.recorded_at DESC
     ');
     $stmt->execute([':patient_id' => $patientId]);
     $vitals = $stmt->fetchAll();
