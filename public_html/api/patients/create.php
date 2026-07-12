@@ -70,8 +70,9 @@ try {
     // Generate register number
     $year = date('Y');
     $month = date('m');
-    $stmt = $db->query("SELECT COUNT(*) as cnt FROM patients WHERE YEAR(created_at) = $year");
-    $count = $stmt->fetch()['cnt'] + 1;
+    $countStmt = $db->prepare('SELECT COUNT(*) as cnt FROM patients WHERE YEAR(created_at) = :year');
+    $countStmt->execute([':year' => $year]);
+    $count = (int)$countStmt->fetch()['cnt'] + 1;
     $registerNumber = sprintf('REG-%s%s-%04d', $year, $month, $count);
     
     $db->beginTransaction();
