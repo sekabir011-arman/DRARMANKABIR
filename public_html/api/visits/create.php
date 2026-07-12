@@ -20,6 +20,13 @@ if ($missing) {
     errorResponse('Missing required fields', 400, ['missing_fields' => $missing]);
 }
 
+// Validate visit type
+$allowedVisitTypes = ['outpatient', 'inpatient', 'emergency', 'follow-up', 'admitted'];
+$visitType = $input['visit_type'];
+if (!in_array($visitType, $allowedVisitTypes)) {
+    errorResponse('Invalid visit type. Allowed: ' . implode(', ', $allowedVisitTypes), 400);
+}
+
 try {
     $db = Database::getInstance();
     

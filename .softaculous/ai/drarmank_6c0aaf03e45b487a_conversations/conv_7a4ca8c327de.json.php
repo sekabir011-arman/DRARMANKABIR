@@ -87,7 +87,7 @@
         }
     ],
     "created_at": 1783713036,
-    "updated_at": 1783867320,
+    "updated_at": 1783870837,
     "messages": [
         {
             "id": "msg_df8b4c16b5",
@@ -2025,6 +2025,20 @@
             "content": "Edited public_html\/api\/appointments\/create.php (1 replacement)\n- $missing = validateRequired($input, ['appointment_date']);\n- if ($missing) {\n-     errorResponse('Missing required fields: appointment_date', 400, ['missing_fields' => $missing]);\n- }\n- \n- try {\n-     $db = Database::getInstance();\n-     \n-     \/\/ Generate serial number for the day\n-     $date = $input['appointment_date'];\n-     $doctorId = isset($input['doctor_id']) ? (int)$input['doctor_id'] : null;\n-     \n-     $serialStmt = $db->prepare('SELECT COALESCE(MAX(serial_number), 0) + 1 as next_serial FROM appointments WHERE appointment_date = :date AND (doctor_id = :doctor_id OR (:doctor_id IS NULL AND doctor_id IS NULL))');\n-     $serialStmt->execute([':date' => $date, ':doctor_id' => $doctorId]);\n-     $serialNumber = (int)$serialStmt->fetch()['next_serial'];\n-     \n-     $stmt = $db->prepare('\n-         INSERT INTO appointments (patient_id, patient_name, patient_phone, doctor_id, appointment_date, appointment_time, serial_number, type, status, chief_complaint, notes, is_public_request, created_by)\n-         VALUES (:patient_id, :patient_name, :patient_phone, :doctor_id, :appointment_date, :appointment_time, :serial_number, :type, :status, :chief_complaint, :notes, :is_public_request, :created_by)\n-     ');\n-     \n-     $stmt->execute([\n-         ':patient_id' => isset($input['patient_id']) ? (int)$input['patient_id'] : null,\n-         ':patient_name' => $input['patient_name'] ?? null,\n-         ':patient_phone' => $input['patient_phone'] ?? null,\n-         ':doctor_id' => $doctorId,\n-         ':appointment_date' => $date,\n-         ':appointment_time' => $input['appointment_time'] ?? null,\n-         ':serial_number' => $serialNumber,\n-         ':type' => $input['type'] ?? 'regular',\n-         ':status' => $input['status'] ?? 'scheduled',\n-         ':chief_complaint' => $input['chief_complaint'] ?? null,\n-         ':notes' => $input['notes'] ?? null,\n-         ':is_public_request' => isset($input['is_public_request']) ? (int)$input['is_public_request'] : 0,\n-         ':created_by' => $user['id'],\n-     ]);\n+ $missing = validateRequired($input, ['appointment_date']);\n+ if ($missing) {\n+     errorResponse('Missing required fields: appointment_date', 400, ['missing_fields' => $missing]);\n+ }\n+ \n+ \/\/ Validate appointment type\n+ $allowedTypes = ['regular', 'emergency', 'follow-up', 'consultation'];\n+ $appointmentType = $input['type'] ?? 'regular';\n+ if (!in_array($appointmentType, $allowedTypes)) {\n+     errorResponse('Invalid appointment type. Allowed: ' . implode(', ', $allowedTypes), 400);\n+ }\n+ \n+ \/\/ Validate appointment status\n+ $allowedStatuses = ['scheduled', 'confirmed', 'checked_in', 'in_progress', 'completed', 'cancelled', 'no_show'];\n+ $appointmentStatus = $input['status'] ?? 'scheduled';\n+ if (!in_array($appointmentStatus, $allowedStatuses)) {\n+     errorResponse('Invalid appointment status. Allowed: ' . implode(', ', $allowedStatuses), 400);\n+ }\n+ \n+ try {\n+     $db = Database::getInstance();\n+     \n+     \/\/ Generate serial number for the day\n+     $date = $input['appointment_date'];\n+     $doctorId = isset($input['doctor_id']) ? (int)$input['doctor_id'] : null;\n+     \n+     $serialStmt = $db->prepare('SELECT COALESCE(MAX(serial_number), 0) + 1 as next_serial FROM appointments WHERE appointment_date = :date AND (doctor_id = :doctor_id OR (:doctor_id IS NULL AND doctor_id IS NULL))');\n+     $serialStmt->execute([':date' => $date, ':doctor_id' => $doctorId]);\n+     $serialNumber = (int)$serialStmt->fetch()['next_serial'];\n+     \n+     $stmt = $db->prepare('\n+         INSERT INTO appointments (patient_id, patient_name, patient_phone, doctor_id, appointment_date, appointment_time, serial_number, type, status, chief_complaint, notes, is_public_request, created_by)\n+         VALUES (:patient_id, :patient_name, :patient_phone, :doctor_id, :appointment_date, :appointment_time, :serial_number, :type, :status, :chief_complaint, :notes, :is_public_request, :created_by)\n+     ');\n+     \n+     $stmt->execute([\n+         ':patient_id' => isset($input['patient_id']) ? (int)$input['patient_id'] : null,\n+         ':patient_name' => $input['patient_name'] ?? null,\n+         ':patient_phone' => $input['patient_phone'] ?? null,\n+         ':doctor_id' => $doctorId,\n+         ':appointment_date' => $date,\n+         ':appointment_time' => $input['appointment_time'] ?? null,\n+         ':serial_number' => $serialNumber,\n+         ':type' => $appointmentType,\n+         ':status' => $appointmentStatus,\n+         ':chief_complaint' => $input['chief_complaint'] ?? null,\n+         ':notes' => $input['notes'] ?? null,\n+         ':is_public_request' => isset($input['is_public_request']) ? (int)$input['is_public_request'] : 0,\n+         ':created_by' => $user['id'],\n+     ]);",
             "is_error": false,
             "time": 1783867320
+        },
+        {
+            "id": "msg_0b8762aa9b",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1783867517
+        },
+        {
+            "id": "msg_36fea0c9a9",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1783870837
         }
     ]
 }
