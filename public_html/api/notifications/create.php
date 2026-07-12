@@ -24,8 +24,8 @@ try {
     $db = Database::getInstance();
     
     $stmt = $db->prepare('
-        INSERT INTO notifications (user_id, patient_id, type, title, message, link, created_by)
-        VALUES (:user_id, :patient_id, :type, :title, :message, :link, :created_by)
+        INSERT INTO notifications (user_id, patient_id, type, title, message, link_url, created_by)
+        VALUES (:user_id, :patient_id, :type, :title, :message, :link_url, :created_by)
     ');
     
     $stmt->execute([
@@ -34,7 +34,7 @@ try {
         ':type' => $input['type'],
         ':title' => $input['title'],
         ':message' => $input['message'] ?? null,
-        ':link' => $input['link'] ?? null,
+        ':link_url' => $input['link_url'] ?? $input['link'] ?? null,
         ':created_by' => $user['id'],
     ]);
     
