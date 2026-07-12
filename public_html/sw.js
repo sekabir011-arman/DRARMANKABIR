@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dr-arman-care-v3';
+const CACHE_NAME = 'dr-arman-care-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -25,7 +25,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch: network-first for API/external, cache-first for assets
+// Fetch: network-first for JS/fonts, cache-first for other assets
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
@@ -33,12 +33,11 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   if (url.protocol === 'chrome-extension:') return;
 
-  // Network-first for API calls (PHP backend) - don't cache API responses
+  // Network-first for API calls (PHP backend)
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       fetch(event.request, { cache: 'no-store' })
         .then(response => {
-          // Clone and cache successful GET responses for offline fallback
           if (response.ok) {
             const toCache = response.clone();
             caches.open(CACHE_NAME + '-api').then(cache => {
@@ -64,7 +63,30 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache-first for everything else (app shell, assets)
+  // Network-first for JavaScript bundles and font files
+  // This prevents stale JS caches from causing React hook errors
+  // (where dynamic chunks load a different cached version of the main bundle)
+  if (
+    url.pathname.endsWith('.js') ||
+    url.pathname.endsWith('.woff2') ||
+    url.pathname.endsWith('.woff')
+  ) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (!response || response.status !== 200 || response.type === 'opaque') {
+            return response;
+          }
+          const toCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, toCache));
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Cache-first for everything else (images, CSS, app shell)
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;

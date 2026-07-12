@@ -27,7 +27,7 @@
         }
     ],
     "created_at": 1783889348,
-    "updated_at": 1783889907,
+    "updated_at": 1783890296,
     "messages": [
         {
             "id": "msg_5d69e2bc9d",
@@ -2505,6 +2505,13 @@
             "content": "    1 | const CACHE_NAME = 'dr-arman-care-v3';\n    2 | const STATIC_ASSETS = [\n    3 |   '\/',\n    4 |   '\/index.html',\n    5 |   '\/manifest.json',\n    6 | ];\n    7 | \n    8 | \/\/ Install: cache the app shell\n    9 | self.addEventListener('install', (event) => {\n   10 |   event.waitUntil(\n   11 |     caches.open(CACHE_NAME).then((cache) => {\n   12 |       return cache.addAll(STATIC_ASSETS);\n   13 |     }).then(() => self.skipWaiting())\n   14 |   );\n   15 | });\n   16 | \n   17 | \/\/ Activate: clean up old caches\n   18 | self.addEventListener('activate', (event) => {\n   19 |   event.waitUntil(\n   20 |     caches.keys().then((keys) =>\n   21 |       Promise.all(\n   22 |         keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))\n   23 |       )\n   24 |     ).then(() => self.clients.claim())\n   25 |   );\n   26 | });\n   27 | \n   28 | \/\/ Fetch: network-first for API\/external, cache-first for assets\n   29 | self.addEventListener('fetch', (event) => {\n   30 |   const url = new URL(event.request.url);\n   31 | \n   32 |   \/\/ Skip non-GET and chrome-extension requests\n   33 |   if (event.request.method !== 'GET') return;\n   34 |   if (url.protocol === 'chrome-extension:') return;\n   35 | \n   36 |   \/\/ Network-first for API calls (PHP backend) - don't cache API responses\n   37 |   if (url.pathname.startsWith('\/api\/')) {\n   38 |     event.respondWith(\n   39 |       fetch(event.request, { cache: 'no-store' })\n   40 |         .then(response => {\n   41 |           \/\/ Clone and cache successful GET responses for offline fallback\n   42 |           if (response.ok) {\n   43 |             const toCache = response.clone();\n   44 |             caches.open(CACHE_NAME + '-api').then(cache => {\n   45 |               cache.put(event.request, toCache);\n   46 |             });\n   47 |           }\n   48 |           return response;\n   49 |         })\n   50 |         .catch(() => caches.match(event.request))\n   51 |     );\n   52 |     return;\n   53 |   }\n   54 | \n   55 |   \/\/ Network-first for external resources\n   56 |   if (\n   57 |     url.hostname.includes('whatsapp') ||\n   58 |     url.hostname.includes('fonts.googleapis') ||\n   59 |     url.hostname.includes('fonts.gstatic')\n   60 |   ) {\n   61 |     event.respondWith(\n   62 |       fetch(event.request).catch(() => caches.match(event.request))\n   63 |     );\n   64 |     return;\n   65 |   }\n   66 | \n   67 |   \/\/ Cache-first for everything else (app shell, assets)\n   68 |   event.respondWith(\n   69 |     caches.match(event.request).then((cached) => {\n   70 |       if (cached) return cached;\n   71 |       return fetch(event.request).then((response) => {\n   72 |         if (!response || response.status !== 200 || response.type === 'opaque') {\n   73 |           return response;\n   74 |         }\n   75 |         const toCache = response.clone();\n   76 |         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, toCache));\n   77 |         return response;\n   78 |       }).catch(() => {\n   79 |         \/\/ Fallback to index.html for navigation requests\n   80 |         if (event.request.mode === 'navigate') {\n   81 |           return caches.match('\/index.html');\n   82 |         }\n   83 |       });\n   84 |     })\n   85 |   );\n   86 | });\n   87 |",
             "is_error": false,
             "time": 1783889907
+        },
+        {
+            "id": "msg_dc448ec40e",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1783890296
         }
     ]
 }
