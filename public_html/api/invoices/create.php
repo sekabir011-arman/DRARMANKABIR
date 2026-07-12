@@ -31,7 +31,8 @@ try {
     // Generate invoice number
     $year = date('Y');
     $prefix = 'INV-' . $year . '-';
-    $countStmt = $db->query("SELECT COUNT(*) as c FROM invoices WHERE YEAR(invoice_date) = $year");
+    $countStmt = $db->prepare('SELECT COUNT(*) as c FROM invoices WHERE YEAR(invoice_date) = :year');
+    $countStmt->execute([':year' => $year]);
     $count = (int)$countStmt->fetch()['c'] + 1;
     $invoiceNumber = $prefix . str_pad($count, 5, '0', STR_PAD_LEFT);
     
