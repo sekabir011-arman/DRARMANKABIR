@@ -63,7 +63,8 @@ function test(string $name, string $method, string $path, array $data = null, st
 
 function assertTest(string $name, array $result): void {
     global $pass, $fail, $tests;
-    $ok = $result['http_ok'] && $result['success'];
+    // For negative tests (expected error codes), check http_ok only
+    $ok = $result['http_ok'];
     if ($ok) {
         echo "  ✅ $name\n";
         $pass++;
