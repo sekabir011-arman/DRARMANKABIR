@@ -52,7 +52,7 @@
         }
     ],
     "created_at": 1783713036,
-    "updated_at": 1783886108,
+    "updated_at": 1783886114,
     "messages": [
         {
             "id": "msg_compact",
@@ -1646,6 +1646,53 @@
             "content": "    1 | <?php\n    2 | \/**\n    3 |  * Create Appointment API\n    4 |  * \n    5 |  * POST \/api\/appointments\/create.php\n    6 |  *\/\n    7 | \n    8 | require_once __DIR__ . '\/..\/database.php';\n    9 | require_once __DIR__ . '\/..\/helpers.php';\n   10 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   11 | \n   12 | handleCors();\n   13 | requireMethod('POST');\n   14 | \n   15 | $user = requireAuth();\n   16 | $input = getJsonInput();\n   17 | \n   18 | $missing = validateRequired($input, ['appointment_date']);\n   19 | if ($missing) {\n   20 |     errorResponse('Missing required fields: appointment_date', 400, ['missing_fields' => $missing]);\n   21 | }\n   22 | \n   23 | \/\/ Validate appointment type\n   24 | $allowedTypes = ['regular', 'emergency', 'follow-up', 'consultation'];\n   25 | $appointmentType = $input['type'] ?? 'regular';\n   26 | if (!in_array($appointmentType, $allowedTypes)) {\n   27 |     errorResponse('Invalid appointment type. Allowed: ' . implode(', ', $allowedTypes), 400);\n   28 | }\n   29 | \n   30 | \/\/ Validate appointment status\n   31 | $allowedStatuses = ['scheduled', 'confirmed', 'checked_in', 'in_progress', 'completed', 'cancelled', 'no_show'];\n   32 | $appointmentStatus = $input['status'] ?? 'scheduled';\n   33 | if (!in_array($appointmentStatus, $allowedStatuses)) {\n   34 |     errorResponse('Invalid appointment status. Allowed: ' . implode(', ', $allowedStatuses), 400);\n   35 | }\n   36 | \n   37 | try {\n   38 |     $db = Database::getInstance();\n   39 |     \n   40 |     \/\/ Generate serial number for the day\n   41 |     $date = $input['appointment_date'];\n   42 |     $doctorId = isset($input['doctor_id']) ? (int)$input['doctor_id'] : null;\n   43 |     \n   44 |     $serialStmt = $db->prepare('SELECT COALESCE(MAX(serial_number), 0) + 1 as next_serial FROM appointments WHERE appointment_date = :date AND (doctor_id = :doctor_id OR (:doctor_id IS NULL AND doctor_id IS NULL))');\n   45 |     $serialStmt->execute([':date' => $date, ':doctor_id' => $doctorId]);\n   46 |     $serialNumber = (int)$serialStmt->fetch()['next_serial'];\n   47 |     \n   48 |     $stmt = $db->prepare('\n   49 |         INSERT INTO appointments (patient_id, patient_name, patient_phone, doctor_id, appointment_date, appointment_time, serial_number, type, status, chief_complaint, notes, is_public_request, created_by)\n   50 |         VALUES (:patient_id, :patient_name, :patient_phone, :doctor_id, :appointment_date, :appointment_time, :serial_number, :type, :status, :chief_complaint, :notes, :is_public_request, :created_by)\n   51 |     ');\n   52 |     \n   53 |     $stmt->execute([\n   54 |         ':patient_id' => isset($input['patient_id']) ? (int)$input['patient_id'] : null,\n   55 |         ':patient_name' => $input['patient_name'] ?? null,\n   56 |         ':patient_phone' => $input['patient_phone'] ?? null,\n   57 |         ':doctor_id' => $doctorId,\n   58 |         ':appointment_date' => $date,\n   59 |         ':appointment_time' => $input['appointment_time'] ?? null,\n   60 |         ':serial_number' => $serialNumber,\n   61 |         ':type' => $appointmentType,\n   62 |         ':status' => $appointmentStatus,\n   63 |         ':chief_complaint' => $input['chief_complaint'] ?? null,\n   64 |         ':notes' => $input['notes'] ?? null,\n   65 |         ':is_public_request' => isset($input['is_public_request']) ? (int)$input['is_public_request'] : 0,\n   66 |         ':created_by' => $user['id'],\n   67 |     ]);\n   68 |     \n   69 |     $appointmentId = (int)$db->lastInsertId();\n   70 |     \n   71 |     logAudit($user['id'], null, 'create', 'appointment', $appointmentId);\n   72 |     \n   73 |     successResponse(['id' => $appointmentId, 'serial_number' => $serialNumber], 'Appointment created successfully');\n   74 |     \n   75 | } catch (\\Exception $e) {\n   76 |     error_log('Create appointment error: ' . $e->getMessage());\n   77 |     errorResponse('Failed to create appointment', 500);\n   78 | }\n   79 |",
             "is_error": false,
             "time": 1783886108
+        },
+        {
+            "id": "msg_95cd19bdee",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The issue is that `type` is a MySQL reserved word. In the INSERT statement, I need to backtick `type`. Let me also check the serial query which has a complex condition. Actually, I think the `type` being a reserved word causes a SQL parse error. Let me add backtick-quoting around the column names that are reserved words.\n\nAlso, the serial query has `:doctor_id` used twice in the WHERE clause - this should be fine with PDO named placeholders, you can reference the same named placeholder multiple times.\n\nLet me fix the appointment create to backtick `type` and `status` in case they're reserved words, and also fix the serial query to handle null doctor_id better."
+                },
+                {
+                    "type": "text",
+                    "text": "I see it - `type` is a MySQL reserved word. Let me fix the appointment create with proper backtick quoting:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ICFg4YB3l4Ouc8NHroRW8554",
+                    "name": "edit_file",
+                    "input": {
+                        "path": "public_html\/api\/appointments\/create.php",
+                        "old_string": "        $stmt = $db->prepare('\n        INSERT INTO appointments (patient_id, patient_name, patient_phone, doctor_id, appointment_date, appointment_time, serial_number, type, status, chief_complaint, notes, is_public_request, created_by)\n        VALUES (:patient_id, :patient_name, :patient_phone, :doctor_id, :appointment_date, :appointment_time, :serial_number, :type, :status, :chief_complaint, :notes, :is_public_request, :created_by)\n    ');",
+                        "new_string": "        $stmt = $db->prepare('\n        INSERT INTO appointments (patient_id, patient_name, patient_phone, doctor_id, appointment_date, appointment_time, serial_number, `type`, `status`, chief_complaint, notes, is_public_request, created_by)\n        VALUES (:patient_id, :patient_name, :patient_phone, :doctor_id, :appointment_date, :appointment_time, :serial_number, :type, :status, :chief_complaint, :notes, :is_public_request, :created_by)\n    ');"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 44137,
+                "completion_tokens": 494,
+                "total_tokens": 44631,
+                "prompt_cache_hit_tokens": 42880,
+                "prompt_cache_miss_tokens": 1257,
+                "prompt_tokens_details": {
+                    "cached_tokens": 42880
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 151
+                }
+            },
+            "time": 1783886113
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ICFg4YB3l4Ouc8NHroRW8554",
+            "content": "Edited public_html\/api\/appointments\/create.php (1 replacement)\n-     $stmt = $db->prepare('\n-         INSERT INTO appointments (patient_id, patient_name, patient_phone, doctor_id, appointment_date, appointment_time, serial_number, type, status, chief_complaint, notes, is_public_request, created_by)\n-         VALUES (:patient_id, :patient_name, :patient_phone, :doctor_id, :appointment_date, :appointment_time, :serial_number, :type, :status, :chief_complaint, :notes, :is_public_request, :created_by)\n-     ');\n+         $stmt = $db->prepare('\n+         INSERT INTO appointments (patient_id, patient_name, patient_phone, doctor_id, appointment_date, appointment_time, serial_number, `type`, `status`, chief_complaint, notes, is_public_request, created_by)\n+         VALUES (:patient_id, :patient_name, :patient_phone, :doctor_id, :appointment_date, :appointment_time, :serial_number, :type, :status, :chief_complaint, :notes, :is_public_request, :created_by)\n+     ');",
+            "is_error": false,
+            "time": 1783886114
         }
     ]
 }

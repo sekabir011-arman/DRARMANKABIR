@@ -45,8 +45,8 @@ try {
     $serialStmt->execute([':date' => $date, ':doctor_id' => $doctorId]);
     $serialNumber = (int)$serialStmt->fetch()['next_serial'];
     
-    $stmt = $db->prepare('
-        INSERT INTO appointments (patient_id, patient_name, patient_phone, doctor_id, appointment_date, appointment_time, serial_number, type, status, chief_complaint, notes, is_public_request, created_by)
+        $stmt = $db->prepare('
+        INSERT INTO appointments (patient_id, patient_name, patient_phone, doctor_id, appointment_date, appointment_time, serial_number, `type`, `status`, chief_complaint, notes, is_public_request, created_by)
         VALUES (:patient_id, :patient_name, :patient_phone, :doctor_id, :appointment_date, :appointment_time, :serial_number, :type, :status, :chief_complaint, :notes, :is_public_request, :created_by)
     ');
     
