@@ -283,6 +283,42 @@ https://drarmankabir.com/phpmyadmin/
   # Then uncomment the Auth blocks in phpmyadmin/.htaccess
   ```
 
+## 🔧 POST-DEPLOYMENT FIXES (Applied July 2026)
+
+### Fix 1: Deployed JS Bundle — Removed ICP Canister Retry Loop
+- **File**: `assets/index-DJeWhCy-.js`
+- Removed the 50-second retry loop (`tryCreateActor` → `setTimeout` → retry)
+- Removed the `resolveCanisterId()` function that scanned for canister IDs across 7+ sources
+- Removed the Vercel hint banner (`showVercelHint` state + 50s timeout + JSX)
+- Results: No more console spam about failed canister resolution; app boots cleanly
+
+### Fix 2: Removed Caffeine.ai Footer Links
+- **Files**: `assets/index-DJeWhCy-.js`, `assets/LandingPage-Dv8SefYP.js`, `assets/Settings-DPkJ1nB8.js`
+- Replaced `caffeine.ai` footer links with `Dr. Arman Kabir Care`
+- Replaced referral UTMs with direct `https://drarmankabir.com` link
+
+### Fix 3: Updated Content Security Policy
+- **File**: `public_html/.htaccess`
+- Added `https://fonts.googleapis.com` to `style-src`
+- Added `https://fonts.gstatic.com` to `font-src`
+- Added `https://maps.gstatic.com`, `https://maps.googleapis.com` to `img-src`
+- Added `https://maps.google.com`, `https://www.google.com` to `frame-src`
+- Result: Google Maps and Fonts now load without CSP violations
+
+### Fix 4: Source Code Cleanup (for future rebuilds)
+- Removed `@caffeineai/core-infrastructure` from `main.tsx` (InternetIdentityProvider)
+- Cleaned `App.tsx` of all canister actor logic, retry loops, Vercel hints
+- Removed `canisterActors.tsx`, simplified `backend.ts` to stub
+- Removed `declarations/` (ICP .did files), `backend.d.ts`
+- Replaced `useMigration.ts` with simplified no-canister version
+- Cleaned `useCanisterSync.ts` to no-op
+- Removed `@icp-sdk` / `@dfinity` dependencies from `package.json`
+- Removed `Principal` type from `PatientProfile.tsx`, `WardRound.tsx`; added type alias
+- Replaced Caffeine footer links in `Layout.tsx`, `LandingPage.tsx`, `Settings.tsx`
+
+### Fix 5: env.json — Added Empty Canister Fields
+- Added `"backend_canister_id": ""` and `"project_id": ""` to prevent `loadConfig()` errors
+
 ## 📝 NOTES
 
 - The `sync.php` file is kept for backward compatibility but is NOT used by the new system
@@ -291,3 +327,4 @@ https://drarmankabir.com/phpmyadmin/
 - The `.htaccess` file handles SPA routing — all non-file, non-API routes serve `index.html`
 - All timestamps are stored in UTC and converted to Asia/Dhaka for display
 - Bengali (Bangla) language support is built into the schema (utf8mb4)
+- **Browser console should now show zero errors** related to canister/CSP/missing env vars
