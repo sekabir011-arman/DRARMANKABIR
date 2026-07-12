@@ -5,16 +5,17 @@
  * GET /api/info.php
  * 
  * Returns API version, database status, and server info.
- * No authentication required (public endpoint).
+ * Now requires authentication to prevent info leakage.
  */
 
 require_once __DIR__ . '/database.php';
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/auth/middleware.php';
 
 handleCors();
 requireMethod('GET');
 
-$dbStatus = ['connected' => false, 'message' => 'Not tested'];
+$user = requireAuth();
 
 try {
     $db = Database::getInstance();

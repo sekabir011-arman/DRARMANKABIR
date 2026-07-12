@@ -87,7 +87,7 @@
         }
     ],
     "created_at": 1783713036,
-    "updated_at": 1783870858,
+    "updated_at": 1783871499,
     "messages": [
         {
             "id": "msg_df8b4c16b5",
@@ -2133,6 +2133,20 @@
             "content": "Edited public_html\/api\/helpers.php (1 replacement)\n- function handleFileUpload(string $fieldName, string $subDir = ''): ?string {\n-     if (!isset($_FILES[$fieldName]) || $_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) {\n-         return null;\n-     }\n-     \n-     $file = $_FILES[$fieldName];\n-     \n-     \/\/ Validate file size\n-     if ($file['size'] > MAX_UPLOAD_SIZE) {\n-         errorResponse('File too large. Maximum: ' . (MAX_UPLOAD_SIZE \/ 1024 \/ 1024) . 'MB', 413);\n-     }\n-     \n-     \/\/ Validate extension\n-     $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));\n-     if (!in_array($ext, ALLOWED_EXTENSIONS)) {\n-         errorResponse('File type not allowed. Allowed: ' . implode(', ', ALLOWED_EXTENSIONS), 415);\n-     }\n-     \n-     \/\/ Create upload directory\n-     $uploadDir = UPLOAD_DIR . '\/' . ($subDir ? $subDir . '\/' : '');\n-     if (!is_dir($uploadDir)) {\n-         mkdir($uploadDir, 0755, true);\n-     }\n-     \n-     \/\/ Generate unique filename\n-     $filename = uniqid() . '_' . bin2hex(random_bytes(8)) . '.' . $ext;\n-     $filepath = $uploadDir . $filename;\n-     \n-     if (!move_uploaded_file($file['tmp_name'], $filepath)) {\n-         errorResponse('Failed to save uploaded file', 500);\n-     }\n-     \n-     return '\/uploads\/' . ($subDir ? $subDir . '\/' : '') . $filename;\n- }\n+ function handleFileUpload(string $fieldName, string $subDir = ''): ?string {\n+     if (!isset($_FILES[$fieldName]) || $_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) {\n+         return null;\n+     }\n+     \n+     $file = $_FILES[$fieldName];\n+     \n+     \/\/ Validate file size\n+     if ($file['size'] > MAX_UPLOAD_SIZE) {\n+         errorResponse('File too large. Maximum: ' . (MAX_UPLOAD_SIZE \/ 1024 \/ 1024) . 'MB', 413);\n+     }\n+     \n+     \/\/ Validate extension\n+     $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));\n+     if (!in_array($ext, ALLOWED_EXTENSIONS)) {\n+         errorResponse('File type not allowed. Allowed: ' . implode(', ', ALLOWED_EXTENSIONS), 415);\n+     }\n+     \n+     \/\/ Validate MIME type\n+     $allowedMimes = [\n+         'image\/jpeg', 'image\/png', 'image\/gif', 'image\/webp',\n+         'application\/pdf', 'application\/msword',\n+         'application\/vnd.openxmlformats-officedocument.wordprocessingml.document',\n+     ];\n+     $finfo = finfo_open(FILEINFO_MIME_TYPE);\n+     $mimeType = finfo_file($finfo, $file['tmp_name']);\n+     finfo_close($finfo);\n+     if (!in_array($mimeType, $allowedMimes)) {\n+         errorResponse('Invalid file type (MIME: ' . $mimeType . ')', 415);\n+     }\n+     \n+     \/\/ Create upload directory\n+     $uploadDir = UPLOAD_DIR . '\/' . ($subDir ? $subDir . '\/' : '');\n+     if (!is_dir($uploadDir)) {\n+         mkdir($uploadDir, 0755, true);\n+     }\n+     \n+     \/\/ Generate unique filename\n+     $filename = uniqid() . '_' . bin2hex(random_bytes(8)) . '.' . $ext;\n+     $filepath = $uploadDir . $filename;\n+     \n+     if (!move_uploaded_file($file['tmp_name'], $filepath)) {\n+         errorResponse('Failed to save uploaded file', 500);\n+     }\n+     \n+     return UPLOAD_URL . '\/' . ($subDir ? $subDir . '\/' : '') . $filename;\n+ }",
             "is_error": false,
             "time": 1783870858
+        },
+        {
+            "id": "msg_be846a932c",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1783871117
+        },
+        {
+            "id": "msg_5b5e55527e",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1783871499
         }
     ]
 }
