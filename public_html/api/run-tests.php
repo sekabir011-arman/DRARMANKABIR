@@ -313,7 +313,7 @@ assertTest('List prescriptions for patient', $listRx);
 echo "\n─── Clinical Module - Vitals ──────────────────────────────\n";
 
 // 6.1 Record vitals
-$createVitals = test('Record Vitals', 'POST', '/api/vitals/record.php', [
+$createVitals = test('Record Vitals', 'POST', '/api/vitals/create.php', [
     'patient_id' => $patientId2,
     'visit_id' => $visitId,
     'blood_pressure_systolic' => 120,
