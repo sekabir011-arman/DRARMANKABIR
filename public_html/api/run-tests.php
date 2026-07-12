@@ -12,6 +12,29 @@ error_reporting(E_ALL);
 set_time_limit(120);
 
 $base = 'https://drarmankabir.com';
+
+// ─── Fresh Database Setup ───────────────────────────────────────────────
+echo "─── Database Setup ──────────────────────────────────\n\n";
+$setupResult = file_get_contents($base . '/api/setup-test.php', false, stream_context_create([
+    'http' => [
+        'method' => 'POST',
+        'header' => 'Content-Type: application/json',
+        'content' => json_encode([
+            'action' => 'migrate',
+            'host' => '127.0.0.1',
+            'port' => 3306,
+            'user' => 'drarmank_drarmank_care_user',
+            'pass' => 'zosid01197247219',
+            'dbname' => 'drarmank_drarmank_care',
+            'fresh' => true,
+            'seed' => true,
+        ]),
+        'timeout' => 30,
+    ],
+]));
+$setupData = json_decode($setupResult, true);
+echo ($setupData['success'] ?? false) ? "  ✅ Database setup complete\n" : "  ❌ Database setup failed: " . ($setupData['message'] ?? 'Unknown') . "\n\n";
+
 $pass = 0;
 $fail = 0;
 $tests = [];
