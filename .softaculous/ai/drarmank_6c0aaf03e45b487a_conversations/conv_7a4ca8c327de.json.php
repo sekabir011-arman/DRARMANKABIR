@@ -47,7 +47,7 @@
         }
     ],
     "created_at": 1783713036,
-    "updated_at": 1783885959,
+    "updated_at": 1783885964,
     "messages": [
         {
             "id": "msg_compact",
@@ -1241,6 +1241,48 @@
             "content": "Successfully wrote 946 bytes (41 lines) to public_html\/api\/vitals\/list.php",
             "is_error": false,
             "time": 1783885959
+        },
+        {
+            "id": "msg_e227aa40cd",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now create the investigations create endpoint:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_XsizXXj9itCmEWwuVCX71268",
+                    "name": "write_file",
+                    "input": {
+                        "path": "public_html\/api\/investigations\/create.php",
+                        "content": "<?php\n\/**\n * Create Investigation API\n * \n * POST \/api\/investigations\/create.php\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\nrequire_once __DIR__ . '\/..\/auth\/middleware.php';\n\nhandleCors();\nrequireMethod('POST');\n\n$user = requireAuth();\n$input = getJsonInput();\n\n$missing = validateRequired($input, ['patient_id', 'test_name']);\nif ($missing) {\n    errorResponse('Missing required fields', 400, ['missing_fields' => $missing]);\n}\n\ntry {\n    $db = Database::getInstance();\n    \n    \/\/ Verify patient exists\n    $check = $db->prepare('SELECT id FROM patients WHERE id = :id');\n    $check->execute([':id' => (int)$input['patient_id']]);\n    if (!$check->fetch()) {\n        errorResponse('Patient not found', 404);\n    }\n    \n    $stmt = $db->prepare('\n        INSERT INTO investigations (patient_id, visit_id, test_name, test_category, instructions, status, ordered_by)\n        VALUES (:patient_id, :visit_id, :test_name, :test_category, :instructions, :status, :ordered_by)\n    ');\n    \n    $stmt->execute([\n        ':patient_id' => (int)$input['patient_id'],\n        ':visit_id' => isset($input['visit_id']) ? (int)$input['visit_id'] : null,\n        ':test_name' => $input['test_name'],\n        ':test_category' => $input['test_category'] ?? null,\n        ':instructions' => $input['instructions'] ?? null,\n        ':status' => 'ordered',\n        ':ordered_by' => $user['id'],\n    ]);\n    \n    $investigationId = (int)$db->lastInsertId();\n    \n    \/\/ Fetch created investigation\n    $fetchStmt = $db->prepare('SELECT * FROM investigations WHERE id = :id');\n    $fetchStmt->execute([':id' => $investigationId]);\n    $investigation = $fetchStmt->fetch();\n    \n    logAudit($user['id'], $input['patient_id'], 'create', 'investigation', $investigationId);\n    \n    successResponse($investigation, 'Investigation ordered successfully');\n    \n} catch (\\Exception $e) {\n    error_log('Create investigation error: ' . $e->getMessage());\n    errorResponse('Failed to order investigation', 500);\n}\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 41173,
+                "completion_tokens": 596,
+                "total_tokens": 41769,
+                "prompt_cache_hit_tokens": 41088,
+                "prompt_cache_miss_tokens": 85,
+                "prompt_tokens_details": {
+                    "cached_tokens": 41088
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 7
+                }
+            },
+            "time": 1783885964
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_XsizXXj9itCmEWwuVCX71268",
+            "content": "Successfully wrote 2033 bytes (63 lines) to public_html\/api\/investigations\/create.php",
+            "is_error": false,
+            "time": 1783885964
         }
     ]
 }
