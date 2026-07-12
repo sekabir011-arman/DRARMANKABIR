@@ -41,11 +41,20 @@ try {
     $date = $input['appointment_date'];
     $doctorId = isset($input['doctor_id']) ? (int)$input['doctor_id'] : null;
     
-    $serialStmt = $db->prepare('SELECT COALESCE(MAX(serial_number), 0) + 1 as next_serial FROM appointments WHERE appointment_date = :date AND (doctor_id = :doctor_id OR (:doctor_id IS NULL AND doctor_id IS NULL))');
-    $serialStmt->execute([':date' => $date, ':doctor_id' => $doctorId]);
+    // Use separate query for serial number to avoid PDO duplicate named parameter issue
+    $serialSql = 'SELECT COALESCE(MAX(serial_number), 0) + 1 as next_serial FROM appointments WHERE appointment_date = :date';
+    $serialParams = [':date' => $date];
+    if ($doctorId) {
+        $serialSql .= ' AND doctor_id = :did';
+        $serialParams[':did'] = $doctorId;
+    } else {
+        $serialSql .= ' AND doctor_id IS NULL';
+    }
+    $serialStmt = $db->prepare($serialSql);
+    $serialStmt->execute($serialParams);
     $serialNumber = (int)$serialStmt->fetch()['next_serial'];
     
-        $stmt = $db->prepare('
+    $stmt = $db->prepare('
         INSERT INTO appointments (patient_id, patient_name, patient_phone, doctor_id, appointment_date, appointment_time, serial_number, `type`, `status`, chief_complaint, notes, is_public_request, created_by)
         VALUES (:patient_id, :patient_name, :patient_phone, :doctor_id, :appointment_date, :appointment_time, :serial_number, :type, :status, :chief_complaint, :notes, :is_public_request, :created_by)
     ');
