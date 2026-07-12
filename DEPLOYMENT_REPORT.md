@@ -319,6 +319,66 @@ https://drarmankabir.com/phpmyadmin/
 ### Fix 5: env.json — Added Empty Canister Fields
 - Added `"backend_canister_id": ""` and `"project_id": ""` to prevent `loadConfig()` errors
 
+## 🔧 POST-DEPLOYMENT FIXES (July 2026)
+
+### Console Error Fixes Applied
+
+The following fixes were made to the deployed React SPA bundle (`index-DJeWhCy-.js`) to eliminate browser console errors:
+
+| # | Issue | Fix |
+|---|-------|-----|
+| 1 | **Canister ID retry loop** — `loadConfig()` threw `"CANISTER_ID_BACKEND is not set"` every 5 seconds, 10 times | Removed the retry interval `useEffect` entirely. The `tryCreateActor` function now returns `false` silently on first call. |
+| 2 | **Vercel deployment hint banner** — After 50s, a banner appeared: *"Vercel deployment detected: Cloud sync is unavailable..."* | Removed the `showVercelHint` state + `useEffect` timer, and its JSX block |
+| 3 | **CSP violations for Google Fonts** — Google Fonts CSS was blocked by Content-Security-Policy | Added `https://fonts.googleapis.com` to `style-src`, `https://fonts.gstatic.com` to `font-src` |
+| 4 | **CSP violations for Google Maps** — Maps resources blocked | Added `https://maps.gstatic.com` and `https://maps.googleapis.com` to `img-src`, added `frame-src` for `https://maps.google.com` and `https://www.google.com` |
+| 5 | **env.json missing fields** — `loadConfig()` expected `backend_canister_id` and `project_id` | Added these fields as empty strings to `env.json` |
+| 6 | **Caffeine.ai footer links** — Three chunks had promotional links to `caffeine.ai` | Replaced all with `drarmankabir.com` / "Dr. Arman Kabir Care" |
+
+### Source Code Cleaned for Future Rebuild
+
+The following source files in `/tmp/extracted/dr.armankabir-main/src/frontend/src/` have been cleaned of ICP/Caffeine dependencies:
+
+- **`main.tsx`** — Removed `InternetIdentityProvider` wrapper
+- **`App.tsx`** — Removed canister actor creation, retry logic, Vercel hint banner, backend-disconnected banner
+- **`canisterActors.tsx`** — **Deleted** (was `.tsx` file, 220+ lines)
+- **`backend.ts`** — Replaced with 5-line stub
+- **`backend.d.ts`** — Deleted
+- **`declarations/`** — Deleted (both files)
+- **`hooks/useCanisterSync.ts`** — Replaced with no-op stub
+- **`hooks/useMigration.ts`** — Simplified to always return "complete" status
+- **`Layout.tsx`** — Replaced `caffeine.ai` footer link with `drarmankabir.com`
+- **`pages/LandingPage.tsx`** — Same footer fix
+- **`pages/Settings.tsx`** — Same footer fix
+- **`pages/PatientProfile.tsx`** — Removed `@icp-sdk/core/principal` import
+- **`pages/WardRound.tsx`** — Removed `@icp-sdk/core/principal` import
+- **`types/index.ts`** — Added local `Principal = string` type alias, removed `@icp-sdk` import
+- **`package.json`** — Removed all `@dfinity/*`, `@icp-sdk/core`, `@caffeineai/core-infrastructure` dependencies
+
+### CSP in .htaccess Updated
+
+The Content-Security-Policy was expanded from:
+```
+default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval';
+style-src 'self' 'unsafe-inline';
+img-src 'self' data: blob: https:;
+font-src 'self' data:;
+connect-src 'self' https:;
+media-src 'self' data: blob:;
+worker-src 'self' blob:;
+```
+
+To:
+```
+default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval';
+style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+img-src 'self' data: blob: https: https://maps.gstatic.com https://maps.googleapis.com;
+font-src 'self' data: https://fonts.gstatic.com;
+connect-src 'self' https:;
+frame-src 'self' https://maps.google.com https://www.google.com;
+media-src 'self' data: blob:;
+worker-src 'self' blob:;
+```
+
 ## 📝 NOTES
 
 - The `sync.php` file is kept for backward compatibility but is NOT used by the new system
@@ -327,4 +387,5 @@ https://drarmankabir.com/phpmyadmin/
 - The `.htaccess` file handles SPA routing — all non-file, non-API routes serve `index.html`
 - All timestamps are stored in UTC and converted to Asia/Dhaka for display
 - Bengali (Bangla) language support is built into the schema (utf8mb4)
+- **Console errors are resolved** — open DevTools → Console to verify: no red errors should appear
 - **Browser console should now show zero errors** related to canister/CSP/missing env vars
