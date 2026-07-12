@@ -153,12 +153,12 @@ $regNumber = $createPatient['data']['register_number'] ?? '';
 
 // 2.2 Create second patient
 $createPatient2 = test('Create Patient 2', 'POST', '/api/patients/create.php', [
-    'full_name' => 'Fatima Begum',
+    'fullName' => 'Fatima Begum',
     'phone' => '+8801712345679',
     'gender' => 'female',
-    'date_of_birth' => '1992-03-10',
+    'dateOfBirth' => '1992-03-10',
     'address' => '25, Gulshan, Dhaka',
-    'patient_type' => 'outdoor',
+    'patientType' => 'outdoor',
 ], $token);
 assertTest('Create second patient', $createPatient2);
 $patientId2 = $createPatient2['data']['id'] ?? 0;
