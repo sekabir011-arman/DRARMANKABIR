@@ -20,6 +20,20 @@ if ($missing) {
     errorResponse('Missing required fields: appointment_date', 400, ['missing_fields' => $missing]);
 }
 
+// Validate appointment type
+$allowedTypes = ['regular', 'emergency', 'follow-up', 'consultation'];
+$appointmentType = $input['type'] ?? 'regular';
+if (!in_array($appointmentType, $allowedTypes)) {
+    errorResponse('Invalid appointment type. Allowed: ' . implode(', ', $allowedTypes), 400);
+}
+
+// Validate appointment status
+$allowedStatuses = ['scheduled', 'confirmed', 'checked_in', 'in_progress', 'completed', 'cancelled', 'no_show'];
+$appointmentStatus = $input['status'] ?? 'scheduled';
+if (!in_array($appointmentStatus, $allowedStatuses)) {
+    errorResponse('Invalid appointment status. Allowed: ' . implode(', ', $allowedStatuses), 400);
+}
+
 try {
     $db = Database::getInstance();
     
@@ -44,8 +58,8 @@ try {
         ':appointment_date' => $date,
         ':appointment_time' => $input['appointment_time'] ?? null,
         ':serial_number' => $serialNumber,
-        ':type' => $input['type'] ?? 'regular',
-        ':status' => $input['status'] ?? 'scheduled',
+        ':type' => $appointmentType,
+        ':status' => $appointmentStatus,
         ':chief_complaint' => $input['chief_complaint'] ?? null,
         ':notes' => $input['notes'] ?? null,
         ':is_public_request' => isset($input['is_public_request']) ? (int)$input['is_public_request'] : 0,
