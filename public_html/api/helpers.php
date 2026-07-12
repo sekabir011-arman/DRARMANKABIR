@@ -199,6 +199,19 @@ function handleFileUpload(string $fieldName, string $subDir = ''): ?string {
         errorResponse('File type not allowed. Allowed: ' . implode(', ', ALLOWED_EXTENSIONS), 415);
     }
     
+    // Validate MIME type
+    $allowedMimes = [
+        'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+        'application/pdf', 'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ];
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mimeType = finfo_file($finfo, $file['tmp_name']);
+    finfo_close($finfo);
+    if (!in_array($mimeType, $allowedMimes)) {
+        errorResponse('Invalid file type (MIME: ' . $mimeType . ')', 415);
+    }
+    
     // Create upload directory
     $uploadDir = UPLOAD_DIR . '/' . ($subDir ? $subDir . '/' : '');
     if (!is_dir($uploadDir)) {
@@ -213,7 +226,7 @@ function handleFileUpload(string $fieldName, string $subDir = ''): ?string {
         errorResponse('Failed to save uploaded file', 500);
     }
     
-    return '/uploads/' . ($subDir ? $subDir . '/' : '') . $filename;
+    return UPLOAD_URL . '/' . ($subDir ? $subDir . '/' : '') . $filename;
 }
 
 // ─── Logging ───────────────────────────────────────────────────────────────
