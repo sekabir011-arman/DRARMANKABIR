@@ -2,9 +2,8 @@
 -- Seed Data for Dr. Arman Kabir Care
 -- ============================================================================
 
-USE drarmank_care;
-
 -- ─── Default Admin User ────────────────────────────────────────────────────
+-- NOTE: Database USE is handled by migrate.php/setup
 -- Password: admin123 (CHANGE IMMEDIATELY after first login)
 -- Hash generated with PHP: password_hash('admin123', PASSWORD_BCRYPT)
 
