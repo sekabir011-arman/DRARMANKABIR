@@ -137,7 +137,7 @@ try {
     if (isset($input['appointments']) && is_array($input['appointments'])) {
         $stmt = $db->prepare('
             INSERT INTO appointments (patient_id, patient_name, patient_phone, doctor_id, appointment_date, appointment_time, serial_number, type, status, chief_complaint, notes, created_at)
-            VALUES (:patient_id, :patient_name, :patient_phone, :doctor_id, :app_date, :app_time, :serial, :type, :status, :complaint, :notes, :created_at)
+            VALUES (:patient_id, :patient_name, :patient_phone, :doctor_id, :app_date, :app_time, :serial, :appt_type, :appt_status, :complaint, :notes, :created_at)
         ');
         
         foreach ($input['appointments'] as $apt) {
@@ -149,8 +149,8 @@ try {
                 ':app_date' => $apt['appointmentDate'] ?? $apt['appointment_date'] ?? date('Y-m-d'),
                 ':app_time' => $apt['appointmentTime'] ?? $apt['appointment_time'] ?? null,
                 ':serial' => $apt['serialNumber'] ?? $apt['serial_number'] ?? null,
-                ':type' => $apt['type'] ?? 'regular',
-                ':status' => $apt['status'] ?? 'scheduled',
+                ':appt_type' => $apt['type'] ?? 'regular',
+                ':appt_status' => $apt['status'] ?? 'scheduled',
                 ':complaint' => $apt['chiefComplaint'] ?? $apt['chief_complaint'] ?? null,
                 ':notes' => $apt['notes'] ?? null,
                 ':created_at' => $apt['createdAt'] ?? date('Y-m-d H:i:s'),
