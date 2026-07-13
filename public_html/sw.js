@@ -1,9 +1,11 @@
 /**
  * Dr. Arman Kabir Care — Service Worker
- * Cache name v5 forces fresh cache after previous corrupted SW (v4 had duplicate handlers).
- * Network-first for JS/CSS to prevent React hook errors from stale bundles.
+ * Cache name v6 forces fresh cache, fixing React #321 caused by ?v=3.0 query string
+ * on the main entry script (ESM treats same file with different query strings as
+ * separate modules, creating duplicate React instances).
+ * Network-first for JS/CSS ensures fresh bundles.
  */
-const CACHE_NAME = 'dr-arman-care-v5';
+const CACHE_NAME = 'dr-arman-care-v6';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
