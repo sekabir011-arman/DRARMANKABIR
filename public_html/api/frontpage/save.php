@@ -1,17 +1,18 @@
 <?php
 /**
- * Front Page Save API
+ * Front Page Save API - MySQL Source of Truth
  * 
  * POST /api/frontpage/save.php
- * Saves the front page content (siteConfig + doctorContentOverrides)
- * to the site_settings table as a JSON blob.
+ * Saves front page content to MySQL and returns the saved data.
  * 
  * Request body (JSON):
  *   { "siteConfig": { ... }, "doctorContentOverrides": { ... } }
- *   or just the serialized JSON string
  * 
- * Response:
- *   { "success": true, "message": "Front page content saved" }
+ * Response on success:
+ *   { "success": true, "message": "...", "data": { "siteConfig": {...}, "doctorContentOverrides": {...}, "updated_at": "..." } }
+ * 
+ * Response on failure:
+ *   { "success": false, "message": "..." }
  */
 
 require_once __DIR__ . '/../database.php';
@@ -21,105 +22,76 @@ require_once __DIR__ . '/../auth/middleware.php';
 handleCors();
 requireMethod('POST');
 
-// Try to authenticate, but allow save even without auth for admin content operations
 $user = getAuthUser();
 $userId = $user ? $user['id'] : 0;
 
 $input = getJsonInput();
 
-// The input can be either a JSON object with siteConfig/doctorContentOverrides keys,
-// or a raw serialized JSON string (from the JS saveFrontPageContentWithSync function)
-if (isset($input['siteConfig']) || isset($input['doctorContentOverrides'])) {
-    // Structured input
-    $allContent = $input;
-} else {
-    // Try to parse as the serialized format from saveFrontPageContentWithSync
-    // which sends: JSON.stringify(allContent) where allContent = { siteConfig: ..., doctorContentOverrides: ... }
-    $serialized = $input;
-    // If the input is a string, parse it
-    if (is_string($input)) {
-        $allContent = json_decode($input, true);
-        if (!$allContent) {
-            $allContent = ['raw' => $input];
-        }
-    } else {
-        $allContent = $input;
-    }
+// Extract the content to save
+$allContent = [];
+
+if (isset($input['siteConfig'])) {
+    $allContent['siteConfig'] = $input['siteConfig'];
+}
+if (isset($input['doctorContentOverrides'])) {
+    $allContent['doctorContentOverrides'] = $input['doctorContentOverrides'];
+}
+
+if (empty($allContent)) {
+    errorResponse('No content provided. Send siteConfig and/or doctorContentOverrides.', 400);
 }
 
 try {
     $db = Database::getInstance();
+    $now = date('Y-m-d H:i:s');
     
-    // Store the complete front page content as a single setting
-    $valueJson = json_encode($allContent, JSON_UNESCAPED_UNICODE);
-    
+    // Upsert each key individually
     $stmt = $db->prepare('
         INSERT INTO site_settings (setting_key, setting_value, setting_group, description, updated_by, updated_at)
-        VALUES (:key, :value, :group, :description, :user_id, NOW())
+        VALUES (:key, :value, :group, :description, :user_id, :updated_at)
         ON DUPLICATE KEY UPDATE
             setting_value = VALUES(setting_value),
             setting_group = VALUES(setting_group),
             updated_by = VALUES(updated_by),
-            updated_at = NOW()
+            updated_at = VALUES(updated_at)
     ');
     
-    $stmt->execute([
-        ':key' => 'frontPageContent',
-        ':value' => $valueJson,
-        ':group' => 'frontpage',
-        ':description' => 'Complete front page content (site config + doctor overrides)',
-        ':user_id' => $userId,
-    ]);
-    
-    // Also store siteConfig separately for easy access
     if (isset($allContent['siteConfig'])) {
-        $siteConfigJson = json_encode($allContent['siteConfig'], JSON_UNESCAPED_UNICODE);
-        $stmt2 = $db->prepare('
-            INSERT INTO site_settings (setting_key, setting_value, setting_group, description, updated_by, updated_at)
-            VALUES (:key, :value, :group, :description, :user_id, NOW())
-            ON DUPLICATE KEY UPDATE
-                setting_value = VALUES(setting_value),
-                setting_group = VALUES(setting_group),
-                updated_by = VALUES(updated_by),
-                updated_at = NOW()
-        ');
-        $stmt2->execute([
+        $stmt->execute([
             ':key' => 'siteConfig',
-            ':value' => $siteConfigJson,
+            ':value' => json_encode($allContent['siteConfig'], JSON_UNESCAPED_UNICODE),
             ':group' => 'frontpage',
             ':description' => 'Site configuration for landing page',
             ':user_id' => $userId,
+            ':updated_at' => $now,
         ]);
     }
     
-    // Also store doctorContentOverrides separately
     if (isset($allContent['doctorContentOverrides'])) {
-        $overridesJson = json_encode($allContent['doctorContentOverrides'], JSON_UNESCAPED_UNICODE);
-        $stmt3 = $db->prepare('
-            INSERT INTO site_settings (setting_key, setting_value, setting_group, description, updated_by, updated_at)
-            VALUES (:key, :value, :group, :description, :user_id, NOW())
-            ON DUPLICATE KEY UPDATE
-                setting_value = VALUES(setting_value),
-                setting_group = VALUES(setting_group),
-                updated_by = VALUES(updated_by),
-                updated_at = NOW()
-        ');
-        $stmt3->execute([
+        $stmt->execute([
             ':key' => 'doctorContentOverrides',
-            ':value' => $overridesJson,
+            ':value' => json_encode($allContent['doctorContentOverrides'], JSON_UNESCAPED_UNICODE),
             ':group' => 'frontpage',
             ':description' => 'Doctor content overrides for landing page',
             ':user_id' => $userId,
+            ':updated_at' => $now,
         ]);
     }
     
-    // Log the update
+    // Log audit
     logAudit($userId, null, 'update', 'frontpage', null, null, [
         'keys_saved' => array_keys($allContent),
+        'timestamp' => $now,
     ]);
     
-    successResponse(null, 'Front page content saved successfully');
+    // Return the saved data as confirmation
+    successResponse([
+        'siteConfig' => $allContent['siteConfig'] ?? null,
+        'doctorContentOverrides' => $allContent['doctorContentOverrides'] ?? null,
+        'updated_at' => $now,
+    ], 'Front page content saved successfully');
+    
 } catch (\Exception $e) {
     error_log('Front page save error: ' . $e->getMessage());
-    errorResponse('Failed to save front page content', 500);
+    errorResponse('Failed to save front page content to database. Please try again.', 500);
 }

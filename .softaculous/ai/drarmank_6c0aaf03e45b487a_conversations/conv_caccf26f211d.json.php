@@ -47,7 +47,7 @@
         }
     ],
     "created_at": 1783959707,
-    "updated_at": 1783973231,
+    "updated_at": 1783973822,
     "messages": [
         {
             "id": "msg_compact",
@@ -6326,6 +6326,27 @@
             "content": "const PATIENT_REGISTRY_KEY = \"medicare_patients_auth_registry\";\nconst PATIENT_SESSION_KEY = \"medicare_patient_session\";\nconst AUDIT_LOG_KEY = \"medicare_audit_log\";\nconst CANONICAL_EMAIL_KEY = \"app_current_user_email\";\nconst PATIENT_SIGNUP_MAP_KEY = \"medicare_patient_signup_map\";\nfunction hashPassword(key, password) {\n  return btoa(`${key.toLowerCase()}::${password}`);\n}\nconst VALID_ROLES = [\n  \"admin\",\n  \"consultant_doctor\",\n  \"assistant_professor\",\n  \"associate_professor\",\n  \"professor\",\n  \"medical_officer\",\n  \"assistant_registrar\",\n  \"registrar\",\n  \"intern_doctor\",\n  \"nurse\",\n  \"reception\",\n  \"staff\",\n  \"patient\",\n  \"doctor\"\n];\nfunction loadRegistry() {\n  try {\n    const raw = localStorage.getItem(REGISTRY_KEY);\n    if (raw) {\n      const parsed = JSON.parse(raw);\n      return parsed.map((d2) => ({\n        ...d2,\n        role: VALID_ROLES.includes(d2.role) ? d2.role : \"doctor\",\n        status: d2.status ?? \"approved\"\n      }));\n    }\n  } catch {\n  }\n  return [];\n}\nasync function loadRegistryFromServer() {\n  try {\n    const resp = await fetch(\"\/api\/data\/get.php?key=medicare_doctors_registry\");\n    if (resp.ok) {\n      const json = await resp.json();\n      if (json.success && json.data && json.data.setting_value) {\n        const val = json.data.setting_value;\n        localStorage.setItem(REGISTRY_KEY, JSON.stringify(val));\n        return val;\n      }\n    }\n  } catch(e){console.warn(\"[sync] loadRegistryFromServer failed:\",e)}\n  return [];\n}\nfunction saveRegistry(registry) {\n  localStorage.setItem(REGISTRY_KEY, JSON.stringify(registry));\n  if (navigator.onLine) {\n    fetch(\"\/api\/data\/save.php\", {\n      method: \"POST\",\n      headers: { \"Content-Type\": \"application\/json\" },\n      body: JSON.stringify({ key: \"medicare_doctors_registry\", value: registry })\n    }).catch(function(e){console.warn(\"[sync] saveRegistry failed:\",e)});\n  }\n}\nfunction loadPatientRegistry() {\n  try {\n    const raw = localStorage.getItem(PATIENT_REGISTRY_KEY);\n    if (raw) return JSON.parse(raw);\n  } catch {\n  }\n  return [];\n}\nasync function loadPatientRegistryFromServer() {\n  try {\n    const resp = await fetch(\"\/api\/data\/get.php?key=medicare_patients_auth_registry\");\n    if (resp.ok) {\n      const json = await resp.json();\n      if (json.success && json.data && json.data.setting_value) {\n        const val = json.data.setting_value;\n        localStorage.setItem(PATIENT_REGISTRY_KEY, JSON.stringify(val));\n        return val;\n      }\n",
             "is_error": false,
             "time": 1783973231
+        },
+        {
+            "id": "msg_9535113f06",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1783973430
+        },
+        {
+            "id": "msg_5e1a3d2f0c",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1783973613
+        },
+        {
+            "id": "msg_94599cc3d1",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1783973822
         }
     ]
 }
