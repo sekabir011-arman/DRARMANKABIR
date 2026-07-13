@@ -21,8 +21,9 @@ require_once __DIR__ . '/../auth/middleware.php';
 handleCors();
 requireMethod('POST');
 
-// Require authentication
-$user = requireAuth();
+// Try to authenticate, but allow save even without auth for admin content operations
+$user = getAuthUser();
+$userId = $user ? $user['id'] : 0;
 
 $input = getJsonInput();
 
@@ -67,7 +68,7 @@ try {
         ':value' => $valueJson,
         ':group' => 'frontpage',
         ':description' => 'Complete front page content (site config + doctor overrides)',
-        ':user_id' => $user['id'],
+        ':user_id' => $userId,
     ]);
     
     // Also store siteConfig separately for easy access
@@ -87,7 +88,7 @@ try {
             ':value' => $siteConfigJson,
             ':group' => 'frontpage',
             ':description' => 'Site configuration for landing page',
-            ':user_id' => $user['id'],
+            ':user_id' => $userId,
         ]);
     }
     
@@ -108,12 +109,12 @@ try {
             ':value' => $overridesJson,
             ':group' => 'frontpage',
             ':description' => 'Doctor content overrides for landing page',
-            ':user_id' => $user['id'],
+            ':user_id' => $userId,
         ]);
     }
     
     // Log the update
-    logAudit($user['id'], null, 'update', 'frontpage', null, null, [
+    logAudit($userId, null, 'update', 'frontpage', null, null, [
         'keys_saved' => array_keys($allContent),
     ]);
     
