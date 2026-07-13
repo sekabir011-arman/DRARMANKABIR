@@ -16,12 +16,10 @@
 require_once __DIR__ . '/../database.php';
 require_once __DIR__ . '/../helpers.php';
 require_once __DIR__ . '/../auth/middleware.php';
-
 handleCors();
 requireMethod('GET');
 
 $key = getParam('key', '');
-
 try {
     $db = Database::getInstance();
     
