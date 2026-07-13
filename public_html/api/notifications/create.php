@@ -25,13 +25,13 @@ try {
     
     $stmt = $db->prepare('
         INSERT INTO notifications (user_id, patient_id, type, title, message, link_url, created_by)
-        VALUES (:user_id, :patient_id, :type, :title, :message, :link_url, :created_by)
+        VALUES (:user_id, :patient_id, :notif_type, :title, :message, :link_url, :created_by)
     ');
     
     $stmt->execute([
         ':user_id' => isset($input['user_id']) ? (int)$input['user_id'] : null,
         ':patient_id' => isset($input['patient_id']) ? (int)$input['patient_id'] : null,
-        ':type' => $input['type'],
+        ':notif_type' => $input['type'],
         ':title' => $input['title'],
         ':message' => $input['message'] ?? null,
         ':link_url' => $input['link_url'] ?? $input['link'] ?? null,
