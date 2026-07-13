@@ -10,6 +10,26 @@
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <script>
+    // Preload frontpage content from server into localStorage
+    (function(){
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', '/api/frontpage/get.php', true);
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          try {
+            var json = JSON.parse(xhr.responseText);
+            if (json.success && json.data) {
+              if (json.data.siteConfig) localStorage.setItem('siteConfig', JSON.stringify(json.data.siteConfig));
+              if (json.data.doctorContentOverrides) localStorage.setItem('doctorContentOverrides', JSON.stringify(json.data.doctorContentOverrides));
+            }
+          } catch(e) { console.warn('[preload] parse error:', e); }
+        }
+      };
+      xhr.onerror = function() { /* silently fail */ };
+      xhr.send();
+    })();
+    </script>
     <script type="module" crossorigin src="/assets/index-DJeWhCy-.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-JEdqxkTH.css">
   </head>

@@ -52793,6 +52793,16 @@ function useAdminAuth() {
       if (match) {
         localStorage.setItem(STORAGE_KEY, "true");
         setIsAdmin(true);
+        // Also try to authenticate with PHP server
+        fetch("/api/auth/login.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: username, password: password })
+        }).then(r => r.json()).then(json => {
+          if (json.success && json.data && json.data.token) {
+            localStorage.setItem("phpAuthToken", json.data.token);
+          }
+        }).catch(() => {});
         return true;
       }
       return false;
