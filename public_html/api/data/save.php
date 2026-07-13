@@ -67,7 +67,7 @@ try {
         ':key' => $key,
         ':value' => $valueJson,
         ':group' => $input['group'] ?? 'app_data',
-        ':user_id' => $user['id'],
+        ':user_id' => $userId,
     ]);
     
     successResponse(null, 'Data saved successfully');

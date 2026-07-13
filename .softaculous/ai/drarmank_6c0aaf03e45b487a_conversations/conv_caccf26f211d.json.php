@@ -52,7 +52,7 @@
         }
     ],
     "created_at": 1783959707,
-    "updated_at": 1783965439,
+    "updated_at": 1783968100,
     "messages": [
         {
             "id": "msg_compact",
@@ -3813,6 +3813,20 @@
             "content": "   52 | try {\n   53 |     $db = Database::getInstance();\n   54 |     \n   55 |     \/\/ Upsert: insert or update the setting\n   56 |     $stmt = $db->prepare('\n   57 |         INSERT INTO site_settings (setting_key, setting_value, setting_group, updated_by, updated_at)\n   58 |         VALUES (:key, :value, :group, :user_id, NOW())\n   59 |         ON DUPLICATE KEY UPDATE\n   60 |             setting_value = VALUES(setting_value),\n   61 |             setting_group = VALUES(setting_group),\n   62 |             updated_by = VALUES(updated_by),\n   63 |             updated_at = NOW()\n   64 |     ');\n   65 |     \n   66 |     $stmt->execute([\n   67 |         ':key' => $key,\n   68 |         ':value' => $valueJson,\n   69 |         ':group' => $input['group'] ?? 'app_data',\n   70 |         ':user_id' => $user['id'],\n   71 |     ]);\n   72 |     \n   73 |     successResponse(null, 'Data saved successfully');\n   74 | } catch (\\Exception $e) {\n   75 |     error_log('Data save error: ' . $e->getMessage());\n   76 |     errorResponse('Failed to save data', 500);\n   77 | }\n   78 |",
             "is_error": false,
             "time": 1783965439
+        },
+        {
+            "id": "msg_d67a94ca1a",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1783965913
+        },
+        {
+            "id": "msg_f262a09c9a",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1783968100
         }
     ]
 }
