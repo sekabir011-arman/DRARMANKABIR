@@ -1,4 +1,4 @@
-/**
+const CACHE_NAME = 'dr-arman-care-v6';/**
  * Dr. Arman Kabir Care — Service Worker
  * Cache name v6 forces fresh cache, fixing React #321 caused by ?v=3.0 query string
  * on the main entry script (ESM treats same file with different query strings as
