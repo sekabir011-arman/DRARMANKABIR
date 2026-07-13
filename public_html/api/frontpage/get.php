@@ -69,7 +69,7 @@ try {
         
         if ($value === false) {
             // Return empty object for missing key
-            successResponse(new stdClass());
+            successResponse([]);
         } else {
             successResponse(json_decode($value, true));
         }
