@@ -2,10 +2,10 @@
 {
     "username": "drarmank",
     "project_path": "\/home\/drarmank",
-    "updated_at": 1783915281,
+    "updated_at": 1783916759,
     "created_at": 1783437119,
     "provider": "opencode_zen",
     "model": "deepseek-v4-flash-free",
     "mode": "build",
-    "active_conversation": "conv_8780a1dc0f4b"
+    "active_conversation": "conv_1ec5c9f01d69"
 }

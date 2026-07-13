@@ -15,5 +15,34 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Register Service Worker with update detection
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' }).then((reg) => {
+          // Detect new SW waiting to activate → reload to let it take over
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // New version available → reload to activate it immediately
+                window.location.reload();
+              }
+            });
+          });
+
+          // If a new SW is already waiting (e.g. from skipWaiting), reload
+          if (reg.waiting && navigator.serviceWorker.controller) {
+            window.location.reload();
+          }
+        }).catch(() => {
+          // SW registration failed silently — app still works without it
+        });
+
+        // When a new SW takes over, reload for fresh state
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          window.location.reload();
+        });
+      }
+    </script>
   </body>
 </html>
