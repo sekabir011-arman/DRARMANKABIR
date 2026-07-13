@@ -56,7 +56,7 @@ try {
     
     $stmt = $db->prepare('
         INSERT INTO appointments (patient_id, patient_name, patient_phone, doctor_id, appointment_date, appointment_time, serial_number, `type`, `status`, chief_complaint, notes, is_public_request, created_by)
-        VALUES (:patient_id, :patient_name, :patient_phone, :doctor_id, :appointment_date, :appointment_time, :serial_number, :type, :status, :chief_complaint, :notes, :is_public_request, :created_by)
+        VALUES (:patient_id, :patient_name, :patient_phone, :doctor_id, :appointment_date, :appointment_time, :serial_number, :appt_type, :appt_status, :chief_complaint, :notes, :is_public_request, :created_by)
     ');
     
     $stmt->execute([
@@ -67,8 +67,8 @@ try {
         ':appointment_date' => $date,
         ':appointment_time' => $input['appointment_time'] ?? null,
         ':serial_number' => $serialNumber,
-        ':type' => $appointmentType,
-        ':status' => $appointmentStatus,
+        ':appt_type' => $appointmentType,
+        ':appt_status' => $appointmentStatus,
         ':chief_complaint' => $input['chief_complaint'] ?? null,
         ':notes' => $input['notes'] ?? null,
         ':is_public_request' => isset($input['is_public_request']) ? (int)$input['is_public_request'] : 0,
