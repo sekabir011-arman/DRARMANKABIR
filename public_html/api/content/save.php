@@ -1,4 +1,4 @@
-        ':user_id' => $userId,<?php
+<?php
 /**
  * Content Save API
  * 
@@ -19,6 +19,7 @@ require_once __DIR__ . '/../auth/middleware.php';
 
 handleCors();
 requireMethod('POST');
+
 // Try to authenticate, but allow save even without auth for admin content operations
 $user = getAuthUser();
 $userId = $user ? $user['id'] : 0;
