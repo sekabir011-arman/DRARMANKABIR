@@ -47,7 +47,7 @@
         }
     ],
     "created_at": 1783959707,
-    "updated_at": 1783963999,
+    "updated_at": 1783964007,
     "messages": [
         {
             "id": "msg_5b10effc94",
@@ -2280,6 +2280,48 @@
             "content": "Successfully wrote 4580 bytes (125 lines) to public_html\/api\/frontpage\/save.php",
             "is_error": false,
             "time": 1783963999
+        },
+        {
+            "id": "msg_a61b0deefb",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now let me create the public GET endpoint for front page content."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_CKwEcsABEpwNhs6KFsqD9709",
+                    "name": "write_file",
+                    "input": {
+                        "content": "<?php\n\/**\n * Front Page Get API\n * \n * GET \/api\/frontpage\/get.php\n * \n * Retrieves the front page content (siteConfig + doctorContentOverrides).\n * This endpoint is public - no authentication required for reading.\n * \n * Query params:\n *   key (optional) - \"siteConfig\", \"doctorContentOverrides\", or \"all\" (default)\n * \n * Response:\n *   { \"success\": true, \"data\": { ... } }\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\n\nhandleCors();\nrequireMethod('GET');\n\n$key = getParam('key', 'all');\n\ntry {\n    $db = Database::getInstance();\n    \n    if ($key === 'all') {\n        \/\/ Return both siteConfig and doctorContentOverrides\n        $stmt = $db->prepare(\"SELECT setting_key, setting_value FROM site_settings WHERE setting_key IN ('siteConfig', 'doctorContentOverrides')\");\n        $stmt->execute();\n        $rows = $stmt->fetchAll();\n        \n        $result = [];\n        foreach ($rows as $row) {\n            $result[$row['setting_key']] = json_decode($row['setting_value'], true);\n        }\n        \n        \/\/ Also get the combined frontPageContent if available (for backwards compatibility)\n        $stmt2 = $db->prepare(\"SELECT setting_value FROM site_settings WHERE setting_key = 'frontPageContent'\");\n        $stmt2->execute();\n        $combined = $stmt2->fetchColumn();\n        \n        if ($combined) {\n            $combinedData = json_decode($combined, true);\n            if (is_array($combinedData)) {\n                $result = array_merge($result, $combinedData);\n            }\n        }\n        \n        \/\/ If nothing found, return empty objects\n        if (empty($result)) {\n            $result = [\n                'siteConfig' => new stdClass(),\n                'doctorContentOverrides' => new stdClass(),\n            ];\n        }\n        \n        successResponse($result);\n    } else {\n        \/\/ Validate key format\n        if (!preg_match('\/^[a-zA-Z0-9_\\-]+$\/', $key)) {\n            errorResponse('Invalid key format.', 400);\n        }\n        \n        $stmt = $db->prepare('SELECT setting_value FROM site_settings WHERE setting_key = :key');\n        $stmt->execute([':key' => $key]);\n        $value = $stmt->fetchColumn();\n        \n        if ($value === false) {\n            \/\/ Return empty object for missing key\n            successResponse(new stdClass());\n        } else {\n            successResponse(json_decode($value, true));\n        }\n    }\n} catch (\\Exception $e) {\n    error_log('Front page get error: ' . $e->getMessage());\n    \/\/ Return default empty content on error\n    successResponse([\n        'siteConfig' => new stdClass(),\n        'doctorContentOverrides' => new stdClass(),\n    ]);\n}\n",
+                        "path": "public_html\/api\/frontpage\/get.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 105587,
+                "completion_tokens": 708,
+                "total_tokens": 106295,
+                "prompt_cache_hit_tokens": 104320,
+                "prompt_cache_miss_tokens": 1267,
+                "prompt_tokens_details": {
+                    "cached_tokens": 104320
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 13
+                }
+            },
+            "time": 1783964006
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_CKwEcsABEpwNhs6KFsqD9709",
+            "content": "Successfully wrote 2667 bytes (85 lines) to public_html\/api\/frontpage\/get.php",
+            "is_error": false,
+            "time": 1783964007
         }
     ]
 }
