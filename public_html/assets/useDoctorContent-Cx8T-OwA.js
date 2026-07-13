@@ -314,6 +314,22 @@ function deepMerge(base, overrides) {
 }
 function useDoctorContent() {
   const [overrides, setOverrides] = reactExports.useState(loadOverrides);
+  reactExports.useEffect(() => {
+    if (navigator.onLine) {
+      fetch("/api/frontpage/get.php?key=doctorContentOverrides")
+        .then(r => r.ok ? r.json() : null)
+        .then(json => {
+          if (json && json.success && json.data) {
+            const serverOverrides = json.data;
+            if (serverOverrides && typeof serverOverrides === "object" && Object.keys(serverOverrides).length > 0) {
+              localStorage.setItem("doctorContentOverrides", JSON.stringify(serverOverrides));
+              setOverrides(serverOverrides);
+            }
+          }
+        })
+        .catch(e => console.warn("[doctorContent] Failed to load overrides from server:", e));
+    }
+  }, []);
   const getContent = reactExports.useCallback(
     // returns merged doctor data shape
     (doctorKey) => {

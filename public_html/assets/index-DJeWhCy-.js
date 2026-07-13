@@ -51747,26 +51747,22 @@ async function bootstrapFromCanister(actor) {
     };
     await bootstrapClinical();
     try {
-      if (typeof actor.getFrontPageContent === "function") {
-        const maybeContent = await actor.getFrontPageContent();
-        const raw = Array.isArray(maybeContent) && maybeContent.length > 0 ? maybeContent[0] : typeof maybeContent === "string" ? maybeContent : null;
-        if (raw) {
-          try {
-            const parsed = JSON.parse(raw);
-            if (parsed.siteConfig) {
-              localStorage.setItem(
-                "siteConfig",
-                JSON.stringify(parsed.siteConfig)
-              );
+      if (navigator.onLine) {
+        try {
+          const resp = await fetch("/api/frontpage/get.php");
+          if (resp.ok) {
+            const json = await resp.json();
+            if (json.success && json.data) {
+              if (json.data.siteConfig) {
+                localStorage.setItem("siteConfig", JSON.stringify(json.data.siteConfig));
+              }
+              if (json.data.doctorContentOverrides) {
+                localStorage.setItem("doctorContentOverrides", JSON.stringify(json.data.doctorContentOverrides));
+              }
             }
-            if (parsed.doctorContentOverrides) {
-              localStorage.setItem(
-                "doctorContentOverrides",
-                JSON.stringify(parsed.doctorContentOverrides)
-              );
-            }
-          } catch {
           }
+        } catch (e) {
+          console.warn("[sync] Failed to load frontpage content from PHP:", e);
         }
       }
     } catch {
@@ -52850,8 +52846,29 @@ function loadRegistry() {
   }
   return [];
 }
+async function loadRegistryFromServer() {
+  try {
+    const resp = await fetch("/api/data/get.php?key=medicare_doctors_registry");
+    if (resp.ok) {
+      const json = await resp.json();
+      if (json.success && json.data && json.data.setting_value) {
+        const val = json.data.setting_value;
+        localStorage.setItem(REGISTRY_KEY, JSON.stringify(val));
+        return val;
+      }
+    }
+  } catch(e){console.warn("[sync] loadRegistryFromServer failed:",e)}
+  return [];
+}
 function saveRegistry(registry) {
   localStorage.setItem(REGISTRY_KEY, JSON.stringify(registry));
+  if (navigator.onLine) {
+    fetch("/api/data/save.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key: "medicare_doctors_registry", value: registry })
+    }).catch(function(e){console.warn("[sync] saveRegistry failed:",e)});
+  }
 }
 function loadPatientRegistry() {
   try {
@@ -52861,8 +52878,29 @@ function loadPatientRegistry() {
   }
   return [];
 }
+async function loadPatientRegistryFromServer() {
+  try {
+    const resp = await fetch("/api/data/get.php?key=medicare_patients_auth_registry");
+    if (resp.ok) {
+      const json = await resp.json();
+      if (json.success && json.data && json.data.setting_value) {
+        const val = json.data.setting_value;
+        localStorage.setItem(PATIENT_REGISTRY_KEY, JSON.stringify(val));
+        return val;
+      }
+    }
+  } catch(e){console.warn("[sync] loadPatientRegistryFromServer failed:",e)}
+  return [];
+}
 function savePatientRegistry(registry) {
   localStorage.setItem(PATIENT_REGISTRY_KEY, JSON.stringify(registry));
+  if (navigator.onLine) {
+    fetch("/api/data/save.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key: "medicare_patients_auth_registry", value: registry })
+    }).catch(function(e){console.warn("[sync] savePatientRegistry failed:",e)});
+  }
 }
 function appendAuditLog(entry) {
   try {

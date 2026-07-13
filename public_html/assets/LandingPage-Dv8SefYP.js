@@ -1202,6 +1202,22 @@ function resolveActor() {
 }
 function useSiteConfig() {
   const [config, setConfig] = reactExports.useState(loadConfig);
+  reactExports.useEffect(() => {
+    if (navigator.onLine) {
+      fetch("/api/frontpage/get.php?key=siteConfig")
+        .then(r => r.ok ? r.json() : null)
+        .then(json => {
+          if (json && json.success && json.data) {
+            const serverCfg = json.data;
+            if (serverCfg && typeof serverCfg === "object" && Object.keys(serverCfg).length > 0) {
+              localStorage.setItem("siteConfig", JSON.stringify(serverCfg));
+              setConfig(serverCfg);
+            }
+          }
+        })
+        .catch(e => console.warn("[landing] Failed to load siteConfig from server:", e));
+    }
+  }, []);
   const updateHero = reactExports.useCallback((hero) => {
     setConfig((prev) => {
       const next = { ...prev, heroSection: { ...prev.heroSection, ...hero } };

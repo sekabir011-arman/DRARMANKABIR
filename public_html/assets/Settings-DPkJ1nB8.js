@@ -1990,9 +1990,19 @@ function AdminPublicContent() {
   );
   const saveSection = (key, value, label) => {
     localStorage.setItem(key, value);
-    ue.success(`${label} saved`);
-  };
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-6", children: [
+    if (navigator.onLine) {
+      fetch("/api/content/save.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: key, value: value })
+      }).then(r => {
+        if (r.ok) ue.success(` saved to server`);
+        else console.warn("Content save failed:", r.status);
+      }).catch(e => console.warn("Content save error:", e));
+    } else {
+      ue.success(` saved (offline)`);
+    }
+  };  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-6", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs(CardHeader, { className: "pb-3", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs(CardTitle, { className: "flex items-center gap-2 text-base", children: [
