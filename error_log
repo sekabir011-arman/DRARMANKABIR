@@ -12,3 +12,8 @@ Stack trace:
   thrown in Command line code on line 14
 [12-Jul-2026 19:50:41 UTC] PHP Warning:  file_get_contents(https://drarmankabir.com/api/patients/create.php): Failed to open stream: HTTP request failed! HTTP/1.1 400 Bad Request
  in Command line code on line 19
+[13-Jul-2026 15:55:46 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function putenv() in /home/drarmank/public_html/config.php:24
+Stack trace:
+#0 /tmp/ai_php_v1otasutn4i12spVHNp(4): require_once()
+#1 {main}
+  thrown in /home/drarmank/public_html/config.php on line 24

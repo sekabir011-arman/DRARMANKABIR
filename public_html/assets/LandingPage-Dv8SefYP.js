@@ -1336,6 +1336,14 @@ function EmergencyConsultationModal({ open, onClose }) {
   reactExports.useEffect(() => {
     if (open) setEmergencyContacts(loadEmergencyContacts());
   }, [open]);
+  reactExports.useEffect(() => {
+    return () => {
+      if (regLookupTimerRef.current) {
+        clearTimeout(regLookupTimerRef.current);
+        regLookupTimerRef.current = null;
+      }
+    };
+  }, []);
   const [registerNumber, setRegisterNumber] = reactExports.useState("");
   const [name, setName] = reactExports.useState("");
   const [age, setAge] = reactExports.useState("");
