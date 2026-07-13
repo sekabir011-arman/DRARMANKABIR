@@ -34,7 +34,8 @@ try {
         $setting = $stmt->fetch();
         
         if (!$setting) {
-            errorResponse('Setting not found', 404);
+            successResponse(['setting_key' => $key, 'setting_value' => null, 'setting_group' => '', 'updated_at' => null]);
+            exit;
         }
         
         $setting['setting_value'] = json_decode($setting['setting_value'], true);
