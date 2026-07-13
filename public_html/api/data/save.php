@@ -1,4 +1,4 @@
-<?php
+        ':user_id' => $userId,<?php
 /**
  * Data Save API
  * 
