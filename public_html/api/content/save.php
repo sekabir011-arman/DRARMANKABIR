@@ -78,7 +78,7 @@ try {
         ':key' => $key,
         ':value' => $valueJson,
         ':group' => $group,
-        ':user_id' => $user['id'],
+        ':user_id' => $userId,
     ]);
     
     successResponse(null, 'Content saved successfully');

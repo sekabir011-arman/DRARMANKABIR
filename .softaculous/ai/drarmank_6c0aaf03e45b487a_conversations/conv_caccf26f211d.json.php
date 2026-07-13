@@ -52,7 +52,7 @@
         }
     ],
     "created_at": 1783959707,
-    "updated_at": 1783968117,
+    "updated_at": 1783968743,
     "messages": [
         {
             "id": "msg_compact",
@@ -4042,6 +4042,20 @@
             "content": "   78 |         ':key' => $key,\n   79 |         ':value' => $valueJson,\n   80 |         ':group' => $group,\n   81 |         ':user_id' => $user['id'],\n   82 |     ]);\n   83 |",
             "is_error": false,
             "time": 1783968117
+        },
+        {
+            "id": "msg_75151ea597",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1783968533
+        },
+        {
+            "id": "msg_1801aad1bd",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1783968743
         }
     ]
 }
