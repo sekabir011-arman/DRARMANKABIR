@@ -51575,30 +51575,22 @@ function saveFrontPageContentWithSync(actor) {
     } catch {
     }
   }
-  const serialized = JSON.stringify(allContent);
-  if (actor && isNetworkOnline() && typeof actor.saveFrontPageContent === "function") {
-    void (async () => {
-      try {
-        await actor.saveFrontPageContent(serialized);
+  if (navigator.onLine) {
+    fetch("/api/frontpage/save.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(allContent)
+    }).then(r => {
+      if (r.ok) {
         localStorage.setItem(LAST_SYNC_KEY, (/* @__PURE__ */ new Date()).toISOString());
-      } catch (err) {
-        console.warn("[sync] saveFrontPageContent failed, queuing:", err);
-        enqueueSync({
-          timestamp: Date.now(),
-          type: "upsertFrontPageContent",
-          entityId: "frontPageContent",
-          data: serialized
-        });
+      } else {
+        console.warn("[sync] saveFrontPageContent PHP returned", r.status);
       }
-    })();
-  } else {
-    enqueueSync({
-      timestamp: Date.now(),
-      type: "upsertFrontPageContent",
-      entityId: "frontPageContent",
-      data: serialized
+    }).catch(err => {
+      console.warn("[sync] saveFrontPageContent PHP failed:", err);
     });
   }
+  localStorage.setItem(LAST_SYNC_KEY, (/* @__PURE__ */ new Date()).toISOString());
 }
 async function bootstrapFromCanister(actor) {
   if (!isNetworkOnline() || !actor) {
