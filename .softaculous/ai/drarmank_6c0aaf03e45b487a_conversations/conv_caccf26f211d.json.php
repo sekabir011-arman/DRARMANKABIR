@@ -47,7 +47,7 @@
         }
     ],
     "created_at": 1783959707,
-    "updated_at": 1783963989,
+    "updated_at": 1783963999,
     "messages": [
         {
             "id": "msg_5b10effc94",
@@ -2242,6 +2242,44 @@
             "content": "[Command completed successfully with no output]",
             "is_error": false,
             "time": 1783963989
+        },
+        {
+            "id": "msg_3e74edbe4b",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ET_D0giY7xfS3gQd0lRWbtG1404",
+                    "name": "write_file",
+                    "input": {
+                        "content": "<?php\n\/**\n * Front Page Save API\n * \n * POST \/api\/frontpage\/save.php\n * Saves the front page content (siteConfig + doctorContentOverrides)\n * to the site_settings table as a JSON blob.\n * \n * Request body (JSON):\n *   { \"siteConfig\": { ... }, \"doctorContentOverrides\": { ... } }\n *   or just the serialized JSON string\n * \n * Response:\n *   { \"success\": true, \"message\": \"Front page content saved\" }\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\nrequire_once __DIR__ . '\/..\/auth\/middleware.php';\n\nhandleCors();\nrequireMethod('POST');\n\n\/\/ Require authentication\n$user = requireAuth();\n\n$input = getJsonInput();\n\n\/\/ The input can be either a JSON object with siteConfig\/doctorContentOverrides keys,\n\/\/ or a raw serialized JSON string (from the JS saveFrontPageContentWithSync function)\nif (isset($input['siteConfig']) || isset($input['doctorContentOverrides'])) {\n    \/\/ Structured input\n    $allContent = $input;\n} else {\n    \/\/ Try to parse as the serialized format from saveFrontPageContentWithSync\n    \/\/ which sends: JSON.stringify(allContent) where allContent = { siteConfig: ..., doctorContentOverrides: ... }\n    $serialized = $input;\n    \/\/ If the input is a string, parse it\n    if (is_string($input)) {\n        $allContent = json_decode($input, true);\n        if (!$allContent) {\n            $allContent = ['raw' => $input];\n        }\n    } else {\n        $allContent = $input;\n    }\n}\n\ntry {\n    $db = Database::getInstance();\n    \n    \/\/ Store the complete front page content as a single setting\n    $valueJson = json_encode($allContent, JSON_UNESCAPED_UNICODE);\n    \n    $stmt = $db->prepare('\n        INSERT INTO site_settings (setting_key, setting_value, setting_group, description, updated_by, updated_at)\n        VALUES (:key, :value, :group, :description, :user_id, NOW())\n        ON DUPLICATE KEY UPDATE\n            setting_value = VALUES(setting_value),\n            setting_group = VALUES(setting_group),\n            updated_by = VALUES(updated_by),\n            updated_at = NOW()\n    ');\n    \n    $stmt->execute([\n        ':key' => 'frontPageContent',\n        ':value' => $valueJson,\n        ':group' => 'frontpage',\n        ':description' => 'Complete front page content (site config + doctor overrides)',\n        ':user_id' => $user['id'],\n    ]);\n    \n    \/\/ Also store siteConfig separately for easy access\n    if (isset($allContent['siteConfig'])) {\n        $siteConfigJson = json_encode($allContent['siteConfig'], JSON_UNESCAPED_UNICODE);\n        $stmt2 = $db->prepare('\n            INSERT INTO site_settings (setting_key, setting_value, setting_group, description, updated_by, updated_at)\n            VALUES (:key, :value, :group, :description, :user_id, NOW())\n            ON DUPLICATE KEY UPDATE\n                setting_value = VALUES(setting_value),\n                setting_group = VALUES(setting_group),\n                updated_by = VALUES(updated_by),\n                updated_at = NOW()\n        ');\n        $stmt2->execute([\n            ':key' => 'siteConfig',\n            ':value' => $siteConfigJson,\n            ':group' => 'frontpage',\n            ':description' => 'Site configuration for landing page',\n            ':user_id' => $user['id'],\n        ]);\n    }\n    \n    \/\/ Also store doctorContentOverrides separately\n    if (isset($allContent['doctorContentOverrides'])) {\n        $overridesJson = json_encode($allContent['doctorContentOverrides'], JSON_UNESCAPED_UNICODE);\n        $stmt3 = $db->prepare('\n            INSERT INTO site_settings (setting_key, setting_value, setting_group, description, updated_by, updated_at)\n            VALUES (:key, :value, :group, :description, :user_id, NOW())\n            ON DUPLICATE KEY UPDATE\n                setting_value = VALUES(setting_value),\n                setting_group = VALUES(setting_group),\n                updated_by = VALUES(updated_by),\n                updated_at = NOW()\n        ');\n        $stmt3->execute([\n            ':key' => 'doctorContentOverrides',\n            ':value' => $overridesJson,\n            ':group' => 'frontpage',\n            ':description' => 'Doctor content overrides for landing page',\n            ':user_id' => $user['id'],\n        ]);\n    }\n    \n    \/\/ Log the update\n    logAudit($user['id'], null, 'update', 'frontpage', null, null, [\n        'keys_saved' => array_keys($allContent),\n    ]);\n    \n    successResponse(null, 'Front page content saved successfully');\n} catch (\\Exception $e) {\n    error_log('Front page save error: ' . $e->getMessage());\n    errorResponse('Failed to save front page content', 500);\n}\n",
+                        "path": "public_html\/api\/frontpage\/save.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 104386,
+                "completion_tokens": 1169,
+                "total_tokens": 105555,
+                "prompt_cache_hit_tokens": 104320,
+                "prompt_cache_miss_tokens": 66,
+                "prompt_tokens_details": {
+                    "cached_tokens": 104320
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 0
+                }
+            },
+            "time": 1783963999
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ET_D0giY7xfS3gQd0lRWbtG1404",
+            "content": "Successfully wrote 4580 bytes (125 lines) to public_html\/api\/frontpage\/save.php",
+            "is_error": false,
+            "time": 1783963999
         }
     ]
 }
