@@ -1295,6 +1295,7 @@ function EmergencyConsultationModal({ open, onClose }) {
   const [error, setError] = reactExports.useState("");
   const [regLookupMsg, setRegLookupMsg] = reactExports.useState("");
   const [searching, setSearching] = reactExports.useState(false);
+  const regLookupTimerRef = reactExports.useRef(null);
   const handleRegLookup = (val) => {
     setRegisterNumber(val);
     if (!val.trim()) {
@@ -1302,7 +1303,9 @@ function EmergencyConsultationModal({ open, onClose }) {
       return;
     }
     setSearching(true);
-    setTimeout(() => {
+    if (regLookupTimerRef.current) clearTimeout(regLookupTimerRef.current);
+    regLookupTimerRef.current = setTimeout(() => {
+      regLookupTimerRef.current = null;
       const patient = findPatientByRegNumber(val.trim());
       setSearching(false);
       if (patient) {

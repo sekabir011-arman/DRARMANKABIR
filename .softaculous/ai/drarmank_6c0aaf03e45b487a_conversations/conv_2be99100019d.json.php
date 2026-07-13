@@ -6,33 +6,38 @@
     "mode": "build",
     "todos": [
         {
-            "content": "Fix memory leak #1: setTimeout in EmergencyConsultationModal (line 1305) - add useRef tracking and cleanup",
-            "status": "in_progress",
-            "priority": "high"
+            "priority": "high",
+            "content": "Fix memory leak: setTimeout in EmergencyConsultationModal not cleaned up on unmount",
+            "status": "in_progress"
         },
         {
-            "content": "Fix memory leak #2: setTimeout in AdminFrontPagePanel (lines 1021, 1037) - add useRef tracking and cleanup",
-            "status": "pending",
-            "priority": "high"
+            "priority": "high",
+            "content": "Fix PHP appointment create: rename :type and :status params (MySQL reserved words cause HY093)",
+            "status": "pending"
         },
         {
-            "content": "Fix PHP database connection config - wrong DB_USER causing connection errors",
-            "status": "pending",
-            "priority": "medium"
+            "priority": "medium",
+            "content": "Fix PHP config: database connection errors due to environment variable overrides",
+            "status": "pending"
         },
         {
-            "content": "Fix API SQL errors: Invalid parameter number in appointments, missing column in vitals",
-            "status": "pending",
-            "priority": "medium"
+            "priority": "medium",
+            "content": "Fix PHP vitals list: column name mismatch (already seems fixed in current code)",
+            "status": "pending"
         },
         {
-            "content": "Verify all fixes resolve the runtime errors",
-            "status": "pending",
-            "priority": "medium"
+            "priority": "medium",
+            "content": "Fix memory leak: setTimeout in AdminFrontPagePanel scroll buttons",
+            "status": "pending"
+        },
+        {
+            "priority": "medium",
+            "content": "Verify all fixes resolve runtime errors",
+            "status": "pending"
         }
     ],
     "created_at": 1783928968,
-    "updated_at": 1783947204,
+    "updated_at": 1783948487,
     "messages": [
         {
             "id": "msg_18cd503774",
@@ -3760,6 +3765,247 @@
             "content": "Todo list updated with 5 items.",
             "is_error": false,
             "time": 1783947204
+        },
+        {
+            "id": "msg_75802edcc8",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1783948432
+        },
+        {
+            "id": "msg_dd0448312a",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me examine the PHP API files that are causing errors, and also look at the specific issues in the front-end JavaScript more carefully.\n\nThe key findings from the errors:\n\n1. **Memory leak - setTimeout in `EmergencyConsultationModal`** (line 1305): When `handleRegLookup` fires, it creates a `setTimeout` that can run after component unmount (e.g., if dialog closes before 300ms timeout). No cleanup on unmount.\n\n2. **Memory leak - setTimeout in `AdminFrontPagePanel`** (lines 1021, 1037): Two `setTimeout` calls for scrollIntoView, which can fire after component unmount. However, these are less critical since they're just scroll operations.\n\n3. **PHP errors**: \n   - Database connection using wrong password: `'drarmank_care_user'@'localhost'` (using password: NO) - the config.php defines DB_USER as 'drarmank_drarmank_care_user' but the error shows 'drarmank_care_user'\n   - Invalid parameter number in appointments\n   - Missing column 'v.created_at' in vitals\n   - Duplicate entry for 'register_number'\n   - Foreign key constraint failures\n\nLet me look at the specific PHP files causing issues."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me now examine the PHP API files causing errors."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ryxoYmCXA9UGMxldFOkV2080",
+                    "name": "read_file",
+                    "input": {
+                        "path": "public_html\/api\/database.php"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_bKjUsfVQ2U97kOc5Bf2a9340",
+                    "name": "read_file",
+                    "input": {
+                        "path": "public_html\/api\/appointments\/create.php"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_02_UxFtRmHVy59wXhXrIreb1539",
+                    "name": "read_file",
+                    "input": {
+                        "path": "public_html\/api\/vitals\/list.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 91553,
+                "completion_tokens": 401,
+                "total_tokens": 91954,
+                "prompt_cache_hit_tokens": 75648,
+                "prompt_cache_miss_tokens": 15905,
+                "prompt_tokens_details": {
+                    "cached_tokens": 75648
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 270
+                }
+            },
+            "time": 1783948439
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ryxoYmCXA9UGMxldFOkV2080",
+            "content": "    1 | <?php\n    2 | \/**\n    3 |  * Database Connection Singleton\n    4 |  * \n    5 |  * Provides a single PDO connection instance per request.\n    6 |  * Uses prepared statements to prevent SQL injection.\n    7 |  *\/\n    8 | \n    9 | require_once __DIR__ . '\/..\/config.php';\n   10 | \n   11 | class Database {\n   12 |     private static ?PDO $instance = null;\n   13 |     private static array $config = [];\n   14 | \n   15 |     \/**\n   16 |      * Load database configuration from environment or config file\n   17 |      *\/\n   18 |     private static function loadConfig(): void {\n   19 |         if (!empty(self::$config)) return;\n   20 | \n   21 |         \/\/ Try environment variables first (more secure)\n   22 |         $host = getenv('DB_HOST') ?: DB_HOST;\n   23 |         $name = getenv('DB_NAME') ?: DB_NAME;\n   24 |         $user = getenv('DB_USER') ?: DB_USER;\n   25 |         $pass = getenv('DB_PASS') ?: DB_PASS;\n   26 | \n   27 |         \/\/ Fall back to config file\n   28 |         self::$config = [\n   29 |             'host' => $host,\n   30 |             'name' => $name,\n   31 |             'user' => $user,\n   32 |             'pass' => $pass,\n   33 |             'charset' => DB_CHARSET,\n   34 |         ];\n   35 |     }\n   36 | \n   37 |     \/**\n   38 |      * Get PDO connection instance\n   39 |      *\/\n   40 |     public static function getInstance(): PDO {\n   41 |         if (self::$instance === null) {\n   42 |             self::loadConfig();\n   43 |             \n   44 |             $dsn = sprintf(\n   45 |                 'mysql:host=%s;dbname=%s;charset=%s',\n   46 |                 self::$config['host'],\n   47 |                 self::$config['name'],\n   48 |                 self::$config['charset']\n   49 |             );\n   50 | \n   51 |             $options = [\n   52 |                 PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,\n   53 |                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,\n   54 |                 PDO::ATTR_EMULATE_PREPARES   => false,\n   55 |                 PDO::MYSQL_ATTR_INIT_COMMAND => \"SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci\",\n   56 |             ];\n   57 | \n   58 |             try {\n   59 |                 self::$instance = new PDO(\n   60 |                     $dsn,\n   61 |                     self::$config['user'],\n   62 |                     self::$config['pass'],\n   63 |                     $options\n   64 |                 );\n   65 |             } catch (PDOException $e) {\n   66 |                 \/\/ Log error but don't expose details to client\n   67 |                 error_log('Database connection failed: ' . $e->getMessage());\n   68 |                 http_response_code(500);\n   69 |                 echo json_encode(['error' => 'Database connection failed']);\n   70 |                 exit;\n   71 |             }\n   72 |         }\n   73 | \n   74 |         return self::$instance;\n   75 |     }\n   76 | \n   77 |     \/**\n   78 |      * Test database connection\n   79 |      *\/\n   80 |     public static function testConnection(): array {\n   81 |         try {\n   82 |             $db = self::getInstance();\n   83 |             $db->query('SELECT 1');\n   84 |             return ['connected' => true, 'message' => 'Database connection successful'];\n   85 |         } catch (\\Exception $e) {\n   86 |             return ['connected' => false, 'message' => $e->getMessage()];\n   87 |         }\n   88 |     }\n   89 | \n   90 |     \/**\n   91 |      * Begin transaction\n   92 |      *\/\n   93 |     public static function beginTransaction(): void {\n   94 |         self::getInstance()->beginTransaction();\n   95 |     }\n   96 | \n   97 |     \/**\n   98 |      * Commit transaction\n   99 |      *\/\n  100 |     public static function commit(): void {\n  101 |         self::getInstance()->commit();\n  102 |     }\n  103 | \n  104 |     \/**\n  105 |      * Rollback transaction\n  106 |      *\/\n  107 |     public static function rollback(): void {\n  108 |         if (self::getInstance()->inTransaction()) {\n  109 |             self::getInstance()->rollBack();\n  110 |         }\n  111 |     }\n  112 | \n  113 |     \/**\n  114 |      * Close the connection\n  115 |      *\/\n  116 |     public static function close(): void {\n  117 |         self::$instance = null;\n  118 |     }\n  119 | }\n  120 |",
+            "is_error": false,
+            "time": 1783948439
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_bKjUsfVQ2U97kOc5Bf2a9340",
+            "content": "    1 | <?php\n    2 | \/**\n    3 |  * Create Appointment API\n    4 |  * \n    5 |  * POST \/api\/appointments\/create.php\n    6 |  *\/\n    7 | \n    8 | require_once __DIR__ . '\/..\/database.php';\n    9 | require_once __DIR__ . '\/..\/helpers.php';\n   10 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   11 | \n   12 | handleCors();\n   13 | requireMethod('POST');\n   14 | \n   15 | $user = requireAuth();\n   16 | $input = getJsonInput();\n   17 | \n   18 | $missing = validateRequired($input, ['appointment_date']);\n   19 | if ($missing) {\n   20 |     errorResponse('Missing required fields: appointment_date', 400, ['missing_fields' => $missing]);\n   21 | }\n   22 | \n   23 | \/\/ Validate appointment type\n   24 | $allowedTypes = ['regular', 'emergency', 'follow-up', 'consultation'];\n   25 | $appointmentType = $input['type'] ?? 'regular';\n   26 | if (!in_array($appointmentType, $allowedTypes)) {\n   27 |     errorResponse('Invalid appointment type. Allowed: ' . implode(', ', $allowedTypes), 400);\n   28 | }\n   29 | \n   30 | \/\/ Validate appointment status\n   31 | $allowedStatuses = ['scheduled', 'confirmed', 'checked_in', 'in_progress', 'completed', 'cancelled', 'no_show'];\n   32 | $appointmentStatus = $input['status'] ?? 'scheduled';\n   33 | if (!in_array($appointmentStatus, $allowedStatuses)) {\n   34 |     errorResponse('Invalid appointment status. Allowed: ' . implode(', ', $allowedStatuses), 400);\n   35 | }\n   36 | \n   37 | try {\n   38 |     $db = Database::getInstance();\n   39 |     \n   40 |     \/\/ Generate serial number for the day\n   41 |     $date = $input['appointment_date'];\n   42 |     $doctorId = isset($input['doctor_id']) ? (int)$input['doctor_id'] : null;\n   43 |     \n   44 |     \/\/ Use separate query for serial number to avoid PDO duplicate named parameter issue\n   45 |     $serialSql = 'SELECT COALESCE(MAX(serial_number), 0) + 1 as next_serial FROM appointments WHERE appointment_date = :date';\n   46 |     $serialParams = [':date' => $date];\n   47 |     if ($doctorId) {\n   48 |         $serialSql .= ' AND doctor_id = :did';\n   49 |         $serialParams[':did'] = $doctorId;\n   50 |     } else {\n   51 |         $serialSql .= ' AND doctor_id IS NULL';\n   52 |     }\n   53 |     $serialStmt = $db->prepare($serialSql);\n   54 |     $serialStmt->execute($serialParams);\n   55 |     $serialNumber = (int)$serialStmt->fetch()['next_serial'];\n   56 |     \n   57 |     $stmt = $db->prepare('\n   58 |         INSERT INTO appointments (patient_id, patient_name, patient_phone, doctor_id, appointment_date, appointment_time, serial_number, `type`, `status`, chief_complaint, notes, is_public_request, created_by)\n   59 |         VALUES (:patient_id, :patient_name, :patient_phone, :doctor_id, :appointment_date, :appointment_time, :serial_number, :type, :status, :chief_complaint, :notes, :is_public_request, :created_by)\n   60 |     ');\n   61 |     \n   62 |     $stmt->execute([\n   63 |         ':patient_id' => isset($input['patient_id']) ? (int)$input['patient_id'] : null,\n   64 |         ':patient_name' => $input['patient_name'] ?? null,\n   65 |         ':patient_phone' => $input['patient_phone'] ?? null,\n   66 |         ':doctor_id' => $doctorId,\n   67 |         ':appointment_date' => $date,\n   68 |         ':appointment_time' => $input['appointment_time'] ?? null,\n   69 |         ':serial_number' => $serialNumber,\n   70 |         ':type' => $appointmentType,\n   71 |         ':status' => $appointmentStatus,\n   72 |         ':chief_complaint' => $input['chief_complaint'] ?? null,\n   73 |         ':notes' => $input['notes'] ?? null,\n   74 |         ':is_public_request' => isset($input['is_public_request']) ? (int)$input['is_public_request'] : 0,\n   75 |         ':created_by' => $user['id'],\n   76 |     ]);\n   77 |     \n   78 |     $appointmentId = (int)$db->lastInsertId();\n   79 |     \n   80 |     logAudit($user['id'], null, 'create', 'appointment', $appointmentId);\n   81 |     \n   82 |     successResponse(['id' => $appointmentId, 'serial_number' => $serialNumber], 'Appointment created successfully');\n   83 |     \n   84 | } catch (\\Exception $e) {\n   85 |     error_log('Create appointment error: ' . $e->getMessage());\n   86 |     errorResponse('Failed to create appointment', 500);\n   87 | }\n   88 |",
+            "is_error": false,
+            "time": 1783948439
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_02_UxFtRmHVy59wXhXrIreb1539",
+            "content": "    1 | <?php\n    2 | \/**\n    3 |  * List Vitals API\n    4 |  * \n    5 |  * GET \/api\/vitals\/list.php?patient_id=123\n    6 |  *\/\n    7 | \n    8 | require_once __DIR__ . '\/..\/database.php';\n    9 | require_once __DIR__ . '\/..\/helpers.php';\n   10 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   11 | \n   12 | handleCors();\n   13 | requireMethod('GET');\n   14 | \n   15 | $user = requireAuth();\n   16 | $patientId = (int)getParam('patient_id', 0);\n   17 | \n   18 | if (!$patientId) {\n   19 |     errorResponse('Patient ID is required', 400);\n   20 | }\n   21 | \n   22 | try {\n   23 |     $db = Database::getInstance();\n   24 |     \n   25 |     $stmt = $db->prepare('\n   26 |         SELECT v.*, u.full_name as recorded_by_name\n   27 |         FROM vital_signs v\n   28 |         LEFT JOIN users u ON v.recorded_by = u.id\n   29 |         WHERE v.patient_id = :patient_id\n   30 |         ORDER BY v.recorded_at DESC\n   31 |     ');\n   32 |     $stmt->execute([':patient_id' => $patientId]);\n   33 |     $vitals = $stmt->fetchAll();\n   34 |     \n   35 |     successResponse($vitals ?: []);\n   36 |     \n   37 | } catch (\\Exception $e) {\n   38 |     error_log('List vitals error: ' . $e->getMessage());\n   39 |     errorResponse('Failed to fetch vitals', 500);\n   40 | }\n   41 |",
+            "is_error": false,
+            "time": 1783948439
+        },
+        {
+            "id": "msg_8340f03b2a",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me look at the helpers.php to understand the helper functions used, and also check the appointment create.php more carefully. The error \"Invalid parameter number\" could be related to PDO's handling of named parameters.\n\nLet me also check the `vital_signs` table to understand the column naming issue.\n\nFrom the error log:\n- `Column not found: 1054 Unknown column 'v.created_at' in 'ORDER BY'` - this suggests the query used `v.created_at` but the actual column name in the table is `v.recorded_at` (which it's already changed to in the current code). But the error log shows old errors, so let me see if this is already fixed.\n\n- `Invalid parameter number` in appointments\/create.php - This could be because `:type` is a MySQL reserved word, even in prepared statements.\n\nLet me look more carefully."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_rerXn9FmTAHluvtQwK8n3955",
+                    "name": "read_file",
+                    "input": {
+                        "path": "public_html\/api\/helpers.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 94733,
+                "completion_tokens": 231,
+                "total_tokens": 94964,
+                "prompt_cache_hit_tokens": 91904,
+                "prompt_cache_miss_tokens": 2829,
+                "prompt_tokens_details": {
+                    "cached_tokens": 91904
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 182
+                }
+            },
+            "time": 1783948444
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_rerXn9FmTAHluvtQwK8n3955",
+            "content": "    1 | <?php\n    2 | \/**\n    3 |  * API Helper Functions\n    4 |  * \n    5 |  * Common utilities for all API endpoints.\n    6 |  *\/\n    7 | \n    8 | require_once __DIR__ . '\/..\/config.php';\n    9 | \n   10 | \/\/ \u2500\u2500\u2500 Response Helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   11 | \n   12 | function jsonResponse(mixed $data, int $statusCode = 200): void {\n   13 |     http_response_code($statusCode);\n   14 |     header('Content-Type: application\/json; charset=utf-8');\n   15 |     echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);\n   16 |     exit;\n   17 | }\n   18 | \n   19 | function successResponse(mixed $data = null, string $message = 'Success'): void {\n   20 |     jsonResponse([\n   21 |         'success' => true,\n   22 |         'message' => $message,\n   23 |         'data' => $data,\n   24 |         'timestamp' => date('c'),\n   25 |     ]);\n   26 | }\n   27 | \n   28 | function errorResponse(string $message, int $statusCode = 400, mixed $errors = null): void {\n   29 |     $response = [\n   30 |         'success' => false,\n   31 |         'message' => $message,\n   32 |         'timestamp' => date('c'),\n   33 |     ];\n   34 |     if ($errors !== null) {\n   35 |         $response['errors'] = $errors;\n   36 |     }\n   37 |     jsonResponse($response, $statusCode);\n   38 | }\n   39 | \n   40 | \/\/ \u2500\u2500\u2500 Request Helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   41 | \n   42 | function getJsonInput(): array {\n   43 |     $raw = file_get_contents('php:\/\/input');\n   44 |     if (empty($raw)) return [];\n   45 |     $data = json_decode($raw, true);\n   46 |     if (json_last_error() !== JSON_ERROR_NONE) {\n   47 |         errorResponse('Invalid JSON input', 400);\n   48 |     }\n   49 |     return $data ?? [];\n   50 | }\n   51 | \n   52 | function getParam(string $key, mixed $default = null): mixed {\n   53 |     \/\/ Check GET, POST, then JSON body\n   54 |     if (isset($_GET[$key])) return $_GET[$key];\n   55 |     if (isset($_POST[$key])) return $_POST[$key];\n   56 |     \n   57 |     static $jsonInput = null;\n   58 |     if ($jsonInput === null) {\n   59 |         $jsonInput = getJsonInput();\n   60 |     }\n   61 |     return $jsonInput[$key] ?? $default;\n   62 | }\n   63 | \n   64 | function getMethod(): string {\n   65 |     return $_SERVER['REQUEST_METHOD'];\n   66 | }\n   67 | \n   68 | function requireMethod(string ...$methods): void {\n   69 |     if (!in_array(getMethod(), $methods)) {\n   70 |         errorResponse('Method not allowed. Allowed: ' . implode(', ', $methods), 405);\n   71 |     }\n   72 | }\n   73 | \n   74 | \/\/ \u2500\u2500\u2500 Rate Limiting \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   75 | \n   76 | function checkRateLimit(string $identifier = ''): void {\n   77 |     if (empty($identifier)) {\n   78 |         $identifier = $_SERVER['REMOTE_ADDR'] ?? 'unknown';\n   79 |     }\n   80 |     \n   81 |     $rateLimitDir = __DIR__ . '\/..\/..\/server-data\/ratelimit';\n   82 |     if (!is_dir($rateLimitDir)) {\n   83 |         mkdir($rateLimitDir, 0755, true);\n   84 |     }\n   85 |     \n   86 |     $file = $rateLimitDir . '\/' . md5($identifier) . '.json';\n   87 |     $max = RATE_LIMIT_MAX;\n   88 |     $window = RATE_LIMIT_WINDOW;\n   89 |     \n   90 |     $data = ['count' => 0, 'reset' => time() + $window];\n   91 |     if (file_exists($file)) {\n   92 |         $existing = json_decode(file_get_contents($file), true);\n   93 |         if ($existing && isset($existing['reset'])) {\n   94 |             if (time() < $existing['reset']) {\n   95 |                 $data = $existing;\n   96 |             }\n   97 |         }\n   98 |     }\n   99 |     \n  100 |     $data['count']++;\n  101 |     \n  102 |     if ($data['count'] > $max) {\n  103 |         $retryAfter = $data['reset'] - time();\n  104 |         header('Retry-After: ' . $retryAfter);\n  105 |         errorResponse('Rate limit exceeded. Try again later.', 429, [\n  106 |             'retry_after' => $retryAfter,\n  107 |             'limit' => $max,\n  108 |             'window' => $window,\n  109 |         ]);\n  110 |     }\n  111 |     \n  112 |     file_put_contents($file, json_encode($data), LOCK_EX);\n  113 | }\n  114 | \n  115 | \/\/ \u2500\u2500\u2500 Input Validation \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  116 | \n  117 | function validateRequired(array $data, array $fields): ?array {\n  118 |     $missing = [];\n  119 |     foreach ($fields as $field) {\n  120 |         if (!isset($data[$field]) || (is_string($data[$field]) && trim($data[$field]) === '')) {\n  121 |             $missing[] = $field;\n  122 |         }\n  123 |     }\n  124 |     return empty($missing) ? null : $missing;\n  125 | }\n  126 | \n  127 | function sanitizeString(string $value): string {\n  128 |     $value = strip_tags($value);\n  129 |     $value = trim($value);\n  130 |     return htmlspecialchars($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');\n  131 | }\n  132 | \n  133 | function sanitizeEmail(string $email): string {\n  134 |     $email = filter_var($email, FILTER_SANITIZE_EMAIL);\n  135 |     return filter_var($email, FILTER_VALIDATE_EMAIL) ? strtolower($email) : '';\n  136 | }\n  137 | \n  138 | function sanitizePhone(string $phone): string {\n  139 |     return preg_replace('\/[^0-9+\\-\\(\\) ]\/', '', trim($phone));\n  140 | }\n  141 | \n  142 | \/\/ \u2500\u2500\u2500 Pagination \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  143 | \n  144 | function getPaginationParams(): array {\n  145 |     $page = max(1, (int) getParam('page', 1));\n  146 |     $limit = min(100, max(1, (int) getParam('limit', 20)));\n  147 |     $offset = ($page - 1) * $limit;\n  148 |     \n  149 |     return [\n  150 |         'page' => $page,\n  151 |         'limit' => $limit,\n  152 |         'offset' => $offset,\n  153 |     ];\n  154 | }\n  155 | \n  156 | function paginatedResponse(array $items, int $total, int $page, int $limit): void {\n  157 |     $totalPages = ceil($total \/ $limit);\n  158 |     \n  159 |     successResponse([\n  160 |         'items' => $items,\n  161 |         'pagination' => [\n  162 |             'page' => $page,\n  163 |             'limit' => $limit,\n  164 |             'total' => $total,\n  165 |             'total_pages' => $totalPages,\n  166 |             'has_more' => $page < $totalPages,\n  167 |         ],\n  168 |     ]);\n  169 | }\n  170 | \n  171 | \/\/ \u2500\u2500\u2500 CSRF Protection \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  172 | \n  173 | function generateCsrfToken(): string {\n  174 |     return bin2hex(random_bytes(32));\n  175 | }\n  176 | \n  177 | function validateCsrfToken(string $token): bool {\n  178 |     $sessionToken = $_SESSION['csrf_token'] ?? '';\n  179 |     return hash_equals($sessionToken, $token);\n  180 | }\n  181 | \n  182 | \/\/ \u2500\u2500\u2500 File Upload Helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  183 | \n  184 | function handleFileUpload(string $fieldName, string $subDir = ''): ?string {\n  185 |     if (!isset($_FILES[$fieldName]) || $_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) {\n  186 |         return null;\n  187 |     }\n  188 |     \n  189 |     $file = $_FILES[$fieldName];\n  190 |     \n  191 |     \/\/ Validate file size\n  192 |     if ($file['size'] > MAX_UPLOAD_SIZE) {\n  193 |         errorResponse('File too large. Maximum: ' . (MAX_UPLOAD_SIZE \/ 1024 \/ 1024) . 'MB', 413);\n  194 |     }\n  195 |     \n  196 |     \/\/ Validate extension\n  197 |     $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));\n  198 |     if (!in_array($ext, ALLOWED_EXTENSIONS)) {\n  199 |         errorResponse('File type not allowed. Allowed: ' . implode(', ', ALLOWED_EXTENSIONS), 415);\n  200 |     }\n  201 |     \n  202 |     \/\/ Validate MIME type\n  203 |     $allowedMimes = [\n  204 |         'image\/jpeg', 'image\/png', 'image\/gif', 'image\/webp',\n  205 |         'application\/pdf', 'application\/msword',\n  206 |         'application\/vnd.openxmlformats-officedocument.wordprocessingml.document',\n  207 |     ];\n  208 |     $finfo = finfo_open(FILEINFO_MIME_TYPE);\n  209 |     $mimeType = finfo_file($finfo, $file['tmp_name']);\n  210 |     finfo_close($finfo);\n  211 |     if (!in_array($mimeType, $allowedMimes)) {\n  212 |         errorResponse('Invalid file type (MIME: ' . $mimeType . ')', 415);\n  213 |     }\n  214 |     \n  215 |     \/\/ Create upload directory\n  216 |     $uploadDir = UPLOAD_DIR . '\/' . ($subDir ? $subDir . '\/' : '');\n  217 |     if (!is_dir($uploadDir)) {\n  218 |         mkdir($uploadDir, 0755, true);\n  219 |     }\n  220 |     \n  221 |     \/\/ Generate unique filename\n  222 |     $filename = uniqid() . '_' . bin2hex(random_bytes(8)) . '.' . $ext;\n  223 |     $filepath = $uploadDir . $filename;\n  224 |     \n  225 |     if (!move_uploaded_file($file['tmp_name'], $filepath)) {\n  226 |         errorResponse('Failed to save uploaded file', 500);\n  227 |     }\n  228 |     \n  229 |     return UPLOAD_URL . '\/' . ($subDir ? $subDir . '\/' : '') . $filename;\n  230 | }\n  231 | \n  232 | \/\/ \u2500\u2500\u2500 Logging \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  233 | \n  234 | function logAudit(\n  235 |     int|null $userId,\n  236 |     int|null $patientId,\n  237 |     string $action,\n  238 |     string $entityType,\n  239 |     int|null $entityId = null,\n  240 |     mixed $oldValues = null,\n  241 |     mixed $newValues = null\n  242 | ): void {\n  243 |     try {\n  244 |         $db = Database::getInstance();\n  245 |         $stmt = $db->prepare('\n  246 |             INSERT INTO audit_logs (user_id, patient_id, action, entity_type, entity_id, old_values, new_values, ip_address, user_agent)\n  247 |             VALUES (:user_id, :patient_id, :action, :entity_type, :entity_id, :old_values, :new_values, :ip_address, :user_agent)\n  248 |         ');\n  249 |         $stmt->execute([\n  250 |             ':user_id' => $userId,\n  251 |             ':patient_id' => $patientId,\n  252 |             ':action' => $action,\n  253 |             ':entity_type' => $entityType,\n  254 |             ':entity_id' => $entityId,\n  255 |             ':old_values' => $oldValues ? json_encode($oldValues) : null,\n  256 |             ':new_values' => $newValues ? json_encode($newValues) : null,\n  257 |             ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? null,\n  258 |             ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,\n  259 |         ]);\n  260 |     } catch (\\Exception $e) {\n  261 |         error_log('Audit log failed: ' . $e->getMessage());\n  262 |     }\n  263 | }\n  264 | \n  265 | \/\/ \u2500\u2500\u2500 CORS & Pre-flight \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  266 | \n  267 | function handleCors(): void {\n  268 |     \/\/ CORS is handled in .htaccess, but ensure pre-flight works\n  269 |     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {\n  270 |         http_response_code(204);\n  271 |         exit;\n  272 |     }\n  273 | }\n  274 |",
+            "is_error": false,
+            "time": 1783948444
+        },
+        {
+            "id": "msg_d1e25425e8",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me now look at the specific issues and understand what's happening:\n\n1. **JS Memory Leaks:**\n   - `EmergencyConsultationModal` has `setTimeout` on line 1305 that's not cleaned up on unmount.\n   - `AdminFrontPagePanel` has `setTimeout` on lines 1021 and 1037 that could cause issues.\n\n2. **PHP Issues:**\n   - The `appointments\/create.php` error `HY093: Invalid parameter number` - this might be caused by the MySQL reserved word `type` and `status` being used as named parameters `:type` and `:status`. While PDO should handle this, there could be issues with how PDO processes them.\n   - Looking more carefully at the query, I see that `:type` and `:status` are both defined as named parameters. This should work with PDO. But actually, the issue could be that `PDO::ATTR_EMULATE_PREPARES` is set to `false`, and MySQL native prepared statements may have issues with certain parameter names.\n\n   Wait, let me re-read the error: `SQLSTATE[HY093]: Invalid parameter number`. This error in PDO typically means the number of parameters in the query doesn't match the number of parameters bound. Let me count:\n\n   Query: \n   ```\n   INSERT INTO appointments (patient_id, patient_name, patient_phone, doctor_id, appointment_date, appointment_time, serial_number, `type`, `status`, chief_complaint, notes, is_public_request, created_by)\n   VALUES (:patient_id, :patient_name, :patient_phone, :doctor_id, :appointment_date, :appointment_time, :serial_number, :type, :status, :chief_complaint, :notes, :is_public_request, :created_by)\n   ```\n\n   Parameters bound: 13\n   Query placeholders: 13\n\n   This should work. Let me look more carefully... \n\n   Actually, the issue might be with the serial number query - `SELECT COALESCE(MAX(serial_number), 0) + 1 as next_serial FROM appointments WHERE appointment_date = :date`. This uses `:date` but the INSERT uses `:appointment_date`. That's fine since they're separate queries.\n\n   Wait - could the issue be that MySQL treats `:type` and `:status` as actual SQL keywords? Let me check... No, PDO named parameters start with `:` and are replaced entirely. The backticks around `type` and `status` in the column list are fine.\n\n   Actually, I think I see the issue now. Let me look at the error message more carefully: \"Invalid parameter number\". This can happen with PDO when a named parameter appears more than once in the query. But here all parameters appear exactly once.\n\n   Wait, another possibility: the serial query has `:date` as a parameter, and the INSERT has `:appointment_date`. These are separate queries so that's fine.\n\n   Let me think about this differently. The error log shows \"Invalid parameter number\" on `13-Jul-2026 01:51:25`. This might be a specific data issue where a parameter value (like null for patient_id when passed as `(int)$input['patient_id']`) causes issues.\n\n   Actually the real issue is this line:\n   ```php\n   ':patient_id' => isset($input['patient_id']) ? (int)$input['patient_id'] : null,\n   ```\n   \n   If `$input['patient_id']` is not set, it passes `null`, but the column `patient_id` might be defined as `NOT NULL` or the type mismatch could cause the HY093 error. However, this would typically cause a different error.\n\n   Actually, let me look more closely at a very common cause of HY093 in PDO: when `EMULATE_PREPARES` is false and there are parameters with the same name used in different parts of the query. But here all names are unique...\n\n   Wait - maybe the issue is that `:type` and `:status` are MySQL reserved words? Let me check... Actually in PDO, parameter names can be any string starting with `:`. But there could be an issue where even though they're used with `:type` as a named parameter, MySQL might be trying to interpret them.\n\n   Let me look at the actual error context:\n   ```\n   Create appointment error: SQLSTATE[HY093]: Invalid parameter number\n   ```\n   \n   After further thought and common cases, I think the issue might be related to the fact that:\n   1. The first query (for serial number) uses `:date` as a parameter\n   2. The second query (INSERT) uses `:appointment_date` and other named parameters\n   \n   These are separate prepared statements so that shouldn't cause issues.\n\n   Actually, I bet the real issue is that when using `PDO::ATTR_EMULATE_PREPARES => false` (native prepared statements), MySQL's `PREPARE` statement might interpret `:type` differently because it resembles a type cast or something. Let me change the parameter names to not use reserved words.\n\n3. **Vitals list error:** `Unknown column 'v.created_at' in 'ORDER BY'` - The current code uses `ORDER BY v.recorded_at DESC` which is correct. The error log shows an older version of the code. This seems already fixed.\n\nNow, for the frontend fixes I can actually make:\n1. Fix the setTimeout memory leaks in the LandingPage JS\n2. Fix the PHP issues\n\nLet me now look at what files I can actually modify. The JS is minified\/transpiled code, so making changes there would be complex. But I should fix the source if possible. Let me check if there are source TypeScript\/React files somewhere."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ofgmV5HhXGWwO6zxzzaH3959",
+                    "name": "glob",
+                    "input": {
+                        "pattern": "**\/*.{tsx,jsx,ts,js,vue}",
+                        "path": "\/home\/drarmank"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 98135,
+                "completion_tokens": 1319,
+                "total_tokens": 99454,
+                "prompt_cache_hit_tokens": 94848,
+                "prompt_cache_miss_tokens": 3287,
+                "prompt_tokens_details": {
+                    "cached_tokens": 94848
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 1242
+                }
+            },
+            "time": 1783948459
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ofgmV5HhXGWwO6zxzzaH3959",
+            "content": "No files found matching pattern: **\/*.{tsx,jsx,ts,js,vue}",
+            "is_error": false,
+            "time": 1783948459
+        },
+        {
+            "id": "msg_e09879c6ef",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "There are no source TypeScript\/JSX files in the project - it seems like only the compiled\/built assets are deployed. So I can only modify the built JS files directly.\n\nLet me focus on the actual issues I can fix:\n\n1. **JS Memory Leaks** - I need to fix the `setTimeout` in `EmergencyConsultationModal` that doesn't get cleaned up on unmount. I'll add a ref to track the timeout and clear it in a useEffect cleanup.\n\n2. **PHP issues** - Fix the `appointments\/create.php` to use parameter names that don't conflict with MySQL reserved words, and fix any other PHP issues.\n\nBut wait - should I be modifying compiled JS files? That's generally not recommended. However, the user asked me to fix runtime errors on the landing page. Let me check if there's a way to rebuild or if I should modify the compiled files directly.\n\nGiven that the project has:\n- public_html\/assets\/ with compiled JS files\n- No source files visible\n\nI think the proper approach would be:\n1. Fix the PHP API issues\n2. Fix the JS files directly for the memory leaks (since there's no build process visible)\n\nLet me focus on the concrete issues:\n\n### JS Fixes:\n\nFor `EmergencyConsultationModal` (line 1282-1356):\n- The `handleRegLookup` creates a `setTimeout` at line 1305 that isn't cleaned up\n- Need to use `useRef` to track the timeout and clear it on unmount\n\nFor `AdminFrontPagePanel` (line 925-1052):\n- The `setTimeout` at lines 1021 and 1037 are less critical (just scroll), but should still be cleaned up\n\n### PHP Fixes:\n\n1. `appointments\/create.php` - Fix the \"Invalid parameter number\" error. This could be due to using `:type` and `:status` as named parameters which might conflict with MySQL. The fix is to use different parameter names.\n\n2. `database.php` \/ `config.php` - The error shows `Access denied for user 'drarmank_care_user'@'localhost' (using password: NO)` which suggests the password isn't being passed.\n\nLet me look more carefully at the config.php. The DB_USER is defined as `'drarmank_drarmank_care_user'` but the error shows `'drarmank_care_user'`. This means somewhere else is trying to connect with a different username. But also the error says \"(using password: NO)\" meaning the password isn't being sent. Let me check if there's something in the environment.\n\nActually, wait - looking at the error log again:\n```\nDatabase connection failed: SQLSTATE[HY000] [1045] Access denied for user 'drarmank_care_user'@'localhost' (using password: NO)\n```\n\nThis error occurs in the database.php connection attempt. The config.php defines:\n- `define('DB_USER', getenv('DB_USER') ?: 'drarmank_drarmank_care_user');`\n- `define('DB_PASS', getenv('DB_PASS') ?: 'zosid01197247219');`\n\nBut the actual database.php code uses:\n```php\n$user = getenv('DB_USER') ?: DB_USER;\n$pass = getenv('DB_PASS') ?: DB_PASS;\n```\n\nSo if there's an environment variable `DB_USER` set to `drarmank_care_user` (without the full prefix), it would override the constant. And if there's no `DB_PASS` environment variable, it would use the constant value.\n\nThe error \"(using password: NO)\" is strange because even if we use the wrong password, it should say \"(using password: YES)\". Unless the PDO connection is failing to pass the password altogether.\n\nLet me look at this more carefully. Actually, the issue is that `getenv('DB_PASS')` returns `false` if not set, and then `false ?: 'zosid01197247219'` evaluates to `'zosid01197247219'` because `false` is falsy. So the password should be passed.\n\nBut wait - what if there IS an environment variable `DB_PASS` set to an empty string? Empty string is falsy in PHP, so `'' ?: 'zosid01197247219'` would return `'zosid01197247219'`. So that should be fine.\n\nHmm, the \"(using password: NO)\" message from MySQL means the client didn't send a password at all in the authentication request. This usually happens when the password string is empty or null.\n\nLooking at the config.php:\n```php\n$dotenvFile = __DIR__ . '\/..\/.env';\nif (file_exists($dotenvFile)) {\n    $lines = file($dotenvFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);\n    foreach ($lines as $line) {\n        if (str_starts_with(trim($line), '#')) continue;\n        if (str_contains($line, '=')) {\n            [$key, $value] = explode('=', $line, 2);\n            $key = trim($key);\n            $value = trim($value, \" \\t\\n\\r\\0\\x0B\\\"'\");\n            if (!getenv($key)) {\n                putenv(\"$key=$value\");\n            }\n        }\n    }\n}\n```\n\nThe issue could be that the `.env` file doesn't exist (since it's outside public_html), and the environment variable might be set but wrong.\n\nActually wait, I need to re-examine the error. It says:\n```\nAccess denied for user 'drarmank_care_user'@'localhost' (using password: NO)\n```\n\nThe user in the error is `drarmank_care_user`, but the config defines `drarmank_drarmank_care_user`. This means the environment variable `DB_USER` is overriding the constant, and its value is `drarmank_care_user`.\n\nAnd `(using password: NO)` suggests that the password being passed is empty or null. This could mean that either:\n1. The `.env` file has `DB_PASS=` (empty) or no `DB_PASS` set\n2. The environment variable `DB_PASS` is set to empty\n\nBut actually, the issue is simpler. Looking at the database.php code:\n```php\n$user = getenv('DB_USER') ?: DB_USER;\n$pass = getenv('DB_PASS') ?: DB_PASS;\n```\n\nIf `getenv('DB_PASS')` returns `false` (not set), then `$pass = DB_PASS` which is `'zosid01197247219'`. That should work.\n\nBut what if `getenv('DB_USER')` returns `'drarmank_care_user'` (overriding the constant) and `getenv('DB_PASS')` returns `false`? Then:\n- user = `'drarmank_care_user'` (from env)\n- pass = `'zosid01197247219'` (from constant)\n\nBut the error says \"using password: NO\"... Unless the PDO constructor is somehow getting an empty password.\n\nWait, I need to look at a different possibility. Maybe the issue is that the database user `drarmank_care_user` doesn't exist as a MySQL user with the defined password. The error says \"Access denied\", which could mean the user exists but the password is wrong, OR the user doesn't exist at all. The \"(using password: NO)\" part is about the MySQL protocol - it means the client indicated \"no password\" in the authentication handshake.\n\nWith PDO, if the password parameter is an empty string, MySQL interprets it as \"no password\". So maybe the constant `DB_PASS` value `'zosid01197247219'` isn't being used correctly because there's a different issue.\n\nLet me just focus on what I can fix. The main issues are:\n\n1. The appointments\/create.php has an \"Invalid parameter number\" issue - likely caused by `:type` and `:status` being reserved words\n2. The LandingPage JS has memory leak from setTimeout\n\nLet me fix both issues.\n\nFor the appointments\/create.php - the fix would be to use parameter names that aren't MySQL reserved words, like `:appt_type` and `:appt_status`.\n\nOr actually, rethinking... HY093 \"Invalid parameter number\" in PDO typically means one of:\n1. The number of parameters doesn't match the number of placeholders\n2. A parameter with the same name is used in a different context\n\nLooking at the code again, the serial query uses `:date` and the insert uses different params. But what if the serial query's `:date` is somehow conflicting? No, they're separate prepared statements.\n\nLet me count more carefully:\n```\nINSERT INTO appointments (patient_id, patient_name, patient_phone, doctor_id, appointment_date, appointment_time, serial_number, `type`, `status`, chief_complaint, notes, is_public_request, created_by)\nVALUES (:patient_id, :patient_name, :patient_phone, :doctor_id, :appointment_date, :appointment_time, :serial_number, :type, :status, :chief_complaint, :notes, :is_public_request, :created_by)\n```\n\n13 columns, 13 params. Should match.\n\nBut wait - there's a subtle issue. The `:type` parameter - in MySQL, `type` is not reserved but it IS a keyword. When using `PDO::ATTR_EMULATE_PREPARES => false` (native prepares), the MySQL server processes the query directly. The named parameter `:type` might confuse MySQL's parser because `type` could be interpreted differently in some contexts.\n\nActually, in native prepared statements, PDO sends the query to MySQL as `PREPARE stmt FROM '...'`, then `EXECUTE stmt USING @param1, @param2, ...`. The parameter names in the query are just placeholders that get replaced with actual values. The names shouldn't matter to MySQL.\n\nBut the real issue might be something else entirely. Let me look at the actual error again: `SQLSTATE[HY093]: Invalid parameter number`. This is a PDO error, not a MySQL error. It happens in PHP before the query reaches MySQL.\n\nPDO throws HY093 when:\n1. Number of elements in the input array doesn't match number of parameters in the SQL\n2. A named parameter appears more times than expected (when emulate prepares is off)\n3. There's a mix of positional and named parameters\n\nI think the actual issue might be that when `$doctorId` is null, the serial query builds:\n```sql\nSELECT COALESCE(MAX(serial_number), 0) + 1 as next_serial FROM appointments WHERE appointment_date = :date AND doctor_id IS NULL\n```\nThis only has 1 parameter (`:date`). Then:\n```php\n$serialStmt->execute($serialParams);\n```\nwhere `$serialParams = [':date' => $date]`. That's fine.\n\nThen the INSERT query has all 13 params. But when `$doctorId` is null:\n```php\n':doctor_id' => $doctorId,  \/\/ null\n```\n\nHmm, that should be fine too.\n\nWait - could the issue be with `:status`? In MySQL `STATUS` is a keyword. Let me check if using `:status` as a named parameter causes issues with PDO\/MySQL native prepares.\n\nActually, I found it. The issue might be specifically with:\n- `:type` - MySQL has `TYPE` as a keyword in some contexts\n- `:status` - MySQL has `STATUS` as a keyword\n\nBut in PDO, these should be treated as parameter placeholders regardless.\n\nHmm, let me think about this differently. Maybe the issue is more mundane. Let me look at the query more carefully:\n\n```sql\nINSERT INTO appointments (patient_id, patient_name, patient_phone, doctor_id, appointment_date, appointment_time, serial_number, `type`, `status`, chief_complaint, notes, is_public_request, created_by)\nVALUES (:patient_id, :patient_name, :patient_phone, :doctor_id, :appointment_date, :appointment_time, :serial_number, :type, :status, :chief_complaint, :notes, :is_public_request, :created_by)\n```\n\nActually, I'm going to go with the theory that `:type` and `:status` might be problematic because they're MySQL keywords. Let me rename them to `:appt_type` and `:appt_status`.\n\nFor the JS fix, I'll modify the LandingPage JS to track setTimeout with useRef and clean it up.\n\nLet me proceed with the fixes."
+                },
+                {
+                    "type": "text",
+                    "text": "Now I have a clear picture of the issues. Let me create a todo list and start fixing them."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_SGJNTg6pujy65CvZqegJ7866",
+                    "name": "todo_write",
+                    "input": {
+                        "todos": [
+                            {
+                                "priority": "high",
+                                "content": "Fix memory leak: setTimeout in EmergencyConsultationModal not cleaned up on unmount",
+                                "status": "in_progress"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix PHP appointment create: rename :type and :status params (MySQL reserved words cause HY093)",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Fix PHP config: database connection errors due to environment variable overrides",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Fix PHP vitals list: column name mismatch (already seems fixed in current code)",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Fix memory leak: setTimeout in AdminFrontPagePanel scroll buttons",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Verify all fixes resolve runtime errors",
+                                "status": "pending"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 99486,
+                "completion_tokens": 2987,
+                "total_tokens": 102473,
+                "prompt_cache_hit_tokens": 99328,
+                "prompt_cache_miss_tokens": 158,
+                "prompt_tokens_details": {
+                    "cached_tokens": 99328
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 2735
+                }
+            },
+            "time": 1783948487
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_SGJNTg6pujy65CvZqegJ7866",
+            "content": "Todo list updated with 6 items.",
+            "is_error": false,
+            "time": 1783948487
         }
     ]
 }
