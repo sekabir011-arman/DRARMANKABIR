@@ -1,4 +1,37 @@
-<!DOCTYPE html>
+      // Register Service Worker with update detection
+      // Use a non-blocking update strategy to avoid React removeChild errors
+      // caused by aggressive reloads during DOM unmounting.
+      if ('serviceWorker' in navigator) {
+        // Flag to track if a reload is already scheduled
+        let reloadScheduled = false;
+        const scheduleReload = () => {
+          if (reloadScheduled) return;
+          reloadScheduled = true;
+          // Defer reload to avoid interrupting React's unmount lifecycle
+          setTimeout(() => { window.location.reload(); }, 500);
+        };
+
+        navigator.serviceWorker.register('/sw.js', { scope: '/' }).then((reg) => {
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                scheduleReload();
+              }
+            });
+          });
+
+          if (reg.waiting && navigator.serviceWorker.controller) {
+            scheduleReload();
+          }
+        }).catch(() => {
+          // SW registration failed silently — app still works without it
+        });
+
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          scheduleReload();
+        });
+      }<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
