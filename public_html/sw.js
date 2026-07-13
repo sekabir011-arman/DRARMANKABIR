@@ -34,30 +34,49 @@ self.addEventListener('activate', (event) => {
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
+/** Strip cache-busting query strings from JS/CSS URLs so ESM imports match */
+function normalizeUrl(url) {
+  if (/\.(js|css|woff2?|ttf|eot|png|jpg|jpeg|gif|svg|ico|webp|pdf)$/i.test(url.pathname)) {
+    const cleaned = new URL(url.origin + url.pathname);
+    return cleaned;
+  }
+  return url;
+}
+
 function networkFirst(event) {
-  return fetch(event.request)
+  const normalized = normalizeUrl(new URL(event.request.url));
+  const request = normalized.href !== event.request.url
+    ? new Request(normalized, event.request)
+    : event.request;
+
+  return fetch(request)
     .then((response) => {
       if (!response || response.status !== 200 || response.type === 'opaque') {
         return response;
       }
       const toCache = response.clone();
       caches.open(CACHE_NAME).then((cache) => {
-        cache.put(event.request, toCache);
+        cache.put(request, toCache);
       });
       return response;
     })
-    .catch(() => caches.match(event.request));
+    .catch(() => caches.match(request));
 }
 
 function cacheFirst(event) {
-  return caches.match(event.request).then((cached) => {
+  const normalized = normalizeUrl(new URL(event.request.url));
+  const request = normalized.href !== event.request.url
+    ? new Request(normalized, event.request)
+    : event.request;
+
+  return caches.match(request).then((cached) => {
     if (cached) return cached;
-    return fetch(event.request).then((response) => {
+    return fetch(request).then((response) => {
       if (!response || response.status !== 200 || response.type === 'opaque') {
         return response;
       }
       const toCache = response.clone();
-      caches.open(CACHE_NAME).then((cache) => cache.put(event.request, toCache));
+      caches.open(CACHE_NAME).then((cache) => cache.put(request, toCache));
       return response;
     });
   });
