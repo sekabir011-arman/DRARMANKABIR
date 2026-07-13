@@ -1,37 +1,4 @@
-      // Register Service Worker with update detection
-      // Use a non-blocking update strategy to avoid React removeChild errors
-      // caused by aggressive reloads during DOM unmounting.
-      if ('serviceWorker' in navigator) {
-        // Flag to track if a reload is already scheduled
-        let reloadScheduled = false;
-        const scheduleReload = () => {
-          if (reloadScheduled) return;
-          reloadScheduled = true;
-          // Defer reload to avoid interrupting React's unmount lifecycle
-          setTimeout(() => { window.location.reload(); }, 500);
-        };
-
-        navigator.serviceWorker.register('/sw.js', { scope: '/' }).then((reg) => {
-          reg.addEventListener('updatefound', () => {
-            const newWorker = reg.installing;
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                scheduleReload();
-              }
-            });
-          });
-
-          if (reg.waiting && navigator.serviceWorker.controller) {
-            scheduleReload();
-          }
-        }).catch(() => {
-          // SW registration failed silently — app still works without it
-        });
-
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-          scheduleReload();
-        });
-      }<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -49,10 +16,35 @@
   <body>
     <div id="root"></div>
     <script>
-      // Register Service Worker — silent updates, no forced reloads
+      // Register Service Worker — silent updates, no forced reloads to avoid React removeChild errors
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {
+        // Defer reload to avoid interrupting React's unmount lifecycle
+        let reloadScheduled = false;
+        const scheduleReload = () => {
+          if (reloadScheduled) return;
+          reloadScheduled = true;
+          setTimeout(function() { window.location.reload(); }, 500);
+        };
+
+        navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(function(reg) {
+          reg.addEventListener('updatefound', function() {
+            var newWorker = reg.installing;
+            newWorker.addEventListener('statechange', function() {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                scheduleReload();
+              }
+            });
+          });
+
+          if (reg.waiting && navigator.serviceWorker.controller) {
+            scheduleReload();
+          }
+        }).catch(function() {
           // SW registration failed silently — app still works without it
+        });
+
+        navigator.serviceWorker.addEventListener('controllerchange', function() {
+          scheduleReload();
         });
       }
     </script>
