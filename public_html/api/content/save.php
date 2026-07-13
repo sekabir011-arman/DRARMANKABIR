@@ -1,4 +1,4 @@
-<?php
+        ':user_id' => $userId,<?php
 /**
  * Content Save API
  * 
