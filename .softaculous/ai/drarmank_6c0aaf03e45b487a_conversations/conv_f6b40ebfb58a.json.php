@@ -22,7 +22,7 @@
         }
     ],
     "created_at": 1784045378,
-    "updated_at": 1784049219,
+    "updated_at": 1784049275,
     "messages": [
         {
             "id": "msg_db434d3362",
@@ -449,6 +449,380 @@
             "content": "continue",
             "attachments": [],
             "time": 1784049219
+        },
+        {
+            "id": "msg_7036600eee",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me analyze the problem. The error is:\n\n`Uncaught SyntaxError: Unexpected token '{' (at LandingPage-Dv8SefYP.js:52:8)`\n\nLooking at line 52 of the file:\n\n```\n51:   };const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=[\"assets\/index-DJeWhCy-.js\",\"assets\/index-JEdqxkTH.css\"])))=>i.map(i=>d[i]);\n52: import { i as createLucideIcon, j as jsxRuntimeExports, ar as Root, as as Content, at as Close, X, ac as cn, au as Title, av as Portal, aw as Overlay, r as reactExports, T as Tabs, l as TabsList, n as TabsTrigger, p as TabsContent, B as Button, u as ue, L as Label, I as Input, ah as CirclePlus, ax as saveFrontPageContentWithSync, D as Dialog, s as DialogContent, t as DialogHeader, ab as TriangleAlert, v as DialogTitle, S as Select, d as SelectTrigger, e as SelectValue, f as SelectContent, g as SelectItem, m as motion, o as Stethoscope, h as Badge, ay as ShieldCheck, az as Menu, A as AnimatePresence, k as CalendarDays, _ as __vitePreload, z as LoaderCircle, c as Clock, b as CircleCheck, ao as ChevronRight, a3 as Users } from \".\/index-DJeWhCy-.js\";\n```\n\nThe problem is clear. On line 51, there's a function `handleRegLookup` ending with `};`, and then immediately on the same line, there's `const __vite__mapDeps=...` followed by line 52 which is an `import` statement. But the issue is that `import` statements are only valid at the top level of a module, and they must come before any other code.\n\nLooking at the file structure:\n- Lines 1-51: A function `EmergencyConsultationModal` (a React component) with its closure\/implementation\n- Line 51: `};const __vite__mapDeps=(...)` - This ends the function and then defines a variable\n- Line 52: `import { ... } from \".\/index-DJeWhCy-.js\";` - This is an import statement AFTER code has already executed\n\nThis is the problem. In JavaScript modules, `import` statements are hoisted to the top of the module and must come before any other statements. You cannot have an `import` after other code.\n\nThe file seems to be a corrupted\/broken bundle output. It looks like the function `EmergencyConsultationModal` was duplicated or the file got mangled. Let me look more carefully at the file:\n\n- Lines 1-51 contain a function `EmergencyConsultationModal` \n- Lines 1-14: useEffect and state setup\n- Lines 15-50: more state and handleRegLookup function\n- Line 51: end of handleRegLookup with `};` then `const __vite__mapDeps=...`\n\nThen lines 52-73: import statements\nThen lines 74+: more code\n\nBut wait, looking at line 1415, there's ANOTHER `function EmergencyConsultationModal({ open, onClose }) {` which is the second declaration.\n\nSo the file has:\n1. Lines 1-51: A partial\/incomplete first version of EmergencyConsultationModal function (ending mid-function with `handleRegLookup`)\n2. Lines 51-73: Then some vite map deps and import statements (which shouldn't be after code)\n3. Lines 74+: The rest of the file starting with icon definitions and then the full component definitions\n\nThe file is indeed corrupted. The first 51 lines look like a duplicate\/partial version of the EmergencyConsultationModal component that got pasted at the top of the file, before the imports.\n\nThe fix would be to remove lines 1-51 (the duplicate partial function) since the full version appears later in the file (starting at line 1415).\n\nLet me verify by looking at what line 1415 has - it has the complete `EmergencyConsultationModal` function with all the same code (states, handleRegLookup, etc.) plus more (handleSend, the dialog rendering).\n\nSo yes, lines 1-51 are a duplicate partial version that was accidentally prepended to the file. Removing them should fix the syntax error.\n\nLet me make the fix."
+                },
+                {
+                    "type": "text",
+                    "text": "The issue is now clear. Looking at the file, lines 1-51 contain a **duplicate partial copy** of the `EmergencyConsultationModal` component that was accidentally prepended to the file **before the import statements**. This causes a syntax error because `import` statements must come before any other code in a JavaScript module.\n\nThe full, correct version of `EmergencyConsultationModal` already exists at line 1415. We need to remove the duplicate partial version (lines 1-51)."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_5wh1O4f4llxyOS95IsSK5433",
+                    "name": "edit_file",
+                    "input": {
+                        "path": "public_html\/assets\/LandingPage-Dv8SefYP.js",
+                        "old_string": "function EmergencyConsultationModal({ open, onClose }) {\n  const [emergencyContacts, setEmergencyContacts] = reactExports.useState(\n    loadEmergencyContacts\n  );\n  const regTimeoutRef = reactExports.useRef(null);\n  reactExports.useEffect(() => {\n    if (open) setEmergencyContacts(loadEmergencyContacts());\n    return () => {\n      if (regTimeoutRef.current) {\n        clearTimeout(regTimeoutRef.current);\n        regTimeoutRef.current = null;\n      }\n    };\n  }, [open]);\n  const [registerNumber, setRegisterNumber] = reactExports.useState(\"\");\n  const [name, setName] = reactExports.useState(\"\");\n  const [age, setAge] = reactExports.useState(\"\");\n  const [phone, setPhone] = reactExports.useState(\"\");\n  const [symptoms, setSymptoms] = reactExports.useState(\"\");\n  const [doctor, setDoctor] = reactExports.useState(\"\");\n  const [error, setError] = reactExports.useState(\"\");\n  const [regLookupMsg, setRegLookupMsg] = reactExports.useState(\"\");\n  const [searching, setSearching] = reactExports.useState(false);\n  const handleRegLookup = (val) => {\n    setRegisterNumber(val);\n    if (!val.trim()) {\n      setRegLookupMsg(\"\");\n      return;\n    }\n    setSearching(true);\n    if (regTimeoutRef.current) clearTimeout(regTimeoutRef.current);\n    regTimeoutRef.current = setTimeout(() => {\n      regTimeoutRef.current = null;\n      const patient = findPatientByRegNumber(val.trim());\n      setSearching(false);\n      if (patient) {\n        const fullName = patient.fullName || patient.name || \"\";\n        setName(fullName);\n        const ageVal = calcAge(\n          patient.dateOfBirth\n        );\n        if (ageVal) setAge(ageVal);\n        if (patient.phone) setPhone(String(patient.phone));\n        setRegLookupMsg(\n          `\u2713 Found: ${fullName}${ageVal ? `, ${ageVal} yrs` : \"\"}`\n        );\n      } else {\n        setRegLookupMsg(\"Patient not found with this register number.\");\n      }\n    }, 300);\n  };",
+                        "new_string": "\/\/ Note: EmergencyConsultationModal is defined later in this file"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 40076,
+                "completion_tokens": 1664,
+                "total_tokens": 41740,
+                "prompt_cache_hit_tokens": 2944,
+                "prompt_cache_miss_tokens": 37132,
+                "prompt_tokens_details": {
+                    "cached_tokens": 2944
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 978
+                }
+            },
+            "time": 1784049233
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_5wh1O4f4llxyOS95IsSK5433",
+            "content": "Edited public_html\/assets\/LandingPage-Dv8SefYP.js (1 replacement)\n- \n+ \/\/ Note: EmergencyConsultationModal is defined later in this file",
+            "is_error": false,
+            "time": 1784049234
+        },
+        {
+            "id": "msg_5852c83b5d",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me verify the fix by checking the file around line 52 now."
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me verify the fix was applied correctly:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_JvFebVmflENQ6K5ymVme9059",
+                    "name": "read_file",
+                    "input": {
+                        "path": "public_html\/assets\/LandingPage-Dv8SefYP.js",
+                        "limit": 10
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 41786,
+                "completion_tokens": 96,
+                "total_tokens": 41882,
+                "prompt_cache_hit_tokens": 41728,
+                "prompt_cache_miss_tokens": 58,
+                "prompt_tokens_details": {
+                    "cached_tokens": 41728
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 15
+                }
+            },
+            "time": 1784049238
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_JvFebVmflENQ6K5ymVme9059",
+            "content": "    1 | \/\/ Note: EmergencyConsultationModal is defined later in this fileconst __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=[\"assets\/index-DJeWhCy-.js\",\"assets\/index-JEdqxkTH.css\"])))=>i.map(i=>d[i]);\n    2 | import { i as createLucideIcon, j as jsxRuntimeExports, ar as Root, as as Content, at as Close, X, ac as cn, au as Title, av as Portal, aw as Overlay, r as reactExports, T as Tabs, l as TabsList, n as TabsTrigger, p as TabsContent, B as Button, u as ue, L as Label, I as Input, ah as CirclePlus, ax as saveFrontPageContentWithSync, D as Dialog, s as DialogContent, t as DialogHeader, ab as TriangleAlert, v as DialogTitle, S as Select, d as SelectTrigger, e as SelectValue, f as SelectContent, g as SelectItem, m as motion, o as Stethoscope, h as Badge, ay as ShieldCheck, az as Menu, A as AnimatePresence, k as CalendarDays, _ as __vitePreload, z as LoaderCircle, c as Clock, b as CircleCheck, ao as ChevronRight, a3 as Users } from \".\/index-DJeWhCy-.js\";\n    3 | import { T as Textarea } from \".\/textarea-BQiWEu5n.js\";\n    4 | import { P as Pencil } from \".\/pencil-BZAaPpo6.js\";\n    5 | import { R as RotateCcw } from \".\/rotate-ccw-DEYXgLqp.js\";\n    6 | import { S as Search } from \".\/search-BLymxia-.js\";\n    7 | import { S as Send } from \".\/send-cdrsuHAc.js\";\n    8 | import { P as Phone } from \".\/phone-Co67JhRS.js\";\n    9 | import { I as Image, S as Star, u as useDoctorContent } from \".\/useDoctorContent-Cx8T-OwA.js\";\n   10 | import { U as Upload } from \".\/upload-10Urw3kY.js\";",
+            "is_error": false,
+            "time": 1784049238
+        },
+        {
+            "id": "msg_be2623ae60",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The file now starts with the import statements (with a minor issue - there's no newline between my comment and the const declaration on line 1). But importantly, the imports are now the FIRST actual code after the comment, which means they'll be recognized as module imports.\n\nWait, actually there's a slight issue - the comment I added runs into the `const __vite__mapDeps` on the same line. Let me check if that causes a problem:\n\n```\n\/\/ Note: EmergencyConsultationModal is defined later in this fileconst __vite__mapDeps=...\n```\n\nThe `const __vite__mapDeps=...` is on the same line as the comment, so it's NOT part of the comment. The comment ends at `file` and then `const __vite__mapDeps` starts. So the `const` is valid JavaScript. \n\nHowever, there's still a potential issue. The `import` statements are now AFTER the `const __vite__mapDeps` variable declaration. In JavaScript ES modules, `import` statements are hoisted to the top of the module, so they would be executed before the `const` declaration. But the `const` is at line 1 (after the comment) and the imports are at lines 2+. This should work because `import` statements get hoisted.\n\nActually wait - the `const __vite__mapDeps` is on line 1, and the first `import` is on line 2. Let me think about this more carefully.\n\nIn JavaScript modules, all `import` statements are evaluated before any other code in the module body. So even though the `const` appears first in the source, the `import` statements will be resolved first. However, the issue with the original file was that `import` statements appeared AFTER function declarations and executable code. Now we have:\n\n1. Comment (line 1)\n2. `const __vite__mapDeps = ...` (line 1, after comment)\n3. `import { ... }` (line 2)\n4. More imports (lines 3+)\n\nThe `const` declaration is technically executable code. But in a module, `import` declarations are hoisted above all other declarations. So this should work fine. The `const` will execute after all imports are resolved.\n\nBut wait - there's another issue. The original error was:\n```\nUncaught SyntaxError: Unexpected token '{' (at LandingPage-Dv8SefYP.js:52:8)\n```\n\nThis was at line 52, which was the `import { ... }` statement. The issue was that the import came after executable code (the function). Now we've removed the function, so the imports come right at the top (after a comment and a const declaration). This should be fine.\n\nActually, let me double-check by looking at typical Vite output. Vite bundles typically have the `__vite__mapDeps` declaration first, then imports. Let me look at the original `index-DJeWhCy-.js` to see if it follows the same pattern."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me check if the original main bundle has the same `__vite__mapDeps` pattern at the top to ensure consistency:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_EbpNvIMOT1h0p9kEU2xo9979",
+                    "name": "read_file",
+                    "input": {
+                        "path": "public_html\/assets\/index-DJeWhCy-.js",
+                        "limit": 5
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 42385,
+                "completion_tokens": 745,
+                "total_tokens": 43130,
+                "prompt_cache_hit_tokens": 41856,
+                "prompt_cache_miss_tokens": 529,
+                "prompt_tokens_details": {
+                    "cached_tokens": 41856
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 649
+                }
+            },
+            "time": 1784049245
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_EbpNvIMOT1h0p9kEU2xo9979",
+            "content": "File too large (max: 500 KB)",
+            "is_error": true,
+            "time": 1784049245
+        },
+        {
+            "id": "msg_d0eefda5a4",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me just check the beginning of the main bundle file using head via bash."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_yulMIf9cOxvCMdIFDOM93639",
+                    "name": "bash",
+                    "input": {
+                        "command": "head -5 public_html\/assets\/index-DJeWhCy-.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 43151,
+                "completion_tokens": 71,
+                "total_tokens": 43222,
+                "prompt_cache_hit_tokens": 43008,
+                "prompt_cache_miss_tokens": 143,
+                "prompt_tokens_details": {
+                    "cached_tokens": 43008
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 16
+                }
+            },
+            "time": 1784049248
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_yulMIf9cOxvCMdIFDOM93639",
+            "content": "const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=[\"assets\/AppointmentPayment-DTL8YvMS.js\",\"assets\/MoneyReceipt-CSWlD73e.js\",\"assets\/message-circle-qSON-RM2.js\",\"assets\/rotate-ccw-DEYXgLqp.js\",\"assets\/printer-BQUreT8L.js\",\"assets\/download-qc_8yQ5r.js\",\"assets\/banknote-BqiHnhGo.js\",\"assets\/settings-2-Bp-4AVPw.js\",\"assets\/funnel-BTA0vRsb.js\",\"assets\/receipt-DqXr-L3S.js\",\"assets\/pencil-BZAaPpo6.js\",\"assets\/trash-2-B3l-ZhdV.js\",\"assets\/Appointments-CiXOz8vL.js\",\"assets\/table-CnbMZ7S8.js\",\"assets\/textarea-BQiWEu5n.js\",\"assets\/PatientForm-BCKQSbNc.js\",\"assets\/camera-DpsioLhp.js\",\"assets\/eye-DZPhoU57.js\",\"assets\/user-plus-BJkC4ige.js\",\"assets\/whatsappTemplates-BiipONU2.js\",\"assets\/bed-double-DSQN6_I2.js\",\"assets\/plus-CHPIrJ6M.js\",\"assets\/circle-alert-3N-VW3xt.js\",\"assets\/pen-CfMhwJvZ.js\",\"assets\/search-BLymxia-.js\",\"assets\/user-search-CBqVxlq_.js\",\"assets\/AuditLog-BszF6XcX.js\",\"assets\/scroll-area-DUDQuZCi.js\",\"assets\/lock-BfuJZcFd.js\",\"assets\/arrow-right-left-DxaL83fz.js\",\"assets\/file-text-DJrK52te.js\",\"assets\/format-C8K1a6Fc.js\",\"assets\/generateCategoricalChart-Dou_1HkF.js\",\"assets\/BarChart-Ch6XFCj8.js\",\"assets\/BedManagement-B6IsYOJd.js\",\"assets\/building-2-CMX9_teL.js\",\"assets\/layers-DwYKTjmE.js\",\"assets\/sparkles-BXWJULex.js\",\"assets\/formatDistanceToNow-C2IQJfe9.js\",\"assets\/log-out-BVpvzsgE.js\",\"assets\/Dashboard-DyrPRUEp.js\",\"assets\/card-COhiAhz1.js\",\"assets\/database-Ck9e-_FX.js\",\"assets\/activity-BRRgo98q.js\",\"assets\/chart-no-axes-column-aUF3iGvH.js\",\"assets\/skeleton-DqU5IOMD.js\",\"assets\/clinicalIntelligence-B4u_Xj_J.js\",\"assets\/NurseDueMeds-C04LCd8h.js\",\"assets\/info-DjKKOoM3.js\",\"assets\/droplets-Dr40MrVb.js\",\"assets\/sun-7_ce8Kaj.js\",\"assets\/sunset-B1zSdVi8.js\",\"assets\/message-square-gLkdQm4U.js\",\"assets\/EmergencyPrescription-Bi3knV-p.js\",\"assets\/UpgradedPrescriptionEMR-CvNofdGu.js\",\"assets\/test-tube-AQ_p65EL.js\",\"assets\/upload-10Urw3kY.js\",\"assets\/save-DzMd4SiT.js\",\"assets\/external-link-YRWS9f1T.js\",\"assets\/arrow-left-D0QK_o3f.js\",\"assets\/calendar-BL7xJRSg.js\",\"assets\/InvestigationPaymentPage-DbUqWJ51.js\",\"assets\/InvestigationPayment-BfpQZUDn.js\",\"assets\/checkbox-ByWwQWzS.js\",\"assets\/LandingPage-Dv8SefYP.js\",\"assets\/send-cdrsuHAc.js\",\"assets\/phone-Co67JhRS.js\",\"assets\/useDoctorContent-Cx8T-OwA.js\",\"assets\/heart-CnN_F_j3.js\",\"assets\/mail-yvZvzeI4.js\",\"assets\/book-open-Bi6sJ5u3.js\",\"assets\/map-pin-BVGvB4pd.js\",\"assets\/OtherPayment-B9VCHD6a.js\",\"assets\/OutstandingBalances-Bl_iWFFm.js\",\"assets\/PatientDashboard-Cuwbdual.js\",\"assets\/DailyProgressNote-dVntCN7J.js\",\"assets\/SystemicExaminationSection-CCL-4QQD.js\",\"assets\/shield-D-es88Nw.js\",\"assets\/trending-up-B6DQx806.js\",\"assets\/video-h2z_1vJH.js\",\"assets\/thermometer-CrPE917O.js\",\"assets\/Patients-B0bSwJv4.js\",\"assets\/ProcedurePayment-B362PKCB.js\",\"assets\/RegistrarDashboard-CdC5G3Yl.js\",\"assets\/SerialDisplay-DAWJgUIZ.js\",\"assets\/monitor-play-DHOzn285.js\",\"assets\/Settings-DPkJ1nB8.js\",\"assets\/Staff-CTNepX6G.js\",\"assets\/TotalIncome-7BTVq9wM.js\",\"assets\/VisitPage-5feiJJvC.js\"])))=>i.map(i=>d[i]);\nvar __defProp = Object.defineProperty;\nvar __typeError = (msg) => {\n  throw TypeError(msg);\n};\n",
+            "is_error": false,
+            "time": 1784049248
+        },
+        {
+            "id": "msg_03645ec3c7",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "OK, so the main bundle file starts with the `const __vite__mapDeps` declaration, followed by other code, and then the imports are within the lazy-loaded dynamic import. The LandingPage-Dv8SefYP.js file is a separate chunk that is dynamically imported.\n\nIn the LandingPage-Dv8SefYP.js chunk, the pattern should be:\n1. First, the imports (since it's a module that's dynamically imported)\n2. Then, the code\n\nBut originally, the file had:\n1. A partial function (lines 1-51) - this was the duplicate\n2. `const __vite__mapDeps` on line 51\n3. `import` statements on lines 52+\n\nThe problem was that the function code came BEFORE the imports. In ES modules, `import` statements must be at the top level. Even though they are hoisted, having executable code before `import` statements is a syntax error in strict module mode.\n\nNow I've removed the function code (lines 1-51) and replaced it with a comment. The file now has:\n1. Comment + `const __vite__mapDeps` (line 1)\n2. `import` statements (lines 2+)\n\nWait, the `const __vite__mapDeps` is still before the imports. Let me look at this more carefully.\n\nActually, in JavaScript modules, `import` declarations are hoisted to the top of the module scope. So even though `const __vite__mapDeps` appears first in the source text, the `import` statements will be evaluated first. The `const` declaration will execute after the imports are resolved.\n\nBut is this valid syntax? Let me think...\n\nIn a JavaScript module:\n- `import` statements are \"hoisted\" and evaluated before the rest of the module code\n- You CAN have other statements before `import` statements, but those statements must be `import` statements themselves, or the file will have a syntax error\n\nActually, wait. In ES modules, ALL `import` statements are hoisted to the top, regardless of where they appear in the source. However, having executable code (like `const` declarations, function declarations, etc.) BEFORE `import` statements is technically NOT a syntax error in modern JS engines because the imports are hoisted.\n\nBut wait - the original error says:\n```\nUncaught SyntaxError: Unexpected token '{' (at LandingPage-Dv8SefYP.js:52:8)\n```\n\nLine 52 was `import { i as createLucideIcon, ... }`. The `{` after `import` was unexpected. This typically happens when the engine doesn't recognize `import` as a valid statement in the current context.\n\nIn the original file, line 51 ended with `};` (closing the function and the `handleRegLookup` function). Then immediately on the same line: `const __vite__mapDeps=(...)`. And then line 52 starts with `import { ... }`.\n\nThe issue is that `import` is only valid at the top level of a module. If the parser has already seen a complete statement (like a function declaration followed by `const`), then `import` is no longer valid as a top-level statement.\n\nActually, I think the real issue is simpler. Let me look at line 51 more carefully:\n\n```\n51:   };const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=[\"assets\/index-DJeWhCy-.js\",\"assets\/index-JEdqxkTH.css\"])))=>i.map(i=>d[i]);\n52: import { i as createLucideIcon, ... } from \".\/index-DJeWhCy-.js\";\n```\n\nAfter the semicolon closing the function, we have `const __vite__mapDeps=...`. This is valid JavaScript. Then on the next line, we have `import { ... }`. \n\nIn a module, `import` declarations are only valid at the top level. But having other statements (like `const`) before `import` makes the `import` invalid because the module's static structure is already determined.\n\nActually, I need to reconsider. In ES2015+ modules:\n- `import` and `export` statements must be at the top level\n- They are hoisted to the top\n- Having other statements before `import` is technically not allowed in the spec, but some bundlers\/modules do this\n\nWait, I just checked - in the ECMAScript specification, ModuleItem can be either ImportDeclaration or ExportDeclaration or StatementListItem. ImportDeclaration and ExportDeclaration are NOT StatementListItem. So technically, you cannot have statements before import declarations in a module.\n\nHowever, in practice, many bundlers and runtimes handle this by hoisting imports. But Vite's output typically puts imports first, followed by code.\n\nSo the original file was broken because it had a function (a StatementListItem) before the import declarations. My fix addresses this by removing the function, but I still have `const __vite__mapDeps` before the imports.\n\nLet me check if having `const __vite__mapDeps` before imports works in the main bundle file...\n\nFrom the main bundle `index-DJeWhCy-.js`, the first line is `const __vite__mapDeps=(...)` - and that file likely doesn't have any `import` statements at the top level because it's the entry point. The imports in the main bundle are likely dynamic `import()` calls, not static `import` declarations.\n\nBut `LandingPage-Dv8SefYP.js` IS a module (it's dynamically imported), and it uses static `import` declarations. So in this file, `import` statements must come first.\n\nThe issue is that my comment + `const __vite__mapDeps` is still before the `import` statements. I need to also move the `const __vite__mapDeps` after the imports, or remove it entirely.\n\nActually wait - let me re-read the Vite output more carefully. Looking at the other chunk files to see their structure:"
+                },
+                {
+                    "type": "text",
+                    "text": "Let me check the structure of another chunk file to see the expected pattern:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_hfIIrDjjadW48xFyhr9j6991",
+                    "name": "bash",
+                    "input": {
+                        "command": "head -10 public_html\/assets\/phone-Co67JhRS.js"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_vk3ssr8sLpQNIVV1nmMD8396",
+                    "name": "bash",
+                    "input": {
+                        "command": "head -10 public_html\/assets\/send-cdrsuHAc.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 44401,
+                "completion_tokens": 1403,
+                "total_tokens": 45804,
+                "prompt_cache_hit_tokens": 43136,
+                "prompt_cache_miss_tokens": 1265,
+                "prompt_tokens_details": {
+                    "cached_tokens": 43136
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 1290
+                }
+            },
+            "time": 1784049262
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_hfIIrDjjadW48xFyhr9j6991",
+            "content": "import { i as createLucideIcon } from \".\/index-DJeWhCy-.js\";\n\/**\n * @license lucide-react v0.511.0 - ISC\n *\n * This source code is licensed under the ISC license.\n * See the LICENSE file in the root directory of this source tree.\n *\/\nconst __iconNode = [\n  [\n    \"path\",\n",
+            "is_error": false,
+            "time": 1784049262
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_vk3ssr8sLpQNIVV1nmMD8396",
+            "content": "import { i as createLucideIcon } from \".\/index-DJeWhCy-.js\";\n\/**\n * @license lucide-react v0.511.0 - ISC\n *\n * This source code is licensed under the ISC license.\n * See the LICENSE file in the root directory of this source tree.\n *\/\nconst __iconNode = [\n  [\n    \"path\",\n",
+            "is_error": false,
+            "time": 1784049262
+        },
+        {
+            "id": "msg_38b184425e",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I see the expected pattern for these chunk files. They start with `import` statements first, then the code. The `const __vite__mapDeps` declaration should NOT be at the top of the file - it should be after the imports or not needed at all.\n\nLet me check a couple more files to confirm, and also check if the `__vite__mapDeps` in this file is actually needed or if it's part of the corrupted content."
+                },
+                {
+                    "type": "text",
+                    "text": "Now I can see the pattern. The chunk files start with `import` statements, followed by code. The `const __vite__mapDeps` at line 1 of the LandingPage file is also out of place - it shouldn't be before the imports. Let me check other chunks:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_tDTbAlfveXma7gW5JDhd3364",
+                    "name": "bash",
+                    "input": {
+                        "command": "head -5 public_html\/assets\/search-BLymxia-.js && echo \"---\" && head -5 public_html\/assets\/pencil-BZAaPpo6.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 45976,
+                "completion_tokens": 234,
+                "total_tokens": 46210,
+                "prompt_cache_hit_tokens": 45696,
+                "prompt_cache_miss_tokens": 280,
+                "prompt_tokens_details": {
+                    "cached_tokens": 45696
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 98
+                }
+            },
+            "time": 1784049266
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_tDTbAlfveXma7gW5JDhd3364",
+            "content": "import { i as createLucideIcon } from \".\/index-DJeWhCy-.js\";\n\/**\n * @license lucide-react v0.511.0 - ISC\n *\n * This source code is licensed under the ISC license.\n---\nimport { i as createLucideIcon } from \".\/index-DJeWhCy-.js\";\n\/**\n * @license lucide-react v0.511.0 - ISC\n *\n * This source code is licensed under the ISC license.\n",
+            "is_error": false,
+            "time": 1784049266
+        },
+        {
+            "id": "msg_31248fb9a0",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "All other chunk files start with `import` statements. The `__vite__mapDeps` declaration at the top of the LandingPage file is also part of the corruption - it shouldn't be there. Let me check if this function is used elsewhere in the file or if it was part of the corrupted content.\n\nActually, looking at the original file again:\n\nLine 51: `};const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=[\"assets\/index-DJeWhCy-.js\",\"assets\/index-JEdqxkTH.css\"])))=>i.map(i=>d[i]);`\nLine 52: `import { i as createLucideIcon, j as jsxRuntimeExports, ...`\n\nThe `__vite__mapDeps` function on line 51 was actually NOT part of the duplicate function - it was the legitimate `__vite__mapDeps` function for this chunk, but it ended up on the same line as the closing `};` of the duplicate function. It was followed by the imports.\n\nThe `__vite__mapDeps` function IS needed - it's used for dependency mapping. But it needs to come AFTER the import statements, not before them.\n\nSo the correct fix is:\n1. Remove lines 1-51 (the duplicate partial function)\n2. The `const __vite__mapDeps` should be moved AFTER the imports\n\nBut wait, my current edit already replaced lines 1-51 with the comment. However, I left the `const __vite__mapDeps` on the same line as the comment. Let me fix this properly.\n\nLet me re-read the current state of the file:"
+                },
+                {
+                    "type": "text",
+                    "text": "The `__vite__mapDeps` declaration also shouldn't be before the imports. I need to fix this properly. Let me see the current state and fix it:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_kRmzafedclLOH8INR3qv6980",
+                    "name": "read_file",
+                    "input": {
+                        "limit": 5,
+                        "path": "public_html\/assets\/LandingPage-Dv8SefYP.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 46321,
+                "completion_tokens": 467,
+                "total_tokens": 46788,
+                "prompt_cache_hit_tokens": 46208,
+                "prompt_cache_miss_tokens": 113,
+                "prompt_tokens_details": {
+                    "cached_tokens": 46208
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 360
+                }
+            },
+            "time": 1784049272
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_kRmzafedclLOH8INR3qv6980",
+            "content": "    1 | \/\/ Note: EmergencyConsultationModal is defined later in this fileconst __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=[\"assets\/index-DJeWhCy-.js\",\"assets\/index-JEdqxkTH.css\"])))=>i.map(i=>d[i]);\n    2 | import { i as createLucideIcon, j as jsxRuntimeExports, ar as Root, as as Content, at as Close, X, ac as cn, au as Title, av as Portal, aw as Overlay, r as reactExports, T as Tabs, l as TabsList, n as TabsTrigger, p as TabsContent, B as Button, u as ue, L as Label, I as Input, ah as CirclePlus, ax as saveFrontPageContentWithSync, D as Dialog, s as DialogContent, t as DialogHeader, ab as TriangleAlert, v as DialogTitle, S as Select, d as SelectTrigger, e as SelectValue, f as SelectContent, g as SelectItem, m as motion, o as Stethoscope, h as Badge, ay as ShieldCheck, az as Menu, A as AnimatePresence, k as CalendarDays, _ as __vitePreload, z as LoaderCircle, c as Clock, b as CircleCheck, ao as ChevronRight, a3 as Users } from \".\/index-DJeWhCy-.js\";\n    3 | import { T as Textarea } from \".\/textarea-BQiWEu5n.js\";\n    4 | import { P as Pencil } from \".\/pencil-BZAaPpo6.js\";\n    5 | import { R as RotateCcw } from \".\/rotate-ccw-DEYXgLqp.js\";",
+            "is_error": false,
+            "time": 1784049272
+        },
+        {
+            "id": "msg_5c5b1afddc",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The `__vite__mapDeps` is still before the imports. I need to move it after the imports. Let me also check if `__vite__mapDeps` is even used in this file."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_cZSoZdiRkdHKKbf0e11h5208",
+                    "name": "grep",
+                    "input": {
+                        "pattern": "__vite__mapDeps",
+                        "path": "public_html\/assets\/LandingPage-Dv8SefYP.js",
+                        "max_results": 10
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 47179,
+                "completion_tokens": 141,
+                "total_tokens": 47320,
+                "prompt_cache_hit_tokens": 46720,
+                "prompt_cache_miss_tokens": 459,
+                "prompt_tokens_details": {
+                    "cached_tokens": 46720
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 46
+                }
+            },
+            "time": 1784049275
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_cZSoZdiRkdHKKbf0e11h5208",
+            "content": "1:\/\/ Note: EmergencyConsultationModal is defined later in this fileconst __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=[\"assets\/index-DJeWhCy-.js\",\"assets\/index-JEdqxkTH.css\"])))=>i.map(i=>d[i]);\n5901:                                }, true ? __vite__mapDeps([0,1]) : void 0).then(",
+            "is_error": false,
+            "time": 1784049275
         }
     ]
 }
