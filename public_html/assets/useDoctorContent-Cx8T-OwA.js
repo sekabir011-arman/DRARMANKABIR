@@ -320,6 +320,24 @@ function deepMerge(base, overrides) {
   }
   return result;
 }
+function addToOfflineQueue(key, value) {
+  const QUEUE_KEY = "medicare_content_offline_queue";
+  let queue = [];
+  try {
+    const raw = localStorage.getItem(QUEUE_KEY);
+    if (raw) queue = JSON.parse(raw);
+  } catch {}
+  queue.push({
+    id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    payload: { [key]: value },
+    updatedAt: new Date().toISOString(),
+    retryCount: 0,
+    queuedAt: new Date().toISOString()
+  });
+  try {
+    localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+  } catch {}
+}
 function useDoctorContent() {
   const [overrides, setOverrides] = reactExports.useState({});
   reactExports.useEffect(() => {
