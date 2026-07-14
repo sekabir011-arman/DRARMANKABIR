@@ -1,0 +1,2 @@
+[14-Jul-2026 19:36:24 UTC] PHP Warning:  file_get_contents(public_html/assets/index-DJeWhCy-.js): Failed to open stream: No such file or directory in Command line code on line 3
+[14-Jul-2026 19:36:27 UTC] PHP Warning:  file_get_contents(public_html/assets/index-DJeWhCy-.js): Failed to open stream: No such file or directory in Command line code on line 2

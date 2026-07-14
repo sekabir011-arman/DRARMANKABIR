@@ -52648,6 +52648,7 @@ function SyncConflictDialog({
       className: "sm:max-w-md max-h-[80vh] overflow-hidden flex flex-col",
       "data-ocid": "sync_conflict.dialog",
       children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(DialogDescription, { className: "sr-only", children: "Sync conflicts - choose which version to keep for each record" }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogHeader, { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogTitle, { className: "flex items-center gap-2", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleAlert, { className: "w-5 h-5 text-amber-500" }),
