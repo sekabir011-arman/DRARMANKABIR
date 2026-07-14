@@ -62,7 +62,7 @@ function getParam(string $key, mixed $default = null): mixed {
 }
 
 function getMethod(): string {
-    return $_SERVER['REQUEST_METHOD'];
+    return $_SERVER['REQUEST_METHOD'] ?? 'CLI';
 }
 
 function requireMethod(string ...$methods): void {
