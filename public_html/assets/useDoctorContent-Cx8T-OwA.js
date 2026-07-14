@@ -290,14 +290,22 @@ function loadOverrides() {
   }
 }
 function saveOverrides(overrides) {
-  var _a;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
-  try {
-    const mod = require("../hooks/useQueries");
-    saveFrontPageContentWithSync(((_a = mod.getCanisterActor) == null ? void 0 : _a.call(mod)) ?? null);
-  } catch {
-    saveFrontPageContentWithSync(null);
+}
+async function syncOverridesToServer(overrides) {
+  const response = await fetch("/api/frontpage/save.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ doctorContentOverrides: overrides })
+  });
+  if (!response.ok) {
+    throw new Error("Server returned " + response.status);
   }
+  const json = await response.json();
+  if (!json.success) {
+    throw new Error(json.message || "Server save failed");
+  }
+  return json;
 }
 function deepMerge(base, overrides) {
   const result = { ...base };
@@ -313,25 +321,41 @@ function deepMerge(base, overrides) {
   return result;
 }
 function useDoctorContent() {
-  const [overrides, setOverrides] = reactExports.useState(loadOverrides);
+  const [overrides, setOverrides] = reactExports.useState({});
   reactExports.useEffect(() => {
-    if (navigator.onLine) {
-      fetch("/api/frontpage/get.php?key=doctorContentOverrides")
-        .then(r => r.ok ? r.json() : null)
-        .then(json => {
-          if (json && json.success && json.data) {
-            const serverOverrides = json.data;
-            if (serverOverrides && typeof serverOverrides === "object" && Object.keys(serverOverrides).length > 0) {
-              localStorage.setItem("doctorContentOverrides", JSON.stringify(serverOverrides));
-              setOverrides(serverOverrides);
+    let cancelled = false;
+    const loadFromServer = async () => {
+      if (navigator.onLine) {
+        try {
+          const response = await fetch("/api/frontpage/get.php?key=doctorContentOverrides");
+          if (response.ok) {
+            const json = await response.json();
+            if (json && json.success && json.data) {
+              const serverOverrides = json.data;
+              if (serverOverrides && typeof serverOverrides === "object" && Object.keys(serverOverrides).length > 0) {
+                if (!cancelled) {
+                  localStorage.setItem(STORAGE_KEY, JSON.stringify(serverOverrides));
+                  setOverrides(serverOverrides);
+                }
+                return;
+              }
             }
           }
-        })
-        .catch(e => console.warn("[doctorContent] Failed to load overrides from server:", e));
-    }
+        } catch (e) {
+          console.warn("[doctorContent] Failed to load from server:", e);
+        }
+      }
+      if (!cancelled) {
+        const local = loadOverrides();
+        if (Object.keys(local).length > 0) {
+          setOverrides(local);
+        }
+      }
+    };
+    loadFromServer();
+    return () => { cancelled = true; };
   }, []);
   const getContent = reactExports.useCallback(
-    // returns merged doctor data shape
     (doctorKey) => {
       const base = doctors[doctorKey];
       const docOverrides = overrides[doctorKey] || {};
@@ -340,42 +364,66 @@ function useDoctorContent() {
     [overrides]
   );
   const updateField = reactExports.useCallback(
-    // dynamic field value
-    (doctorKey, path, value) => {
-      setOverrides((prev) => {
-        const updated = { ...prev };
-        if (!updated[doctorKey]) updated[doctorKey] = {};
-        const parts = path.split(".");
-        let obj = updated[doctorKey];
-        for (let i = 0; i < parts.length - 1; i++) {
-          if (!obj[parts[i]] || typeof obj[parts[i]] !== "object") {
-            obj[parts[i]] = {};
-          }
-          obj = obj[parts[i]];
+    async (doctorKey, path, value) => {
+      const prev = overrides;
+      const updated = { ...prev };
+      if (!updated[doctorKey]) updated[doctorKey] = {};
+      const parts = path.split(".");
+      let obj = updated[doctorKey];
+      for (let i = 0; i < parts.length - 1; i++) {
+        if (!obj[parts[i]] || typeof obj[parts[i]] !== "object") {
+          obj[parts[i]] = {};
         }
-        obj[parts[parts.length - 1]] = value;
+        obj = obj[parts[i]];
+      }
+      obj[parts[parts.length - 1]] = value;
+      if (navigator.onLine) {
+        try {
+          await syncOverridesToServer(updated);
+          saveOverrides(updated);
+          setOverrides(updated);
+          return { success: true };
+        } catch (err) {
+          console.error("[doctorContent] Update failed:", err);
+          return { success: false, error: err.message || "Network error" };
+        }
+      } else {
         saveOverrides(updated);
-        return updated;
-      });
+        setOverrides(updated);
+        addToOfflineQueue("doctorContentOverrides", updated);
+        return { success: true, offline: true };
+      }
     },
-    []
+    [overrides]
   );
   const updateChambers = reactExports.useCallback(
-    // dynamic chambers array
-    (doctorKey, chambers) => {
-      setOverrides((prev) => {
-        const updated = {
-          ...prev,
-          [doctorKey]: {
-            ...prev[doctorKey] || {},
-            chambers
-          }
-        };
+    async (doctorKey, chambers) => {
+      const prev = overrides;
+      const updated = {
+        ...prev,
+        [doctorKey]: {
+          ...prev[doctorKey] || {},
+          chambers
+        }
+      };
+      if (navigator.onLine) {
+        try {
+          await syncOverridesToServer(updated);
+          saveOverrides(updated);
+          setOverrides(updated);
+          return { success: true };
+        } catch (err) {
+          console.error("[doctorContent] Chamber update failed:", err);
+          return { success: false, error: err.message || "Network error" };
+        }
+      } else {
         saveOverrides(updated);
-        return updated;
-      });
+        setOverrides(updated);
+        addToOfflineQueue("doctorContentOverrides", updated);
+        return { success: true, offline: true };
+      }
     },
-    []
+    [overrides]
   );
   const getAll = reactExports.useCallback(() => {
     return {
