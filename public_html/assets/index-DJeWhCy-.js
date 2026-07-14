@@ -51592,6 +51592,11 @@ function addToContentOfflineQueue(payload, updatedAt) {
   });
   setContentOfflineQueue(queue);
 }
+function addToOfflineQueue(key, value) {
+  if (!navigator.onLine) {
+    addToContentOfflineQueue({ [key]: value }, new Date().toISOString());
+  }
+}
 async function processContentOfflineQueue() {
   let queue = getContentOfflineQueue();
   if (queue.length === 0) return;
