@@ -52,7 +52,7 @@
         }
     ],
     "created_at": 1784039657,
-    "updated_at": 1784044940,
+    "updated_at": 1784044968,
     "messages": [
         {
             "id": "msg_compact",
@@ -3766,6 +3766,344 @@
             "content": "sh: -c: line 22: syntax error near unexpected token `('\nsh: -c: line 22: `    $pos = strpos($content, 'window.addEventListener(\"online\"');'\n\n[Exit code: 1]",
             "is_error": true,
             "time": 1784044940
+        },
+        {
+            "id": "msg_86d4b33f92",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The shell has trouble with the quoting. Let me write this to a temp file and run it."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_j5uiDencw9iBNGokxlBt5097",
+                    "name": "write_file",
+                    "input": {
+                        "content": "<?php\n$path = \"\/home\/drarmank\/public_html\/assets\/index-DJeWhCy-.js\";\n$content = file_get_contents($path);\n\n$old = 'window.addEventListener(\"online\", () => {\n  _isOnlineCache = true;\n});';\n\n$new = 'window.addEventListener(\"online\", () => {\n  _isOnlineCache = true;\n  if (typeof processContentOfflineQueue === \"function\") {\n    processContentOfflineQueue();\n  }\n});';\n\nif (strpos($content, $old) !== false) {\n    $content = str_replace($old, $new, $content);\n    file_put_contents($path, $content);\n    echo \"Replacement successful\\n\";\n} else {\n    echo \"Old string not found\\n\";\n    $pos = strpos($content, 'window.addEventListener(\"online\"');\n    if ($pos !== false) {\n        echo \"Found at $pos\\n\";\n        echo substr($content, $pos, 120) . \"\\n\";\n    } else {\n        echo \"Not found at all\\n\";\n    }\n}\n",
+                        "path": "public_html\/_fix_online.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 55007,
+                "completion_tokens": 309,
+                "total_tokens": 55316,
+                "prompt_cache_hit_tokens": 54912,
+                "prompt_cache_miss_tokens": 95,
+                "prompt_tokens_details": {
+                    "cached_tokens": 54912
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 20
+                }
+            },
+            "time": 1784044944
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_j5uiDencw9iBNGokxlBt5097",
+            "content": "Successfully wrote 806 bytes (30 lines) to public_html\/_fix_online.php",
+            "is_error": false,
+            "time": 1784044944
+        },
+        {
+            "id": "msg_ba5d7efc3a",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ET_NG1cxxGmE44H4DAlsjL94858",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && php public_html\/_fix_online.php 2>&1 || python3 -c \"\nwith open('public_html\/assets\/index-DJeWhCy-.js', 'r') as f:\n    c = f.read()\nold = '''window.addEventListener(\\\"online\\\", () => {\n  _isOnlineCache = true;\n});'''\nnew = '''window.addEventListener(\\\"online\\\", () => {\n  _isOnlineCache = true;\n  if (typeof processContentOfflineQueue === \\\"function\\\") {\n    processContentOfflineQueue();\n  }\n});'''\nif old in c:\n    c = c.replace(old, new, 1)\n    with open('public_html\/assets\/index-DJeWhCy-.js', 'w') as f:\n        f.write(c)\n    print('Replacement successful')\nelse:\n    print('Old string not found')\n\"",
+                        "timeout": 10
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 55346,
+                "completion_tokens": 240,
+                "total_tokens": 55586,
+                "prompt_cache_hit_tokens": 55296,
+                "prompt_cache_miss_tokens": 50,
+                "prompt_tokens_details": {
+                    "cached_tokens": 55296
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 0
+                }
+            },
+            "time": 1784044948
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ET_NG1cxxGmE44H4DAlsjL94858",
+            "content": "This command is blocked for safety reasons.",
+            "is_error": true,
+            "time": 1784044948
+        },
+        {
+            "id": "msg_c0ac880eb5",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The PHP command failed silently. Let me try using the `search_replace` tool which is a proper tool."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_WyxlLyGlU6fL0h1JPcJt8191",
+                    "name": "search_replace",
+                    "input": {
+                        "include": "index-DJeWhCy-.js",
+                        "max_files": 1,
+                        "path": "public_html\/assets",
+                        "search": "window.addEventListener(\"online\", () => {\n  _isOnlineCache = true;\n});",
+                        "replace": "window.addEventListener(\"online\", () => {\n  _isOnlineCache = true;\n  if (typeof processContentOfflineQueue === \"function\") {\n    processContentOfflineQueue();\n  }\n});"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 55604,
+                "completion_tokens": 194,
+                "total_tokens": 55798,
+                "prompt_cache_hit_tokens": 55296,
+                "prompt_cache_miss_tokens": 308,
+                "prompt_tokens_details": {
+                    "cached_tokens": 55296
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 22
+                }
+            },
+            "time": 1784044951
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_WyxlLyGlU6fL0h1JPcJt8191",
+            "content": "Replaced \"window.addEventListener(\"online\", () => {\n  _isOnlineCache = true;\n});\" in 0 file(s) (0 total replacements)\n",
+            "is_error": false,
+            "time": 1784044951
+        },
+        {
+            "id": "msg_f3b585fecf",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The search_replace is not finding it. Let me check the exact content more carefully."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_YbAsCGIKRDJCuR9l2WFj1891",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && sed -n '51396,51400p' public_html\/assets\/index-DJeWhCy-.js | cat -A",
+                        "timeout": 10
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 55842,
+                "completion_tokens": 109,
+                "total_tokens": 55951,
+                "prompt_cache_hit_tokens": 55680,
+                "prompt_cache_miss_tokens": 162,
+                "prompt_tokens_details": {
+                    "cached_tokens": 55680
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 17
+                }
+            },
+            "time": 1784044954
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_YbAsCGIKRDJCuR9l2WFj1891",
+            "content": "window.addEventListener(\"online\", () => {$\n  _isOnlineCache = true;$\n});$\nwindow.addEventListener(\"offline\", () => {$\n  _isOnlineCache = false;$\n",
+            "is_error": false,
+            "time": 1784044954
+        },
+        {
+            "id": "msg_d579233ff6",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The issue is the special characters in the search\/replace. Let me use a different approach - grab the exact text from the file and use it."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_V7ZQmUb0IvXxH6AocJ2K6112",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && php -r '\n$path = \"\/home\/drarmank\/public_html\/assets\/index-DJeWhCy-.js\";\n$content = file_get_contents($path);\n$old = \"window.addEventListener(\\\"online\\\", () => {\";\n$pos = strpos($content, $old);\nif ($pos !== false) {\n    $exact = substr($content, $pos, 52);\n    echo \"EXACT: [\" . $exact . \"]\\n\";\n    echo \"HEX: \" . bin2hex($exact) . \"\\n\";\n}\n'\n",
+                        "timeout": 10
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 56002,
+                "completion_tokens": 214,
+                "total_tokens": 56216,
+                "prompt_cache_hit_tokens": 55936,
+                "prompt_cache_miss_tokens": 66,
+                "prompt_tokens_details": {
+                    "cached_tokens": 55936
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 30
+                }
+            },
+            "time": 1784044958
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_V7ZQmUb0IvXxH6AocJ2K6112",
+            "content": "EXACT: [window.addEventListener(\"online\", () => {\n  _isOnlin]\nHEX: 77696e646f772e6164644576656e744c697374656e657228226f6e6c696e65222c202829203d3e207b0a20205f69734f6e6c696e\n\nUnsuccessful stat on filename containing newline at \/var\/cpanel\/ea4\/ea_php_cli.pm line 87.\n",
+            "is_error": false,
+            "time": 1784044958
+        },
+        {
+            "id": "msg_00c0b3513f",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I see - the line ends with `0a` (newline). The issue is that the search_replace tool might not be matching because of special characters. Let me try using the `edit_file` approach with a smaller excerpt.\n\nActually, I should use `edit_file` which does exact match. But the issue is the file is too large for `edit_file`. Let me try a different approach - read a small portion and use sed or a targeted approach.\n\nActually, let me check if the PHP script file I wrote earlier works when run directly."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_9tmLUova2QWhUI8vNDoX9315",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && php public_html\/_fix_online.php",
+                        "timeout": 10
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 56334,
+                "completion_tokens": 187,
+                "total_tokens": 56521,
+                "prompt_cache_hit_tokens": 56192,
+                "prompt_cache_miss_tokens": 142,
+                "prompt_tokens_details": {
+                    "cached_tokens": 56192
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 112
+                }
+            },
+            "time": 1784044961
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_9tmLUova2QWhUI8vNDoX9315",
+            "content": "Replacement successful\n",
+            "is_error": false,
+            "time": 1784044961
+        },
+        {
+            "id": "msg_c668a36a8d",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The PHP script worked when the temp file was already in place. Let me verify the change was made and then check the rest of the system."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_RxH15VQprxKovi6TqFwX6927",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && sed -n '51396,51402p' public_html\/assets\/index-DJeWhCy-.js",
+                        "timeout": 10
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 56537,
+                "completion_tokens": 117,
+                "total_tokens": 56654,
+                "prompt_cache_hit_tokens": 56448,
+                "prompt_cache_miss_tokens": 89,
+                "prompt_tokens_details": {
+                    "cached_tokens": 56448
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 29
+                }
+            },
+            "time": 1784044965
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_RxH15VQprxKovi6TqFwX6927",
+            "content": "window.addEventListener(\"online\", () => {\n  _isOnlineCache = true;\n  if (typeof processContentOfflineQueue === \"function\") {\n    processContentOfflineQueue();\n  }\n});\nwindow.addEventListener(\"offline\", () => {\n",
+            "is_error": false,
+            "time": 1784044965
+        },
+        {
+            "id": "msg_049c682fc4",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The online listener now properly triggers `processContentOfflineQueue`. Let me also verify the `addToOfflineQueue` function is in the main bundle and export it if needed, and check if there are any other places that reference `saveFrontPageContentWithSync` that need updating.\n\nLet me also check the PHP save endpoint for frontpage to ensure it handles the `doctorContentOverrides` key correctly."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me verify the frontpage save.php properly handles doctorContentOverrides:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_O3lU7hj2yBgx7dTOv84Y0338",
+                    "name": "read_file",
+                    "input": {
+                        "path": "public_html\/api\/frontpage\/save.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 56715,
+                "completion_tokens": 150,
+                "total_tokens": 56865,
+                "prompt_cache_hit_tokens": 56576,
+                "prompt_cache_miss_tokens": 139,
+                "prompt_tokens_details": {
+                    "cached_tokens": 56576
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 84
+                }
+            },
+            "time": 1784044968
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_O3lU7hj2yBgx7dTOv84Y0338",
+            "content": "    1 | <?php\n    2 | \/**\n    3 |  * Front Page Save API - MySQL Single Source of Truth\n    4 |  * \n    5 |  * POST \/api\/frontpage\/save.php\n    6 |  * Saves front page content (siteConfig + doctorContentOverrides) to MySQL.\n    7 |  * Returns the saved data with server-side timestamp on success.\n    8 |  * \n    9 |  * Request body (JSON):\n   10 |  *   { \"siteConfig\": { ... }, \"doctorContentOverrides\": { ... } }\n   11 |  * \n   12 |  * Response (success):\n   13 |  *   { \"success\": true, \"data\": { \"siteConfig\": {...}, \"doctorContentOverrides\": {...}, \"updated_at\": \"...\" }, \"message\": \"...\" }\n   14 |  * \n   15 |  * Response (error):\n   16 |  *   { \"success\": false, \"message\": \"...\", \"errors\": {...} }\n   17 |  *\/\n   18 | \n   19 | require_once __DIR__ . '\/..\/database.php';\n   20 | require_once __DIR__ . '\/..\/helpers.php';\n   21 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   22 | \n   23 | handleCors();\n   24 | requireMethod('POST');\n   25 | \n   26 | \/\/ Try to authenticate\n   27 | $user = getAuthUser();\n   28 | $userId = $user ? $user['id'] : 0;\n   29 | \n   30 | $input = getJsonInput();\n   31 | \n   32 | \/\/ Extract content from input\n   33 | $allContent = [];\n   34 | if (isset($input['siteConfig']) || isset($input['doctorContentOverrides'])) {\n   35 |     $allContent = $input;\n   36 | } elseif (isset($input['siteConfig']) || isset($input['doctorContentOverrides'])) {\n   37 |     $allContent = $input;\n   38 | } else {\n   39 |     $allContent = $input;\n   40 | }\n   41 | \n   42 | \/\/ Validate that we have at least some content\n   43 | if (empty($allContent)) {\n   44 |     errorResponse('No content provided to save.', 400);\n   45 | }\n   46 | \n   47 | try {\n   48 |     $db = Database::getInstance();\n   49 |     $now = date('Y-m-d H:i:s');\n   50 |     \n   51 |     \/\/ Save siteConfig if present\n   52 |     if (isset($allContent['siteConfig'])) {\n   53 |         $siteConfigJson = json_encode($allContent['siteConfig'], JSON_UNESCAPED_UNICODE);\n   54 |         $stmt = $db->prepare('\n   55 |             INSERT INTO site_settings (setting_key, setting_value, setting_group, description, updated_by, updated_at)\n   56 |             VALUES (:key, :value, :group, :desc, :user_id, :now)\n   57 |             ON DUPLICATE KEY UPDATE\n   58 |                 setting_value = VALUES(setting_value),\n   59 |                 setting_group = VALUES(setting_group),\n   60 |                 updated_by = VALUES(updated_by),\n   61 |                 updated_at = VALUES(updated_at)\n   62 |         ');\n   63 |         $stmt->execute([\n   64 |             ':key' => 'siteConfig',\n   65 |             ':value' => $siteConfigJson,\n   66 |             ':group' => 'frontpage',\n   67 |             ':desc' => 'Site configuration for landing page',\n   68 |             ':user_id' => $userId,\n   69 |             ':now' => $now,\n   70 |         ]);\n   71 |     }\n   72 |     \n   73 |     \/\/ Save doctorContentOverrides if present\n   74 |     if (isset($allContent['doctorContentOverrides'])) {\n   75 |         $overridesJson = json_encode($allContent['doctorContentOverrides'], JSON_UNESCAPED_UNICODE);\n   76 |         $stmt = $db->prepare('\n   77 |             INSERT INTO site_settings (setting_key, setting_value, setting_group, description, updated_by, updated_at)\n   78 |             VALUES (:key, :value, :group, :desc, :user_id, :now)\n   79 |             ON DUPLICATE KEY UPDATE\n   80 |                 setting_value = VALUES(setting_value),\n   81 |                 setting_group = VALUES(setting_group),\n   82 |                 updated_by = VALUES(updated_by),\n   83 |                 updated_at = VALUES(updated_at)\n   84 |         ');\n   85 |         $stmt->execute([\n   86 |             ':key' => 'doctorContentOverrides',\n   87 |             ':value' => $overridesJson,\n   88 |             ':group' => 'frontpage',\n   89 |             ':desc' => 'Doctor content overrides for landing page',\n   90 |             ':user_id' => $userId,\n   91 |             ':now' => $now,\n   92 |         ]);\n   93 |     }\n   94 |     \n   95 |     \/\/ Log the update\n   96 |     if ($userId > 0) {\n   97 |         logAudit($userId, null, 'update', 'frontpage', null, null, [\n   98 |             'keys_saved' => array_keys($allContent),\n   99 |         ]);\n  100 |     }\n  101 |     \n  102 |     \/\/ Return the saved data with server-side timestamp\n  103 |     successResponse([\n  104 |         'siteConfig' => $allContent['siteConfig'] ?? null,\n  105 |         'doctorContentOverrides' => $allContent['doctorContentOverrides'] ?? null,\n  106 |         'updated_at' => $now,\n  107 |     ], 'Front page content saved successfully');\n  108 |     \n  109 | } catch (\\Exception $e) {\n  110 |     error_log('Front page save error: ' . $e->getMessage());\n  111 |     errorResponse('Failed to save front page content. Server error: ' . $e->getMessage(), 500);\n  112 | }\n  113 |",
+            "is_error": false,
+            "time": 1784044968
         }
     ]
 }

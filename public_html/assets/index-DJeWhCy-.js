@@ -51395,6 +51395,9 @@ function resolveConflict(entityId, choice) {
 let _isOnlineCache = navigator.onLine;
 window.addEventListener("online", () => {
   _isOnlineCache = true;
+  if (typeof processContentOfflineQueue === "function") {
+    processContentOfflineQueue();
+  }
 });
 window.addEventListener("offline", () => {
   _isOnlineCache = false;
