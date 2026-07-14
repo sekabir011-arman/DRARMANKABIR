@@ -44,3 +44,27 @@ Stack trace:
 #0 Command line code(11): PDOStatement->execute(Array)
 #1 {main}
   thrown in Command line code on line 11
+[15-Jul-2026 01:01:18 Asia/Dhaka] PHP Warning:  Undefined array key "REQUEST_METHOD" in /home/drarmank/public_html/api/helpers.php on line 269
+[15-Jul-2026 01:01:18 Asia/Dhaka] PHP Warning:  Undefined array key "REQUEST_METHOD" in /home/drarmank/public_html/api/helpers.php on line 65
+[15-Jul-2026 01:01:18 Asia/Dhaka] PHP Fatal error:  Uncaught TypeError: getMethod(): Return value must be of type string, null returned in /home/drarmank/public_html/api/helpers.php:65
+Stack trace:
+#0 /home/drarmank/public_html/api/helpers.php(69): getMethod()
+#1 /home/drarmank/public_html/api/frontpage/get.php(21): requireMethod('GET')
+#2 {main}
+  thrown in /home/drarmank/public_html/api/helpers.php on line 65
+[15-Jul-2026 01:01:21 Asia/Dhaka] PHP Warning:  Undefined array key "REQUEST_METHOD" in /home/drarmank/public_html/api/helpers.php on line 269
+[15-Jul-2026 01:01:21 Asia/Dhaka] PHP Warning:  Undefined array key "REQUEST_METHOD" in /home/drarmank/public_html/api/helpers.php on line 65
+[15-Jul-2026 01:01:21 Asia/Dhaka] PHP Fatal error:  Uncaught TypeError: getMethod(): Return value must be of type string, null returned in /home/drarmank/public_html/api/helpers.php:65
+Stack trace:
+#0 /home/drarmank/public_html/api/helpers.php(69): getMethod()
+#1 /home/drarmank/public_html/api/frontpage/get.php(21): requireMethod('GET')
+#2 {main}
+  thrown in /home/drarmank/public_html/api/helpers.php on line 65
+[15-Jul-2026 01:01:25 Asia/Dhaka] PHP Warning:  Undefined array key "REQUEST_METHOD" in /home/drarmank/public_html/api/helpers.php on line 269
+[15-Jul-2026 01:01:25 Asia/Dhaka] PHP Warning:  Undefined array key "REQUEST_METHOD" in /home/drarmank/public_html/api/helpers.php on line 65
+[15-Jul-2026 01:01:25 Asia/Dhaka] PHP Fatal error:  Uncaught TypeError: getMethod(): Return value must be of type string, null returned in /home/drarmank/public_html/api/helpers.php:65
+Stack trace:
+#0 /home/drarmank/public_html/api/helpers.php(69): getMethod()
+#1 /home/drarmank/public_html/api/frontpage/get.php(21): requireMethod('GET')
+#2 {main}
+  thrown in /home/drarmank/public_html/api/helpers.php on line 65
