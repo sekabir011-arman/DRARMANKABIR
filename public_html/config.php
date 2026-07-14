@@ -55,6 +55,12 @@ function cfg(string $key, mixed $default = null): mixed {
 // Store globally so other files can access env config directly
 $GLOBALS['env_config'] = $envConfig;
 
+// ─── Error Reporting (set early to prevent warnings from leaking to output) ─
+error_reporting(E_ALL);
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+ini_set('error_log', __DIR__ . '/../logs/php-error.log');
+
 // ─── Database Configuration ────────────────────────────────────────────────
 if (!defined('DB_HOST')) define('DB_HOST', cfg('DB_HOST', '127.0.0.1'));
 if (!defined('DB_NAME')) define('DB_NAME', cfg('DB_NAME', 'drarmank_drarmank_care'));

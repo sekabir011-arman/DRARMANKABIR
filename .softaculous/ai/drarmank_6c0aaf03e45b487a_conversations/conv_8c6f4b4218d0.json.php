@@ -8,26 +8,31 @@
         {
             "priority": "high",
             "content": "Fix PHP constant redefinition warnings - wrap defines in defined() checks",
+            "status": "completed"
+        },
+        {
+            "priority": "high",
+            "content": "Fix DialogContent accessibility warnings - add DialogDescription to all dialog instances",
             "status": "in_progress"
         },
         {
             "priority": "high",
-            "content": "Fix SyntaxError: Unexpected end of input - add fallback for failed JSON.parse",
+            "content": "Fix SyntaxError: Unexpected end of input - add localStorage validation cleanup",
             "status": "pending"
         },
         {
             "priority": "medium",
-            "content": "Fix DialogContent accessibility warning",
+            "content": "Clean up duplicated error_reporting block in config.php",
             "status": "pending"
         },
         {
             "priority": "low",
-            "content": "Service Worker messaging error (likely Chrome extension, can ignore)",
+            "content": "Service Worker messaging error (Chrome extension)",
             "status": "completed"
         }
     ],
     "created_at": 1784055547,
-    "updated_at": 1784056131,
+    "updated_at": 1784056820,
     "messages": [
         {
             "id": "msg_955a089a7e",
@@ -1756,6 +1761,1055 @@
             "content": "Edited public_html\/config.php (1 replacement)\n- \/\/ \u2500\u2500\u2500 Database Configuration \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n- define('DB_HOST', cfg('DB_HOST', '127.0.0.1'));\n- define('DB_NAME', cfg('DB_NAME', 'drarmank_drarmank_care'));\n- define('DB_USER', cfg('DB_USER', 'drarmank_drarmank_care_user'));\n- define('DB_PASS', cfg('DB_PASS', 'zosid01197247219'));\n- define('DB_CHARSET', 'utf8mb4');\n- \n- \/\/ \u2500\u2500\u2500 Application Configuration \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n- define('APP_NAME', 'Dr. Arman Kabir Care');\n- define('APP_VERSION', '2.0.0');\n- define('APP_URL', cfg('APP_URL', 'https:\/\/drarmankabir.com'));\n- define('API_URL', APP_URL . '\/api');\n- \n- \/\/ \u2500\u2500\u2500 Security Configuration \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n- define('JWT_SECRET', cfg('JWT_SECRET', 'change-this-to-a-random-secret-in-production'));\n- define('JWT_EXPIRY', 86400); \/\/ 24 hours in seconds\n- define('SESSION_LIFETIME', 86400 * 7); \/\/ 7 days\n- define('CSRF_TOKEN_LIFETIME', 3600); \/\/ 1 hour\n- \n- \/\/ \u2500\u2500\u2500 Upload Configuration \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n- define('UPLOAD_DIR', __DIR__ . '\/uploads');\n- define('UPLOAD_URL', '\/uploads');\n- define('MAX_UPLOAD_SIZE', 10 * 1024 * 1024); \/\/ 10MB\n- define('ALLOWED_EXTENSIONS', ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx']);\n- \n- \/\/ \u2500\u2500\u2500 Rate Limiting \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n- define('RATE_LIMIT_MAX', 100);\n- define('RATE_LIMIT_WINDOW', 60); \/\/ seconds\n+ \/\/ \u2500\u2500\u2500 Database Configuration \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n+ if (!defined('DB_HOST')) define('DB_HOST', cfg('DB_HOST', '127.0.0.1'));\n+ if (!defined('DB_NAME')) define('DB_NAME', cfg('DB_NAME', 'drarmank_drarmank_care'));\n+ if (!defined('DB_USER')) define('DB_USER', cfg('DB_USER', 'drarmank_drarmank_care_user'));\n+ if (!defined('DB_PASS')) define('DB_PASS', cfg('DB_PASS', 'zosid01197247219'));\n+ if (!defined('DB_CHARSET')) define('DB_CHARSET', 'utf8mb4');\n+ \n+ \/\/ \u2500\u2500\u2500 Application Configuration \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n+ if (!defined('APP_NAME')) define('APP_NAME', 'Dr. Arman Kabir Care');\n+ if (!defined('APP_VERSION')) define('APP_VERSION', '2.0.0');\n+ if (!defined('APP_URL')) define('APP_URL', cfg('APP_URL', 'https:\/\/drarmankabir.com'));\n+ if (!defined('API_URL')) define('API_URL', APP_URL . '\/api');\n+ \n+ \/\/ \u2500\u2500\u2500 Security Configuration \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n+ if (!defined('JWT_SECRET')) define('JWT_SECRET', cfg('JWT_SECRET', 'change-this-to-a-random-secret-in-production'));\n+ if (!defined('JWT_EXPIRY')) define('JWT_EXPIRY', 86400); \/\/ 24 hours in seconds\n+ if (!defined('SESSION_LIFETIME')) define('SESSION_LIFETIME', 86400 * 7); \/\/ 7 days\n+ if (!defined('CSRF_TOKEN_LIFETIME')) define('CSRF_TOKEN_LIFETIME', 3600); \/\/ 1 hour\n+ \n+ \/\/ \u2500\u2500\u2500 Upload Configuration \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n+ if (!defined('UPLOAD_DIR')) define('UPLOAD_DIR', __DIR__ . '\/uploads');\n+ if (!defined('UPLOAD_URL')) define('UPLOAD_URL', '\/uploads');\n+ if (!defined('MAX_UPLOAD_SIZE')) define('MAX_UPLOAD_SIZE', 10 * 1024 * 1024); \/\/ 10MB\n+ if (!defined('ALLOWED_EXTENSIONS')) define('ALLOWED_EXTENSIONS', ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx']);\n+ \n+ \/\/ \u2500\u2500\u2500 Rate Limiting \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n+ if (!defined('RATE_LIMIT_MAX')) define('RATE_LIMIT_MAX', 100);\n+ if (!defined('RATE_LIMIT_WINDOW')) define('RATE_LIMIT_WINDOW', 60); \/\/ seconds",
             "is_error": false,
             "time": 1784056131
+        },
+        {
+            "id": "msg_c0ad06422e",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784056666
+        },
+        {
+            "id": "msg_159531b3e8",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me check the SQLSTATE[HY093] error in appointments\/create.php - that's likely causing the \"Unexpected end of input\" because the API response has non-JSON content (PHP warnings bleeding into the response).\n\nThe \"Unexpected end of input\" is likely happening when the JS frontend tries to parse a JSON response that contains PHP warnings (from the constant redefinition). The PHP warnings get mixed into the JSON output, making it invalid JSON. But wait - PHP warnings go to stderr, not stdout. However, if `display_errors` is on, they would go to stdout and corrupt the JSON.\n\nLet me check the .htaccess or php.ini config for error display settings.\n\nActually, looking at the error_log for frontpage, the warnings are:\n```\nPHP Warning: Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\nPHP Warning: Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n```\n\nThese warnings happen because config.php is being included multiple times. The `require_once` should prevent this... unless something else is including config.php directly. Let me check.\n\nDatabase.php does `require_once __DIR__ . '\/..\/config.php';` which uses __DIR__ (the api\/ directory), going up one level to public_html\/config.php.\n\nHelpers.php does `require_once __DIR__ . '\/..\/config.php';` - same thing.\n\nSo when an API endpoint like \/api\/frontpage\/get.php does:\n1. `require_once __DIR__ . '\/..\/database.php';` \u2192 includes config.php once\n2. `require_once __DIR__ . '\/..\/helpers.php';` \u2192 includes config.php again (but require_once should prevent redefinition)\n\nWait - helpers.php uses `require_once`, and database.php uses `require_once`... so config.php should only be loaded once.\n\nBut the error says the constants are being defined twice. Let me check if maybe there's an auto-prepend file or if config.php is being included via some other mechanism.\n\nActually wait - looking at helpers.php line 8: `require_once __DIR__ . '\/..\/config.php';`\nAnd database.php line 9: `require_once __DIR__ . '\/..\/config.php';`\n\nBoth use `require_once` with `__DIR__ . '\/..\/config.php'`. Since __DIR__ for helpers.php is `\/home\/drarmank\/public_html\/api\/` and __DIR__ for database.php is `\/home\/drarmank\/public_html\/api\/`, they both resolve to the same file. So require_once should work fine.\n\nLet me look more carefully at the error_log. It says the warnings are happening on lines 58 and 61 of config.php. Let me check what's on those lines in the file I just edited.\n\nAfter my edit, line 58 would still be whatever the current version has. Let me check the line numbers.\n\nActually, my edit replaced all the define() calls with if(!defined()) versions. But the original error was occurring because `define()` was being called twice for the same constant. This could happen if config.php is being included by two different paths that PHP doesn't recognize as the same file (e.g., symlinks, different paths).\n\nWait - the key issue: config.php is at `\/home\/drarmank\/public_html\/config.php`. But what if there's also a copy somewhere? Or what if there's an auto-prepend?\n\nLet me also check if there's a `.user.ini` file in public_html."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ImqMoocWj9IfeMTg9wHm3357",
+                    "name": "bash",
+                    "input": {
+                        "command": "find \/home\/drarmank -name \".user.ini\" -o -name \".htaccess\" -path \"*\/public_html\/.htaccess\" 2>\/dev\/null"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_BwWfW8LrAHFblB2tFKut3434",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && php -r \"echo realpath('public_html\/config.php') . PHP_EOL;\" 2>&1"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 58231,
+                "completion_tokens": 873,
+                "total_tokens": 59104,
+                "prompt_cache_hit_tokens": 52224,
+                "prompt_cache_miss_tokens": 6007,
+                "prompt_tokens_details": {
+                    "cached_tokens": 52224
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 736
+                }
+            },
+            "time": 1784056676
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ImqMoocWj9IfeMTg9wHm3357",
+            "content": "\/home\/drarmank\/public_html\/.htaccess\n",
+            "is_error": false,
+            "time": 1784056676
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_BwWfW8LrAHFblB2tFKut3434",
+            "content": "\/home\/drarmank\/public_html\/config.php\n",
+            "is_error": false,
+            "time": 1784056676
+        },
+        {
+            "id": "msg_faf064a3e3",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The constant redefinition warnings are happening in the error logs. Since I've already fixed the config.php to use `if (!defined(...))` checks, this should resolve those warnings. The warnings were likely occurring because `config.php` was being require_once'd from two different paths that PHP treats differently (maybe aliased paths or LiteSpeed internal routing).\n\nNow let me check the `appointments\/create.php` which has the `HY093` error (invalid parameter number) - that could cause the \"Unexpected end of input\" because the PHP error might leak into the response.\n\nLet me also check the frontpage error logs to see if there are PHP warnings leaking into the JSON response.\n\nActually, looking more carefully at the \"SyntaxError: Unexpected end of input\" at index-DJeWhCy-.js:20108 - line 20108 in the JS file is in the React error handling code, not in a JSON.parse line. Let me look at the stack trace more carefully. The error happens multiple times (line 20108 and it says it's repeated 15 times). It could be from a failed JSON.parse somewhere, possibly from the API response.\n\nThe issue chain seems to be:\n1. PHP config.php is loaded multiple times \u2192 PHP warnings (constants already defined)\n2. If `display_errors` is on, these warnings get printed to the output buffer BEFORE the JSON response\n3. The browser receives: `PHP Warning: ...` + valid JSON \u2192 invalid JSON\n4. JSON.parse fails with \"Unexpected end of input\" (or \"Unexpected token\")\n\nActually, since `ini_set('display_errors', '0')` is set in config.php line 89, warnings should NOT be printed to the output. They go to the error log. So the PHP warnings aren't corrupting the JSON.\n\nBut wait - what if there's an error BEFORE config.php is loaded? If a PHP error occurs during the early bootstrap phase (before `display_errors` is set to 0), it could leak into the output.\n\nLet me check what's happening more carefully. The preload script in index.html does an XHR to \/api\/frontpage\/get.php. If there are PHP errors during that request, the response might be corrupted.\n\nLet me look at the actual \"Unexpected end of input\" error more carefully. In the browser console, it says `index-DJeWhCy-.js:20108 SyntaxError: Unexpected end of input`. Line 20108 is in the React error handling code. Let me look at the context around that line again.\n\nWait, line 20108 is not in a JSON.parse area. Let me check what function is at line 20108."
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me dig into the \"Unexpected end of input\" error more deeply. The issue might be from corrupted API responses."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_IMAdbWpyq6wdVasxl1j79693",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && awk 'NR>=20090 && NR<=20115' index-DJeWhCy-.js"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_PHqWVtuZPw1KAYY1y64r4192",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && grep -rn \"display_errors\\|error_reporting\" --include=\"*.php\" public_html\/ | head -20"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_02_3tYTf99ECgLx7Y4j7vLL5729",
+                    "name": "read_file",
+                    "input": {
+                        "path": "public_html\/api\/appointments\/create.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 59145,
+                "completion_tokens": 749,
+                "total_tokens": 59894,
+                "prompt_cache_hit_tokens": 59008,
+                "prompt_cache_miss_tokens": 137,
+                "prompt_tokens_details": {
+                    "cached_tokens": 59008
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 555
+                }
+            },
+            "time": 1784056685
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_IMAdbWpyq6wdVasxl1j79693",
+            "content": "  if (\"object\" === typeof window && \"function\" === typeof window.ErrorEvent) {\n    var event = new window.ErrorEvent(\"error\", {\n      bubbles: true,\n      cancelable: true,\n      message: \"object\" === typeof error && null !== error && \"string\" === typeof error.message ? String(error.message) : String(error),\n      error\n    });\n    if (!window.dispatchEvent(event)) return;\n  } else if (\"object\" === typeof process && \"function\" === typeof process.emit) {\n    process.emit(\"uncaughtException\", error);\n    return;\n  }\n  console.error(error);\n};\nfunction defaultOnUncaughtError(error) {\n  reportGlobalError(error);\n}\nfunction defaultOnCaughtError(error) {\n  console.error(error);\n}\nfunction defaultOnRecoverableError(error) {\n  reportGlobalError(error);\n}\nfunction logUncaughtError(root2, errorInfo) {\n  try {\n    var onUncaughtError = root2.onUncaughtError;\n",
+            "is_error": false,
+            "time": 1784056685
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_PHqWVtuZPw1KAYY1y64r4192",
+            "content": "public_html\/phpmyadmin\/vendor\/composer\/platform_check.php:15:    if (!ini_get('display_errors')) {\npublic_html\/phpmyadmin\/vendor\/symfony\/dependency-injection\/Dumper\/Preloader.php:43:            if (error_reporting() & $t) {\npublic_html\/phpmyadmin\/vendor\/autoload.php:10:    if (!ini_get('display_errors')) {\npublic_html\/phpmyadmin\/show_config_errors.php:34:if (function_exists('error_reporting')) {\npublic_html\/phpmyadmin\/show_config_errors.php:35:    error_reporting(E_ALL);\npublic_html\/phpmyadmin\/libraries\/classes\/Util.php:2679:                return ! in_array('error_reporting', $disabled);\npublic_html\/phpmyadmin\/libraries\/classes\/Util.php:2683:        return function_exists('error_reporting');\npublic_html\/phpmyadmin\/libraries\/classes\/Config.php:18:use function error_reporting;\npublic_html\/phpmyadmin\/libraries\/classes\/Config.php:352:            $oldErrorReporting = error_reporting(0);\npublic_html\/phpmyadmin\/libraries\/classes\/Config.php:368:            error_reporting($oldErrorReporting);\npublic_html\/phpmyadmin\/libraries\/classes\/ErrorHandler.php:14:use function error_reporting;\npublic_html\/phpmyadmin\/libraries\/classes\/ErrorHandler.php:80:        $this->errorReporting = error_reporting();\npublic_html\/phpmyadmin\/libraries\/classes\/ErrorHandler.php:204:            $isSilenced = ! (error_reporting() & $errno);\npublic_html\/phpmyadmin\/libraries\/classes\/ErrorHandler.php:206:                $isSilenced = error_reporting() == 0;\npublic_html\/api\/setup-test.php:9:error_reporting(E_ALL);\npublic_html\/api\/setup-test.php:10:ini_set('display_errors', '1');\npublic_html\/config.php:59:error_reporting(E_ALL);\npublic_html\/config.php:60:ini_set('display_errors', '0');\npublic_html\/config.php:94:error_reporting(E_ALL);\npublic_html\/config.php:95:ini_set('display_errors', '0');\n",
+            "is_error": false,
+            "time": 1784056685
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_02_3tYTf99ECgLx7Y4j7vLL5729",
+            "content": "    1 | <?php\n    2 | \/**\n    3 |  * Create Appointment API\n    4 |  * \n    5 |  * POST \/api\/appointments\/create.php\n    6 |  *\/\n    7 | \n    8 | require_once __DIR__ . '\/..\/database.php';\n    9 | require_once __DIR__ . '\/..\/helpers.php';\n   10 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   11 | \n   12 | handleCors();\n   13 | requireMethod('POST');\n   14 | \n   15 | $user = requireAuth();\n   16 | $input = getJsonInput();\n   17 | \n   18 | $missing = validateRequired($input, ['appointment_date']);\n   19 | if ($missing) {\n   20 |     errorResponse('Missing required fields: appointment_date', 400, ['missing_fields' => $missing]);\n   21 | }\n   22 | \n   23 | \/\/ Validate appointment type\n   24 | $allowedTypes = ['regular', 'emergency', 'follow-up', 'consultation'];\n   25 | $appointmentType = $input['type'] ?? 'regular';\n   26 | if (!in_array($appointmentType, $allowedTypes)) {\n   27 |     errorResponse('Invalid appointment type. Allowed: ' . implode(', ', $allowedTypes), 400);\n   28 | }\n   29 | \n   30 | \/\/ Validate appointment status\n   31 | $allowedStatuses = ['scheduled', 'confirmed', 'checked_in', 'in_progress', 'completed', 'cancelled', 'no_show'];\n   32 | $appointmentStatus = $input['status'] ?? 'scheduled';\n   33 | if (!in_array($appointmentStatus, $allowedStatuses)) {\n   34 |     errorResponse('Invalid appointment status. Allowed: ' . implode(', ', $allowedStatuses), 400);\n   35 | }\n   36 | \n   37 | try {\n   38 |     $db = Database::getInstance();\n   39 |     \n   40 |     \/\/ Generate serial number for the day\n   41 |     $date = $input['appointment_date'];\n   42 |     $doctorId = isset($input['doctor_id']) ? (int)$input['doctor_id'] : null;\n   43 |     \n   44 |     \/\/ Use separate query for serial number to avoid PDO duplicate named parameter issue\n   45 |     $serialSql = 'SELECT COALESCE(MAX(serial_number), 0) + 1 as next_serial FROM appointments WHERE appointment_date = :date';\n   46 |     $serialParams = [':date' => $date];\n   47 |     if ($doctorId) {\n   48 |         $serialSql .= ' AND doctor_id = :did';\n   49 |         $serialParams[':did'] = $doctorId;\n   50 |     } else {\n   51 |         $serialSql .= ' AND doctor_id IS NULL';\n   52 |     }\n   53 |     $serialStmt = $db->prepare($serialSql);\n   54 |     $serialStmt->execute($serialParams);\n   55 |     $serialNumber = (int)$serialStmt->fetch()['next_serial'];\n   56 |     \n   57 |     $stmt = $db->prepare('\n   58 |         INSERT INTO appointments (patient_id, patient_name, patient_phone, doctor_id, appointment_date, appointment_time, serial_number, `type`, `status`, chief_complaint, notes, is_public_request, created_by)\n   59 |         VALUES (:patient_id, :patient_name, :patient_phone, :doctor_id, :appointment_date, :appointment_time, :serial_number, :appt_type, :appt_status, :chief_complaint, :notes, :is_public_request, :created_by)\n   60 |     ');\n   61 |     \n   62 |     $stmt->execute([\n   63 |         ':patient_id' => isset($input['patient_id']) ? (int)$input['patient_id'] : null,\n   64 |         ':patient_name' => $input['patient_name'] ?? null,\n   65 |         ':patient_phone' => $input['patient_phone'] ?? null,\n   66 |         ':doctor_id' => $doctorId,\n   67 |         ':appointment_date' => $date,\n   68 |         ':appointment_time' => $input['appointment_time'] ?? null,\n   69 |         ':serial_number' => $serialNumber,\n   70 |         ':appt_type' => $appointmentType,\n   71 |         ':appt_status' => $appointmentStatus,\n   72 |         ':chief_complaint' => $input['chief_complaint'] ?? null,\n   73 |         ':notes' => $input['notes'] ?? null,\n   74 |         ':is_public_request' => isset($input['is_public_request']) ? (int)$input['is_public_request'] : 0,\n   75 |         ':created_by' => $user['id'],\n   76 |     ]);\n   77 |     \n   78 |     $appointmentId = (int)$db->lastInsertId();\n   79 |     \n   80 |     logAudit($user['id'], null, 'create', 'appointment', $appointmentId);\n   81 |     \n   82 |     successResponse(['id' => $appointmentId, 'serial_number' => $serialNumber], 'Appointment created successfully');\n   83 |     \n   84 | } catch (\\Exception $e) {\n   85 |     error_log('Create appointment error: ' . $e->getMessage());\n   86 |     errorResponse('Failed to create appointment', 500);\n   87 | }\n   88 |",
+            "is_error": false,
+            "time": 1784056685
+        },
+        {
+            "id": "msg_f6c95dc755",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I see the issue with config.php - it has duplicate lines for error_reporting and ini_set:\n\nLine 59-60:\n```\nerror_reporting(E_ALL);\nini_set('display_errors', '0');\n```\n\nLine 94-95:\n```\nerror_reporting(E_ALL);\nini_set('display_errors', '0');\n```\n\nThese are duplicated! That was probably added by mistake. Let me check.\n\nAlso, looking at the appointments\/create.php - line 58 has `patient_name` and `patient_phone` in the INSERT, but the issue with HY093 (Invalid parameter number) could be because the `patient_name` column doesn't exist in the appointments table, or it's a parameter mismatch.\n\nBut wait, the user is asking me to fix the errors they're seeing:\n\n1. `Warning: Missing 'Description' or 'aria-describedby={undefined}' for {DialogContent}.` - This is a React Radix UI accessibility warning. It means a Dialog is being used without a `DialogDescription` component. This is a frontend code issue.\n\n2. `SyntaxError: Unexpected end of input` - This is happening multiple times (15 times according to the log). This could be from a JavaScript JSON.parse() failing.\n\n3. `Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received` - This is typically from Chrome extensions or service workers.\n\nThe first two errors are from the React SPA (index-DJeWhCy-.js). Since these are minified JS files, I can't easily edit them. But let me see what I can do.\n\nFor the DialogContent warning - this is a Radix UI accessibility warning. It's informational and doesn't break functionality. The app is using `<DialogContent>` without a `<DialogDescription>` inside the Dialog. To fix this, we'd need to find where DialogContent is used in the source code and add DialogDescription.\n\nFor the \"Unexpected end of input\" - this could be from a failed fetch\/API call where the response body is truncated or corrupted. Or it could be from localStorage.getItem() returning invalid JSON that's being parsed.\n\nActually, looking more carefully at the error logs, the PHP warnings about constant redefinition (API_URL, JWT_SECRET) are being logged hundreds of times. This suggests that config.php is being included multiple times per request. Even though I've wrapped the defines in `if(!defined())`, let me check if there's a more fundamental issue.\n\nLet me check if maybe the helpers.php in api\/ has a different path to config.php than database.php. \n\nActually, I realized the problem: helpers.php (in api\/) does `require_once __DIR__ . '\/..\/config.php';` which resolves to `\/home\/drarmank\/public_html\/api\/..\/config.php` = `\/home\/drarmank\/public_html\/config.php`.\n\nAnd database.php (in api\/) does the same: `require_once __DIR__ . '\/..\/config.php';` = same path.\n\nBUT there could be another config.php somewhere that's being loaded. Let me check.\n\nActually, looking at the error_log from `\/api\/frontpage\/error_log`:\n```\n[14-Jul-2026 18:09:27 UTC] PHP Warning: Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n[14-Jul-2026 18:09:27 UTC] PHP Warning: Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n```\n\nThere are hundreds of these in the log. This means config.php is being loaded multiple times. But with require_once, this shouldn't happen. Unless... the filesystem resolves the path differently each time?\n\nActually, looking at the error log file more carefully, the same error occurs multiple times (each entry has different timestamps from different requests). So config.php is being loaded multiple times per request OR on every API request.\n\nWait, actually the issue might be simpler. The `frontpage\/get.php` endpoint includes `database.php` and `helpers.php`. Both of these include `config.php`. Since they both use `require_once`, config.php should only be loaded once.\n\nBut what if there's an auto_prepend_file directive at the server level that also loads config.php? Let me check.\n\nActually, looking more carefully at the errors in the API error_log files, they're all from the SAME timestamp (14-Jul-2026 18:09:27 etc.), which could be different API requests hitting at the same time.\n\nThe key insight is: the `define()` warnings are happening, and if PHP's `display_errors` was somehow set to stdout (even briefly before config.php sets it to 0), those warnings would corrupt the JSON output, causing the \"Unexpected end of input\" error in JavaScript.\n\nLet me look at the sequence of events more carefully:\n\n1. API endpoint is hit (e.g., `\/api\/frontpage\/get.php`)\n2. PHP starts executing the file\n3. It does `require_once __DIR__ . '\/..\/database.php';` which does `require_once __DIR__ . '\/..\/config.php';`\n4. Config.php sets `ini_set('display_errors', '0');` at line 60 (or 95)\n5. If config.php is loaded a SECOND time (maybe from helpers.php's include), the `define()` calls fire warnings\n\nBut wait - if `display_errors` is 0 after config.php runs the first time, the warnings from the second define() call should not be displayed. They'd still go to the error log though.\n\nHmm, but what if the issue is different? What if the PHP warnings are not the cause of the \"Unexpected end of input\"?\n\nLet me think about this differently. The error \"SyntaxError: Unexpected end of input\" at line 20108 of the JS file is from the React error handling function `defaultOnCaughtError` which calls `console.error(error)`. This means some JavaScript error is being caught somewhere.\n\nBut line 20108 itself is not where the error originates - it's where `console.error(error)` is called. The actual error is caught elsewhere and passed to this handler.\n\nLet me look at the actual places where JSON.parse is called and see if any of them could fail:\n\nLooking at the grep results:\n- Line 1159: `const obj = JSON.parse(text);` - Principal.fromText\n- Line 4697: `const obj = JSON.parse(input);` - Expiry.fromJSON\n- Line 14094: `const parsed = JSON.parse(json);` - Ed25519KeyIdentity.fromJSON\n- Line 38503: `let state = persistedState ? JSON.parse(persistedState) : {};`\n- Line 38539: `byKey = JSON.parse(sessionStorage.getItem(storageKey2) || \"{}\");`\n- Line 50313: `return deserializeBigInt(JSON.parse(raw));`\n- Many more...\n\nThe error could be from any of these. The most likely candidates are:\n1. localStorage.getItem('siteConfig') - if the stored value is corrupted\n2. localStorage.getItem('doctorContentOverrides') - same\n3. Any sessionStorage.getItem() call\n4. API response parsing\n\nGiven that the preload script in index.html does:\n```js\nvar json = JSON.parse(xhr.responseText);\nif (json.success && json.data) {\n    if (json.data.siteConfig) localStorage.setItem('siteConfig', JSON.stringify(json.data.siteConfig));\n    if (json.data.doctorContentOverrides) localStorage.setItem('doctorContentOverrides', JSON.stringify(json.data.doctorContentOverrides));\n}\n```\n\nIf the API response is corrupted (PHP warnings bleeding into output), then `JSON.parse(xhr.responseText)` would fail, and the caught error would be the warning in the console. But the preload script has a `try\/catch` that catches the parse error and logs a warning.\n\nBut the \"SyntaxError: Unexpected end of input\" is happening 15 times. That's the React app, not the preload script.\n\nLet me check if there's a common source of JSON.parse that could fail due to corrupted data...\n\nActually, let me re-read the error more carefully. The user's console output shows:\n\n```\nindex-DJeWhCy-.js:31652 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.\nindex-DJeWhCy-.js:20108 SyntaxError: Unexpected end of input\nindex-DJeWhCy-.js:31652 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.\nindex-DJeWhCy-.js:20108 SyntaxError: Unexpected end of input\n15\nSettings:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received\n```\n\nThe `15` is the browser showing that there were 15 instances of \"Unexpected end of input\" errors. Then there's an unhandled promise rejection from the service worker.\n\nLet me focus on what I can actually fix:\n\n1. **PHP constant redefinition** - Already wrapped in `if (!defined())` \u2705\n2. **DialogContent warning** - This is a Radix UI warning from the SPA. I'd need to find the source code and add `<DialogDescription>`. But the JS files are built\/minified. Is there source code somewhere?\n3. **Unexpected end of input** - This could be from various JSON.parse calls failing\n4. **Service worker message error** - This is likely from the Chrome extension called \"Settings\" which is using chrome.runtime.sendMessage incorrectly\n\nWait, actually looking at the project structure, there's no `\/src` or source code directory visible. The JS files in `\/assets\/` appear to be the built\/bundled files. So I can't easily modify the React source code.\n\nBut I can make targeted fixes to the JS bundle if needed, or I can ensure the PHP backend returns clean JSON.\n\nLet me check if there are any additional PHP issues that could cause JSON corruption. Let me also check if there's a `setup-test.php` that might be relevant."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_2Z9TM7icGCWPdm9G6pfh6749",
+                    "name": "read_file",
+                    "input": {
+                        "path": "public_html\/config.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 61840,
+                "completion_tokens": 2188,
+                "total_tokens": 64028,
+                "prompt_cache_hit_tokens": 59776,
+                "prompt_cache_miss_tokens": 2064,
+                "prompt_tokens_details": {
+                    "cached_tokens": 59776
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 2141
+                }
+            },
+            "time": 1784056706
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_2Z9TM7icGCWPdm9G6pfh6749",
+            "content": "    1 | <?php\n    2 | \/**\n    3 |  * Dr. Arman Kabir Care - Application Configuration\n    4 |  * \n    5 |  * Security: Never commit this file to version control.\n    6 |  * On cPanel, place this outside public_html or protect with .htaccess.\n    7 |  *\n    8 |  * NOTE: putenv() is disabled on this server. We read .env directly and\n    9 |  * define constants. For maximum security, set real env vars via cPanel.\n   10 |  *\/\n   11 | \n   12 | \/\/ \u2500\u2500\u2500 Environment Detection \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   13 | \/\/ First check OS-level environment variables (set via cPanel or .env file)\n   14 | \/\/ Then fall back to .env file outside public_html\n   15 | \/\/ Finally use hardcoded defaults\n   16 | \n   17 | $envConfig = [];\n   18 | \n   19 | \/\/ 1. Check OS environment variables first (set via cPanel or actual env)\n   20 | $envVars = ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASS', 'JWT_SECRET', 'APP_URL'];\n   21 | foreach ($envVars as $var) {\n   22 |     $val = getenv($var);\n   23 |     if ($val !== false && $val !== '') {\n   24 |         $envConfig[$var] = $val;\n   25 |     }\n   26 | }\n   27 | \n   28 | \/\/ 2. Load from .env file if OS env vars are not set\n   29 | $dotenvFile = __DIR__ . '\/..\/.env';\n   30 | if (file_exists($dotenvFile)) {\n   31 |     $lines = file($dotenvFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);\n   32 |     foreach ($lines as $line) {\n   33 |         $line = trim($line);\n   34 |         if ($line === '' || str_starts_with($line, '#')) continue;\n   35 |         if (str_contains($line, '=')) {\n   36 |             [$key, $value] = explode('=', $line, 2);\n   37 |             $key = trim($key);\n   38 |             $value = trim($value, \" \\t\\n\\r\\0\\x0B\\\"'\");\n   39 |             \/\/ Only set if not already defined from OS env vars\n   40 |             if (!isset($envConfig[$key])) {\n   41 |                 $envConfig[$key] = $value;\n   42 |             }\n   43 |         }\n   44 |     }\n   45 | }\n   46 | \n   47 | \/**\n   48 |  * Get configuration value: OS env > .env file > default\n   49 |  *\/\n   50 | function cfg(string $key, mixed $default = null): mixed {\n   51 |     global $envConfig;\n   52 |     return $envConfig[$key] ?? $default;\n   53 | }\n   54 | \n   55 | \/\/ Store globally so other files can access env config directly\n   56 | $GLOBALS['env_config'] = $envConfig;\n   57 | \n   58 | \/\/ \u2500\u2500\u2500 Error Reporting (set early to prevent warnings from leaking to output) \u2500\n   59 | error_reporting(E_ALL);\n   60 | ini_set('display_errors', '0');\n   61 | ini_set('log_errors', '1');\n   62 | ini_set('error_log', __DIR__ . '\/..\/logs\/php-error.log');\n   63 | \n   64 | \/\/ \u2500\u2500\u2500 Database Configuration \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   65 | if (!defined('DB_HOST')) define('DB_HOST', cfg('DB_HOST', '127.0.0.1'));\n   66 | if (!defined('DB_NAME')) define('DB_NAME', cfg('DB_NAME', 'drarmank_drarmank_care'));\n   67 | if (!defined('DB_USER')) define('DB_USER', cfg('DB_USER', 'drarmank_drarmank_care_user'));\n   68 | if (!defined('DB_PASS')) define('DB_PASS', cfg('DB_PASS', 'zosid01197247219'));\n   69 | if (!defined('DB_CHARSET')) define('DB_CHARSET', 'utf8mb4');\n   70 | \n   71 | \/\/ \u2500\u2500\u2500 Application Configuration \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   72 | if (!defined('APP_NAME')) define('APP_NAME', 'Dr. Arman Kabir Care');\n   73 | if (!defined('APP_VERSION')) define('APP_VERSION', '2.0.0');\n   74 | if (!defined('APP_URL')) define('APP_URL', cfg('APP_URL', 'https:\/\/drarmankabir.com'));\n   75 | if (!defined('API_URL')) define('API_URL', APP_URL . '\/api');\n   76 | \n   77 | \/\/ \u2500\u2500\u2500 Security Configuration \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   78 | if (!defined('JWT_SECRET')) define('JWT_SECRET', cfg('JWT_SECRET', 'change-this-to-a-random-secret-in-production'));\n   79 | if (!defined('JWT_EXPIRY')) define('JWT_EXPIRY', 86400); \/\/ 24 hours in seconds\n   80 | if (!defined('SESSION_LIFETIME')) define('SESSION_LIFETIME', 86400 * 7); \/\/ 7 days\n   81 | if (!defined('CSRF_TOKEN_LIFETIME')) define('CSRF_TOKEN_LIFETIME', 3600); \/\/ 1 hour\n   82 | \n   83 | \/\/ \u2500\u2500\u2500 Upload Configuration \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   84 | if (!defined('UPLOAD_DIR')) define('UPLOAD_DIR', __DIR__ . '\/uploads');\n   85 | if (!defined('UPLOAD_URL')) define('UPLOAD_URL', '\/uploads');\n   86 | if (!defined('MAX_UPLOAD_SIZE')) define('MAX_UPLOAD_SIZE', 10 * 1024 * 1024); \/\/ 10MB\n   87 | if (!defined('ALLOWED_EXTENSIONS')) define('ALLOWED_EXTENSIONS', ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx']);\n   88 | \n   89 | \/\/ \u2500\u2500\u2500 Rate Limiting \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   90 | if (!defined('RATE_LIMIT_MAX')) define('RATE_LIMIT_MAX', 100);\n   91 | if (!defined('RATE_LIMIT_WINDOW')) define('RATE_LIMIT_WINDOW', 60); \/\/ seconds\n   92 | \n   93 | \/\/ \u2500\u2500\u2500 Error Reporting \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   94 | error_reporting(E_ALL);\n   95 | ini_set('display_errors', '0');\n   96 | ini_set('log_errors', '1');\n   97 | ini_set('error_log', __DIR__ . '\/..\/logs\/php-error.log');\n   98 | \n   99 | \/\/ \u2500\u2500\u2500 Timezone \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  100 | date_default_timezone_set('Asia\/Dhaka');\n  101 |",
+            "is_error": false,
+            "time": 1784056706
+        },
+        {
+            "id": "msg_52e17caff1",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I see the issue clearly now. The config.php has duplicate error_reporting\/ini_set blocks (lines 58-62 and lines 93-97). This means error_reporting and display_errors settings appear twice. While this doesn't cause errors, it's a code quality issue.\n\nBut more importantly, the first block (lines 58-62) runs AFTER the `$envConfig` and `cfg()` function setup but BEFORE the define() calls. The second block (lines 93-97) runs AFTER all defines. \n\nActually, the duplication isn't causing the warnings. The `define()` warnings were caused by config.php being included multiple times. Now with `if (!defined())` wrapping, those should be resolved.\n\nNow let me look at the actual \"Unexpected end of input\" error more carefully. Let me check if there's a JS source for the app or if there's a way to fix the issues in the built bundle.\n\nActually, looking at the errors again more carefully:\n\n1. **DialogContent warning**: This is an a11y warning from Radix UI's Dialog component. It says the DialogContent is used without a DialogDescription. This is a non-breaking warning but should be fixed in the source code if possible.\n\n2. **SyntaxError: Unexpected end of input** at line 20108: This is the error handler in React. The `console.error(error)` at line 20108 is logging an error that was caught somewhere. The actual error is likely from a JSON.parse() call failing.\n\n3. **Service Worker error**: \"A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received\" - This is a Chrome extension issue from \"Settings\" extension trying to communicate with a service worker.\n\nThe question is: what's causing \"Unexpected end of input\"? \n\nLet me check if there's an actual source map file or if there's a src directory somewhere."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_toj4Zsqs17cq3Mb4sIwf8543",
+                    "name": "glob",
+                    "input": {
+                        "pattern": "**\/*.map",
+                        "path": "\/home\/drarmank\/public_html"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_mALyi1DOeaddTdeJ7kso4889",
+                    "name": "glob",
+                    "input": {
+                        "pattern": "**\/*.tsx",
+                        "path": "\/home\/drarmank\/public_html"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_02_6Jds9r6yfq6jdX9Zon3G3354",
+                    "name": "glob",
+                    "input": {
+                        "pattern": "**\/*.ts",
+                        "path": "\/home\/drarmank\/public_html"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 65630,
+                "completion_tokens": 578,
+                "total_tokens": 66208,
+                "prompt_cache_hit_tokens": 64000,
+                "prompt_cache_miss_tokens": 1630,
+                "prompt_tokens_details": {
+                    "cached_tokens": 64000
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 398
+                }
+            },
+            "time": 1784056715
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_toj4Zsqs17cq3Mb4sIwf8543",
+            "content": "No files found matching pattern: **\/*.map",
+            "is_error": false,
+            "time": 1784056715
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_mALyi1DOeaddTdeJ7kso4889",
+            "content": "No files found matching pattern: **\/*.tsx",
+            "is_error": false,
+            "time": 1784056715
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_02_6Jds9r6yfq6jdX9Zon3G3354",
+            "content": "No files found matching pattern: **\/*.ts",
+            "is_error": false,
+            "time": 1784056715
+        },
+        {
+            "id": "msg_a961690048",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "No source maps or TypeScript files. The app was built elsewhere and the built files are deployed here. So I can't modify the React source code directly.\n\nLet me look at the JS bundle to understand what's happening with the \"Unexpected end of input\" error and the DialogContent warning. \n\nThe \"Unexpected end of input\" error at line 20108 is the React error handler `defaultOnCaughtError` which calls `console.error(error)`. This means some JavaScript error is being caught elsewhere and logged. The actual error is from a JSON.parse() call.\n\nGiven that I can't modify the source code, let me focus on what I CAN fix:\n\n1. \u2705 PHP constant redefinition - Already fixed\n2. \u2b1c DialogContent warning - Can't fix without source code (it's in the minified JS)\n3. \u2b1c SyntaxError: Unexpected end of input - Could be caused by corrupted JSON in localStorage or corrupted API responses\n4. \u2b1c Service worker error - Chrome extension issue\n\nWait, let me check if there's a corrupted entry in localStorage. The preload script in index.html stores `siteConfig` and `doctorContentOverrides` in localStorage. If the API returned corrupted data (with PHP warnings), the stored data would be corrupted.\n\nBut the preload script has a try\/catch around the JSON.parse, so it would catch any parse errors.\n\nLet me check if there's another source of JSON.parse failures. Looking at the JS bundle lines:\n\n- Line 38503: `let state = persistedState ? JSON.parse(persistedState) : {};` - This is from localStorage\n- Line 38539: `byKey = JSON.parse(sessionStorage.getItem(storageKey2) || \"{}\");` - This is from sessionStorage\n\nThese could fail if localStorage\/sessionStorage contains invalid JSON.\n\nActually, looking at the dialog flow more carefully, the DialogContent warning might be coming from a specific component in the app. Let me search the JS bundle for where DialogContent is used."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_NnpbTANnZf1kQYfGh47Z2294",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && grep -n \"DialogContent\\|Content\\$2\\|DialogDescription\\|DialogTitle\" index-DJeWhCy-.js | head -30"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 66267,
+                "completion_tokens": 502,
+                "total_tokens": 66769,
+                "prompt_cache_hit_tokens": 66176,
+                "prompt_cache_miss_tokens": 91,
+                "prompt_tokens_details": {
+                    "cached_tokens": 66176
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 421
+                }
+            },
+            "time": 1784056720
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_NnpbTANnZf1kQYfGh47Z2294",
+            "content": "31459:var CONTENT_NAME$3 = \"DialogContent\";\n31460:var DialogContent$1 = reactExports.forwardRef(\n31465:    return \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Presence, { present: forceMount || context.open, children: context.modal ? \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogContentModal, { ...contentProps, ref: forwardedRef }) : \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogContentNonModal, { ...contentProps, ref: forwardedRef }) });\n31468:DialogContent$1.displayName = CONTENT_NAME$3;\n31469:var DialogContentModal = reactExports.forwardRef(\n31479:      DialogContentImpl,\n31504:var DialogContentNonModal = reactExports.forwardRef(\n31510:      DialogContentImpl,\n31546:var DialogContentImpl = reactExports.forwardRef(\n31584:var TITLE_NAME = \"DialogTitle\";\n31585:var DialogTitle$1 = reactExports.forwardRef(\n31592:DialogTitle$1.displayName = TITLE_NAME;\n31593:var DESCRIPTION_NAME = \"DialogDescription\";\n31594:var DialogDescription = reactExports.forwardRef(\n31601:DialogDescription.displayName = DESCRIPTION_NAME;\n31622:var TITLE_WARNING_NAME = \"DialogTitleWarning\";\n31643:var DESCRIPTION_WARNING_NAME = \"DialogDescriptionWarning\";\n31661:var Content$2 = DialogContent$1;\n31662:var Title = DialogTitle$1;\n31663:var Description = DialogDescription;\n32283:function DialogContent({\n32292:      Content$2,\n32341:function DialogTitle({\n52646:    DialogContent,\n52652:          \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogTitle, { className: \"flex items-center gap-2\", children: [\n64463:          children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogContent, { className: \"max-w-md\", \"data-ocid\": \"patient_nav.dialog\", children: [\n64464:            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogHeader, { children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogTitle, { className: \"flex items-center gap-2\", children: [\n64658:      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Dialog, { open: showAuthModal, onOpenChange: setShowAuthModal, children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogContent, { className: \"max-w-md max-h-[90vh] overflow-y-auto\", children: [\n64659:        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogHeader, { className: \"sr-only\", children: \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogTitle, { children: \"Login\" }) }),\n64708:          children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogContent, { className: \"max-w-sm\", \"data-ocid\": \"admin.login.dialog\", children: [\n",
+            "is_error": false,
+            "time": 1784056721
+        },
+        {
+            "id": "msg_6b63a0c4f9",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I can see the DialogContent is used in several places. The warning \"Missing `Description` or `aria-describedby={undefined}` for {DialogContent}\" is from Radix UI's Dialog component when a DialogContent is rendered without a corresponding DialogDescription component.\n\nLooking at the instances:\n- Line 64463: DialogContent is used - let me check if it has a DialogDescription sibling\n- Line 64658: DialogContent for auth modal - has DialogTitle but no DialogDescription\n- Line 64708: DialogContent for admin login - similar\n\nLet me look at these specific instances to see if I can add DialogDescription elements. Since this is a minified JS bundle, I can make targeted edits.\n\nLet me look at the actual code around these DialogContent usages."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ZVOZrYmx0gha44Fdbo131221",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && awk 'NR>=64455 && NR<=64480' index-DJeWhCy-.js"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_nKJOUtQZseS1z0dpaoos2609",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && awk 'NR>=64650 && NR<=64680' index-DJeWhCy-.js"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_02_wNK8bPorMKHGG5lGnI1C7994",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && awk 'NR>=64700 && NR<=64725' index-DJeWhCy-.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 67479,
+                "completion_tokens": 348,
+                "total_tokens": 67827,
+                "prompt_cache_hit_tokens": 66688,
+                "prompt_cache_miss_tokens": 791,
+                "prompt_tokens_details": {
+                    "cached_tokens": 66688
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 160
+                }
+            },
+            "time": 1784056726
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ZVOZrYmx0gha44Fdbo131221",
+            "content": "      ] }) }),\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(PatientPortalView, { currentPatient }),\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Toaster, { position: \"top-right\", richColors: true }),\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\n        Dialog,\n        {\n          open: showNavReminderPanel,\n          onOpenChange: setShowNavReminderPanel,\n          children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogContent, { className: \"max-w-md\", \"data-ocid\": \"patient_nav.dialog\", children: [\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogHeader, { children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogTitle, { className: \"flex items-center gap-2\", children: [\n              \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Bell, { className: \"w-5 h-5 text-amber-600\" }),\n              \"Drug Reminders\",\n              activeReminderCount > 0 && \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"span\", { className: \"ml-auto text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium\", children: [\n                activeReminderCount,\n                \" active\"\n              ] })\n            ] }) }),\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"space-y-3 max-h-[70vh] overflow-y-auto\", children: [\n              navReminders.length > 0 ? \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\"div\", { className: \"space-y-2\", children: navReminders.map((r2, idx) => \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\n                \"div\",\n                {\n                  className: \"flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2\",\n                  \"data-ocid\": `patient_nav.item.${idx + 1}`,\n                  children: [\n                    \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\n                      Switch,\n",
+            "is_error": false,
+            "time": 1784056726
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_nKJOUtQZseS1z0dpaoos2609",
+            "content": "        LandingPage,\n        {\n          onLoginClick: () => setShowAuthModal(true),\n          onAdminLoginClick: () => setShowAdminModal(true),\n          isAdmin: isAdminState,\n          adminLogout: adminLogoutFn\n        }\n      ),\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Dialog, { open: showAuthModal, onOpenChange: setShowAuthModal, children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogContent, { className: \"max-w-md max-h-[90vh] overflow-y-auto\", children: [\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogHeader, { className: \"sr-only\", children: \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogTitle, { children: \"Login\" }) }),\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\n          motion.div,\n          {\n            initial: { opacity: 0, y: 12 },\n            animate: { opacity: 1, y: 0 },\n            transition: { duration: 0.3 },\n            children: [\n              \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"text-center mb-5\", children: [\n                \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\"div\", { className: \"inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary\/10 mb-3\", children: \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Stethoscope, { className: \"w-7 h-7 text-primary\" }) }),\n                \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\"h2\", { className: \"font-display text-xl font-bold text-foreground mb-1\", children: \"Dr. Arman Kabir's Care\" }),\n                \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\"p\", { className: \"text-muted-foreground text-sm\", children: \"Patient Management System\" })\n              ] }),\n              \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(Tabs, { value: authTab, onValueChange: setAuthTab, children: [\n                \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(TabsList, { className: \"w-full mb-5\", children: [\n                  \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\n                    TabsTrigger,\n                    {\n                      value: \"staff\",\n                      className: \"flex-1\",\n                      \"data-ocid\": \"login.staff.tab\",\n                      children: \"Staff \/ Doctor\"\n",
+            "is_error": false,
+            "time": 1784056726
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_02_wNK8bPorMKHGG5lGnI1C7994",
+            "content": "      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\n        Dialog,\n        {\n          open: showAdminModal,\n          onOpenChange: (v2) => {\n            setShowAdminModal(v2);\n            if (!v2) setAdminError(\"\");\n          },\n          children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogContent, { className: \"max-w-sm\", \"data-ocid\": \"admin.login.dialog\", children: [\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogHeader, { children: [\n              \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"flex items-center gap-3 mb-1\", children: [\n                \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\"div\", { className: \"w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center\", children: \/* @__PURE__ *\/ jsxRuntimeExports.jsx(ShieldCheck, { className: \"w-5 h-5 text-amber-700\" }) }),\n                \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogTitle, { className: \"text-amber-800\", children: \"Admin Login\" })\n              ] }),\n              \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\"p\", { className: \"text-sm text-muted-foreground\", children: \"Enter admin credentials to manage public portal content.\" })\n            ] }),\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"form\", { onSubmit: handleAdminLogin, className: \"space-y-4 pt-2\", children: [\n              \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"space-y-1.5\", children: [\n                \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Label, { htmlFor: \"admin-user\", children: \"Username\" }),\n                \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\n                  Input,\n                  {\n                    id: \"admin-user\",\n                    value: adminUser,\n                    onChange: (e) => setAdminUser(e.target.value),\n                    placeholder: \"admin email or username\",\n",
+            "is_error": false,
+            "time": 1784056726
+        },
+        {
+            "id": "msg_e1c8a05f65",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Looking at the code snippets:\n\n1. **Line 64463**: DialogContent for \"patient_nav.dialog\" drug reminders - Has DialogTitle but no DialogDescription\n2. **Line 64658**: DialogContent for auth\/login modal - Has DialogTitle but no DialogDescription\n3. **Line 64708**: DialogContent for admin login - Has DialogTitle but no DialogDescription\n\nNone of these have a `DialogDescription` component. That's why Radix UI is showing the warning.\n\nThe warning from Radix UI is an accessibility best-practice warning, not an error. It doesn't break functionality. But to fix it, I'd need to add `<DialogDescription>` elements with appropriate content.\n\nHowever, modifying minified JS is risky. Let me think about whether I can add DialogDescription to these components via editing the JS bundle.\n\nActually, looking at this more carefully, the Radix UI Dialog component requires either:\n1. A `DialogDescription` as a child, OR\n2. An `aria-describedby` attribute pointing to a description element\n\nThe warning is because the dialog has content but no accessible description for screen readers.\n\nI think the best approach is to:\n1. Fix the PHP issues (already done with `if (!defined())` guards)\n2. Add `DialogDescription` to the three DialogContent instances in the JS bundle\n3. Investigate the \"Unexpected end of input\"\n\nFor the JS bundle edits, I need to be careful. Let me add `DialogDescription` as visually hidden children (with `sr-only` class) to each DialogContent.\n\nLet me look at the code structure more carefully to make sure I can safely inject DialogDescription.\n\nFor the \"Unexpected end of input\" - let me check the JSON.parse calls that deal with localStorage\/sessionStorage data:\n\nLooking at line 38503: `let state = persistedState ? JSON.parse(persistedState) : {};` - This could fail if localStorage data gets corrupted.\n\nActually, the main issue might be simpler. Let me look at the actual error chain. The \"SyntaxError: Unexpected end of input\" is happening 15 times - it's likely from a retry loop or multiple components all hitting the same error.\n\nLet me look for try\/catch blocks around JSON.parse calls in the bundle."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_aszZIIHqYyzo5StNh6Gd5002",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && awk 'NR>=38495 && NR<=38515' index-DJeWhCy-.js"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_3ZDRd1LEa4fOeNImR42q2163",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && awk 'NR>=52638 && NR<=52660' index-DJeWhCy-.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 69419,
+                "completion_tokens": 603,
+                "total_tokens": 70022,
+                "prompt_cache_hit_tokens": 67712,
+                "prompt_cache_miss_tokens": 1707,
+                "prompt_tokens_details": {
+                    "cached_tokens": 67712
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 473
+                }
+            },
+            "time": 1784056733
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_aszZIIHqYyzo5StNh6Gd5002",
+            "content": "  };\n};\nfunction createScrollRestorationCache() {\n  const safeSessionStorage = getSafeSessionStorage();\n  if (!safeSessionStorage) {\n    return void 0;\n  }\n  const persistedState = safeSessionStorage.getItem(storageKey$1);\n  let state = persistedState ? JSON.parse(persistedState) : {};\n  return {\n    state,\n    \/\/ This setter is simply to make sure that we set the sessionStorage right\n    \/\/ after the state is updated. It doesn't necessarily need to be a functional\n    \/\/ update.\n    set: (updater) => (state = functionalUpdate(updater, state) || state, safeSessionStorage.setItem(storageKey$1, JSON.stringify(state)))\n  };\n}\nconst scrollRestorationCache = createScrollRestorationCache();\nconst defaultGetScrollRestorationKey = (location2) => {\n  return location2.state.__TSR_key || location2.href;\n};\n",
+            "is_error": false,
+            "time": 1784056733
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_3ZDRd1LEa4fOeNImR42q2163",
+            "content": "    resolveConflict(entityId, choice);\n    if (getConflicts().length === 0) {\n      onAllResolved == null ? void 0 : onAllResolved();\n      onClose();\n    }\n  }\n  const remaining = getConflicts();\n  return \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Dialog, { open, onOpenChange: (o2) => !o2 && onClose(), children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\n    DialogContent,\n    {\n      className: \"sm:max-w-md max-h-[80vh] overflow-hidden flex flex-col\",\n      \"data-ocid\": \"sync_conflict.dialog\",\n      children: [\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogHeader, { children: [\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogTitle, { className: \"flex items-center gap-2\", children: [\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(TriangleAlert, { className: \"w-5 h-5 text-amber-500\" }),\n            \"Sync Conflicts (\",\n            remaining.length,\n            \")\"\n          ] }),\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\"p\", { className: \"text-sm text-muted-foreground mt-1\", children: \"The same record was edited on multiple devices. Choose which version to keep for each conflict.\" })\n        ] }),\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\"div\", { className: \"flex-1 overflow-y-auto py-2 space-y-3 pr-1\", children: \/* @__PURE__ *\/ jsxRuntimeExports.jsx(AnimatePresence, { children: remaining.length === 0 ? \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\n",
+            "is_error": false,
+            "time": 1784056733
+        },
+        {
+            "id": "msg_fb11f2cd5a",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me look at the DialogContent usages more carefully to understand where to add DialogDescription. I also want to look at the sync_conflict.dialog which has a `<p>` element that serves as a description but is not using DialogDescription.\n\nLet me also check the other places where DialogContent is imported\/used:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_vMlRdYWB6wPWhKEk8zo86899",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && grep -n \"DialogContent\\|Content\\$2\" index-DJeWhCy-.js | grep -v \"var CONTENT\\|var DialogContent\\|DialogContentImpl\\|DialogContentModal\\|DialogContentNonModal\\|Content\\$2 =\""
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 70645,
+                "completion_tokens": 166,
+                "total_tokens": 70811,
+                "prompt_cache_hit_tokens": 70016,
+                "prompt_cache_miss_tokens": 629,
+                "prompt_tokens_details": {
+                    "cached_tokens": 70016
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 65
+                }
+            },
+            "time": 1784056737
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_vMlRdYWB6wPWhKEk8zo86899",
+            "content": "31468:DialogContent$1.displayName = CONTENT_NAME$3;\n32283:function DialogContent({\n32292:      Content$2,\n52646:    DialogContent,\n64463:          children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogContent, { className: \"max-w-md\", \"data-ocid\": \"patient_nav.dialog\", children: [\n64658:      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Dialog, { open: showAuthModal, onOpenChange: setShowAuthModal, children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogContent, { className: \"max-w-md max-h-[90vh] overflow-y-auto\", children: [\n64708:          children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogContent, { className: \"max-w-sm\", \"data-ocid\": \"admin.login.dialog\", children: [\n64785:      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Dialog, { open: showPendingPanel, onOpenChange: setShowPendingPanel, children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogContent, { className: \"max-w-lg max-h-[80vh] overflow-y-auto\", children: [\n65030:  Content$2 as as,\n65108:  DialogContent as s,\n",
+            "is_error": false,
+            "time": 1784056737
+        },
+        {
+            "id": "msg_c5b64d5ac4",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me look at line 64785 to see another DialogContent usage:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_2aVonmUrzkA97KvKHJYc1877",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && awk 'NR>=64780 && NR<=64830' index-DJeWhCy-.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 71129,
+                "completion_tokens": 87,
+                "total_tokens": 71216,
+                "prompt_cache_hit_tokens": 70784,
+                "prompt_cache_miss_tokens": 345,
+                "prompt_tokens_details": {
+                    "cached_tokens": 70784
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 15
+                }
+            },
+            "time": 1784056740
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_2aVonmUrzkA97KvKHJYc1877",
+            "content": "            \" Pending Approval\",\n            pendingCount !== 1 ? \"s\" : \"\"\n          ]\n        }\n      ),\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Dialog, { open: showPendingPanel, onOpenChange: setShowPendingPanel, children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogContent, { className: \"max-w-lg max-h-[80vh] overflow-y-auto\", children: [\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogHeader, { children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"flex items-center gap-2\", children: [\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsx(UserCheck, { className: \"w-5 h-5 text-amber-600\" }),\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogTitle, { children: \"Pending Approvals\" })\n        ] }) }),\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(PendingApprovalsPanel, {})\n      ] }) }),\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Toaster, { position: \"top-right\", richColors: true })\n    ] });\n  }\n  return \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [\n    showBackendBanner && \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\n      \"div\",\n      {\n        className: \"fixed top-0 left-0 right-0 z-[9999] shadow-lg\",\n        \"data-ocid\": \"sync.backend_disconnected_banner\",\n        children: [\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\n            \"div\",\n            {\n              className: \"flex items-center justify-between gap-3 px-4 py-2.5 text-white text-sm font-medium\",\n              style: {\n                background: \"linear-gradient(90deg, #b91c1c 0%, #ea580c 100%)\"\n              },\n              children: [\n                \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"flex items-center gap-2\", children: [\n                  \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\"span\", { className: \"inline-block w-2 h-2 rounded-full bg-white\/60 animate-pulse\" }),\n                  \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\"span\", { children: \"Backend not connected \u2014 data is saved on this device only and will NOT sync to other devices. Contact support if this persists.\" })\n                ] }),\n                \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"flex items-center gap-2 ml-auto shrink-0\", children: [\n                  \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\n                    \"button\",\n                    {\n                      type: \"button\",\n                      onClick: () => window.location.reload(),\n                      className: \"rounded px-2 py-0.5 text-xs bg-white\/20 hover:bg-white\/30 transition-colors font-semibold\",\n                      children: \"Retry\"\n                    }\n                  ),\n                  \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\n                    \"button\",\n                    {\n                      type: \"button\",\n                      \"aria-label\": \"Dismiss banner\",\n                      onClick: () => setBannerDismissed(true),\n                      className: \"rounded p-0.5 hover:bg-white\/20 transition-colors\",\n",
+            "is_error": false,
+            "time": 1784056740
+        },
+        {
+            "id": "msg_5fd2bc5aea",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I have a clear picture. There are 4 DialogContent instances without DialogDescription:\n\n1. Line 64463: patient_nav.dialog (drug reminders)\n2. Line 64658: auth\/login dialog\n3. Line 64708: admin login dialog\n4. Line 64785: pending approvals dialog\n\nI also see the sync_conflict dialog around line 52646 which has a `<p>` tag serving as description but not using the DialogDescription component.\n\nNow, modifying minified JavaScript is risky but doable. Let me think about the best approach.\n\nActually, for the \"SyntaxError: Unexpected end of input\" - I should look more carefully at the PHP side. The fact that there are many API errors in the log (SQLSTATE errors, constant redefinition warnings) suggests that API responses might be inconsistent. If a PHP endpoint throws a fatal error, the response might be truncated, causing the JSON.parse to fail with \"Unexpected end of input\".\n\nLet me check what's happening with the main API requests. The preload script in index.html calls `\/api\/frontpage\/get.php`. If there's a PHP error during that request, the response might be corrupted.\n\nBut actually, the preload script has a try\/catch:\n```js\ntry {\n    var json = JSON.parse(xhr.responseText);\n    ...\n} catch(e) { console.warn('[preload] parse error:', e); }\n```\n\nSo the preload script would catch and log a warning, not an error. The \"SyntaxError: Unexpected end of input\" is at line 20108 of the JS bundle, which is in React's error handler, so it's coming from within the React app itself.\n\nLet me look more carefully at the actual potential causes. Let me check if there's something corrupting API responses that the main app uses.\n\nLet me look at the API routes and see if any of them could return invalid JSON due to PHP errors.\n\nActually, now that I've fixed the config.php constant redefinition issue, that should reduce PHP warnings. But the existing localStorage data might already be corrupted from previous failed attempts.\n\nLet me focus on the practical fixes:\n\n1. \u2705 Fix config.php constant redefinition - DONE\n2. Fix DialogContent accessibility warning - Add DialogDescription to DialogContent instances\n3. Investigate \"Unexpected end of input\" - Might be from corrupted localStorage or API responses\n4. Service worker message error - Chrome extension issue, can be ignored\n\nFor fixing the DialogContent warnings, I need to add `aria-describedby` or add DialogDescription components. Since editing the minified JS is complex and fragile, let me think about a more reliable approach.\n\nActually, looking at lines 64463, 64658, 64708, 64785 - these are in the React component tree. I need to inject `DialogDescription` with `sr-only` class content.\n\nBut wait - the warning is not breaking functionality. It's just an accessibility warning. The real issue is the \"Unexpected end of input\" which is causing actual errors.\n\nLet me focus on the \"Unexpected end of input\" issue. Let me trace this back to the source. The error is at line 20108, which is in `defaultOnCaughtError`:\n\n```js\nfunction defaultOnCaughtError(error) {\n  console.error(error);\n}\n```\n\nThis function is called by React's error boundary when a component catches an error. The actual error object is what's being logged. So \"Unexpected end of input\" is the error message from a failed `JSON.parse` call.\n\nLet me look for JSON.parse calls that aren't wrapped in try\/catch properly. Let me check the most likely candidates.\n\nActually, let me also look at the PHP error logs for more clues about what's failing."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_91hRgcspmvCzUm2wVb343833",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && grep -rn \"JSON.parse\\|\\.parse(\" --include=\"*.js\" public_html\/assets\/ | grep -v \"node_modules\\|\\.bak\" | head -20"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 72009,
+                "completion_tokens": 868,
+                "total_tokens": 72877,
+                "prompt_cache_hit_tokens": 71168,
+                "prompt_cache_miss_tokens": 841,
+                "prompt_tokens_details": {
+                    "cached_tokens": 71168
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 783
+                }
+            },
+            "time": 1784056750
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_91hRgcspmvCzUm2wVb343833",
+            "content": "public_html\/assets\/index-DJeWhCy-.js:1159:      const obj = JSON.parse(text);\npublic_html\/assets\/index-DJeWhCy-.js:4697:    const obj = JSON.parse(input);\npublic_html\/assets\/index-DJeWhCy-.js:14094:    const parsed = JSON.parse(json);\npublic_html\/assets\/index-DJeWhCy-.js:14373:   *   root, middle.getPublicKey(), Date.parse('2100-01-01'),\npublic_html\/assets\/index-DJeWhCy-.js:14376:   *   middle, bottom.getPublicKey(), Date.parse('2100-01-01'), { previous: rootToMiddle },\npublic_html\/assets\/index-DJeWhCy-.js:14400:    const { publicKey, delegations } = typeof json === \"string\" ? JSON.parse(json) : json;\npublic_html\/assets\/index-DJeWhCy-.js:38503:  let state = persistedState ? JSON.parse(persistedState) : {};\npublic_html\/assets\/index-DJeWhCy-.js:38539:    byKey = JSON.parse(sessionStorage.getItem(storageKey2) || \"{}\");\npublic_html\/assets\/index-DJeWhCy-.js:38706:const defaultParseSearch = parseSearchWith(JSON.parse);\npublic_html\/assets\/index-DJeWhCy-.js:38709:  JSON.parse\npublic_html\/assets\/index-DJeWhCy-.js:40561:    return validateSearch2.parse(input);\npublic_html\/assets\/index-DJeWhCy-.js:42598:  parse: (v2) => percent.parse(v2) \/ 100,\npublic_html\/assets\/index-DJeWhCy-.js:42612:      return rgba.parse(v2);\npublic_html\/assets\/index-DJeWhCy-.js:42614:      return hsla.parse(v2);\npublic_html\/assets\/index-DJeWhCy-.js:42616:      return hex.parse(v2);\npublic_html\/assets\/index-DJeWhCy-.js:42623:    const parsed = color.parse(v2);\npublic_html\/assets\/index-DJeWhCy-.js:42653:      values.push(color.parse(parsedValue));\npublic_html\/assets\/index-DJeWhCy-.js:42766:  let model = type.parse(color2);\npublic_html\/assets\/index-DJeWhCy-.js:45050:    const parsed = complex.parse(v2);\npublic_html\/assets\/index-DJeWhCy-.js:46365:    const shadow = complex.parse(latest);\n\ngrep: write error: Broken pipe\ngrep: write error: Broken pipe\n",
+            "is_error": false,
+            "time": 1784056750
+        },
+        {
+            "id": "msg_ea7f588ccb",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Looking at the JSON.parse calls in the bundle:\n\n1. Line 1159: `const obj = JSON.parse(text);` - Principal.fromText, wrapped in try\/catch likely\n2. Line 4697: `const obj = JSON.parse(input);` - Expiry.fromJSON, not sure about error handling\n3. Line 14094: `const parsed = JSON.parse(json);` - Ed25519KeyIdentity.fromJSON\n4. Line 14400: `const { publicKey, delegations } = typeof json === \"string\" ? JSON.parse(json) : json;`\n5. Line 38503: `let state = persistedState ? JSON.parse(persistedState) : {};` - sessionStorage\n6. Line 38539: `byKey = JSON.parse(sessionStorage.getItem(storageKey2) || \"{}\");` - sessionStorage\n7. Lines 50313, 50327, 50345, 50353, 50376, 50384, 50837, 51032, 51176, 51215, 51292, 51329, 51498, 51576, 51628, 51653, 52069, 52447, 52724+, 52934, 52972, 53016 - these are all localStorage\/sessionStorage reads\n\nThe most likely culprits for \"Unexpected end of input\" are the localStorage and sessionStorage JSON.parse calls, especially lines 38503 and 38539 which are called during scroll restoration.\n\nLet me check if these are wrapped in try\/catch.\n\nActually, let me look at the actual error more carefully. In many React apps that use localStorage for state persistence, \"Unexpected end of input\" errors happen when localStorage contains an empty string or corrupted data. The preload script stores `JSON.stringify(json.data.siteConfig)` and `JSON.stringify(json.data.doctorContentOverrides)` in localStorage. If the API response was corrupted (due to PHP warnings), the stored value would be invalid and JSON.parse would fail when trying to read it back.\n\nNow that I've fixed the constant redefinition issue, the API should return clean JSON. But previously corrupted localStorage data would still cause issues.\n\nThe best fix is to wrap all JSON.parse calls from localStorage in try\/catch, but since I can't modify the source code, I need another approach.\n\nActually, wait - let me look at the sync_conflict dialog more carefully, which IS using a `<p>` tag as a description instead of DialogDescription. If I can fix this one, it would show the correct approach.\n\nBut the real question is: can I make targeted edits to the JS bundle to fix these issues?\n\nLet me focus on what's most impactful:\n\n1. The DialogContent warning is just a warning, not an error. It's informational.\n2. The \"Unexpected end of input\" is likely from corrupted localStorage data. I can clear it via a PHP script or via the index.html preload.\n\nWait, I have another idea. Let me look at the `index.html` preload script. If the API response is corrupted, it would store corrupted data in localStorage. Then when the React app loads, it tries to parse this data and fails.\n\nLet me add a localStorage cleanup in the preload script that validates existing data and removes corrupted entries.\n\nActually, looking at the errors more carefully: `index-DJeWhCy-.js:20108 SyntaxError: Unexpected end of input` repeated `15` times. That's 15 instances of the same error being caught. This could be from 15 different calls to JSON.parse that fail.\n\nLet me look at the app's initialization code where it reads from localStorage."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_l9WJCj1mlsL1RUlaLmSb8888",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && awk 'NR>=38530 && NR<=38555' index-DJeWhCy-.js"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_y0fjhyvjS9Xo920dzjlr4550",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && grep -n \"localStorage.getItem\\|localStorage\\.getItem\\|sessionStorage.getItem\\|sessionStorage\\.getItem\" index-DJeWhCy-.js | head -40"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 73426,
+                "completion_tokens": 913,
+                "total_tokens": 74339,
+                "prompt_cache_hit_tokens": 72832,
+                "prompt_cache_miss_tokens": 594,
+                "prompt_tokens_details": {
+                    "cached_tokens": 72832
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 767
+                }
+            },
+            "time": 1784056759
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_l9WJCj1mlsL1RUlaLmSb8888",
+            "content": "  key,\n  behavior,\n  shouldScrollRestoration,\n  scrollToTopSelectors,\n  location: location2\n}) {\n  var _a3, _b3;\n  let byKey;\n  try {\n    byKey = JSON.parse(sessionStorage.getItem(storageKey2) || \"{}\");\n  } catch (error) {\n    console.error(error);\n    return;\n  }\n  const resolvedKey = key || ((_a3 = window.history.state) == null ? void 0 : _a3.key);\n  const elementEntries = byKey[resolvedKey];\n  ignoreScroll = true;\n  scroll: {\n    if (shouldScrollRestoration && elementEntries && Object.keys(elementEntries).length > 0) {\n      for (const elementSelector in elementEntries) {\n        const entry = elementEntries[elementSelector];\n        if (elementSelector === \"window\") {\n          window.scrollTo({\n            top: entry.scrollY,\n            left: entry.scrollX,\n            behavior\n",
+            "is_error": false,
+            "time": 1784056759
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_y0fjhyvjS9Xo920dzjlr4550",
+            "content": "14830:  if (isBrowser$2 && (localStorage == null ? void 0 : localStorage.getItem(KEY_STORAGE_DELEGATION))) {\n36059:    let n = localStorage.getItem(i) || s2, y2 = l && n === \"system\" ? c2() : n;\n38539:    byKey = JSON.parse(sessionStorage.getItem(storageKey2) || \"{}\");\n50311:    const raw = localStorage.getItem(key);\n50325:          const raw = localStorage.getItem(key);\n50341:    const canonical = localStorage.getItem(CANONICAL_EMAIL_KEY$1);\n50343:    const raw = localStorage.getItem(\"staff_auth\");\n50351:    const sessionId = localStorage.getItem(\"medicare_current_doctor\");\n50354:        localStorage.getItem(\"medicare_doctors_registry\") || \"[]\"\n50375:    const raw = localStorage.getItem(`visit_form_data_${id2}_${email}`);\n50383:        const raw = localStorage.getItem(key);\n50416:  const counter = Number.parseInt(localStorage.getItem(\"medicare_register_counter\") || \"0\") + 1;\n50835:    const raw = localStorage.getItem(CLINICAL_STORAGE_KEY);\n51030:    const raw = localStorage.getItem(admissionHistoryKey(patientId));\n51174:    const raw = localStorage.getItem(prescriptionRecordsKey(patientId));\n51213:    const raw = localStorage.getItem(drugRemindersKey(patientId));\n51267:  return localStorage.getItem(key);\n51281:  let id2 = localStorage.getItem(DEVICE_ID_KEY);\n51290:    const raw = localStorage.getItem(SYNC_QUEUE_KEY);\n51305:    const raw = localStorage.getItem(LAST_SYNC_TS_KEY);\n51320:  return localStorage.getItem(MIGRATION_DONE_KEY) === \"true\";\n51327:    const raw = localStorage.getItem(CONFLICTS_KEY);\n51439:  const raw = localStorage.getItem(LAST_SYNC_KEY);\n51496:    const raw = localStorage.getItem(CLINICAL_STORE_KEY);\n51574:    const raw = localStorage.getItem(CONTENT_OFFLINE_QUEUE_KEY);\n51625:          const existing = localStorage.getItem(k2);\n51652:      const raw = localStorage.getItem(k2);\n52069:        return JSON.parse(localStorage.getItem(localKey) || \"[]\");\n52445:        const raw = localStorage.getItem(key);\n52723:    const raw = localStorage.getItem(COMPLAINTS_KEY_PREFIX + patientId);\n52737:    const raw = localStorage.getItem(ADVICE_KEY_PREFIX + patientId);\n52748:    const raw = localStorage.getItem(PATIENT_SUBMISSIONS_KEY);\n52760:    const raw = localStorage.getItem(key);\n52773:    const raw = localStorage.getItem(key);\n52786:    const raw = localStorage.getItem(key);\n52799:    const raw = localStorage.getItem(key);\n52812:    const raw = localStorage.getItem(key);\n52825:    const raw = localStorage.getItem(EMERGENCY_NOTIFICATIONS_KEY);\n52867:    return localStorage.getItem(STORAGE_KEY) === \"true\";\n52932:    const raw = localStorage.getItem(REGISTRY_KEY);\n",
+            "is_error": false,
+            "time": 1784056759
+        },
+        {
+            "id": "msg_b736f06c56",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me look at the localStorage reads that do JSON.parse to see if they have try\/catch wrapping. The issue is likely from one or more of these not handling parse errors properly.\n\nLet me look at some of the critical ones:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_BpW8OKiUgg5Vsvrl1l6a6828",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && awk 'NR>=50305 && NR<=50320' index-DJeWhCy-.js"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_iEfh3XgBkyUBg5Na8Hrg7716",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && awk 'NR>=50340 && NR<=50365' index-DJeWhCy-.js"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_02_7ICwfjPiY3FykCyfAWTX4628",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && awk 'NR>=50370 && NR<=50395' index-DJeWhCy-.js"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_03_CseWTnr37uejkyzZzLfv4044",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && awk 'NR>=50830 && NR<=50850' index-DJeWhCy-.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 75244,
+                "completion_tokens": 293,
+                "total_tokens": 75537,
+                "prompt_cache_hit_tokens": 74240,
+                "prompt_cache_miss_tokens": 1004,
+                "prompt_tokens_details": {
+                    "cached_tokens": 74240
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 47
+                }
+            },
+            "time": 1784056764
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_BpW8OKiUgg5Vsvrl1l6a6828",
+            "content": "    console.error(\"saveToStorage error:\", key, err);\n    throw err;\n  }\n}\nfunction loadFromStorage(key) {\n  try {\n    const raw = localStorage.getItem(key);\n    if (!raw) return [];\n    return deserializeBigInt(JSON.parse(raw));\n  } catch {\n    return [];\n  }\n}\nfunction loadFromAllDoctorKeys(prefix2) {\n  try {\n    const results = [];\n",
+            "is_error": false,
+            "time": 1784056764
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_iEfh3XgBkyUBg5Na8Hrg7716",
+            "content": "  try {\n    const canonical = localStorage.getItem(CANONICAL_EMAIL_KEY$1);\n    if (canonical) return canonical;\n    const raw = localStorage.getItem(\"staff_auth\");\n    if (raw) {\n      const parsed = JSON.parse(raw);\n      if (parsed == null ? void 0 : parsed.email) {\n        localStorage.setItem(CANONICAL_EMAIL_KEY$1, parsed.email);\n        return parsed.email;\n      }\n    }\n    const sessionId = localStorage.getItem(\"medicare_current_doctor\");\n    if (sessionId) {\n      const registry = JSON.parse(\n        localStorage.getItem(\"medicare_doctors_registry\") || \"[]\"\n      );\n      const doctor = registry.find((d2) => d2.id === sessionId);\n      if (doctor == null ? void 0 : doctor.email) {\n        localStorage.setItem(CANONICAL_EMAIL_KEY$1, doctor.email);\n        return doctor.email;\n      }\n    }\n    return \"default\";\n  } catch {\n    return \"default\";\n  }\n",
+            "is_error": false,
+            "time": 1784056764
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_02_7ICwfjPiY3FykCyfAWTX4628",
+            "content": "function getVisitFormData(visitId) {\n  if (!visitId) return null;\n  const id2 = String(visitId);\n  const email = getDoctorEmail();\n  try {\n    const raw = localStorage.getItem(`visit_form_data_${id2}_${email}`);\n    if (raw) return JSON.parse(raw);\n  } catch {\n  }\n  for (let i = 0; i < localStorage.length; i++) {\n    const key = localStorage.key(i);\n    if (key == null ? void 0 : key.startsWith(`visit_form_data_${id2}_`)) {\n      try {\n        const raw = localStorage.getItem(key);\n        if (raw) return JSON.parse(raw);\n      } catch {\n      }\n    }\n  }\n  return null;\n}\nfunction nextId(items) {\n  if (items.length === 0) return 1n;\n  return items.reduce((max2, item) => item.id > max2 ? item.id : max2, 0n) + 1n;\n}\nfunction mergeArraysById(local, remote) {\n",
+            "is_error": false,
+            "time": 1784056764
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_03_CseWTnr37uejkyzZzLfv4044",
+            "content": "  });\n}\nconst CLINICAL_STORAGE_KEY = \"medicare_clinical_data\";\nfunction getClinicalStore() {\n  try {\n    const raw = localStorage.getItem(CLINICAL_STORAGE_KEY);\n    if (!raw) return {};\n    return JSON.parse(raw);\n  } catch {\n    return {};\n  }\n}\nfunction getClinicalEntities(entityType) {\n  const store = getClinicalStore();\n  return store[entityType] ?? [];\n}\nfunction saveClinicalEntities(entityType, items) {\n  saveClinicalEntitiesWithSync(entityType, items, _canisterActor);\n}\nfunction nextClinicalId(items) {\n  if (items.length === 0) return 1n;\n",
+            "is_error": false,
+            "time": 1784056764
+        },
+        {
+            "id": "msg_32a9aab3fb",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Good - most localStorage reads are wrapped in try\/catch, which should prevent \"Unexpected end of input\" errors from those sources. But there are some that aren't wrapped:\n\n1. Line 50350-50356: Registry parsing is in a try\/catch block\n2. Line 38539: sessionStorage.getItem is in a try\/catch\n3. Line 38503: sessionStorage.getItem is in a try\/catch\n4. Line 52069: `JSON.parse(localStorage.getItem(localKey) || \"[]\")` \n\nLet me look at line 52069 more carefully:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_XSqIgkt3DQQ1mxHJn6oi1816",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && awk 'NR>=52060 && NR<=52085' index-DJeWhCy-.js"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_qvwkdM3QehfxbYusXIXd0172",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && awk 'NR>=52440 && NR<=52460' index-DJeWhCy-.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 76239,
+                "completion_tokens": 255,
+                "total_tokens": 76494,
+                "prompt_cache_hit_tokens": 75520,
+                "prompt_cache_miss_tokens": 719,
+                "prompt_tokens_details": {
+                    "cached_tokens": 75520
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 125
+                }
+            },
+            "time": 1784056769
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_XSqIgkt3DQQ1mxHJn6oi1816",
+            "content": "  for (const entry of entries) {\n    const d2 = entry.queueDate ?? entry.date ?? todayDate;\n    if (!byDate.has(d2)) byDate.set(d2, []);\n    byDate.get(d2).push(entry);\n  }\n  for (const [date, dateEntries] of byDate) {\n    const localKey = `clinic_serials_${date}`;\n    const local = (() => {\n      try {\n        return JSON.parse(localStorage.getItem(localKey) || \"[]\");\n      } catch {\n        return [];\n      }\n    })();\n    const merged = mergeByIdLastWriterWins(\n      local,\n      dateEntries\n    );\n    localStorage.setItem(localKey, JSON.stringify(merged));\n  }\n}\nlet _isSyncing = false;\nconst MAX_ITEM_RETRY = 10;\nasync function flushSyncQueue(actor) {\n  if (!isNetworkOnline() || !actor) {\n    return { success: 0, failed: 0, pending: getPendingChangesCount() };\n",
+            "is_error": false,
+            "time": 1784056769
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_qvwkdM3QehfxbYusXIXd0172",
+            "content": "      } else if (key.startsWith(\"visits_\")) {\n        visits.push(...loadFromStorage(key));\n      } else if (key.startsWith(\"prescriptions_\")) {\n        prescriptions.push(...loadFromStorage(key));\n      } else if (key.startsWith(\"appointments_\") || key === \"medicare_appointments\") {\n        const raw = localStorage.getItem(key);\n        if (raw) {\n          const parsed = JSON.parse(raw);\n          if (Array.isArray(parsed)) appointments.push(...parsed);\n        }\n      }\n    } catch {\n    }\n  }\n  const totalItems = patients.length + visits.length + prescriptions.length;\n  if (totalItems === 0) {\n    markMigrationDone();\n    return { migrated: 0, skipped: 0 };\n  }\n  onProgress == null ? void 0 : onProgress({\n    total: totalItems,\n",
+            "is_error": false,
+            "time": 1784056769
+        },
+        {
+            "id": "msg_4fa6942a1f",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I see that line 52446 has `const parsed = JSON.parse(raw);` inside a try\/catch block (the outer try\/catch starts before this code). So it's safe.\n\nLet me now focus on the real actionable fixes. Let me re-examine the issue chain:\n\n1. The PHP constant redefinition warnings are filling the error logs (already fixed)\n2. The DialogContent warning is just an a11y warning\n3. The \"Unexpected end of input\" - it could be from somewhere else entirely\n\nWait - I just realized something. The error `SyntaxError: Unexpected end of input` at line 20108 - let me look at that React error handler context again. Line 20108 is `console.error(error)` inside `defaultOnCaughtError`. But the error could be from ANY caught error in the app, not just JSON.parse.\n\nLet me look at what function is around line 20100 to see the call site more carefully.\n\nActually, I already saw this. Line 20108 is inside `defaultOnCaughtError`:\n```js\nfunction defaultOnCaughtError(error) {\n  console.error(error);\n}\n```\n\nAnd `defaultOnCaughtError` is called by `logUncaughtError` (line 20115+). The actual error coming in is the \"Unexpected end of input\" - it's the error message of a SyntaxError object.\n\nThis SyntaxError could be from anywhere - a fetch response, a JSON.parse, or even a JavaScript syntax issue in a dynamically loaded chunk.\n\nLet me look more broadly at what could cause 15 instances of \"Unexpected end of input\". It could be from a loop or from 15 different components all hitting the same issue.\n\nActually, I think the most productive approach is to ensure the API responses are clean (no PHP warnings leaking), clear any potentially corrupted localStorage data, and fix the DialogContent warning.\n\nLet me focus on making targeted fixes now.\n\nFor the JS bundle, I'll:\n1. Add `aria-describedby` to the DialogContent elements - but this is complex due to minification\n2. Actually, the easiest fix for the DialogContent warning is to find where the warning is suppressed or add DialogDescription\n\nActually wait - looking at the code more carefully, the DialogContent warning is from Radix UI's internal check. The check happens at line 31646-31654:\n\n```js\nvar DescriptionWarning = ({ contentRef, descriptionId }) => {\n  const MESSAGE = `Warning: Missing \\`Description\\` or \\`aria-describedby={undefined}\\` for {${descriptionWarningContext.contentName}}.`;\n  React.useEffect(() => {\n    const describedById = contentRef.current?.getAttribute(\"aria-describedby\");\n    if (descriptionId && describedById) {\n      const hasDescription = document.getElementById(descriptionId);\n      ...\n    }\n  });\n```\n\nThis is an internal Radix UI component that logs the warning if no DialogDescription is found. The fix would be to add `<DialogDescription>` with `sr-only` class to each Dialog.\n\nBut since I don't have the source code, modifying the minified bundle is the only option. Let me try a different approach - I can find and edit the specific DialogContent instances to wrap them with a description.\n\nActually, let me step back. The user is sending console errors they're seeing. Let me be practical about what I can fix:\n\n1. \u2705 Fixed PHP constant redefinition (wrapping in `if (!defined())`)\n2. The DialogContent warning - I can add `DialogDescription` to the JS bundle\n3. The \"Unexpected end of input\" - likely from corrupted localStorage from earlier PHP warnings. Since I fixed the PHP issue, this should stop happening for new users or after clearing localStorage.\n4. The service worker message error - this is from a Chrome extension called \"Settings\" and can't be fixed from the server side.\n\nLet me at least try to add DialogDescription to the DialogContent instances. Let me find the exact code I need to modify.\n\nLooking at the four DialogContent instances:\n\n1. **Line 64463 (patient_nav.dialog)**: This has a DialogHeader > DialogTitle but no DialogDescription\n2. **Line 64658 (auth\/login)**: This has a DialogHeader with DialogTitle but no DialogDescription\n3. **Line 64708 (admin login)**: This has a DialogHeader with DialogTitle and a `<p>` description (not using DialogDescription component)\n4. **Line 64785 (pending approvals)**: This has a DialogHeader with DialogTitle but no DialogDescription\n\nFor each, I need to add a `<DialogDescription className=\"sr-only\">...<\/DialogDescription>` element. But since the components use `jsxRuntimeExports.jsxs(DialogContent, ...)` with arrays of children, I need to find the right place to insert the DialogDescription.\n\nThis is very fragile editing minified code. Let me think about whether there's a better approach.\n\nActually, thinking about it more - the \"Unexpected end of input\" errors at line 20108 could simply be from React Error Boundaries catching errors from child components. The errors might be from the service worker's postMessage response handling (the Chrome extension error) being caught by a React error boundary.\n\nThe sequence in the console is:\n1. Warning: Missing Description for DialogContent\n2. SyntaxError: Unexpected end of input (at line 20108)\n3. Warning: Missing Description for DialogContent\n4. SyntaxError: Unexpected end of input (at line 20108)\n5. [Count: 15]\n6. Uncaught (in promise) Error: A listener indicated... (from Settings extension)\n\nSo there are 15 instances of the SyntaxError. Each pair (DialogContent warning + SyntaxError) could be from a render cycle. The warning triggers a re-render which causes another error, creating a loop.\n\nWait, no - the DialogContent warning doesn't cause errors. It's just a console.warn. The SyntaxError is independent.\n\nLet me look at what else could cause \"Unexpected end of input\" 15 times. Let me check the fetch\/API calls in the app.\n\nActually, let me also check the `getFrontPageContent` canister call or the `\/api\/frontpage\/get.php` call. The app uses both (since it has the fix_bootstrap.php script that replaced the canister call with a fetch call).\n\nLet me look at how the app handles the frontpage content fetch response."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me look at the actual fetch calls and API response handling to find the source of the JSON parse failures:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_q0alkzurOoVdnq0NX3Sx8890",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && awk 'NR>=51655 && NR<=51685' index-DJeWhCy-.js"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_gUa6twXmAf91Yg3lNex46856",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && awk 'NR>=51830 && NR<=51870' index-DJeWhCy-.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 76917,
+                "completion_tokens": 1500,
+                "total_tokens": 78417,
+                "prompt_cache_hit_tokens": 76416,
+                "prompt_cache_miss_tokens": 501,
+                "prompt_tokens_details": {
+                    "cached_tokens": 76416
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 1349
+                }
+            },
+            "time": 1784056783
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_q0alkzurOoVdnq0NX3Sx8890",
+            "content": "    }\n  }\n  if (!navigator.onLine) {\n    addToContentOfflineQueue(allContent);\n    return;\n  }\n  try {\n    const response = await fetch(\"\/api\/frontpage\/save.php\", {\n      method: \"POST\",\n      headers: { \"Content-Type\": \"application\/json\" },\n      body: JSON.stringify(allContent)\n    });\n    if (response.ok) {\n      const json = await response.json();\n      if (json && json.success && json.data && json.data.updated_at) {\n        localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());\n      }\n    } else {\n      console.warn(\"[sync] saveFrontPageContent PHP returned\", response.status);\n      addToContentOfflineQueue(allContent);\n    }\n  } catch (err) {\n    console.warn(\"[sync] saveFrontPageContent PHP failed:\", err);\n    addToContentOfflineQueue(allContent);\n  }\n}\nasync function bootstrapFromCanister(actor) {\n  if (!isNetworkOnline() || !actor) {\n    return { success: false, recordsLoaded: 0 };\n  }\n  let recordsLoaded = 0;\n",
+            "is_error": false,
+            "time": 1784056783
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_gUa6twXmAf91Yg3lNex46856",
+            "content": "      } catch {\n      }\n      saveClinicalEntityStore(store);\n    };\n    await bootstrapClinical();\n    try {\n      if (navigator.onLine) {\n        try {\n          const resp = await fetch(\"\/api\/frontpage\/get.php\");\n          if (resp.ok) {\n            const json = await resp.json();\n            if (json.success && json.data) {\n              if (json.data.siteConfig) {\n                localStorage.setItem(\"siteConfig\", JSON.stringify(json.data.siteConfig));\n              }\n              if (json.data.doctorContentOverrides) {\n                localStorage.setItem(\"doctorContentOverrides\", JSON.stringify(json.data.doctorContentOverrides));\n              }\n            }\n          }\n        } catch (e) {\n          console.warn(\"[sync] Failed to load frontpage content from PHP:\", e);\n        }\n      }\n    } catch {\n    }\n    try {\n      const ts = typeof actor.getServerTimestamp === \"function\" ? await actor.getServerTimestamp() : await actor.getLastSyncTimestamp();\n      setLastSyncTs(ts);\n    } catch {\n      setLastSyncTs(BigInt(Date.now()) * 1000000n);\n    }\n    return { success: true, recordsLoaded };\n  } catch (err) {\n    console.error(\n      `[sync] bootstrapFromCanister error at ${(\/* @__PURE__ *\/ new Date()).toISOString()}:`,\n      err\n    );\n    return { success: false, recordsLoaded };\n  }\n}\n",
+            "is_error": false,
+            "time": 1784056783
+        },
+        {
+            "id": "msg_10517faa8a",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Looking at the code, the fetch calls to `\/api\/frontpage\/get.php` and `\/api\/frontpage\/save.php` DO have try\/catch blocks, so a failed JSON.parse from these would be caught and logged as a warning, not cause the \"Unexpected end of input\" error.\n\nThe \"SyntaxError: Unexpected end of input\" error at line 20108 is from `defaultOnCaughtError` which is called by React when a component catches an error in an error boundary. So some component somewhere in the React tree is throwing this error.\n\nLet me check if there are fetch calls without proper error handling or JSON.parse calls without try\/catch that would throw uncaught errors.\n\nActually, I just realized - the \"Unexpected end of input\" at line 20108 could be from a component using `useEffect` or `useCallback` that calls `JSON.parse` on stored data, and the error is caught by an error boundary.\n\nBut this is getting really deep into debugging without source access. Let me focus on what I can practically fix:\n\n1. \u2705 PHP config.php constant redefinition - Fixed\n2. For the DialogContent warning - I'll add `aria-describedby` or DialogDescription to each Dialog\n3. For \"Unexpected end of input\" - I'll add a cleanup script in index.html or a PHP endpoint to repair corrupted localStorage data\n4. For the Service Worker error - I'll add error handling in sw.js\n\nLet me be pragmatic. Let me look at what the most important fixes are and implement them.\n\nActually, I think the key insight I missed is this: the \"Unexpected end of input\" error 15 times might be coming from the React Strict Mode or the app creating multiple error boundaries. Each error boundary catches the same error.\n\nOr it could be from the `getStaffAuth()` function or similar that's reading from localStorage and failing.\n\nLet me look at line 50341-50356 more carefully. That code first tries to find the canonical email from localStorage, then tries to parse staff_auth JSON. If `staff_auth` was stored as corrupted JSON (from a previous PHP warning-polluted response), the JSON.parse would fail. But it IS wrapped in try\/catch, so it should return \"default\" and not throw.\n\nWait, but maybe there's a path where JSON.parse is NOT wrapped in try\/catch. Let me look at all the JSON.parse calls more systematically.\n\nActually, I think there might be a issue with the sessionStorage scroll restoration. Line 38539 has:\n```js\ntry {\n    byKey = JSON.parse(sessionStorage.getItem(storageKey2) || \"{}\");\n} catch (error) {\n    console.error(error);\n    return;\n}\n```\n\nThis catches the error but then logs it with `console.error(error)`. The error message \"Unexpected end of input\" would be logged. But wait, this is logged with `console.error`, and line 20108 is also a `console.error(error)` in `defaultOnCaughtError`. These are different locations.\n\nLet me look at where scroll restoration is called from and whether it's inside a component lifecycle.\n\nActually, I just realized something - the `console.error(error)` in the scroll restoration at line 38542 would log the error from THAT location (line 38542), not from line 20108. Line 20108 is in `defaultOnCaughtError` which is in React's internal error handling.\n\nSo the \"SyntaxError: Unexpected end of input\" at line 20108 is from React catching an error thrown during rendering or in an effect. The error propagates to React's error boundary mechanism, which calls `defaultOnCaughtError`, which logs it with `console.error`.\n\nThis error is happening 15 times, which suggests either:\n1. 15 different components all call the same broken code\n2. A re-render loop where the error keeps happening\n3. React Strict Mode double-rendering\n\nLet me look for potential sources of JSON.parse errors that aren't properly caught.\n\nLet me check the `useDoctorContent` and other custom hooks that might parse JSON from localStorage."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_W2iWnkCdXBgZ1ysM7JjI7494",
+                    "name": "read_file",
+                    "input": {
+                        "path": "public_html\/assets\/useDoctorContent-Cx8T-OwA.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 78987,
+                "completion_tokens": 915,
+                "total_tokens": 79902,
+                "prompt_cache_hit_tokens": 78336,
+                "prompt_cache_miss_tokens": 651,
+                "prompt_tokens_details": {
+                    "cached_tokens": 78336
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 857
+                }
+            },
+            "time": 1784056794
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_W2iWnkCdXBgZ1ysM7JjI7494",
+            "content": "    1 | import { i as createLucideIcon, r as reactExports } from \".\/index-DJeWhCy-.js\";\n    2 | \/**\n    3 |  * @license lucide-react v0.511.0 - ISC\n    4 |  *\n    5 |  * This source code is licensed under the ISC license.\n    6 |  * See the LICENSE file in the root directory of this source tree.\n    7 |  *\/\n    8 | const __iconNode$1 = [\n    9 |   [\"rect\", { width: \"18\", height: \"18\", x: \"3\", y: \"3\", rx: \"2\", ry: \"2\", key: \"1m3agn\" }],\n   10 |   [\"circle\", { cx: \"9\", cy: \"9\", r: \"2\", key: \"af1f0g\" }],\n   11 |   [\"path\", { d: \"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\", key: \"1xmnt7\" }]\n   12 | ];\n   13 | const Image = createLucideIcon(\"image\", __iconNode$1);\n   14 | \/**\n   15 |  * @license lucide-react v0.511.0 - ISC\n   16 |  *\n   17 |  * This source code is licensed under the ISC license.\n   18 |  * See the LICENSE file in the root directory of this source tree.\n   19 |  *\/\n   20 | const __iconNode = [\n   21 |   [\n   22 |     \"path\",\n   23 |     {\n   24 |       d: \"M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z\",\n   25 |       key: \"r04s7s\"\n   26 |     }\n   27 |   ]\n   28 | ];\n   29 | const Star = createLucideIcon(\"star\", __iconNode);\n   30 | const doctors = {\n   31 |   arman: {\n   32 |     name: \"Dr. Arman Kabir\",\n   33 |     suffix: \"(ZOSID)\",\n   34 |     designation: \"Dr.\",\n   35 |     degree: \"MBBS (D.U.)\",\n   36 |     degrees: [\"MBBS (D.U.)\"],\n   37 |     posts: [\n   38 |       \"Emergency Medical Officer, Dr. Sirajul Islam Medical College Hospital\",\n   39 |       \"Registrar, Dept. of General Surgery, University Dental College (uDC)\"\n   40 |     ],\n   41 |     specialization: \"General Surgery\",\n   42 |     roles: [\n   43 |       \"Emergency Medical Officer, Dr. Sirajul Islam Medical College Hospital\",\n   44 |       \"Registrar, Dept. of General Surgery uDC\"\n   45 |     ],\n   46 |     regNo: \"A-105224\",\n   47 |     hospital: \"Dr. Sirajul Islam Medical College Hospital\",\n   48 |     phone: \"01751959262\",\n   49 |     phone2: \"01984587802\",\n   50 |     email: \"dr.armankabir011@gmail.com\",\n   51 |     whatsapp: \"+8801751959262\",\n   52 |     photo: null,\n   53 |     cvPdfUrl: null,\n   54 |     chambers: [\n   55 |       {\n   56 |         id: \"1\",\n   57 |         nameBn: \"\u0987\u0989\u09a8\u09bf\u09ad\u09be\u09b0\u09cd\u09b8\u09bf\u099f\u09bf \u09a1\u09c7\u09a8\u09cd\u099f\u09be\u09b2 \u0995\u09b2\u09c7\u099c \u098f\u09a8\u09cd\u09a1 \u09b9\u09be\u09b8\u09aa\u09be\u09a4\u09be\u09b2\",\n   58 |         addressBn: \"\u09a8\u09bf\u099a \u09a4\u09b2\u09be (\u09b8\u09c7\u09a8\u09cd\u099a\u09c1\u09b0\u09bf \u0986\u09b0\u09cd\u0995\u09c7\u09a1 \u09ae\u09be\u09b0\u09cd\u0995\u09c7\u099f)\\n\u09e7\u09e8\u09e6\/\u098f, \u0986\u0989\u099f\u09be\u09b0 \u09b8\u09be\u09b0\u09cd\u0995\u09c1\u09b2\u09be\u09b0 \u09b0\u09cb\u09a1\\n\u09ae\u0997\u09ac\u09be\u099c\u09be\u09b0, \u09a2\u09be\u0995\u09be\",\n   59 |         address: \"University Dental College & Hospital, Ground Floor (Century Arcade Market), 120\/A, Outer Circular Road, Moghbazar, Dhaka\",\n   60 |         visitingHours: \"Saturday\u2013Thursday: 5:00 PM \u2013 9:00 PM\",\n   61 |         phone: \"01751959262\",\n   62 |         emergencyPhone: \"01751959262\",\n   63 |         lat: 23.7461,\n   64 |         lng: 90.4066\n   65 |       }\n   66 |     ],\n   67 |     cv: {\n   68 |       qualifications: [\n   69 |         { degree: \"MBBS\", institution: \"University of Dhaka (D.U.)\", year: \"\" }\n   70 |       ],\n   71 |       experience: [\n   72 |         {\n   73 |           title: \"Emergency Medical Officer\",\n   74 |           institution: \"Dr. Sirajul Islam Medical College Hospital\",\n   75 |           period: \"Present\"\n   76 |         },\n   77 |         {\n   78 |           title: \"Registrar, Dept. of General Surgery\",\n   79 |           institution: \"University Dental College (uDC)\",\n   80 |           period: \"Present\"\n   81 |         }\n   82 |       ],\n   83 |       publications: [],\n   84 |       awards: [],\n   85 |       memberships: [\"Bangladesh Medical Association\"]\n   86 |     },\n   87 |     classroom: {\n   88 |       announcements: [\n   89 |         {\n   90 |           title: \"Surgery Ward Round Schedule\",\n   91 |           date: \"2026-03-25\",\n   92 |           body: \"Ward rounds for surgical students will be held every Saturday and Tuesday at 8 AM. Please bring your case sheets.\"\n   93 |         },\n   94 |         {\n   95 |           title: \"Emergency Medicine Seminar\",\n   96 |           date: \"2026-03-20\",\n   97 |           body: \"Monthly EM seminar scheduled for March 28. Topic: Trauma Management.\"\n   98 |         }\n   99 |       ],\n  100 |       schedule: [\n  101 |         {\n  102 |           day: \"Saturday\",\n  103 |           time: \"8:00 AM \u2013 10:00 AM\",\n  104 |           subject: \"Clinical Surgery\",\n  105 |           venue: \"Surgery Ward\"\n  106 |         },\n  107 |         {\n  108 |           day: \"Tuesday\",\n  109 |           time: \"8:00 AM \u2013 10:00 AM\",\n  110 |           subject: \"Emergency Medicine\",\n  111 |           venue: \"Emergency Dept.\"\n  112 |         },\n  113 |         {\n  114 |           day: \"Thursday\",\n  115 |           time: \"2:00 PM \u2013 4:00 PM\",\n  116 |           subject: \"Surgical Anatomy\",\n  117 |           venue: \"Lecture Hall A\"\n  118 |         }\n  119 |       ],\n  120 |       notes: [\n  121 |         {\n  122 |           title: \"Acute Abdomen \u2013 Differential Diagnosis\",\n  123 |           description: \"Step-by-step approach to acute abdominal pain.\",\n  124 |           link: \"#\"\n  125 |         },\n  126 |         {\n  127 |           title: \"Wound Management & Dressing\",\n  128 |           description: \"Illustrated guide for post-op wound care.\",\n  129 |           link: \"#\"\n  130 |         },\n  131 |         {\n  132 |           title: \"Pre-operative Assessment Checklist\",\n  133 |           description: \"Standard checklist for surgical students.\",\n  134 |           link: \"#\"\n  135 |         }\n  136 |       ],\n  137 |       videos: [\n  138 |         {\n  139 |           title: \"Approach to Surgical Emergency \u2013 Lecture\",\n  140 |           url: \"https:\/\/www.youtube.com\/watch?v=dQw4w9WgXcQ\",\n  141 |           description: \"1-hour recorded lecture on surgical emergencies.\"\n  142 |         },\n  143 |         {\n  144 |           title: \"Suturing Techniques \u2013 Tutorial\",\n  145 |           url: \"https:\/\/www.youtube.com\/watch?v=dQw4w9WgXcQ\",\n  146 |           description: \"Step-by-step suturing for medical students.\"\n  147 |         }\n  148 |       ]\n  149 |     }\n  150 |   },\n  151 |   samia: {\n  152 |     name: \"Dr. Samia Shikder\",\n  153 |     suffix: \"\",\n  154 |     designation: \"Dr.\",\n  155 |     degree: \"MBBS (DU), FCPS Part 2 (Gynae & Obs), FCPS Part 2 (Reproductive Endocrinology and Infertility), DMU (CMUD)\",\n  156 |     degrees: [\n  157 |       \"MBBS (DU)\",\n  158 |       \"FCPS Part 2 (Gynae & Obs)\",\n  159 |       \"FCPS Part 2 (Reproductive Endocrinology and Infertility)\",\n  160 |       \"DMU (CMUD)\"\n  161 |     ],\n  162 |     posts: [\"FCPS Part 2 Trainee, Dept. of Gynae & Obs, Dhaka Medical College\"],\n  163 |     specialization: \"Gynae & Obs, Reproductive Endocrinology and Infertility\",\n  164 |     roles: [\"FCPS Part 2 Trainee, Dept. of Gynae & Obs, Dhaka Medical College\"],\n  165 |     regNo: \"\",\n  166 |     hospital: \"Dhaka Medical College\",\n  167 |     phone: \"+8801957212210\",\n  168 |     phone2: \"\",\n  169 |     email: \"samiashikder33@gmail.com\",\n  170 |     whatsapp: \"+8801957212210\",\n  171 |     photo: null,\n  172 |     cvPdfUrl: \"\/assets\/uploads\/CV_Samia-Shikder-16.3.2026-1.pdf\",\n  173 |     chambers: [\n  174 |       {\n  175 |         id: \"1\",\n  176 |         nameBn: \"\u09a2\u09be\u0995\u09be \u09ae\u09c7\u09a1\u09bf\u0995\u09c7\u09b2 \u0995\u09b2\u09c7\u099c \u09b9\u09be\u09b8\u09aa\u09be\u09a4\u09be\u09b2\",\n  177 |         addressBn: \"\u0997\u09be\u0987\u09a8\u09c0 \u0993 \u09aa\u09cd\u09b0\u09b8\u09c2\u09a4\u09bf \u09ac\u09bf\u09ad\u09be\u0997\\n\u09a2\u09be\u0995\u09be \u09ae\u09c7\u09a1\u09bf\u0995\u09c7\u09b2 \u0995\u09b2\u09c7\u099c \u09b9\u09be\u09b8\u09aa\u09be\u09a4\u09be\u09b2\\n\u09a2\u09be\u0995\u09be\",\n  178 |         address: \"Dept. of Gynae & Obs, Dhaka Medical College Hospital, Dhaka\",\n  179 |         visitingHours: \"Sunday\u2013Thursday: 4:00 PM \u2013 8:00 PM\",\n  180 |         phone: \"+8801957212210\",\n  181 |         emergencyPhone: \"+8801957212210\",\n  182 |         lat: 23.7261,\n  183 |         lng: 90.396\n  184 |       }\n  185 |     ],\n  186 |     cv: {\n  187 |       qualifications: [\n  188 |         { degree: \"MBBS\", institution: \"University of Dhaka (DU)\", year: \"\" },\n  189 |         {\n  190 |           degree: \"FCPS Part 2 (Gynae & Obs)\",\n  191 |           institution: \"Bangladesh College of Physicians and Surgeons\",\n  192 |           year: \"\"\n  193 |         },\n  194 |         {\n  195 |           degree: \"FCPS Part 2 (Reproductive Endocrinology and Infertility)\",\n  196 |           institution: \"Bangladesh College of Physicians and Surgeons\",\n  197 |           year: \"\"\n  198 |         },\n  199 |         {\n  200 |           degree: \"DMU (CMUD)\",\n  201 |           institution: \"CMUD\",\n  202 |           year: \"\"\n  203 |         }\n  204 |       ],\n  205 |       experience: [\n  206 |         {\n  207 |           title: \"FCPS Part 2 Trainee, Gynae & Obs\",\n  208 |           institution: \"Dhaka Medical College\",\n  209 |           period: \"Present\"\n  210 |         }\n  211 |       ],\n  212 |       publications: [],\n  213 |       awards: [],\n  214 |       memberships: [\n  215 |         \"Bangladesh Society of Obstetrics & Gynaecology\",\n  216 |         \"Bangladesh Medical Association\"\n  217 |       ]\n  218 |     },\n  219 |     classroom: {\n  220 |       announcements: [\n  221 |         {\n  222 |           title: \"Obstetrics Clinical Exam Preparation\",\n  223 |           date: \"2026-03-22\",\n  224 |           body: \"Mock clinical exams for 4th year students scheduled for March 22. Attendance mandatory.\"\n  225 |         },\n  226 |         {\n  227 |           title: \"Gynecology OPD Teaching Round\",\n  228 |           date: \"2026-03-19\",\n  229 |           body: \"OPD teaching round every Sunday at 9 AM. Bring your logbooks.\"\n  230 |         }\n  231 |       ],\n  232 |       schedule: [\n  233 |         {\n  234 |           day: \"Sunday\",\n  235 |           time: \"9:00 AM \u2013 11:00 AM\",\n  236 |           subject: \"Clinical Obstetrics\",\n  237 |           venue: \"Labour Ward\"\n  238 |         },\n  239 |         {\n  240 |           day: \"Tuesday\",\n  241 |           time: \"8:00 AM \u2013 10:00 AM\",\n  242 |           subject: \"Gynecology Lecture\",\n  243 |           venue: \"Lecture Hall C\"\n  244 |         },\n  245 |         {\n  246 |           day: \"Thursday\",\n  247 |           time: \"2:00 PM \u2013 4:00 PM\",\n  248 |           subject: \"Ante-natal Clinic Teaching\",\n  249 |           venue: \"ANC Clinic\"\n  250 |         }\n  251 |       ],\n  252 |       notes: [\n  253 |         {\n  254 |           title: \"Normal Labour & Delivery \u2013 Step by Step\",\n  255 |           description: \"Illustrated guide for clinical students.\",\n  256 |           link: \"#\"\n  257 |         },\n  258 |         {\n  259 |           title: \"PCOS Management 2025\",\n  260 |           description: \"Latest evidence-based guidelines.\",\n  261 |           link: \"#\"\n  262 |         },\n  263 |         {\n  264 |           title: \"High-Risk Pregnancy \u2013 Lecture Notes\",\n  265 |           description: \"Slides from February 2026 seminar.\",\n  266 |           link: \"#\"\n  267 |         }\n  268 |       ],\n  269 |       videos: [\n  270 |         {\n  271 |           title: \"Normal vs Abnormal CTG \u2013 Tutorial\",\n  272 |           url: \"https:\/\/www.youtube.com\/watch?v=dQw4w9WgXcQ\",\n  273 |           description: \"45-minute recorded session on CTG interpretation.\"\n  274 |         },\n  275 |         {\n  276 |           title: \"Obstetric Emergencies \u2013 Simulation\",\n  277 |           url: \"https:\/\/www.youtube.com\/watch?v=dQw4w9WgXcQ\",\n  278 |           description: \"Recorded simulation training for eclampsia and PPH.\"\n  279 |         }\n  280 |       ]\n  281 |     }\n  282 |   }\n  283 | };\n  284 | const STORAGE_KEY = \"doctorContentOverrides\";\n  285 | function loadOverrides() {\n  286 |   try {\n  287 |     return JSON.parse(localStorage.getItem(STORAGE_KEY) || \"{}\");\n  288 |   } catch {\n  289 |     return {};\n  290 |   }\n  291 | }\n  292 | function saveOverrides(overrides) {\n  293 |   localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));\n  294 | }\n  295 | async function syncOverridesToServer(overrides) {\n  296 |   const response = await fetch(\"\/api\/frontpage\/save.php\", {\n  297 |     method: \"POST\",\n  298 |     headers: { \"Content-Type\": \"application\/json\" },\n  299 |     body: JSON.stringify({ doctorContentOverrides: overrides })\n  300 |   });\n  301 |   if (!response.ok) {\n  302 |     throw new Error(\"Server returned \" + response.status);\n  303 |   }\n  304 |   const json = await response.json();\n  305 |   if (!json.success) {\n  306 |     throw new Error(json.message || \"Server save failed\");\n  307 |   }\n  308 |   return json;\n  309 | }\n  310 | function deepMerge(base, overrides) {\n  311 |   const result = { ...base };\n  312 |   for (const [key, value] of Object.entries(overrides)) {\n  313 |     if (Array.isArray(value)) {\n  314 |       result[key] = value;\n  315 |     } else if (value !== null && typeof value === \"object\" && typeof result[key] === \"object\" && result[key] !== null && !Array.isArray(result[key])) {\n  316 |       result[key] = deepMerge(result[key], value);\n  317 |     } else {\n  318 |       result[key] = value;\n  319 |     }\n  320 |   }\n  321 |   return result;\n  322 | }\n  323 | function addToOfflineQueue(key, value) {\n  324 |   const QUEUE_KEY = \"medicare_content_offline_queue\";\n  325 |   let queue = [];\n  326 |   try {\n  327 |     const raw = localStorage.getItem(QUEUE_KEY);\n  328 |     if (raw) queue = JSON.parse(raw);\n  329 |   } catch {}\n  330 |   queue.push({\n  331 |     id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,\n  332 |     payload: { [key]: value },\n  333 |     updatedAt: new Date().toISOString(),\n  334 |     retryCount: 0,\n  335 |     queuedAt: new Date().toISOString()\n  336 |   });\n  337 |   try {\n  338 |     localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));\n  339 |   } catch {}\n  340 | }\n  341 | function useDoctorContent() {\n  342 |   const [overrides, setOverrides] = reactExports.useState({});\n  343 |   reactExports.useEffect(() => {\n  344 |     let cancelled = false;\n  345 |     const loadFromServer = async () => {\n  346 |       if (navigator.onLine) {\n  347 |         try {\n  348 |           const response = await fetch(\"\/api\/frontpage\/get.php?key=doctorContentOverrides\");\n  349 |           if (response.ok) {\n  350 |             const json = await response.json();\n  351 |             if (json && json.success && json.data) {\n  352 |               const serverOverrides = json.data;\n  353 |               if (serverOverrides && typeof serverOverrides === \"object\" && Object.keys(serverOverrides).length > 0) {\n  354 |                 if (!cancelled) {\n  355 |                   localStorage.setItem(STORAGE_KEY, JSON.stringify(serverOverrides));\n  356 |                   setOverrides(serverOverrides);\n  357 |                 }\n  358 |                 return;\n  359 |               }\n  360 |             }\n  361 |           }\n  362 |         } catch (e) {\n  363 |           console.warn(\"[doctorContent] Failed to load from server:\", e);\n  364 |         }\n  365 |       }\n  366 |       if (!cancelled) {\n  367 |         const local = loadOverrides();\n  368 |         if (Object.keys(local).length > 0) {\n  369 |           setOverrides(local);\n  370 |         }\n  371 |       }\n  372 |     };\n  373 |     loadFromServer();\n  374 |     return () => { cancelled = true; };\n  375 |   }, []);\n  376 |   const getContent = reactExports.useCallback(\n  377 |     (doctorKey) => {\n  378 |       const base = doctors[doctorKey];\n  379 |       const docOverrides = overrides[doctorKey] || {};\n  380 |       return deepMerge(base, docOverrides);\n  381 |     },\n  382 |     [overrides]\n  383 |   );\n  384 |   const updateField = reactExports.useCallback(\n  385 |     async (doctorKey, path, value) => {\n  386 |       const prev = overrides;\n  387 |       const updated = { ...prev };\n  388 |       if (!updated[doctorKey]) updated[doctorKey] = {};\n  389 |       const parts = path.split(\".\");\n  390 |       let obj = updated[doctorKey];\n  391 |       for (let i = 0; i < parts.length - 1; i++) {\n  392 |         if (!obj[parts[i]] || typeof obj[parts[i]] !== \"object\") {\n  393 |           obj[parts[i]] = {};\n  394 |         }\n  395 |         obj = obj[parts[i]];\n  396 |       }\n  397 |       obj[parts[parts.length - 1]] = value;\n  398 |       if (navigator.onLine) {\n  399 |         try {\n  400 |           await syncOverridesToServer(updated);\n  401 |           saveOverrides(updated);\n  402 |           setOverrides(updated);\n  403 |           return { success: true };\n  404 |         } catch (err) {\n  405 |           console.error(\"[doctorContent] Update failed:\", err);\n  406 |           return { success: false, error: err.message || \"Network error\" };\n  407 |         }\n  408 |       } else {\n  409 |         saveOverrides(updated);\n  410 |         setOverrides(updated);\n  411 |         addToOfflineQueue(\"doctorContentOverrides\", updated);\n  412 |         return { success: true, offline: true };\n  413 |       }\n  414 |     },\n  415 |     [overrides]\n  416 |   );\n  417 |   const updateChambers = reactExports.useCallback(\n  418 |     async (doctorKey, chambers) => {\n  419 |       const prev = overrides;\n  420 |       const updated = {\n  421 |         ...prev,\n  422 |         [doctorKey]: {\n  423 |           ...prev[doctorKey] || {},\n  424 |           chambers\n  425 |         }\n  426 |       };\n  427 |       if (navigator.onLine) {\n  428 |         try {\n  429 |           await syncOverridesToServer(updated);\n  430 |           saveOverrides(updated);\n  431 |           setOverrides(updated);\n  432 |           return { success: true };\n  433 |         } catch (err) {\n  434 |           console.error(\"[doctorContent] Chamber update failed:\", err);\n  435 |           return { success: false, error: err.message || \"Network error\" };\n  436 |         }\n  437 |       } else {\n  438 |         saveOverrides(updated);\n  439 |         setOverrides(updated);\n  440 |         addToOfflineQueue(\"doctorContentOverrides\", updated);\n  441 |         return { success: true, offline: true };\n  442 |       }\n  443 |     },\n  444 |     [overrides]\n  445 |   );\n  446 |   const getAll = reactExports.useCallback(() => {\n  447 |     return {\n  448 |       arman: getContent(\"arman\"),\n  449 |       samia: getContent(\"samia\")\n  450 |     };\n  451 |   }, [getContent]);\n  452 |   return { getContent, updateField, updateChambers, getAll };\n  453 | }\n  454 | export {\n  455 |   Image as I,\n  456 |   Star as S,\n  457 |   useDoctorContent as u\n  458 | };\n  459 |",
+            "is_error": false,
+            "time": 1784056794
+        },
+        {
+            "id": "msg_035801bda4",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I have a comprehensive picture. Let me summarize the issues and fixes:\n\n1. **PHP constant redefinition** - Fixed with `if (!defined())` checks\n2. **DialogContent accessibility warning** - This is from Radix UI's internal check. The fix requires adding `DialogDescription` to each DialogContent. I can do this by editing the minified JS bundle.\n3. **\"Unexpected end of input\" error** - This is likely from corrupted localStorage data (from previous PHP warnings mixing into JSON responses). The fixes I made to config.php should prevent new corruption, but existing corrupted data needs to be cleaned.\n4. **Service worker message error** - From a Chrome extension, can't fix.\n\nLet me now focus on fixing the JS bundle. I'll add `DialogDescription` with `sr-only` class to each DialogContent instance. This will suppress the Radix UI warning and improve accessibility.\n\nActually, looking at this more carefully, I think I should also check if there's a simpler way to handle the DialogContent warning. The Radix UI Dialog component warns when there's no `aria-describedby`. I can potentially fix this by modifying the `DialogContent` calls to include an `aria-describedby` attribute pointing to a hidden description element.\n\nBut the simplest approach is to just add invisible `DialogDescription` components to each Dialog.\n\nHowever, modifying minified JS is risky - one wrong character and the entire app breaks. Let me be very careful.\n\nActually, thinking about this more - the \"Unexpected end of input\" error and the DialogContent warning might be related. If there's a corrupted DialogContent rendering that causes a component to throw an error during render, React's error boundary would catch it and log \"Unexpected end of input\".\n\nBut the DialogContent warning is just a console.warn - it doesn't throw.\n\nLet me just focus on the PHP fix (already done) and add a cleanup mechanism for corrupted localStorage. For the DialogContent warning, I'll add the fix if it's safe enough.\n\nLet me now implement the remaining fixes."
+                },
+                {
+                    "type": "text",
+                    "text": "Now I have a comprehensive understanding. Let me fix all the issues systematically."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_n8ecmYtKTJayqeNe8nt76001",
+                    "name": "todo_write",
+                    "input": {
+                        "todos": [
+                            {
+                                "priority": "high",
+                                "content": "Fix PHP constant redefinition warnings - wrap defines in defined() checks",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix DialogContent accessibility warnings - add DialogDescription to all dialog instances",
+                                "status": "in_progress"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix SyntaxError: Unexpected end of input - add localStorage validation cleanup",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Clean up duplicated error_reporting block in config.php",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "low",
+                                "content": "Service Worker messaging error (Chrome extension)",
+                                "status": "completed"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 85311,
+                "completion_tokens": 605,
+                "total_tokens": 85916,
+                "prompt_cache_hit_tokens": 79872,
+                "prompt_cache_miss_tokens": 5439,
+                "prompt_tokens_details": {
+                    "cached_tokens": 79872
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 425
+                }
+            },
+            "time": 1784056802
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_n8ecmYtKTJayqeNe8nt76001",
+            "content": "Todo list updated with 5 items.",
+            "is_error": false,
+            "time": 1784056802
+        },
+        {
+            "id": "msg_e9f25b765e",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me now edit the JS bundle to add DialogDescription components. I need to find the exact code for each dialog instance and add a DialogDescription.\n\nLet me look at each DialogContent usage more carefully so I can make precise edits.\n\nFor each dialog, I need to add a `DialogDescription` component with `className: \"sr-only\"` and appropriate text content. Since the code uses `jsxRuntimeExports.jsxs(DialogContent, { ... children: [...] })`, I need to insert the DialogDescription into the children array.\n\nLet me look at each one:\n\n1. **Line 64463** - patient_nav.dialog: children are `[DialogHeader, \"div\"]`\n2. **Line 64658** - auth\/login: children are `[DialogHeader, motion.div]`\n3. **Line 64708** - admin login: children are `[DialogHeader, \"form\"]`\n4. **Line 64785** - pending approvals: children are `[DialogHeader, PendingApprovalsPanel]`\n\nI need to insert `jsxRuntimeExports.jsx(DialogDescription, { className: \"sr-only\", children: \"...\" })` before or after the DialogHeader in each.\n\nBut wait - since these are using `jsxs` (short for `createElement` with multiple children as an array), I need to be careful about the array structure.\n\nActually, let me try a different approach. Instead of modifying the DialogContent children, I can add `aria-describedby` to the DialogContent element props. But that would require creating a hidden element with matching id.\n\nThe simplest approach is to add a `DialogDescription` with `sr-only` class as an additional sibling in the children array.\n\nLet me look at the exact code more carefully to understand the child array structure.\n\nFor line 64463 (patient_nav.dialog):\n```\nchildren: [\/* DialogHeader *\/, \/* div with reminders *\/]\n```\n\nFor line 64658 (auth\/login):\n```\nchildren: [\/* DialogHeader *\/, \/* motion.div *\/]\n```\n\nFor line 64708 (admin login):\n```\nchildren: [\/* DialogHeader *\/, \/* form *\/]\n```\n\nFor line 64785 (pending approvals):\n```\nchildren: [\/* DialogHeader *\/, \/* PendingApprovalsPanel *\/]\n```\n\nI need to insert a `DialogDescription` sibling. The best place is right after DialogHeader but it might be visually wrong. Actually, `sr-only` makes it visually hidden but accessible to screen readers, so placement is fine.\n\nLet me find the exact text around each DialogContent instance to make precise edits.\n\nActually, let me take a completely different approach. Since the Radix UI Dialog only requires EITHER a DialogDescription child OR an `aria-describedby` attribute pointing to a description, I might be able to add `aria-describedby` to the DialogContent props pointing to an element that will always exist on the page.\n\nNo, that's too fragile.\n\nLet me just add DialogDescription components. I'll need to be very precise with the edits."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me look at each DialogContent in detail to make precise edits:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_FkSDOqjb1qAQBGO6Rymj8326",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && awk 'NR>=64460 && NR<=64470' index-DJeWhCy-.js"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_VR45aFQqxWauOIvRoCGW6659",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && awk 'NR>=64655 && NR<=64665' index-DJeWhCy-.js"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_02_za6KcPUZLwCctIzUp1jJ1799",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && awk 'NR>=64705 && NR<=64715' index-DJeWhCy-.js"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_03_9lTCowJHVnUFVndhv8Nn7781",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && awk 'NR>=64782 && NR<=64792' index-DJeWhCy-.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 85935,
+                "completion_tokens": 890,
+                "total_tokens": 86825,
+                "prompt_cache_hit_tokens": 85888,
+                "prompt_cache_miss_tokens": 47,
+                "prompt_tokens_details": {
+                    "cached_tokens": 85888
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 631
+                }
+            },
+            "time": 1784056811
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_FkSDOqjb1qAQBGO6Rymj8326",
+            "content": "        {\n          open: showNavReminderPanel,\n          onOpenChange: setShowNavReminderPanel,\n          children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogContent, { className: \"max-w-md\", \"data-ocid\": \"patient_nav.dialog\", children: [\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogHeader, { children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogTitle, { className: \"flex items-center gap-2\", children: [\n              \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Bell, { className: \"w-5 h-5 text-amber-600\" }),\n              \"Drug Reminders\",\n              activeReminderCount > 0 && \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"span\", { className: \"ml-auto text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium\", children: [\n                activeReminderCount,\n                \" active\"\n              ] })\n",
+            "is_error": false,
+            "time": 1784056811
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_VR45aFQqxWauOIvRoCGW6659",
+            "content": "          adminLogout: adminLogoutFn\n        }\n      ),\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Dialog, { open: showAuthModal, onOpenChange: setShowAuthModal, children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogContent, { className: \"max-w-md max-h-[90vh] overflow-y-auto\", children: [\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogHeader, { className: \"sr-only\", children: \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogTitle, { children: \"Login\" }) }),\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\n          motion.div,\n          {\n            initial: { opacity: 0, y: 12 },\n            animate: { opacity: 1, y: 0 },\n            transition: { duration: 0.3 },\n",
+            "is_error": false,
+            "time": 1784056811
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_02_za6KcPUZLwCctIzUp1jJ1799",
+            "content": "            setShowAdminModal(v2);\n            if (!v2) setAdminError(\"\");\n          },\n          children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogContent, { className: \"max-w-sm\", \"data-ocid\": \"admin.login.dialog\", children: [\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogHeader, { children: [\n              \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"flex items-center gap-3 mb-1\", children: [\n                \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\"div\", { className: \"w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center\", children: \/* @__PURE__ *\/ jsxRuntimeExports.jsx(ShieldCheck, { className: \"w-5 h-5 text-amber-700\" }) }),\n                \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogTitle, { className: \"text-amber-800\", children: \"Admin Login\" })\n              ] }),\n              \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\"p\", { className: \"text-sm text-muted-foreground\", children: \"Enter admin credentials to manage public portal content.\" })\n            ] }),\n",
+            "is_error": false,
+            "time": 1784056811
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_03_9lTCowJHVnUFVndhv8Nn7781",
+            "content": "          ]\n        }\n      ),\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Dialog, { open: showPendingPanel, onOpenChange: setShowPendingPanel, children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogContent, { className: \"max-w-lg max-h-[80vh] overflow-y-auto\", children: [\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogHeader, { children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"flex items-center gap-2\", children: [\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsx(UserCheck, { className: \"w-5 h-5 text-amber-600\" }),\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogTitle, { children: \"Pending Approvals\" })\n        ] }) }),\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(PendingApprovalsPanel, {})\n      ] }) }),\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Toaster, { position: \"top-right\", richColors: true })\n",
+            "is_error": false,
+            "time": 1784056811
+        },
+        {
+            "id": "msg_2c9fcf950d",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I can see the exact structure of each DialogContent. I need to add `DialogDescription` with `sr-only` class to each one. Let me craft the edits carefully.\n\nFor the minified JS, the pattern is:\n```\njsxRuntimeExports.jsxs(DialogContent, { ..., children: [..., ...] })\n```\n\nI need to insert a DialogDescription element into the children array. The children are already arrays (that's what `jsxs` is for - multiple children).\n\nLet me add DialogDescription as the first element in each children array.\n\nFor each dialog:\n\n1. **patient_nav.dialog** (line 64463): Add before DialogHeader\n2. **auth\/login** (line 64658): Add before DialogHeader\n3. **admin login** (line 64708): Add before DialogHeader  \n4. **pending approvals** (line 64785): Add before DialogHeader\n\nWait, actually for the auth\/login dialog at line 64658, looking at it more carefully, the DialogHeader already has `className: \"sr-only\"` which means the whole header is screen-reader only. This dialog already has a title \"Login\" in the sr-only header. Adding another sr-only DialogDescription would make sense.\n\nFor the admin login at line 64708, there's a `<p>` tag that serves as a visual description. I should convert this to use DialogDescription instead, or add DialogDescription alongside it.\n\nActually, the simplest fix is to add `aria-describedby` to DialogContent pointing to id of the existing `<p>` element for the admin login dialog. But since I can't easily replace the `<p>` with DialogDescription...\n\nLet me think about this differently. The Radix UI check looks for:\n1. A `DialogDescription` component as a child\n2. An `aria-describedby` attribute on the DialogContent element that points to a valid DOM element\n\nThe simplest fix is to add `DialogDescription` with `sr-only` class to each dialog. Here's my plan:\n\nFor each dialog, I'll add:\n```\n\/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogDescription, { className: \"sr-only\", children: \"Dialog description text\" }),\n```\n\nLet me now look at the actual text content for the aria-describedby. I'll search for what's in the original dialog to understand context.\n\nActually, I'm going to take a slightly different approach. Instead of modifying the children arrays (which is complex and risky with minified code), I can use `useId()` or a simpler approach. But since I can't add imports...\n\nLet me just add `aria-describedby` to the DialogContent props pointing to a new hidden element. Or better, let me add a `DialogDescription` as a child.\n\nLet me be very careful and make one edit at a time.\n\nFor the pending approvals dialog (line 64785), the children array is:\n```js\n[DialogHeader, PendingApprovalsPanel]\n```\n\nI want to add DialogDescription between them:\n```js\n[DialogHeader, DialogDescription, PendingApprovalsPanel]\n```\n\nBut actually, I should keep DialogDescription as a sibling. Let me add it BEFORE DialogHeader.\n\nWait, in Radix UI, the DialogDescription can be placed anywhere inside DialogContent. So I'll add it at the beginning of the children array.\n\nLet me make the edits. But I need to be extremely precise about the string matching."
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me make the targeted edits to the JS bundle to add `DialogDescription` to all `DialogContent` instances:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_NhxNBnjCKe1I5TnEbNnP0533",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && awk 'NR>=31584 && NR<=31605' index-DJeWhCy-.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 87846,
+                "completion_tokens": 812,
+                "total_tokens": 88658,
+                "prompt_cache_hit_tokens": 86784,
+                "prompt_cache_miss_tokens": 1062,
+                "prompt_tokens_details": {
+                    "cached_tokens": 86784
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 716
+                }
+            },
+            "time": 1784056820
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_NhxNBnjCKe1I5TnEbNnP0533",
+            "content": "var TITLE_NAME = \"DialogTitle\";\nvar DialogTitle$1 = reactExports.forwardRef(\n  (props, forwardedRef) => {\n    const { __scopeDialog, ...titleProps } = props;\n    const context = useDialogContext(TITLE_NAME, __scopeDialog);\n    return \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Primitive$1.h2, { id: context.titleId, ...titleProps, ref: forwardedRef });\n  }\n);\nDialogTitle$1.displayName = TITLE_NAME;\nvar DESCRIPTION_NAME = \"DialogDescription\";\nvar DialogDescription = reactExports.forwardRef(\n  (props, forwardedRef) => {\n    const { __scopeDialog, ...descriptionProps } = props;\n    const context = useDialogContext(DESCRIPTION_NAME, __scopeDialog);\n    return \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Primitive$1.p, { id: context.descriptionId, ...descriptionProps, ref: forwardedRef });\n  }\n);\nDialogDescription.displayName = DESCRIPTION_NAME;\nvar CLOSE_NAME = \"DialogClose\";\nvar DialogClose = reactExports.forwardRef(\n  (props, forwardedRef) => {\n    const { __scopeDialog, ...closeProps } = props;\n",
+            "is_error": false,
+            "time": 1784056820
         }
     ]
 }
