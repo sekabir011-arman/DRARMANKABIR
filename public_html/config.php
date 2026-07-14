@@ -4,35 +4,48 @@
  * 
  * Security: Never commit this file to version control.
  * On cPanel, place this outside public_html or protect with .htaccess.
+ *
+ * NOTE: putenv() is disabled on this server. We read .env directly and
+ * define constants. For maximum security, set real env vars via cPanel.
  */
 
 // ─── Environment Detection ─────────────────────────────────────────────────
-// On cPanel, you can set these in .env file outside public_html
-// or directly in your cPanel environment variables.
-// The priority is: .env file > config defaults
-// NOTE: putenv() is disabled on this server, so we use $_ENV directly.
+// First check OS-level environment variables (set via cPanel)
+// Then fall back to .env file outside public_html
+// Finally use hardcoded defaults (only for development)
 
-// Load .env file if it exists
-$dotenvFile = __DIR__ . '/../.env';
 $envConfig = [];
 
-if (file_exists($dotenvFile)) {
-    $lines = file($dotenvFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($lines as $line) {
-        $line = trim($line);
-        if (str_starts_with($line, '#') || !str_contains($line, '=')) continue;
-        [$key, $value] = explode('=', $line, 2);
-        $key = trim($key);
-        $value = trim($value, " \t\n\r\0\x0B\"'");
-        $envConfig[$key] = $value;
-        // Store in $_ENV for getenv() compatibility
-        $_ENV[$key] = $value;
+// 1. Check OS environment variables first
+$envVars = ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASS', 'JWT_SECRET', 'APP_URL'];
+foreach ($envVars as $var) {
+    $val = getenv($var);
+    if ($val !== false && $val !== '') {
+        $envConfig[$var] = $val;
     }
 }
 
-/**
- * Get environment variable from local config, $_ENV, or getenv()
- */
+// 2. Load from .env file if OS env vars are not set
+$dotenvFile = __DIR__ . '/../.env';
+if (file_exists($dotenvFile) && empty($envConfig)) {
+    $lines = file($dotenvFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (str_starts_with(trim($line), '#')) continue;
+        if (str_contains($line, '=')) {
+            [$key, $value] = explode('=', $line, 2);
+            $key = trim($key);
+            $value = trim($value, " \t\n\r\0\x0B\"'");
+            $envConfig[$key] = $value;
+        }
+    }
+}
+
+// ─── Database Configuration ────────────────────────────────────────────────
+define('DB_HOST', $envConfig['DB_HOST'] ?? '127.0.0.1');
+define('DB_NAME', $envConfig['DB_NAME'] ?? 'drarmank_drarmank_care');
+define('DB_USER', $envConfig['DB_USER'] ?? 'drarmank_drarmank_care_user');
+define('DB_PASS', $envConfig['DB_PASS'] ?? 'zosid01197247219');
+define('DB_CHARSET', 'utf8mb4');
 function env(string $key, mixed $default = null): mixed {
     // Check $_ENV first (populated from .env file)
     if (isset($_ENV[$key])) {
