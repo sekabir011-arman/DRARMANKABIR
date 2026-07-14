@@ -9,7 +9,20 @@
 // ─── Environment Detection ─────────────────────────────────────────────────
 // On cPanel, you can set these in .env file outside public_html
 // or directly in your cPanel environment variables.
-// The priority is: getenv() > .env file > config defaults
+// The priority is: $_ENV (loaded from .env) > getenv() > config defaults
+// NOTE: putenv() is disabled on this server, so we use $_ENV instead.
+
+/**
+ * Get environment variable with fallback to $_ENV array.
+ * putenv() is disabled on this server, so we manually store .env values in $_ENV.
+ */
+function env(string $key, mixed $default = null): mixed {
+    $value = getenv($key);
+    if ($value === false || $value === null) {
+        $value = $_ENV[$key] ?? null;
+    }
+    return $value !== null ? $value : $default;
+}
 
 $dotenvFile = __DIR__ . '/../.env';
 if (file_exists($dotenvFile)) {
@@ -20,11 +33,7 @@ if (file_exists($dotenvFile)) {
             [$key, $value] = explode('=', $line, 2);
             $key = trim($key);
             $value = trim($value, " \t\n\r\0\x0B\"'");
-            if (!getenv($key)) {
-                // putenv() may be disabled on some hosts; use $_ENV as fallback
-                if (function_exists('putenv')) {
-                    putenv("$key=$value");
-                }
+            if (!env($key)) {
                 $_ENV[$key] = $value;
             }
         }
@@ -32,16 +41,20 @@ if (file_exists($dotenvFile)) {
 }
 
 // ─── Database Configuration ────────────────────────────────────────────────
-define('DB_HOST', getenv('DB_HOST') ?: '127.0.0.1');
-define('DB_NAME', getenv('DB_NAME') ?: 'drarmank_drarmank_care');
-define('DB_USER', getenv('DB_USER') ?: 'drarmank_drarmank_care_user');
-define('DB_PASS', getenv('DB_PASS') ?: 'zosid01197247219');
+define('DB_HOST', env('DB_HOST') ?: '127.0.0.1');
+define('DB_NAME', env('DB_NAME') ?: 'drarmank_drarmank_care');
+define('DB_USER', env('DB_USER') ?: 'drarmank_drarmank_care_user');
+define('DB_PASS', env('DB_PASS') ?: 'zosid01197247219');
 define('DB_CHARSET', 'utf8mb4');
 
 // ─── Application Configuration ─────────────────────────────────────────────
 define('APP_NAME', 'Dr. Arman Kabir Care');
 define('APP_VERSION', '2.0.0');
-define('APP_URL', getenv('APP_URL') ?: 'https://drarmankabir.com');
+define('APP_URL', env('APP_URL') ?: 'https://drarmankabir.com');
+define('API_URL', APP_URL . '/api');
+
+// ─── Security Configuration ────────────────────────────────────────────────
+define('JWT_SECRET', env('JWT_SECRET') ?: 'change-this-to-a-random-secret-in-production');
 define('API_URL', APP_URL . '/api');
 
 // ─── Security Configuration ────────────────────────────────────────────────
