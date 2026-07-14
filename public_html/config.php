@@ -21,7 +21,11 @@ if (file_exists($dotenvFile)) {
             $key = trim($key);
             $value = trim($value, " \t\n\r\0\x0B\"'");
             if (!getenv($key)) {
-                putenv("$key=$value");
+                // putenv() may be disabled on some hosts; use $_ENV as fallback
+                if (function_exists('putenv')) {
+                    putenv("$key=$value");
+                }
+                $_ENV[$key] = $value;
             }
         }
     }
