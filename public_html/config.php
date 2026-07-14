@@ -56,33 +56,33 @@ function cfg(string $key, mixed $default = null): mixed {
 $GLOBALS['env_config'] = $envConfig;
 
 // ─── Database Configuration ────────────────────────────────────────────────
-define('DB_HOST', cfg('DB_HOST', '127.0.0.1'));
-define('DB_NAME', cfg('DB_NAME', 'drarmank_drarmank_care'));
-define('DB_USER', cfg('DB_USER', 'drarmank_drarmank_care_user'));
-define('DB_PASS', cfg('DB_PASS', 'zosid01197247219'));
-define('DB_CHARSET', 'utf8mb4');
+if (!defined('DB_HOST')) define('DB_HOST', cfg('DB_HOST', '127.0.0.1'));
+if (!defined('DB_NAME')) define('DB_NAME', cfg('DB_NAME', 'drarmank_drarmank_care'));
+if (!defined('DB_USER')) define('DB_USER', cfg('DB_USER', 'drarmank_drarmank_care_user'));
+if (!defined('DB_PASS')) define('DB_PASS', cfg('DB_PASS', 'zosid01197247219'));
+if (!defined('DB_CHARSET')) define('DB_CHARSET', 'utf8mb4');
 
 // ─── Application Configuration ─────────────────────────────────────────────
-define('APP_NAME', 'Dr. Arman Kabir Care');
-define('APP_VERSION', '2.0.0');
-define('APP_URL', cfg('APP_URL', 'https://drarmankabir.com'));
-define('API_URL', APP_URL . '/api');
+if (!defined('APP_NAME')) define('APP_NAME', 'Dr. Arman Kabir Care');
+if (!defined('APP_VERSION')) define('APP_VERSION', '2.0.0');
+if (!defined('APP_URL')) define('APP_URL', cfg('APP_URL', 'https://drarmankabir.com'));
+if (!defined('API_URL')) define('API_URL', APP_URL . '/api');
 
 // ─── Security Configuration ────────────────────────────────────────────────
-define('JWT_SECRET', cfg('JWT_SECRET', 'change-this-to-a-random-secret-in-production'));
-define('JWT_EXPIRY', 86400); // 24 hours in seconds
-define('SESSION_LIFETIME', 86400 * 7); // 7 days
-define('CSRF_TOKEN_LIFETIME', 3600); // 1 hour
+if (!defined('JWT_SECRET')) define('JWT_SECRET', cfg('JWT_SECRET', 'change-this-to-a-random-secret-in-production'));
+if (!defined('JWT_EXPIRY')) define('JWT_EXPIRY', 86400); // 24 hours in seconds
+if (!defined('SESSION_LIFETIME')) define('SESSION_LIFETIME', 86400 * 7); // 7 days
+if (!defined('CSRF_TOKEN_LIFETIME')) define('CSRF_TOKEN_LIFETIME', 3600); // 1 hour
 
 // ─── Upload Configuration ──────────────────────────────────────────────────
-define('UPLOAD_DIR', __DIR__ . '/uploads');
-define('UPLOAD_URL', '/uploads');
-define('MAX_UPLOAD_SIZE', 10 * 1024 * 1024); // 10MB
-define('ALLOWED_EXTENSIONS', ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx']);
+if (!defined('UPLOAD_DIR')) define('UPLOAD_DIR', __DIR__ . '/uploads');
+if (!defined('UPLOAD_URL')) define('UPLOAD_URL', '/uploads');
+if (!defined('MAX_UPLOAD_SIZE')) define('MAX_UPLOAD_SIZE', 10 * 1024 * 1024); // 10MB
+if (!defined('ALLOWED_EXTENSIONS')) define('ALLOWED_EXTENSIONS', ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx']);
 
 // ─── Rate Limiting ─────────────────────────────────────────────────────────
-define('RATE_LIMIT_MAX', 100);
-define('RATE_LIMIT_WINDOW', 60); // seconds
+if (!defined('RATE_LIMIT_MAX')) define('RATE_LIMIT_MAX', 100);
+if (!defined('RATE_LIMIT_WINDOW')) define('RATE_LIMIT_WINDOW', 60); // seconds
 
 // ─── Error Reporting ───────────────────────────────────────────────────────
 error_reporting(E_ALL);
