@@ -1187,84 +1187,151 @@ function loadConfig() {
     return DEFAULT_SITE_CONFIG;
   }
 }
-function saveConfig(cfg, actor) {
+function saveConfig(cfg) {
   localStorage.setItem(STORAGE_KEY$2, JSON.stringify(cfg));
-  saveFrontPageContentWithSync(actor ?? null);
 }
-function resolveActor() {
-  var _a;
-  try {
-    const mod = require("../hooks/useQueries");
-    return ((_a = mod.getCanisterActor) == null ? void 0 : _a.call(mod)) ?? null;
-  } catch {
-    return null;
+async function syncSiteConfigToServer(cfg) {
+  const response = await fetch("/api/frontpage/save.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ siteConfig: cfg })
+  });
+  if (!response.ok) {
+    throw new Error("Server returned " + response.status);
   }
+  const json = await response.json();
+  if (!json.success) {
+    throw new Error(json.message || "Server save failed");
+  }
+  return json;
 }
 function useSiteConfig() {
   const [config, setConfig] = reactExports.useState(loadConfig);
   reactExports.useEffect(() => {
-    if (navigator.onLine) {
-      fetch("/api/frontpage/get.php?key=siteConfig")
-        .then(r => r.ok ? r.json() : null)
-        .then(json => {
-          if (json && json.success && json.data) {
-            const serverCfg = json.data;
-            if (serverCfg && typeof serverCfg === "object" && Object.keys(serverCfg).length > 0) {
-              localStorage.setItem("siteConfig", JSON.stringify(serverCfg));
-              setConfig(serverCfg);
+    let cancelled = false;
+    const loadFromServer = async () => {
+      if (navigator.onLine) {
+        try {
+          const response = await fetch("/api/frontpage/get.php?key=siteConfig");
+          if (response.ok) {
+            const json = await response.json();
+            if (json && json.success && json.data) {
+              const serverCfg = json.data;
+              if (serverCfg && typeof serverCfg === "object" && Object.keys(serverCfg).length > 0) {
+                if (!cancelled) {
+                  localStorage.setItem(STORAGE_KEY$2, JSON.stringify(serverCfg));
+                  setConfig(serverCfg);
+                }
+                return;
+              }
             }
           }
-        })
-        .catch(e => console.warn("[landing] Failed to load siteConfig from server:", e));
+        } catch (e) {
+          console.warn("[landing] Failed to load siteConfig from server:", e);
+        }
+      }
+    };
+    loadFromServer();
+    return () => { cancelled = true; };
+  }, []);
+  const updateHero = reactExports.useCallback(async (hero) => {
+    const next = { ...config, heroSection: { ...config.heroSection, ...hero } };
+    if (navigator.onLine) {
+      try {
+        await syncSiteConfigToServer(next);
+        saveConfig(next);
+        setConfig(next);
+        return { success: true };
+      } catch (err) {
+        console.error("[landing] Hero update failed:", err);
+        return { success: false, error: err.message || "Network error" };
+      }
+    } else {
+      saveConfig(next);
+      setConfig(next);
+      addToContentOfflineQueue({ siteConfig: next });
+      return { success: true, offline: true };
     }
-  }, []);
-  const updateHero = reactExports.useCallback((hero) => {
-    setConfig((prev) => {
-      const next = { ...prev, heroSection: { ...prev.heroSection, ...hero } };
-      saveConfig(next, resolveActor());
-      return next;
-    });
-  }, []);
-  const updateAbout = reactExports.useCallback((about) => {
-    setConfig((prev) => {
-      const next = {
-        ...prev,
-        aboutSection: { ...prev.aboutSection, ...about }
-      };
-      saveConfig(next, resolveActor());
-      return next;
-    });
-  }, []);
-  const updateFooter = reactExports.useCallback((footer) => {
-    setConfig((prev) => {
-      const next = {
-        ...prev,
-        footerSection: { ...prev.footerSection, ...footer }
-      };
-      saveConfig(next, resolveActor());
-      return next;
-    });
-  }, []);
+  }, [config]);
+  const updateAbout = reactExports.useCallback(async (about) => {
+    const next = { ...config, aboutSection: { ...config.aboutSection, ...about } };
+    if (navigator.onLine) {
+      try {
+        await syncSiteConfigToServer(next);
+        saveConfig(next);
+        setConfig(next);
+        return { success: true };
+      } catch (err) {
+        console.error("[landing] About update failed:", err);
+        return { success: false, error: err.message || "Network error" };
+      }
+    } else {
+      saveConfig(next);
+      setConfig(next);
+      addToContentOfflineQueue({ siteConfig: next });
+      return { success: true, offline: true };
+    }
+  }, [config]);
+  const updateFooter = reactExports.useCallback(async (footer) => {
+    const next = { ...config, footerSection: { ...config.footerSection, ...footer } };
+    if (navigator.onLine) {
+      try {
+        await syncSiteConfigToServer(next);
+        saveConfig(next);
+        setConfig(next);
+        return { success: true };
+      } catch (err) {
+        console.error("[landing] Footer update failed:", err);
+        return { success: false, error: err.message || "Network error" };
+      }
+    } else {
+      saveConfig(next);
+      setConfig(next);
+      addToContentOfflineQueue({ siteConfig: next });
+      return { success: true, offline: true };
+    }
+  }, [config]);
   const updateEmergencyContacts = reactExports.useCallback(
-    (contacts) => {
-      setConfig((prev) => {
-        const next = { ...prev, emergencyContacts: contacts };
-        saveConfig(next, resolveActor());
-        return next;
-      });
+    async (contacts) => {
+      const next = { ...config, emergencyContacts: contacts };
+      if (navigator.onLine) {
+        try {
+          await syncSiteConfigToServer(next);
+          saveConfig(next);
+          setConfig(next);
+          return { success: true };
+        } catch (err) {
+          console.error("[landing] Emergency contacts update failed:", err);
+          return { success: false, error: err.message || "Network error" };
+        }
+      } else {
+        saveConfig(next);
+        setConfig(next);
+        addToContentOfflineQueue({ siteConfig: next });
+        return { success: true, offline: true };
+      }
     },
-    []
+    [config]
   );
-  const resetSection = reactExports.useCallback((section) => {
-    setConfig((prev) => {
-      const next = {
-        ...prev,
-        [section]: DEFAULT_SITE_CONFIG[section]
-      };
-      saveConfig(next, resolveActor());
-      return next;
-    });
-  }, []);
+  const resetSection = reactExports.useCallback(async (section) => {
+    const next = { ...config, [section]: DEFAULT_SITE_CONFIG[section] };
+    if (navigator.onLine) {
+      try {
+        await syncSiteConfigToServer(next);
+        saveConfig(next);
+        setConfig(next);
+        return { success: true };
+      } catch (err) {
+        console.error("[landing] Reset failed:", err);
+        return { success: false, error: err.message || "Network error" };
+      }
+    } else {
+      saveConfig(next);
+      setConfig(next);
+      addToContentOfflineQueue({ siteConfig: next });
+      return { success: true, offline: true };
+    }
+  }, [config]);
   return {
     config,
     updateHero,
