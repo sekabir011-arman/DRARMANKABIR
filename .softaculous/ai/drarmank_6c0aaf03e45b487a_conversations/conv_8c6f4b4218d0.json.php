@@ -32,7 +32,7 @@
         }
     ],
     "created_at": 1784055547,
-    "updated_at": 1784058366,
+    "updated_at": 1784058412,
     "messages": [
         {
             "id": "msg_compact",
@@ -2896,6 +2896,169 @@
             "content": "continue",
             "attachments": [],
             "time": 1784058366
+        },
+        {
+            "id": "msg_3b3c23b3dd",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me look at the actual SyntaxError more carefully. The error is at line 20108 in index-DJeWhCy-.js. Let me check what that line contains.\n\nActually, looking at the browser console output:\n```\nindex-DJeWhCy-.js:20108 SyntaxError: Un\n```\n\nThe error message is truncated (\"Un\" - short for \"Unexpected end of input\" or similar). Line 20108 in the original file content showed:\n\n```\n20108: SyntaxError: Un\n```\n\nWait, let me re-read the file content more carefully. The original context at lines 20100-20120 showed:\n\n```\n    return;\n  }\n  console.error(error);\n};\nfunction defaultOnUncaughtError(error) {\n  reportGlobalError(error);\n}\nfunction defaultOnCaughtError(error) {\n  console.error(error);\n}\nfunction defaultOnRecoverableError(error) {\n  reportGlobalError(error);\n}\nfunction logUncaughtError(root2, errorInfo) {\n  try {\n    var onUncaughtError = root2.onUncaughtError;\n```\n\nWait, the SyntaxError might not be at line 20108 of the source file - it could be a caught\/uncaught error that's being logged to the console. The \"SyntaxError: Un\" could come from somewhere else.\n\nActually, looking at this more carefully - the browser console output showed:\n```\nindex-DJeWhCy-.js:20108 SyntaxError: Un\n```\n\nThis is likely at line 20108 of the actual built file. Let me check what was at that position originally.\n\nWhen I read the file at line 20100-20130, line 20108 was actually `console.error(error);` - but that's part of a function body, not a direct error.\n\nWait - I think the error is actually happening INSIDE one of the `JSON.parse` calls that's NOT wrapped in try\/catch. Let me check which JSON.parse calls are not inside a try block.\n\nLooking at the file contents I found:\n- Line 50313: `return deserializeBigInt(JSON.parse(raw));` - protected by try on line 50310\n- Line 50327: `const items = deserializeBigInt(JSON.parse(raw));` - protected by try on line 50324\n- Line 50345: `const parsed = JSON.parse(raw);` - protected by try on line 50340\n- Line 50353: `const registry = JSON.parse(` - protected by try on line 50340\n- Line 50376: `if (raw) return JSON.parse(raw);` - protected by try on line 50374\n- Line 50384: `if (raw) return JSON.parse(raw);` - protected by try on line 50382\n- Line 50837: `return JSON.parse(raw);` - protected by try on line 50834\n- Line 51032: `return JSON.parse(raw);` - protected by try on line 51030\n- Line 51176: `return JSON.parse(raw);` - protected by try on line 51174\n- etc.\n\nSo most JSON.parse calls ARE protected. But the issue might be:\n1. Corrupted data in localStorage that causes `JSON.parse` to crash even when caught\n2. Some other `JSON.parse` that I'm missing\n\nActually, let me think about this differently. The \"SyntaxError: Unexpected end of input\" happens when `JSON.parse('')` or `JSON.parse()`) is called with an empty string or undefined. This typically happens when:\n- `localStorage.getItem(key)` returns an empty string (not null), and the code does `JSON.parse(localStorage.getItem(key))` without a fallback\n\nLet me look more carefully at the unprotected JSON.parse calls. The main ones that could cause this issue are:\n\n1. Line 1159 - `const obj = JSON.parse(text);` - This is from `Principal.fromText()` which expects a valid principal text, not localStorage data. If someone passes corrupted data, this would throw.\n\n2. Line 4697 - `const obj = JSON.parse(input);` - This is `Expiry.fromJSON()` which expects valid JSON.\n\n3. Line 14400 - `typeof json === \"string\" ? JSON.parse(json) : json` - This is in the delegation code.\n\n4. Lines 50325\/50327 - Already in try\/catch\n5. Lines 50311\/50313 - Already in try\/catch\n\nActually wait - could the issue be that `localStorage.getItem(key)` returns an empty string `\"\"` instead of `null`, and then `JSON.parse(\"\")` throws? Let me check line 50345:\n\n```javascript\nconst raw = localStorage.getItem(\"staff_auth\");\nif (raw) {\n    const parsed = JSON.parse(raw);\n```\n\nThis is fine - `if (raw)` would be falsy for empty string.\n\nBut what about line 50353?\n```javascript\nconst registry = JSON.parse(\n    localStorage.getItem(\"medicare_doctors_registry\") || \"[]\"\n);\n```\nThis is fine.\n\nLet me look for the actual case where empty string could slip through...\n\nLine 38539:\n```javascript\nbyKey = JSON.parse(sessionStorage.getItem(storageKey2) || \"{}\");\n```\nThis is fine - protected by try.\n\nLine 52069:\n```javascript\nreturn JSON.parse(localStorage.getItem(localKey) || \"[]\");\n```\nThis could return \"[]\" if key is null, but if the key exists and is empty string, `localStorage.getItem(key) || \"[]\"` would still return \"[]\" because empty string is falsy. So this is fine too.\n\nActually, I think the real problem might be simpler. Let me check the original Error more carefully.\n\nActually, looking at the user's first message again:\n```\nindex-DJeWhCy-.js:31652 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.\n\nindex-DJeWhCy-.js:20108 SyntaxError: Un\n```\n\nThe \"SyntaxError: Un\" message at line 20108 - this might be UNRELATED to JSON.parse. Let me think about what could produce \"Un\" as a SyntaxError.\n\n\"Unexpected token\" or \"Unexpected end of input\" - the \"Un\" matches \"Unexpected\" or \"Unterminated\" or \"Unexpected end of input\". \n\nLet me look more carefully at what's happening. The error is at line 20108 in index-DJeWhCy-.js. When I read the file content:\n\n```\n20108: SyntaxError: Un\n```\n\nWait - that doesn't look right. Let me re-examine.\n\nActually, I think the browser's error output shows:\n```\nindex-DJeWhCy-.js:20108 SyntaxError: Un\n```\n\nWhere \"Un\" is the beginning of the error message like \"Unexpected end of input\". The full message would be:\n```\nUncaught SyntaxError: Unexpected end of input\n```\n\nBut looking at the file at line 20108, it's `console.error(error);` inside a `defaultOnCaughtError` function. So the error is being CAUGHT somewhere and then logged via `console.error(error)`. \n\nThe question is: where does the error originate?\n\nLet me search for error handling code that might be swallowing important errors. The fact that it says \"SyntaxError: Un\" means some JSON.parse somewhere is failing with an unexpected end of input.\n\nLooking at the error output more carefully, the line 20108 would be the console.error that's logging the caught error. The real source of the error would be elsewhere.\n\nLet me focus on what's most likely to cause this:\n\n1. A localStorage item was corrupted (e.g., by an interrupted write or by manually editing dev tools)\n2. The code tries to JSON.parse that corrupted value\n3. The catch block logs it but the app continues working\n\nThe fix would be to:\n1. Add cleanup logic to purge corrupted localStorage items\n2. Gracefully handle the parse failure\n\nBut since we can't easily rebuild the app from source, let me write a PHP script that hardens all the JSON.parse calls throughout the JS file to be more resilient.\n\nActually, wait. Looking at the code, ALL the JSON.parse calls in the user-facing code are already wrapped in try\/catch. The ones that aren't are in library code (Principal, Expiry, Delegation) where they need to throw on invalid input.\n\nSo the \"SyntaxError: Un\" might actually be coming from one of those library JSON.parse calls that ISN'T wrapped in try\/catch. Let me check if there are any unprotected ones.\n\nLines with JSON.parse that don't have try\/catch:\n- Line 1159: `const obj = JSON.parse(text);` - in `Principal.fromText()`, no try\/catch\n- Line 4697: `const obj = JSON.parse(input);` - in `Expiry.fromJSON()`, no try\/catch (but it's wrapped in the `static fromJSON` method)\n- Line 14094: `const parsed = JSON.parse(json);` - in `Ed25519KeyIdentity.fromJSON()`, no try\/catch\n- Line 14400: `JSON.parse(json)` - in delegation `fromJSON()`, no try\/catch\n\nThese are library functions that are expected to be called with valid JSON. If they receive invalid JSON, they'll throw.\n\nBut wait - looking at the console output again, the error is at line 20108, which is `console.error(error);` - this is a caught error being logged. So the original throw happened somewhere, it was caught, and then logged.\n\nLet me look for the actual error source differently. Let me search for where `JSON.parse` is called without try\/catch wrapping and see if that could be the culprit.\n\nActually, I think the best approach is to:\n1. Run the fix_bootstrap.php to replace the getFrontPageContent canister call with a PHP API call (already done per earlier fix attempt)\n2. Clean up corrupted localStorage data\n3. Add resilient JSON.parse handling\n\nLet me check if fix_bootstrap.php was already applied (the pattern should be absent since the replacement happened):\n\nLooking at the grep output:\n```\n51838:          const resp = await fetch(\"\/api\/frontpage\/get.php\");\n51851:          console.warn(\"[sync] Failed to load frontpage content from PHP:\", e);\n```\n\nThis shows the fix_bootstrap.php WAS already applied! The getFrontPageContent canister call has been replaced with the PHP API call. Good.\n\nSo the SyntaxError is likely from something else. Let me look at what's produced by the API call.\n\nLet me think more carefully about what \"SyntaxError: Un\" could be. \"Un\" could be the start of:\n- \"Unexpected token\" \n- \"Unexpected end of input\"\n- \"Unterminated string\"\n- \"Unexpected number\"\n- etc.\n\nThe most common one from JSON.parse is \"Unexpected end of input\" when the JSON string is empty or incomplete.\n\nActually, let me check if there's a race condition where `localStorage.getItem()` returns an empty string \"\". In that case:\n```javascript\nif (raw) return JSON.parse(raw);  \/\/ \"if (raw)\" is false for \"\"\n```\nSo that's safe.\n\n```javascript\nreturn JSON.parse(localStorage.getItem(key) || \"[]\");\n```\nIf the key exists but is empty, `\"\" || \"[]\"` returns \"[]\", which is valid JSON.\n\nHmm, what about this pattern at line 50353:\n```javascript\nconst registry = JSON.parse(\n    localStorage.getItem(\"medicare_doctors_registry\") || \"[]\"\n);\n```\nThis is also safe because of the `|| \"[]\"` fallback.\n\nOK so after careful analysis, all the localStorage JSON.parse calls ARE properly protected. The SyntaxError must be coming from somewhere else entirely.\n\nLet me think about this from a different angle. What if the \"SyntaxError: Un\" is from an eval() or new Function() or a dynamic import? Let me check if there's any eval or dynamic code.\n\nActually, looking at the browser console output format:\n```\nindex-DJeWhCy-.js:20108 SyntaxError: Un\n```\n\nThis format `file:line ErrorType: Message` is the standard browser error log format. Line 20108 in the file corresponds to.... well looking at the file content, line 20108 (1-indexed) is inside `defaultOnCaughtError`:\n\n```\n20107: function defaultOnCaughtError(error) {\n20108:   console.error(error);\n20109: }\n```\n\nSo this means some code threw a SyntaxError, it was caught by React's error boundary or error handler, and then `console.error(error)` was called at line 20108. The actual source of the error is elsewhere.\n\nLet me look at what could throw a SyntaxError in the app. The most likely candidates:\n\n1. Some dynamic code evaluation\n2. Import of a corrupted module\n3. Corrupted localStorage data that's parsed somewhere I haven't checked\n\nActually, let me check if there's something related to Service Worker or PWA that could trigger this.\n\nThe user mentioned another error:\n```\nindex-DJeWhCy-.js:27194 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.\n```\n\nThis is at line 27194. Let me check what that is.\n\nActually, looking at the user's description of the errors more carefully:\n\n1. `index-DJeWhCy-.js:31652 Warning: Missing 'Description' or 'aria-describedby={undefined}' for {DialogContent}.` - This is a React accessibility warning. Fixed by adding DialogDescription.\n\n2. `index-DJeWhCy-.js:20108 SyntaxError: Un` - This could be a side effect of the corrupted localStorage data. When the app tries to parse corrupted data, it throws, and the React error handler logs it.\n\n3. `index-DJeWhCy-.js:27194 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.` - This is a PWA\/ServiceWorker messaging error, likely from chrome extension or browser devtools.\n\nFor the SyntaxError, since all JSON.parse in application code is already wrapped in try\/catch, the error might be:\n- From an eval() call somewhere\n- From `new Function()` or `import()`\n- From React's own code\n- From a polyfill or library\n\nActually, I realize I should also check - the `SyntaxError` could be happening in React itself or in a library. Let me check if there are any unprotected usages.\n\nActually, you know what, let me take a different approach. Let me focus on what I can actually fix:\n1. \u2705 DialogContent accessibility - Fixed (5 dialog descriptions added)\n2. \u2705 PHP constant redefinition - Fixed (wrapped in defined())\n3. Clean up error_reporting duplication in config.php\n4. Add a fix to clear corrupted localStorage data\n\nFor the SyntaxError, since we don't have the source maps or original TypeScript, the best approach is to:\n1. Clear known corrupted localStorage items that might cause JSON.parse to fail\n2. Add a localStorage cleanup in the app bootstrap\n\nLet me now write a comprehensive fix script.\n\nActually, looking at my earlier analysis of the file contents more carefully, I think the \"SyntaxError: Un\" error might be from a completely different source. Let me check what's at line 27194 for the PWA error:\n\nFor the third error about \"Could not establish connection\" at line 27194, this is a common Chrome extension issue where a page tries to communicate with an extension that isn't installed or is on a different tab. This is harmless and can't be fixed.\n\nLet me now finalize the fixes:\n1. Dialog descriptions already added \u2705\n2. PHP constant redefinitions fixed \u2705\n3. Fix config.php duplicate error_reporting \n4. Add localStorage resilience script\n5. Fix the auto_prepend_file warning by checking PHP config\n\nLet me update the todo and fix the remaining items."
+                },
+                {
+                    "type": "text",
+                    "text": "The file has the fixed pattern already applied. Now let me focus on the remaining issues. Let me fix the duplicate error_reporting in config.php and add a localStorage cleanup\/repair script:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_tlFXDaEt1qmUF8Y28voJ2630",
+                    "name": "edit_file",
+                    "input": {
+                        "path": "public_html\/config.php",
+                        "old_string": "\/\/ \u2500\u2500\u2500 Error Reporting \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nerror_reporting(E_ALL);\nini_set('display_errors', '0');\nini_set('log_errors', '1');\nini_set('error_log', __DIR__ . '\/..\/logs\/php-error.log');\n\n\/\/ \u2500\u2500\u2500 Timezone \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\ndate_default_timezone_set('Asia\/Dhaka');",
+                        "new_string": "\/\/ \u2500\u2500\u2500 Timezone \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\ndate_default_timezone_set('Asia\/Dhaka');"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 43072,
+                "completion_tokens": 3614,
+                "total_tokens": 46686,
+                "prompt_cache_hit_tokens": 256,
+                "prompt_cache_miss_tokens": 42816,
+                "prompt_tokens_details": {
+                    "cached_tokens": 256
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 3387
+                }
+            },
+            "time": 1784058402
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_tlFXDaEt1qmUF8Y28voJ2630",
+            "content": "Edited public_html\/config.php (1 replacement)\n- \/\/ \u2500\u2500\u2500 Error Reporting \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n- error_reporting(E_ALL);\n- ini_set('display_errors', '0');\n- ini_set('log_errors', '1');\n- ini_set('error_log', __DIR__ . '\/..\/logs\/php-error.log');\n- \n- \/\/ \u2500\u2500\u2500 Timezone \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n- date_default_timezone_set('Asia\/Dhaka');\n+ \/\/ \u2500\u2500\u2500 Timezone \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n+ date_default_timezone_set('Asia\/Dhaka');",
+            "is_error": false,
+            "time": 1784058403
+        },
+        {
+            "id": "msg_e7e707d1bc",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Good, I removed the duplicate error_reporting block. Now I need to:\n1. Check if there's anything else related to the auto_prepend_file warning\n2. Create a localStorage repair script to handle corrupted data\n\nLet me also check the auto_prepend_file setting on this server."
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me check if there's an `auto_prepend_file` setting that could cause issues, and let me also create a localStorage cleanup fix:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_4GxvtHLEMLVBNAkixHSs0757",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && php -i 2>\/dev\/null | grep -i \"auto_prepend_file\\|auto_append_file\" | head -5"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_q4DnZncj9Vzrrm4OMMJj5266",
+                    "name": "bash",
+                    "input": {
+                        "command": "cat \/home\/drarmank\/public_html\/.user.ini 2>\/dev\/null || echo \"No .user.ini\""
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_02_uKs11sz91TPkrvMLd16H9633",
+                    "name": "bash",
+                    "input": {
+                        "command": "grep -r \"auto_prepend\" \/home\/drarmank\/public_html\/ --include=\"*.ini\" --include=\"*.conf\" --include=\"*.htaccess\" 2>\/dev\/null | head -5"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 46828,
+                "completion_tokens": 294,
+                "total_tokens": 47122,
+                "prompt_cache_hit_tokens": 46592,
+                "prompt_cache_miss_tokens": 236,
+                "prompt_tokens_details": {
+                    "cached_tokens": 46592
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 59
+                }
+            },
+            "time": 1784058406
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_4GxvtHLEMLVBNAkixHSs0757",
+            "content": "auto_append_file => no value => no value\nauto_prepend_file => no value => no value\n",
+            "is_error": false,
+            "time": 1784058406
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_q4DnZncj9Vzrrm4OMMJj5266",
+            "content": "No .user.ini\n",
+            "is_error": false,
+            "time": 1784058407
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_02_uKs11sz91TPkrvMLd16H9633",
+            "content": "[Command completed successfully with no output]",
+            "is_error": false,
+            "time": 1784058407
+        },
+        {
+            "id": "msg_c7ed99a533",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Good - `auto_prepend_file` is not set, so that's not the issue. The PHP warnings about constants were already fixed by wrapping them in `defined()` checks.\n\nNow let me create a comprehensive fix script that adds a startup check to clear corrupted localStorage items. This will prevent the SyntaxError from happening by cleaning up corrupted data before it's parsed.\n\nLet me write a PHP script that will be included early in the app lifecycle to detect and repair corrupted localStorage data. However, since localStorage is client-side JavaScript, I need to handle this differently.\n\nActually, the best approach for the SyntaxError fix is to add a self-repair mechanism in the JavaScript. But since we can't easily modify the built JS, let me instead write an API endpoint that can be called to repair localStorage, and also add a small script tag in the HTML that does a cleanup.\n\nWait, looking at the index.html:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_PtFb79HUWlbq8SprTv4K2232",
+                    "name": "read_file",
+                    "input": {
+                        "path": "public_html\/index.html"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 47185,
+                "completion_tokens": 230,
+                "total_tokens": 47415,
+                "prompt_cache_hit_tokens": 47104,
+                "prompt_cache_miss_tokens": 81,
+                "prompt_tokens_details": {
+                    "cached_tokens": 47104
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 183
+                }
+            },
+            "time": 1784058412
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_PtFb79HUWlbq8SprTv4K2232",
+            "content": "    1 | <!DOCTYPE html>\n    2 | <html lang=\"en\">\n    3 |   <head>\n    4 |     <meta charset=\"UTF-8\" \/>\n    5 |     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" \/>\n    6 |     <title>Dr. Arman Kabir Care<\/title>\n    7 |     <meta name=\"description\" content=\"Dr. Arman Kabir Care \u2014 Bilingual Patient Management and Doctor Portal App for clinics and individual practitioners.\" \/>\n    8 |     <meta property=\"og:title\" content=\"Dr. Arman Kabir Care\" \/>\n    9 |     <meta property=\"og:description\" content=\"Dr. Arman Kabir Care \u2014 Bilingual Patient Management and Doctor Portal App for clinics and individual practitioners.\" \/>\n   10 |     <meta property=\"og:type\" content=\"website\" \/>\n   11 |     <meta name=\"twitter:card\" content=\"summary_large_image\" \/>\n   12 |     <link rel=\"icon\" type=\"image\/x-icon\" href=\"\/favicon.ico\" \/>\n   13 |     <script>\n   14 |     \/\/ Preload frontpage content from server into localStorage\n   15 |     (function(){\n   16 |       var xhr = new XMLHttpRequest();\n   17 |       xhr.open('GET', '\/api\/frontpage\/get.php', true);\n   18 |       xhr.onload = function() {\n   19 |         if (xhr.status === 200) {\n   20 |           try {\n   21 |             var json = JSON.parse(xhr.responseText);\n   22 |             if (json.success && json.data) {\n   23 |               if (json.data.siteConfig) localStorage.setItem('siteConfig', JSON.stringify(json.data.siteConfig));\n   24 |               if (json.data.doctorContentOverrides) localStorage.setItem('doctorContentOverrides', JSON.stringify(json.data.doctorContentOverrides));\n   25 |             }\n   26 |           } catch(e) { console.warn('[preload] parse error:', e); }\n   27 |         }\n   28 |       };\n   29 |       xhr.onerror = function() { \/* silently fail *\/ };\n   30 |       xhr.send();\n   31 |     })();\n   32 |     <\/script>\n   33 |     <script type=\"module\" crossorigin src=\"\/assets\/index-DJeWhCy-.js\"><\/script>\n   34 |     <link rel=\"stylesheet\" crossorigin href=\"\/assets\/index-JEdqxkTH.css\">\n   35 |   <\/head>\n   36 |   <body>\n   37 |     <div id=\"root\"><\/div>\n   38 |     <script>\n   39 |       \/\/ Register Service Worker \u2014 silent updates, no forced reloads to avoid React removeChild errors\n   40 |       if ('serviceWorker' in navigator) {\n   41 |         \/\/ Defer reload to avoid interrupting React's unmount lifecycle\n   42 |         let reloadScheduled = false;\n   43 |         const scheduleReload = () => {\n   44 |           if (reloadScheduled) return;\n   45 |           reloadScheduled = true;\n   46 |           setTimeout(function() { window.location.reload(); }, 500);\n   47 |         };\n   48 | \n   49 |         navigator.serviceWorker.register('\/sw.js', { scope: '\/' }).then(function(reg) {\n   50 |           reg.addEventListener('updatefound', function() {\n   51 |             var newWorker = reg.installing;\n   52 |             newWorker.addEventListener('statechange', function() {\n   53 |               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {\n   54 |                 scheduleReload();\n   55 |               }\n   56 |             });\n   57 |           });\n   58 | \n   59 |           if (reg.waiting && navigator.serviceWorker.controller) {\n   60 |             scheduleReload();\n   61 |           }\n   62 |         }).catch(function() {\n   63 |           \/\/ SW registration failed silently \u2014 app still works without it\n   64 |         });\n   65 | \n   66 |         navigator.serviceWorker.addEventListener('controllerchange', function() {\n   67 |           scheduleReload();\n   68 |         });\n   69 |       }\n   70 |     <\/script>\n   71 |   <\/body>\n   72 | <\/html>\n   73 |",
+            "is_error": false,
+            "time": 1784058412
         }
     ]
 }

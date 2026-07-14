@@ -90,11 +90,5 @@ if (!defined('ALLOWED_EXTENSIONS')) define('ALLOWED_EXTENSIONS', ['jpg', 'jpeg',
 if (!defined('RATE_LIMIT_MAX')) define('RATE_LIMIT_MAX', 100);
 if (!defined('RATE_LIMIT_WINDOW')) define('RATE_LIMIT_WINDOW', 60); // seconds
 
-// ─── Error Reporting ───────────────────────────────────────────────────────
-error_reporting(E_ALL);
-ini_set('display_errors', '0');
-ini_set('log_errors', '1');
-ini_set('error_log', __DIR__ . '/../logs/php-error.log');
-
 // ─── Timezone ──────────────────────────────────────────────────────────────
 date_default_timezone_set('Asia/Dhaka');
