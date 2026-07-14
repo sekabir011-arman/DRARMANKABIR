@@ -28,7 +28,7 @@
         {
             "priority": "high",
             "content": "Refactor useSiteConfig in LandingPage - MySQL as primary source",
-            "status": "in_progress"
+            "status": "completed"
         },
         {
             "priority": "high",
@@ -38,7 +38,7 @@
         {
             "priority": "high",
             "content": "Refactor AdminPublicContent in Settings - MySQL as primary source",
-            "status": "pending"
+            "status": "in_progress"
         },
         {
             "priority": "high",
@@ -52,7 +52,7 @@
         }
     ],
     "created_at": 1784039657,
-    "updated_at": 1784042112,
+    "updated_at": 1784043082,
     "messages": [
         {
             "id": "msg_compact",
@@ -1430,6 +1430,820 @@
             "content": "Path and old_string are required",
             "is_error": true,
             "time": 1784042112
+        },
+        {
+            "id": "msg_9d97553da4",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784043015
+        },
+        {
+            "id": "msg_4a646807dd",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The user wants me to continue with the refactoring. Let me pick up where I left off - I need to refactor the `AdminPublicContent` component in `Settings-DPkJ1nB8.js`. Let me also check what else needs to be done.\n\nLet me review the todo list first."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_nydrTgva2cdskGxcvqhF1311",
+                    "name": "todo_write",
+                    "input": {
+                        "todos": [
+                            {
+                                "priority": "high",
+                                "content": "Explore project structure and understand current architecture",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Identify React components using localStorage for editable content",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Analyze PHP API endpoints (they already use MySQL correctly)",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Refactor useDoctorContent hook - MySQL as primary source on load and save",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Refactor useSiteConfig in LandingPage - MySQL as primary source",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Refactor saveFrontPageContentWithSync - async with server confirmation",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Refactor AdminPublicContent in Settings - MySQL as primary source",
+                                "status": "in_progress"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Clean up temporary files",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Verify changes work correctly",
+                                "status": "pending"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 27768,
+                "completion_tokens": 308,
+                "total_tokens": 28076,
+                "prompt_cache_hit_tokens": 12672,
+                "prompt_cache_miss_tokens": 15096,
+                "prompt_tokens_details": {
+                    "cached_tokens": 12672
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 64
+                }
+            },
+            "time": 1784043019
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_nydrTgva2cdskGxcvqhF1311",
+            "content": "Todo list updated with 9 items.",
+            "is_error": false,
+            "time": 1784043019
+        },
+        {
+            "id": "msg_98e781c8e1",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me look at the current state of the Settings-DPkJ1nB8.js file for the AdminPublicContent function to refactor it."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me read the current state of the `AdminPublicContent` function:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_rNcZSWA1JAPQQAhkKmz03399",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && grep -n \"function AdminPublicContent\" public_html\/assets\/Settings-DPkJ1nB8.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 28095,
+                "completion_tokens": 116,
+                "total_tokens": 28211,
+                "prompt_cache_hit_tokens": 28032,
+                "prompt_cache_miss_tokens": 63,
+                "prompt_tokens_details": {
+                    "cached_tokens": 28032
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 30
+                }
+            },
+            "time": 1784043022
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_rNcZSWA1JAPQQAhkKmz03399",
+            "content": "2000:function AdminPublicContent() {\n",
+            "is_error": false,
+            "time": 1784043022
+        },
+        {
+            "id": "msg_f0d442a9fa",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Wait, the line numbers shifted because I made previous edits. Let me check the current state."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_OUs1QfRKXiToDTaNzUfU4822",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && sed -n '1970,2035p' public_html\/assets\/Settings-DPkJ1nB8.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 28232,
+                "completion_tokens": 93,
+                "total_tokens": 28325,
+                "prompt_cache_hit_tokens": 28160,
+                "prompt_cache_miss_tokens": 72,
+                "prompt_tokens_details": {
+                    "cached_tokens": 28160
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 19
+                }
+            },
+            "time": 1784043025
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_OUs1QfRKXiToDTaNzUfU4822",
+            "content": "  ] });\n}\nconst CONTENT_KEYS = [\"classroom_arman\", \"classroom_samia\", \"chamber_arman\", \"chamber_samia\", \"profile_arman\", \"profile_samia\"];\nfunction useContentLoader(key) {\n  const [value, setValue] = reactExports.useState(() => localStorage.getItem(key) ?? \"\");\n  reactExports.useEffect(() => {\n    let cancelled = false;\n    async function load() {\n      if (!navigator.onLine) return;\n      try {\n        const r2 = await fetch(`\/api\/content\/get.php?key=${encodeURIComponent(key)}`);\n        if (r2.ok) {\n          const json = await r2.json();\n          if (json && json.success && json.data && json.data.setting_value !== null && json.data.setting_value !== void 0) {\n            const serverVal = json.data.setting_value;\n            if (!cancelled) {\n              const strVal = typeof serverVal === \"string\" ? serverVal : JSON.stringify(serverVal);\n              localStorage.setItem(key, strVal);\n              setValue(strVal);\n            }\n          }\n        }\n      } catch {\n      }\n    }\n    load();\n    return () => { cancelled = true; };\n  }, [key]);\n  return [value, setValue];\n}\nfunction AdminPublicContent() {\n  const [classroomArman, setClassroomArman] = useContentLoader(\"classroom_arman\");\n  const [classroomSamia, setClassroomSamia] = useContentLoader(\"classroom_samia\");\n  const [chamberArman, setChamberArman] = useContentLoader(\"chamber_arman\");\n  const [chamberSamia, setChamberSamia] = useContentLoader(\"chamber_samia\");\n  const [profileArman, setProfileArman] = useContentLoader(\"profile_arman\");\n  const [profileSamia, setProfileSamia] = useContentLoader(\"profile_samia\");\n  const saveSection = async (key, value, label) => {\n    if (navigator.onLine) {\n      try {\n        const response = await fetch(\"\/api\/content\/save.php\", {\n          method: \"POST\",\n          headers: { \"Content-Type\": \"application\/json\" },\n          body: JSON.stringify({ key, value })\n        });\n        if (response.ok) {\n          const json = await response.json();\n          if (json && json.success && json.data && json.data.updated_at) {\n            localStorage.setItem(key, value);\n            ue.success(` saved`);\n          } else {\n            ue.error(\"Server did not confirm save\");\n          }\n        } else {\n          ue.error(\"Server returned \" + response.status);\n        }\n      } catch (e) {\n        ue.error(\"Network error saving\");\n      }\n    } else {\n      localStorage.setItem(key, value);\n      ue.success(\" saved (offline - will sync later)\");\n    }\n  };  return \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"space-y-6\", children: [\n    \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(Card, { children: [\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(CardHeader, { className: \"pb-3\", children: [\n",
+            "is_error": false,
+            "time": 1784043026
+        },
+        {
+            "id": "msg_9bb9f86032",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The AdminPublicContent function has already been refactored! It seems the previous edit_file command actually worked despite the error. Let me verify the full function is correct."
+                },
+                {
+                    "type": "text",
+                    "text": "The `AdminPublicContent` component has already been refactored! The `useContentLoader` hook and the new `saveSection` function are in place. Let me verify the rest of the function is intact:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_C5dEIy4gaSLKfk4PqYbB1471",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && sed -n '2032,2080p' public_html\/assets\/Settings-DPkJ1nB8.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 29044,
+                "completion_tokens": 151,
+                "total_tokens": 29195,
+                "prompt_cache_hit_tokens": 28288,
+                "prompt_cache_miss_tokens": 756,
+                "prompt_tokens_details": {
+                    "cached_tokens": 28288
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 34
+                }
+            },
+            "time": 1784043029
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_C5dEIy4gaSLKfk4PqYbB1471",
+            "content": "    }\n  };  return \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"space-y-6\", children: [\n    \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(Card, { children: [\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(CardHeader, { className: \"pb-3\", children: [\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(CardTitle, { className: \"flex items-center gap-2 text-base\", children: [\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsx(BookOpen, { className: \"w-4 h-4 text-indigo-600\" }),\n          \"Classroom Content\"\n        ] }),\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(CardDescription, { children: \"Lecture notes, video links, schedules, announcements per doctor\" })\n      ] }),\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(CardContent, { className: \"space-y-4\", children: [\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"space-y-2\", children: [\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Label, { className: \"text-sm font-semibold\", children: \"Dr. Arman Kabir \u2014 Classroom (JSON or text)\" }),\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\n            \"textarea\",\n            {\n              className: \"w-full min-h-[100px] rounded-md border border-input bg-background p-3 text-sm text-foreground resize-y focus:outline-none focus:ring-2 focus:ring-ring\",\n              value: classroomArman,\n              onChange: (e) => setClassroomArman(e.target.value),\n              placeholder: '{\"lectures\": [], \"videos\": [], \"announcements\": []}',\n              \"data-ocid\": \"admin.classroom.arman.textarea\"\n            }\n          ),\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\n            Button,\n            {\n              size: \"sm\",\n              variant: \"outline\",\n              className: \"gap-1.5\",\n              onClick: () => saveSection(\n                \"classroom_arman\",\n                classroomArman,\n                \"Classroom (Arman)\"\n              ),\n              \"data-ocid\": \"admin.classroom.arman.save_button\",\n              children: [\n                \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Save, { className: \"w-3 h-3\" }),\n                \"Save\"\n              ]\n            }\n          )\n        ] }),\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"space-y-2\", children: [\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Label, { className: \"text-sm font-semibold\", children: \"Dr. Samia Shikder \u2014 Classroom (JSON or text)\" }),\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\n            \"textarea\",\n            {\n              className: \"w-full min-h-[100px] rounded-md border border-input bg-background p-3 text-sm text-foreground resize-y focus:outline-none focus:ring-2 focus:ring-ring\",\n              value: classroomSamia,\n",
+            "is_error": false,
+            "time": 1784043029
+        },
+        {
+            "id": "msg_71d66c3198",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The `AdminPublicContent` component is already properly refactored. The changes I previously attempted with `edit_file` seem to have actually succeeded despite the error message. The component now uses `useContentLoader` (MySQL-first on load) and an async `saveSection` (MySQL-first on save with confirmation).\n\nNow let me check the `useDoctorContent` hook to see if it was also already refactored."
+                },
+                {
+                    "type": "text",
+                    "text": "Good, the `AdminPublicContent` is already refactored. Let me now check the `useDoctorContent` hook:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_5XSkdQDpliutwjjOmb4t1951",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && sed -n '1,60p' public_html\/assets\/useDoctorContent-Cx8T-OwA.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 29942,
+                "completion_tokens": 185,
+                "total_tokens": 30127,
+                "prompt_cache_hit_tokens": 29184,
+                "prompt_cache_miss_tokens": 758,
+                "prompt_tokens_details": {
+                    "cached_tokens": 29184
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 86
+                }
+            },
+            "time": 1784043032
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_5XSkdQDpliutwjjOmb4t1951",
+            "content": "import { i as createLucideIcon, r as reactExports } from \".\/index-DJeWhCy-.js\";\n\/**\n * @license lucide-react v0.511.0 - ISC\n *\n * This source code is licensed under the ISC license.\n * See the LICENSE file in the root directory of this source tree.\n *\/\nconst __iconNode$1 = [\n  [\"rect\", { width: \"18\", height: \"18\", x: \"3\", y: \"3\", rx: \"2\", ry: \"2\", key: \"1m3agn\" }],\n  [\"circle\", { cx: \"9\", cy: \"9\", r: \"2\", key: \"af1f0g\" }],\n  [\"path\", { d: \"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\", key: \"1xmnt7\" }]\n];\nconst Image = createLucideIcon(\"image\", __iconNode$1);\n\/**\n * @license lucide-react v0.511.0 - ISC\n *\n * This source code is licensed under the ISC license.\n * See the LICENSE file in the root directory of this source tree.\n *\/\nconst __iconNode = [\n  [\n    \"path\",\n    {\n      d: \"M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z\",\n      key: \"r04s7s\"\n    }\n  ]\n];\nconst Star = createLucideIcon(\"star\", __iconNode);\nconst doctors = {\n  arman: {\n    name: \"Dr. Arman Kabir\",\n    suffix: \"(ZOSID)\",\n    designation: \"Dr.\",\n    degree: \"MBBS (D.U.)\",\n    degrees: [\"MBBS (D.U.)\"],\n    posts: [\n      \"Emergency Medical Officer, Dr. Sirajul Islam Medical College Hospital\",\n      \"Registrar, Dept. of General Surgery, University Dental College (uDC)\"\n    ],\n    specialization: \"General Surgery\",\n    roles: [\n      \"Emergency Medical Officer, Dr. Sirajul Islam Medical College Hospital\",\n      \"Registrar, Dept. of General Surgery uDC\"\n    ],\n    regNo: \"A-105224\",\n    hospital: \"Dr. Sirajul Islam Medical College Hospital\",\n    phone: \"01751959262\",\n    phone2: \"01984587802\",\n    email: \"dr.armankabir011@gmail.com\",\n    whatsapp: \"+8801751959262\",\n    photo: null,\n    cvPdfUrl: null,\n    chambers: [\n      {\n        id: \"1\",\n        nameBn: \"\u0987\u0989\u09a8\u09bf\u09ad\u09be\u09b0\u09cd\u09b8\u09bf\u099f\u09bf \u09a1\u09c7\u09a8\u09cd\u099f\u09be\u09b2 \u0995\u09b2\u09c7\u099c \u098f\u09a8\u09cd\u09a1 \u09b9\u09be\u09b8\u09aa\u09be\u09a4\u09be\u09b2\",\n        addressBn: \"\u09a8\u09bf\u099a \u09a4\u09b2\u09be (\u09b8\u09c7\u09a8\u09cd\u099a\u09c1\u09b0\u09bf \u0986\u09b0\u09cd\u0995\u09c7\u09a1 \u09ae\u09be\u09b0\u09cd\u0995\u09c7\u099f)\\n\u09e7\u09e8\u09e6\/\u098f, \u0986\u0989\u099f\u09be\u09b0 \u09b8\u09be\u09b0\u09cd\u0995\u09c1\u09b2\u09be\u09b0 \u09b0\u09cb\u09a1\\n\u09ae\u0997\u09ac\u09be\u099c\u09be\u09b0, \u09a2\u09be\u0995\u09be\",\n        address: \"University Dental College & Hospital, Ground Floor (Century Arcade Market), 120\/A, Outer Circular Road, Moghbazar, Dhaka\",\n        visitingHours: \"Saturday\u2013Thursday: 5:00 PM \u2013 9:00 PM\",\n",
+            "is_error": false,
+            "time": 1784043032
+        },
+        {
+            "id": "msg_cf2a8a94ef",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I see that `useDoctorContent-Cx8T-OwA.js` originally imported `saveFrontPageContentWithSync` from the main index file, but my earlier edit removed it. That function is no longer used directly by this file (the save logic is now handled by `saveFrontPageContentWithSync` directly).\n\nLet me now see the full `useDoctorContent` file to check its current state."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ZNGVw2KZbbWFo9C3GcBR1815",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && grep -n \"function useDoctorContent\\|localStorage\\|saveFrontPageContentWithSync\\|fetch(\" public_html\/assets\/useDoctorContent-Cx8T-OwA.js | head -30"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 31075,
+                "completion_tokens": 175,
+                "total_tokens": 31250,
+                "prompt_cache_hit_tokens": 30080,
+                "prompt_cache_miss_tokens": 995,
+                "prompt_tokens_details": {
+                    "cached_tokens": 30080
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 85
+                }
+            },
+            "time": 1784043036
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ZNGVw2KZbbWFo9C3GcBR1815",
+            "content": "287:    return JSON.parse(localStorage.getItem(STORAGE_KEY) || \"{}\");\n293:  localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));\n296:  const response = await fetch(\"\/api\/frontpage\/save.php\", {\n323:function useDoctorContent() {\n330:          const response = await fetch(\"\/api\/frontpage\/get.php?key=doctorContentOverrides\");\n337:                  localStorage.setItem(STORAGE_KEY, JSON.stringify(serverOverrides));\n",
+            "is_error": false,
+            "time": 1784043036
+        },
+        {
+            "id": "msg_3a102b883a",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The `useDoctorContent` file has already been refactored. Let me verify the full function."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_4x8PZggpjgwf1hfJgUlP3307",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && sed -n '280,370p' public_html\/assets\/useDoctorContent-Cx8T-OwA.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 31365,
+                "completion_tokens": 95,
+                "total_tokens": 31460,
+                "prompt_cache_hit_tokens": 31232,
+                "prompt_cache_miss_tokens": 133,
+                "prompt_tokens_details": {
+                    "cached_tokens": 31232
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 21
+                }
+            },
+            "time": 1784043039
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_4x8PZggpjgwf1hfJgUlP3307",
+            "content": "      ]\n    }\n  }\n};\nconst STORAGE_KEY = \"doctorContentOverrides\";\nfunction loadOverrides() {\n  try {\n    return JSON.parse(localStorage.getItem(STORAGE_KEY) || \"{}\");\n  } catch {\n    return {};\n  }\n}\nfunction saveOverrides(overrides) {\n  localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));\n}\nasync function syncOverridesToServer(overrides) {\n  const response = await fetch(\"\/api\/frontpage\/save.php\", {\n    method: \"POST\",\n    headers: { \"Content-Type\": \"application\/json\" },\n    body: JSON.stringify({ doctorContentOverrides: overrides })\n  });\n  if (!response.ok) {\n    throw new Error(\"Server returned \" + response.status);\n  }\n  const json = await response.json();\n  if (!json.success) {\n    throw new Error(json.message || \"Server save failed\");\n  }\n  return json;\n}\nfunction deepMerge(base, overrides) {\n  const result = { ...base };\n  for (const [key, value] of Object.entries(overrides)) {\n    if (Array.isArray(value)) {\n      result[key] = value;\n    } else if (value !== null && typeof value === \"object\" && typeof result[key] === \"object\" && result[key] !== null && !Array.isArray(result[key])) {\n      result[key] = deepMerge(result[key], value);\n    } else {\n      result[key] = value;\n    }\n  }\n  return result;\n}\nfunction useDoctorContent() {\n  const [overrides, setOverrides] = reactExports.useState({});\n  reactExports.useEffect(() => {\n    let cancelled = false;\n    const loadFromServer = async () => {\n      if (navigator.onLine) {\n        try {\n          const response = await fetch(\"\/api\/frontpage\/get.php?key=doctorContentOverrides\");\n          if (response.ok) {\n            const json = await response.json();\n            if (json && json.success && json.data) {\n              const serverOverrides = json.data;\n              if (serverOverrides && typeof serverOverrides === \"object\" && Object.keys(serverOverrides).length > 0) {\n                if (!cancelled) {\n                  localStorage.setItem(STORAGE_KEY, JSON.stringify(serverOverrides));\n                  setOverrides(serverOverrides);\n                }\n                return;\n              }\n            }\n          }\n        } catch (e) {\n          console.warn(\"[doctorContent] Failed to load from server:\", e);\n        }\n      }\n      if (!cancelled) {\n        const local = loadOverrides();\n        if (Object.keys(local).length > 0) {\n          setOverrides(local);\n        }\n      }\n    };\n    loadFromServer();\n    return () => { cancelled = true; };\n  }, []);\n  const getContent = reactExports.useCallback(\n    (doctorKey) => {\n      const base = doctors[doctorKey];\n      const docOverrides = overrides[doctorKey] || {};\n      return deepMerge(base, docOverrides);\n    },\n    [overrides]\n  );\n  const updateField = reactExports.useCallback(\n    async (doctorKey, path, value) => {\n      const prev = overrides;\n      const updated = { ...prev };\n      if (!updated[doctorKey]) updated[doctorKey] = {};\n",
+            "is_error": false,
+            "time": 1784043039
+        },
+        {
+            "id": "msg_93764b0812",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The `useDoctorContent` hook has been already refactored. It:\n1. Loads from server first (MySQL), then falls back to localStorage\n2. Saves to server first (MySQL), then updates localStorage\n\nNow let me also check the `saveSection` function in the `AdminPublicContent` more carefully. Let me see lines 1995-2035 again."
+                },
+                {
+                    "type": "text",
+                    "text": "The `useDoctorContent` hook is already properly refactored. Let me now clean up the temp file and check the `saveSection` function closure:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_iHsVCwOOnNrfzz9pHJUs1581",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && sed -n '1995,2035p' public_html\/assets\/Settings-DPkJ1nB8.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 32186,
+                "completion_tokens": 184,
+                "total_tokens": 32370,
+                "prompt_cache_hit_tokens": 31360,
+                "prompt_cache_miss_tokens": 826,
+                "prompt_tokens_details": {
+                    "cached_tokens": 31360
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 79
+                }
+            },
+            "time": 1784043043
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_iHsVCwOOnNrfzz9pHJUs1581",
+            "content": "    load();\n    return () => { cancelled = true; };\n  }, [key]);\n  return [value, setValue];\n}\nfunction AdminPublicContent() {\n  const [classroomArman, setClassroomArman] = useContentLoader(\"classroom_arman\");\n  const [classroomSamia, setClassroomSamia] = useContentLoader(\"classroom_samia\");\n  const [chamberArman, setChamberArman] = useContentLoader(\"chamber_arman\");\n  const [chamberSamia, setChamberSamia] = useContentLoader(\"chamber_samia\");\n  const [profileArman, setProfileArman] = useContentLoader(\"profile_arman\");\n  const [profileSamia, setProfileSamia] = useContentLoader(\"profile_samia\");\n  const saveSection = async (key, value, label) => {\n    if (navigator.onLine) {\n      try {\n        const response = await fetch(\"\/api\/content\/save.php\", {\n          method: \"POST\",\n          headers: { \"Content-Type\": \"application\/json\" },\n          body: JSON.stringify({ key, value })\n        });\n        if (response.ok) {\n          const json = await response.json();\n          if (json && json.success && json.data && json.data.updated_at) {\n            localStorage.setItem(key, value);\n            ue.success(` saved`);\n          } else {\n            ue.error(\"Server did not confirm save\");\n          }\n        } else {\n          ue.error(\"Server returned \" + response.status);\n        }\n      } catch (e) {\n        ue.error(\"Network error saving\");\n      }\n    } else {\n      localStorage.setItem(key, value);\n      ue.success(\" saved (offline - will sync later)\");\n    }\n  };  return \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"space-y-6\", children: [\n    \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(Card, { children: [\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(CardHeader, { className: \"pb-3\", children: [\n",
+            "is_error": false,
+            "time": 1784043043
+        },
+        {
+            "id": "msg_78003b898f",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The `AdminPublicContent` component is properly refactored. Let me check if there's an issue with the `saveSection` function - the `label` parameter is passed but not used. That's a minor issue from the original code. Let me check the button calls to see if they still pass `label`.\n\nLet me also check the `useDoctorContent` function to see the `updateField` - it should save to server first."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_6nHlwbAY3llLLg1BYh5a7189",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && sed -n '370,415p' public_html\/assets\/useDoctorContent-Cx8T-OwA.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 32841,
+                "completion_tokens": 165,
+                "total_tokens": 33006,
+                "prompt_cache_hit_tokens": 32256,
+                "prompt_cache_miss_tokens": 585,
+                "prompt_tokens_details": {
+                    "cached_tokens": 32256
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 91
+                }
+            },
+            "time": 1784043047
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_6nHlwbAY3llLLg1BYh5a7189",
+            "content": "      if (!updated[doctorKey]) updated[doctorKey] = {};\n      const parts = path.split(\".\");\n      let obj = updated[doctorKey];\n      for (let i = 0; i < parts.length - 1; i++) {\n        if (!obj[parts[i]] || typeof obj[parts[i]] !== \"object\") {\n          obj[parts[i]] = {};\n        }\n        obj = obj[parts[i]];\n      }\n      obj[parts[parts.length - 1]] = value;\n      if (navigator.onLine) {\n        try {\n          await syncOverridesToServer(updated);\n          saveOverrides(updated);\n          setOverrides(updated);\n          return { success: true };\n        } catch (err) {\n          console.error(\"[doctorContent] Update failed:\", err);\n          return { success: false, error: err.message || \"Network error\" };\n        }\n      } else {\n        saveOverrides(updated);\n        setOverrides(updated);\n        addToOfflineQueue(\"doctorContentOverrides\", updated);\n        return { success: true, offline: true };\n      }\n    },\n    [overrides]\n  );\n  const updateChambers = reactExports.useCallback(\n    async (doctorKey, chambers) => {\n      const prev = overrides;\n      const updated = {\n        ...prev,\n        [doctorKey]: {\n          ...prev[doctorKey] || {},\n          chambers\n        }\n      };\n      if (navigator.onLine) {\n        try {\n          await syncOverridesToServer(updated);\n          saveOverrides(updated);\n          setOverrides(updated);\n          return { success: true };\n        } catch (err) {\n",
+            "is_error": false,
+            "time": 1784043047
+        },
+        {
+            "id": "msg_b515b1469b",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I see an issue. The `updateField` function in `useDoctorContent` calls `addToOfflineQueue(\"doctorContentOverrides\", updated)` when offline. But the `addToOfflineQueue` function is defined in `index-DJeWhCy-.js`... wait, let me check if there's a reference to this function.\n\nLet me search for `addToOfflineQueue` in the codebase."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_K600144SWBXvnL0OmoOU7469",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && grep -rn \"addToOfflineQueue\" public_html\/assets\/ | head -10"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 33372,
+                "completion_tokens": 156,
+                "total_tokens": 33528,
+                "prompt_cache_hit_tokens": 32896,
+                "prompt_cache_miss_tokens": 476,
+                "prompt_tokens_details": {
+                    "cached_tokens": 32896
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 88
+                }
+            },
+            "time": 1784043050
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_K600144SWBXvnL0OmoOU7469",
+            "content": "public_html\/assets\/useDoctorContent-Cx8T-OwA.js:393:        addToOfflineQueue(\"doctorContentOverrides\", updated);\npublic_html\/assets\/useDoctorContent-Cx8T-OwA.js:422:        addToOfflineQueue(\"doctorContentOverrides\", updated);\n",
+            "is_error": false,
+            "time": 1784043050
+        },
+        {
+            "id": "msg_bc93255126",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The `addToOfflineQueue` function is called in `useDoctorContent-Cx8T-OwA.js` but I don't see it defined there. Let me check if it's imported from the main bundle. It must be defined somewhere or maybe it's exported from the index file.\n\nLet me check the imports at the top of the file."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ewMINSQRAVYeUA9wKPL84988",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && head -1 public_html\/assets\/useDoctorContent-Cx8T-OwA.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 33604,
+                "completion_tokens": 141,
+                "total_tokens": 33745,
+                "prompt_cache_hit_tokens": 33408,
+                "prompt_cache_miss_tokens": 196,
+                "prompt_tokens_details": {
+                    "cached_tokens": 33408
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 73
+                }
+            },
+            "time": 1784043053
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ewMINSQRAVYeUA9wKPL84988",
+            "content": "import { i as createLucideIcon, r as reactExports } from \".\/index-DJeWhCy-.js\";\n",
+            "is_error": false,
+            "time": 1784043053
+        },
+        {
+            "id": "msg_8dbed2c264",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The `useDoctorContent-Cx8T-OwA.js` file imports `createLucideIcon` and `reactExports` from the main bundle, but uses `addToOfflineQueue` without importing it. This means `addToOfflineQueue` must be defined in the same file somewhere, or it's being referenced from the global scope.\n\nLet me search the whole file for `addToOfflineQueue` definition."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_C1OZv5ENgS3msjFHbbZV8413",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && grep -n \"function addToOfflineQueue\\|const addToOfflineQueue\\|var addToOfflineQueue\" public_html\/assets\/useDoctorContent-Cx8T-OwA.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 33782,
+                "completion_tokens": 180,
+                "total_tokens": 33962,
+                "prompt_cache_hit_tokens": 33664,
+                "prompt_cache_miss_tokens": 118,
+                "prompt_tokens_details": {
+                    "cached_tokens": 33664
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 90
+                }
+            },
+            "time": 1784043056
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_C1OZv5ENgS3msjFHbbZV8413",
+            "content": "\n[Exit code: 1]",
+            "is_error": true,
+            "time": 1784043057
+        },
+        {
+            "id": "msg_0251a794b7",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "So `addToOfflineQueue` is not defined in this file. It's probably a global function from the main JS bundle. Since the main `index-DJeWhCy-.js` file defines the content offline queue functions as `addToContentOfflineQueue` and `processContentOfflineQueue`, let me check if there's an `addToOfflineQueue` in the main bundle as well.\n\nLet me search for it in the main bundle."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_9BjNLbSDyewOkI50KX760140",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && grep -n \"addToOfflineQueue\" public_html\/assets\/index-DJeWhCy-.js | head -10"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 33981,
+                "completion_tokens": 168,
+                "total_tokens": 34149,
+                "prompt_cache_hit_tokens": 33920,
+                "prompt_cache_miss_tokens": 61,
+                "prompt_tokens_details": {
+                    "cached_tokens": 33920
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 94
+                }
+            },
+            "time": 1784043060
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_9BjNLbSDyewOkI50KX760140",
+            "content": "[Command completed successfully with no output]",
+            "is_error": false,
+            "time": 1784043060
+        },
+        {
+            "id": "msg_99311225bc",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "So `addToOfflineQueue` doesn't exist in the main bundle either. Let me check if it's defined in the `useDoctorContent-Cx8T-OwA.js` file with a different format (maybe as a variable or something).\n\nActually, let me read the full file to understand."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_uJKT58tzr9jSOUBWenoB8659",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && grep -n \"addToOfflineQueue\\|offlineQueue\\|OFFLINE\" public_html\/assets\/useDoctorContent-Cx8T-OwA.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 34168,
+                "completion_tokens": 145,
+                "total_tokens": 34313,
+                "prompt_cache_hit_tokens": 34048,
+                "prompt_cache_miss_tokens": 120,
+                "prompt_tokens_details": {
+                    "cached_tokens": 34048
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 63
+                }
+            },
+            "time": 1784043063
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_uJKT58tzr9jSOUBWenoB8659",
+            "content": "393:        addToOfflineQueue(\"doctorContentOverrides\", updated);\n422:        addToOfflineQueue(\"doctorContentOverrides\", updated);\n",
+            "is_error": false,
+            "time": 1784043063
+        },
+        {
+            "id": "msg_3cce76522e",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The function `addToOfflineQueue` is used but not defined. This is likely a global function that was defined in the original source code (pre-refactoring). Since the previous code used `saveFrontPageContentWithSync` which was imported, and now we're using `addToOfflineQueue`, this function must have been present in the original codebase as a global.\n\nLet me check the full file around those lines to understand the context better, and see if there's a function defined that I might be missing."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_uTZlaaD8gxsb0PtJhq1L4023",
+                    "name": "read_file",
+                    "input": {
+                        "path": "public_html\/assets\/useDoctorContent-Cx8T-OwA.js",
+                        "offset": 1,
+                        "limit": 450
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 34357,
+                "completion_tokens": 198,
+                "total_tokens": 34555,
+                "prompt_cache_hit_tokens": 34304,
+                "prompt_cache_miss_tokens": 53,
+                "prompt_tokens_details": {
+                    "cached_tokens": 34304
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 108
+                }
+            },
+            "time": 1784043067
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_uTZlaaD8gxsb0PtJhq1L4023",
+            "content": "    1 | import { i as createLucideIcon, r as reactExports } from \".\/index-DJeWhCy-.js\";\n    2 | \/**\n    3 |  * @license lucide-react v0.511.0 - ISC\n    4 |  *\n    5 |  * This source code is licensed under the ISC license.\n    6 |  * See the LICENSE file in the root directory of this source tree.\n    7 |  *\/\n    8 | const __iconNode$1 = [\n    9 |   [\"rect\", { width: \"18\", height: \"18\", x: \"3\", y: \"3\", rx: \"2\", ry: \"2\", key: \"1m3agn\" }],\n   10 |   [\"circle\", { cx: \"9\", cy: \"9\", r: \"2\", key: \"af1f0g\" }],\n   11 |   [\"path\", { d: \"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\", key: \"1xmnt7\" }]\n   12 | ];\n   13 | const Image = createLucideIcon(\"image\", __iconNode$1);\n   14 | \/**\n   15 |  * @license lucide-react v0.511.0 - ISC\n   16 |  *\n   17 |  * This source code is licensed under the ISC license.\n   18 |  * See the LICENSE file in the root directory of this source tree.\n   19 |  *\/\n   20 | const __iconNode = [\n   21 |   [\n   22 |     \"path\",\n   23 |     {\n   24 |       d: \"M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z\",\n   25 |       key: \"r04s7s\"\n   26 |     }\n   27 |   ]\n   28 | ];\n   29 | const Star = createLucideIcon(\"star\", __iconNode);\n   30 | const doctors = {\n   31 |   arman: {\n   32 |     name: \"Dr. Arman Kabir\",\n   33 |     suffix: \"(ZOSID)\",\n   34 |     designation: \"Dr.\",\n   35 |     degree: \"MBBS (D.U.)\",\n   36 |     degrees: [\"MBBS (D.U.)\"],\n   37 |     posts: [\n   38 |       \"Emergency Medical Officer, Dr. Sirajul Islam Medical College Hospital\",\n   39 |       \"Registrar, Dept. of General Surgery, University Dental College (uDC)\"\n   40 |     ],\n   41 |     specialization: \"General Surgery\",\n   42 |     roles: [\n   43 |       \"Emergency Medical Officer, Dr. Sirajul Islam Medical College Hospital\",\n   44 |       \"Registrar, Dept. of General Surgery uDC\"\n   45 |     ],\n   46 |     regNo: \"A-105224\",\n   47 |     hospital: \"Dr. Sirajul Islam Medical College Hospital\",\n   48 |     phone: \"01751959262\",\n   49 |     phone2: \"01984587802\",\n   50 |     email: \"dr.armankabir011@gmail.com\",\n   51 |     whatsapp: \"+8801751959262\",\n   52 |     photo: null,\n   53 |     cvPdfUrl: null,\n   54 |     chambers: [\n   55 |       {\n   56 |         id: \"1\",\n   57 |         nameBn: \"\u0987\u0989\u09a8\u09bf\u09ad\u09be\u09b0\u09cd\u09b8\u09bf\u099f\u09bf \u09a1\u09c7\u09a8\u09cd\u099f\u09be\u09b2 \u0995\u09b2\u09c7\u099c \u098f\u09a8\u09cd\u09a1 \u09b9\u09be\u09b8\u09aa\u09be\u09a4\u09be\u09b2\",\n   58 |         addressBn: \"\u09a8\u09bf\u099a \u09a4\u09b2\u09be (\u09b8\u09c7\u09a8\u09cd\u099a\u09c1\u09b0\u09bf \u0986\u09b0\u09cd\u0995\u09c7\u09a1 \u09ae\u09be\u09b0\u09cd\u0995\u09c7\u099f)\\n\u09e7\u09e8\u09e6\/\u098f, \u0986\u0989\u099f\u09be\u09b0 \u09b8\u09be\u09b0\u09cd\u0995\u09c1\u09b2\u09be\u09b0 \u09b0\u09cb\u09a1\\n\u09ae\u0997\u09ac\u09be\u099c\u09be\u09b0, \u09a2\u09be\u0995\u09be\",\n   59 |         address: \"University Dental College & Hospital, Ground Floor (Century Arcade Market), 120\/A, Outer Circular Road, Moghbazar, Dhaka\",\n   60 |         visitingHours: \"Saturday\u2013Thursday: 5:00 PM \u2013 9:00 PM\",\n   61 |         phone: \"01751959262\",\n   62 |         emergencyPhone: \"01751959262\",\n   63 |         lat: 23.7461,\n   64 |         lng: 90.4066\n   65 |       }\n   66 |     ],\n   67 |     cv: {\n   68 |       qualifications: [\n   69 |         { degree: \"MBBS\", institution: \"University of Dhaka (D.U.)\", year: \"\" }\n   70 |       ],\n   71 |       experience: [\n   72 |         {\n   73 |           title: \"Emergency Medical Officer\",\n   74 |           institution: \"Dr. Sirajul Islam Medical College Hospital\",\n   75 |           period: \"Present\"\n   76 |         },\n   77 |         {\n   78 |           title: \"Registrar, Dept. of General Surgery\",\n   79 |           institution: \"University Dental College (uDC)\",\n   80 |           period: \"Present\"\n   81 |         }\n   82 |       ],\n   83 |       publications: [],\n   84 |       awards: [],\n   85 |       memberships: [\"Bangladesh Medical Association\"]\n   86 |     },\n   87 |     classroom: {\n   88 |       announcements: [\n   89 |         {\n   90 |           title: \"Surgery Ward Round Schedule\",\n   91 |           date: \"2026-03-25\",\n   92 |           body: \"Ward rounds for surgical students will be held every Saturday and Tuesday at 8 AM. Please bring your case sheets.\"\n   93 |         },\n   94 |         {\n   95 |           title: \"Emergency Medicine Seminar\",\n   96 |           date: \"2026-03-20\",\n   97 |           body: \"Monthly EM seminar scheduled for March 28. Topic: Trauma Management.\"\n   98 |         }\n   99 |       ],\n  100 |       schedule: [\n  101 |         {\n  102 |           day: \"Saturday\",\n  103 |           time: \"8:00 AM \u2013 10:00 AM\",\n  104 |           subject: \"Clinical Surgery\",\n  105 |           venue: \"Surgery Ward\"\n  106 |         },\n  107 |         {\n  108 |           day: \"Tuesday\",\n  109 |           time: \"8:00 AM \u2013 10:00 AM\",\n  110 |           subject: \"Emergency Medicine\",\n  111 |           venue: \"Emergency Dept.\"\n  112 |         },\n  113 |         {\n  114 |           day: \"Thursday\",\n  115 |           time: \"2:00 PM \u2013 4:00 PM\",\n  116 |           subject: \"Surgical Anatomy\",\n  117 |           venue: \"Lecture Hall A\"\n  118 |         }\n  119 |       ],\n  120 |       notes: [\n  121 |         {\n  122 |           title: \"Acute Abdomen \u2013 Differential Diagnosis\",\n  123 |           description: \"Step-by-step approach to acute abdominal pain.\",\n  124 |           link: \"#\"\n  125 |         },\n  126 |         {\n  127 |           title: \"Wound Management & Dressing\",\n  128 |           description: \"Illustrated guide for post-op wound care.\",\n  129 |           link: \"#\"\n  130 |         },\n  131 |         {\n  132 |           title: \"Pre-operative Assessment Checklist\",\n  133 |           description: \"Standard checklist for surgical students.\",\n  134 |           link: \"#\"\n  135 |         }\n  136 |       ],\n  137 |       videos: [\n  138 |         {\n  139 |           title: \"Approach to Surgical Emergency \u2013 Lecture\",\n  140 |           url: \"https:\/\/www.youtube.com\/watch?v=dQw4w9WgXcQ\",\n  141 |           description: \"1-hour recorded lecture on surgical emergencies.\"\n  142 |         },\n  143 |         {\n  144 |           title: \"Suturing Techniques \u2013 Tutorial\",\n  145 |           url: \"https:\/\/www.youtube.com\/watch?v=dQw4w9WgXcQ\",\n  146 |           description: \"Step-by-step suturing for medical students.\"\n  147 |         }\n  148 |       ]\n  149 |     }\n  150 |   },\n  151 |   samia: {\n  152 |     name: \"Dr. Samia Shikder\",\n  153 |     suffix: \"\",\n  154 |     designation: \"Dr.\",\n  155 |     degree: \"MBBS (DU), FCPS Part 2 (Gynae & Obs), FCPS Part 2 (Reproductive Endocrinology and Infertility), DMU (CMUD)\",\n  156 |     degrees: [\n  157 |       \"MBBS (DU)\",\n  158 |       \"FCPS Part 2 (Gynae & Obs)\",\n  159 |       \"FCPS Part 2 (Reproductive Endocrinology and Infertility)\",\n  160 |       \"DMU (CMUD)\"\n  161 |     ],\n  162 |     posts: [\"FCPS Part 2 Trainee, Dept. of Gynae & Obs, Dhaka Medical College\"],\n  163 |     specialization: \"Gynae & Obs, Reproductive Endocrinology and Infertility\",\n  164 |     roles: [\"FCPS Part 2 Trainee, Dept. of Gynae & Obs, Dhaka Medical College\"],\n  165 |     regNo: \"\",\n  166 |     hospital: \"Dhaka Medical College\",\n  167 |     phone: \"+8801957212210\",\n  168 |     phone2: \"\",\n  169 |     email: \"samiashikder33@gmail.com\",\n  170 |     whatsapp: \"+8801957212210\",\n  171 |     photo: null,\n  172 |     cvPdfUrl: \"\/assets\/uploads\/CV_Samia-Shikder-16.3.2026-1.pdf\",\n  173 |     chambers: [\n  174 |       {\n  175 |         id: \"1\",\n  176 |         nameBn: \"\u09a2\u09be\u0995\u09be \u09ae\u09c7\u09a1\u09bf\u0995\u09c7\u09b2 \u0995\u09b2\u09c7\u099c \u09b9\u09be\u09b8\u09aa\u09be\u09a4\u09be\u09b2\",\n  177 |         addressBn: \"\u0997\u09be\u0987\u09a8\u09c0 \u0993 \u09aa\u09cd\u09b0\u09b8\u09c2\u09a4\u09bf \u09ac\u09bf\u09ad\u09be\u0997\\n\u09a2\u09be\u0995\u09be \u09ae\u09c7\u09a1\u09bf\u0995\u09c7\u09b2 \u0995\u09b2\u09c7\u099c \u09b9\u09be\u09b8\u09aa\u09be\u09a4\u09be\u09b2\\n\u09a2\u09be\u0995\u09be\",\n  178 |         address: \"Dept. of Gynae & Obs, Dhaka Medical College Hospital, Dhaka\",\n  179 |         visitingHours: \"Sunday\u2013Thursday: 4:00 PM \u2013 8:00 PM\",\n  180 |         phone: \"+8801957212210\",\n  181 |         emergencyPhone: \"+8801957212210\",\n  182 |         lat: 23.7261,\n  183 |         lng: 90.396\n  184 |       }\n  185 |     ],\n  186 |     cv: {\n  187 |       qualifications: [\n  188 |         { degree: \"MBBS\", institution: \"University of Dhaka (DU)\", year: \"\" },\n  189 |         {\n  190 |           degree: \"FCPS Part 2 (Gynae & Obs)\",\n  191 |           institution: \"Bangladesh College of Physicians and Surgeons\",\n  192 |           year: \"\"\n  193 |         },\n  194 |         {\n  195 |           degree: \"FCPS Part 2 (Reproductive Endocrinology and Infertility)\",\n  196 |           institution: \"Bangladesh College of Physicians and Surgeons\",\n  197 |           year: \"\"\n  198 |         },\n  199 |         {\n  200 |           degree: \"DMU (CMUD)\",\n  201 |           institution: \"CMUD\",\n  202 |           year: \"\"\n  203 |         }\n  204 |       ],\n  205 |       experience: [\n  206 |         {\n  207 |           title: \"FCPS Part 2 Trainee, Gynae & Obs\",\n  208 |           institution: \"Dhaka Medical College\",\n  209 |           period: \"Present\"\n  210 |         }\n  211 |       ],\n  212 |       publications: [],\n  213 |       awards: [],\n  214 |       memberships: [\n  215 |         \"Bangladesh Society of Obstetrics & Gynaecology\",\n  216 |         \"Bangladesh Medical Association\"\n  217 |       ]\n  218 |     },\n  219 |     classroom: {\n  220 |       announcements: [\n  221 |         {\n  222 |           title: \"Obstetrics Clinical Exam Preparation\",\n  223 |           date: \"2026-03-22\",\n  224 |           body: \"Mock clinical exams for 4th year students scheduled for March 22. Attendance mandatory.\"\n  225 |         },\n  226 |         {\n  227 |           title: \"Gynecology OPD Teaching Round\",\n  228 |           date: \"2026-03-19\",\n  229 |           body: \"OPD teaching round every Sunday at 9 AM. Bring your logbooks.\"\n  230 |         }\n  231 |       ],\n  232 |       schedule: [\n  233 |         {\n  234 |           day: \"Sunday\",\n  235 |           time: \"9:00 AM \u2013 11:00 AM\",\n  236 |           subject: \"Clinical Obstetrics\",\n  237 |           venue: \"Labour Ward\"\n  238 |         },\n  239 |         {\n  240 |           day: \"Tuesday\",\n  241 |           time: \"8:00 AM \u2013 10:00 AM\",\n  242 |           subject: \"Gynecology Lecture\",\n  243 |           venue: \"Lecture Hall C\"\n  244 |         },\n  245 |         {\n  246 |           day: \"Thursday\",\n  247 |           time: \"2:00 PM \u2013 4:00 PM\",\n  248 |           subject: \"Ante-natal Clinic Teaching\",\n  249 |           venue: \"ANC Clinic\"\n  250 |         }\n  251 |       ],\n  252 |       notes: [\n  253 |         {\n  254 |           title: \"Normal Labour & Delivery \u2013 Step by Step\",\n  255 |           description: \"Illustrated guide for clinical students.\",\n  256 |           link: \"#\"\n  257 |         },\n  258 |         {\n  259 |           title: \"PCOS Management 2025\",\n  260 |           description: \"Latest evidence-based guidelines.\",\n  261 |           link: \"#\"\n  262 |         },\n  263 |         {\n  264 |           title: \"High-Risk Pregnancy \u2013 Lecture Notes\",\n  265 |           description: \"Slides from February 2026 seminar.\",\n  266 |           link: \"#\"\n  267 |         }\n  268 |       ],\n  269 |       videos: [\n  270 |         {\n  271 |           title: \"Normal vs Abnormal CTG \u2013 Tutorial\",\n  272 |           url: \"https:\/\/www.youtube.com\/watch?v=dQw4w9WgXcQ\",\n  273 |           description: \"45-minute recorded session on CTG interpretation.\"\n  274 |         },\n  275 |         {\n  276 |           title: \"Obstetric Emergencies \u2013 Simulation\",\n  277 |           url: \"https:\/\/www.youtube.com\/watch?v=dQw4w9WgXcQ\",\n  278 |           description: \"Recorded simulation training for eclampsia and PPH.\"\n  279 |         }\n  280 |       ]\n  281 |     }\n  282 |   }\n  283 | };\n  284 | const STORAGE_KEY = \"doctorContentOverrides\";\n  285 | function loadOverrides() {\n  286 |   try {\n  287 |     return JSON.parse(localStorage.getItem(STORAGE_KEY) || \"{}\");\n  288 |   } catch {\n  289 |     return {};\n  290 |   }\n  291 | }\n  292 | function saveOverrides(overrides) {\n  293 |   localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));\n  294 | }\n  295 | async function syncOverridesToServer(overrides) {\n  296 |   const response = await fetch(\"\/api\/frontpage\/save.php\", {\n  297 |     method: \"POST\",\n  298 |     headers: { \"Content-Type\": \"application\/json\" },\n  299 |     body: JSON.stringify({ doctorContentOverrides: overrides })\n  300 |   });\n  301 |   if (!response.ok) {\n  302 |     throw new Error(\"Server returned \" + response.status);\n  303 |   }\n  304 |   const json = await response.json();\n  305 |   if (!json.success) {\n  306 |     throw new Error(json.message || \"Server save failed\");\n  307 |   }\n  308 |   return json;\n  309 | }\n  310 | function deepMerge(base, overrides) {\n  311 |   const result = { ...base };\n  312 |   for (const [key, value] of Object.entries(overrides)) {\n  313 |     if (Array.isArray(value)) {\n  314 |       result[key] = value;\n  315 |     } else if (value !== null && typeof value === \"object\" && typeof result[key] === \"object\" && result[key] !== null && !Array.isArray(result[key])) {\n  316 |       result[key] = deepMerge(result[key], value);\n  317 |     } else {\n  318 |       result[key] = value;\n  319 |     }\n  320 |   }\n  321 |   return result;\n  322 | }\n  323 | function useDoctorContent() {\n  324 |   const [overrides, setOverrides] = reactExports.useState({});\n  325 |   reactExports.useEffect(() => {\n  326 |     let cancelled = false;\n  327 |     const loadFromServer = async () => {\n  328 |       if (navigator.onLine) {\n  329 |         try {\n  330 |           const response = await fetch(\"\/api\/frontpage\/get.php?key=doctorContentOverrides\");\n  331 |           if (response.ok) {\n  332 |             const json = await response.json();\n  333 |             if (json && json.success && json.data) {\n  334 |               const serverOverrides = json.data;\n  335 |               if (serverOverrides && typeof serverOverrides === \"object\" && Object.keys(serverOverrides).length > 0) {\n  336 |                 if (!cancelled) {\n  337 |                   localStorage.setItem(STORAGE_KEY, JSON.stringify(serverOverrides));\n  338 |                   setOverrides(serverOverrides);\n  339 |                 }\n  340 |                 return;\n  341 |               }\n  342 |             }\n  343 |           }\n  344 |         } catch (e) {\n  345 |           console.warn(\"[doctorContent] Failed to load from server:\", e);\n  346 |         }\n  347 |       }\n  348 |       if (!cancelled) {\n  349 |         const local = loadOverrides();\n  350 |         if (Object.keys(local).length > 0) {\n  351 |           setOverrides(local);\n  352 |         }\n  353 |       }\n  354 |     };\n  355 |     loadFromServer();\n  356 |     return () => { cancelled = true; };\n  357 |   }, []);\n  358 |   const getContent = reactExports.useCallback(\n  359 |     (doctorKey) => {\n  360 |       const base = doctors[doctorKey];\n  361 |       const docOverrides = overrides[doctorKey] || {};\n  362 |       return deepMerge(base, docOverrides);\n  363 |     },\n  364 |     [overrides]\n  365 |   );\n  366 |   const updateField = reactExports.useCallback(\n  367 |     async (doctorKey, path, value) => {\n  368 |       const prev = overrides;\n  369 |       const updated = { ...prev };\n  370 |       if (!updated[doctorKey]) updated[doctorKey] = {};\n  371 |       const parts = path.split(\".\");\n  372 |       let obj = updated[doctorKey];\n  373 |       for (let i = 0; i < parts.length - 1; i++) {\n  374 |         if (!obj[parts[i]] || typeof obj[parts[i]] !== \"object\") {\n  375 |           obj[parts[i]] = {};\n  376 |         }\n  377 |         obj = obj[parts[i]];\n  378 |       }\n  379 |       obj[parts[parts.length - 1]] = value;\n  380 |       if (navigator.onLine) {\n  381 |         try {\n  382 |           await syncOverridesToServer(updated);\n  383 |           saveOverrides(updated);\n  384 |           setOverrides(updated);\n  385 |           return { success: true };\n  386 |         } catch (err) {\n  387 |           console.error(\"[doctorContent] Update failed:\", err);\n  388 |           return { success: false, error: err.message || \"Network error\" };\n  389 |         }\n  390 |       } else {\n  391 |         saveOverrides(updated);\n  392 |         setOverrides(updated);\n  393 |         addToOfflineQueue(\"doctorContentOverrides\", updated);\n  394 |         return { success: true, offline: true };\n  395 |       }\n  396 |     },\n  397 |     [overrides]\n  398 |   );\n  399 |   const updateChambers = reactExports.useCallback(\n  400 |     async (doctorKey, chambers) => {\n  401 |       const prev = overrides;\n  402 |       const updated = {\n  403 |         ...prev,\n  404 |         [doctorKey]: {\n  405 |           ...prev[doctorKey] || {},\n  406 |           chambers\n  407 |         }\n  408 |       };\n  409 |       if (navigator.onLine) {\n  410 |         try {\n  411 |           await syncOverridesToServer(updated);\n  412 |           saveOverrides(updated);\n  413 |           setOverrides(updated);\n  414 |           return { success: true };\n  415 |         } catch (err) {\n  416 |           console.error(\"[doctorContent] Chamber update failed:\", err);\n  417 |           return { success: false, error: err.message || \"Network error\" };\n  418 |         }\n  419 |       } else {\n  420 |         saveOverrides(updated);\n  421 |         setOverrides(updated);\n  422 |         addToOfflineQueue(\"doctorContentOverrides\", updated);\n  423 |         return { success: true, offline: true };\n  424 |       }\n  425 |     },\n  426 |     [overrides]\n  427 |   );\n  428 |   const getAll = reactExports.useCallback(() => {\n  429 |     return {\n  430 |       arman: getContent(\"arman\"),\n  431 |       samia: getContent(\"samia\")\n  432 |     };\n  433 |   }, [getContent]);\n  434 |   return { getContent, updateField, updateChambers, getAll };\n  435 | }\n  436 | export {\n  437 |   Image as I,\n  438 |   Star as S,\n  439 |   useDoctorContent as u\n  440 | };\n  441 |",
+            "is_error": false,
+            "time": 1784043067
+        },
+        {
+            "id": "msg_1053bbabbc",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I see that `addToOfflineQueue` is called on lines 393 and 422 but there's no definition for it in this file. It must be intended as a global function. However, in the main `index-DJeWhCy-.js` file, we defined `addToContentOfflineQueue` and `processContentOfflineQueue` - not `addToOfflineQueue`.\n\nThis means the `useDoctorContent` file is calling a function that doesn't exist. I need to fix this. I should either:\n1. Add the `addToOfflineQueue` function to the main bundle\n2. Or change the calls to use `addToContentOfflineQueue`\n\nLet me also check what the `addToOfflineQueue` function is supposed to do - it takes a key and a value. The `addToContentOfflineQueue` takes a payload object like `{ doctorContentOverrides: overrides }` or `{ siteConfig: next }`.\n\nLet me look at how it's used. On line 393: `addToOfflineQueue(\"doctorContentOverrides\", updated)` - the first arg is a key, the second is the value.\n\nI need to either:\n1. Create an `addToOfflineQueue` function that wraps the content offline queue mechanism\n2. Or change the calls to use the correct format for `addToContentOfflineQueue`\n\nSince the `addToContentOfflineQueue` function takes `payload` (an object with keys like `doctorContentOverrides`), I should modify the calls to:\n`addToContentOfflineQueue({ doctorContentOverrides: updated })`\n\nBut wait - I don't control the `useDoctorContent-Cx8T-OwA.js` file directly in the same way since it's a separate module. Let me check if `processContentOfflineQueue` is also needed somewhere.\n\nActually, let me just define the `addToOfflineQueue` function in the main `index-DJeWhCy-.js` file as a bridge function that maps to `addToContentOfflineQueue`."
+                },
+                {
+                    "type": "text",
+                    "text": "I see that `addToOfflineQueue` is called but not defined anywhere. Let me fix this by adding the function to the main bundle:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_3qS6Kl3HoonZ32JX0p1V8190",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && php -r '\n$content = file_get_contents(\"public_html\/assets\/index-DJeWhCy-.js\");\n$search = \"const CONTENT_OFFLINE_QUEUE_KEY = \\\"medicare_content_offline_queue\\\";\";\n$pos = strpos($content, $search);\nif ($pos !== false) {\n    echo \"Found at position: $pos\\n\";\n    \/\/ Add addToOfflineQueue after the addToContentOfflineQueue function\n    $insert_pos = $pos;\n    echo \"Will insert addToOfflineQueue function\\n\";\n} else {\n    echo \"Not found\\n\";\n}\n'\n",
+                        "timeout": 10
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 39762,
+                "completion_tokens": 659,
+                "total_tokens": 40421,
+                "prompt_cache_hit_tokens": 34432,
+                "prompt_cache_miss_tokens": 5330,
+                "prompt_tokens_details": {
+                    "cached_tokens": 34432
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 435
+                }
+            },
+            "time": 1784043075
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_3qS6Kl3HoonZ32JX0p1V8190",
+            "content": "Found at position: 1895419\nWill insert addToOfflineQueue function\n\nUnsuccessful stat on filename containing newline at \/var\/cpanel\/ea4\/ea_php_cli.pm line 87.\n",
+            "is_error": false,
+            "time": 1784043075
+        },
+        {
+            "id": "msg_3a0b356922",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I need to find the right place to add the `addToOfflineQueue` function. Let me find exactly where `addToContentOfflineQueue` ends and add it after that."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_9sjakJPP6PNUgJfwl0ZG7234",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && grep -n \"function addToContentOfflineQueue\\|function processContentOfflineQueue\\|function saveFrontPageContentWithSync\\|CONTENT_OFFLINE_QUEUE_KEY\" public_html\/assets\/index-DJeWhCy-.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 40480,
+                "completion_tokens": 136,
+                "total_tokens": 40616,
+                "prompt_cache_hit_tokens": 40320,
+                "prompt_cache_miss_tokens": 160,
+                "prompt_tokens_details": {
+                    "cached_tokens": 40320
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 39
+                }
+            },
+            "time": 1784043078
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_9sjakJPP6PNUgJfwl0ZG7234",
+            "content": "51568:const CONTENT_OFFLINE_QUEUE_KEY = \"medicare_content_offline_queue\";\n51571:    const raw = localStorage.getItem(CONTENT_OFFLINE_QUEUE_KEY);\n51580:    localStorage.setItem(CONTENT_OFFLINE_QUEUE_KEY, JSON.stringify(queue));\n51584:function addToContentOfflineQueue(payload, updatedAt) {\n51595:async function processContentOfflineQueue() {\n51639:async function saveFrontPageContentWithSync(actor) {\n",
+            "is_error": false,
+            "time": 1784043078
+        },
+        {
+            "id": "msg_c8da0f4333",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I need to add the `addToOfflineQueue` function. I'll add it between `setContentOfflineQueue` and `addToContentOfflineQueue` or after `addToContentOfflineQueue`. Let me look at the exact content around line 51593 to find a good insertion point.\n\nThe function `addToOfflineQueue(key, value)` should be a simple wrapper that stores the data in the content offline queue if offline. Let me add it right before `processContentOfflineQueue`."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_fAwvsvhejkV4vjUaM1It4766",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && sed -n '51582,51602p' public_html\/assets\/index-DJeWhCy-.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 40737,
+                "completion_tokens": 177,
+                "total_tokens": 40914,
+                "prompt_cache_hit_tokens": 40576,
+                "prompt_cache_miss_tokens": 161,
+                "prompt_tokens_details": {
+                    "cached_tokens": 40576
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 106
+                }
+            },
+            "time": 1784043082
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_fAwvsvhejkV4vjUaM1It4766",
+            "content": "  }\n}\nfunction addToContentOfflineQueue(payload, updatedAt) {\n  const queue = getContentOfflineQueue();\n  queue.push({\n    id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,\n    payload,\n    updatedAt: updatedAt || new Date().toISOString(),\n    retryCount: 0,\n    queuedAt: new Date().toISOString()\n  });\n  setContentOfflineQueue(queue);\n}\nasync function processContentOfflineQueue() {\n  let queue = getContentOfflineQueue();\n  if (queue.length === 0) return;\n  const remaining = [];\n  for (const entry of queue) {\n    try {\n      const response = await fetch(\"\/api\/frontpage\/save.php\", {\n        method: \"POST\",\n",
+            "is_error": false,
+            "time": 1784043082
         }
     ]
 }

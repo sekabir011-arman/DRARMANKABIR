@@ -1969,38 +1969,66 @@ function AdminContentManagement() {
     ] })
   ] });
 }
+const CONTENT_KEYS = ["classroom_arman", "classroom_samia", "chamber_arman", "chamber_samia", "profile_arman", "profile_samia"];
+function useContentLoader(key) {
+  const [value, setValue] = reactExports.useState(() => localStorage.getItem(key) ?? "");
+  reactExports.useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      if (!navigator.onLine) return;
+      try {
+        const r2 = await fetch(`/api/content/get.php?key=${encodeURIComponent(key)}`);
+        if (r2.ok) {
+          const json = await r2.json();
+          if (json && json.success && json.data && json.data.setting_value !== null && json.data.setting_value !== void 0) {
+            const serverVal = json.data.setting_value;
+            if (!cancelled) {
+              const strVal = typeof serverVal === "string" ? serverVal : JSON.stringify(serverVal);
+              localStorage.setItem(key, strVal);
+              setValue(strVal);
+            }
+          }
+        }
+      } catch {
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [key]);
+  return [value, setValue];
+}
 function AdminPublicContent() {
-  const [classroomArman, setClassroomArman] = reactExports.useState(
-    () => localStorage.getItem("classroom_arman") ?? ""
-  );
-  const [classroomSamia, setClassroomSamia] = reactExports.useState(
-    () => localStorage.getItem("classroom_samia") ?? ""
-  );
-  const [chamberArman, setChamberArman] = reactExports.useState(
-    () => localStorage.getItem("chamber_arman") ?? ""
-  );
-  const [chamberSamia, setChamberSamia] = reactExports.useState(
-    () => localStorage.getItem("chamber_samia") ?? ""
-  );
-  const [profileArman, setProfileArman] = reactExports.useState(
-    () => localStorage.getItem("profile_arman") ?? ""
-  );
-  const [profileSamia, setProfileSamia] = reactExports.useState(
-    () => localStorage.getItem("profile_samia") ?? ""
-  );
-  const saveSection = (key, value, label) => {
-    localStorage.setItem(key, value);
+  const [classroomArman, setClassroomArman] = useContentLoader("classroom_arman");
+  const [classroomSamia, setClassroomSamia] = useContentLoader("classroom_samia");
+  const [chamberArman, setChamberArman] = useContentLoader("chamber_arman");
+  const [chamberSamia, setChamberSamia] = useContentLoader("chamber_samia");
+  const [profileArman, setProfileArman] = useContentLoader("profile_arman");
+  const [profileSamia, setProfileSamia] = useContentLoader("profile_samia");
+  const saveSection = async (key, value, label) => {
     if (navigator.onLine) {
-      fetch("/api/content/save.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: key, value: value })
-      }).then(r => {
-        if (r.ok) ue.success(` saved to server`);
-        else console.warn("Content save failed:", r.status);
-      }).catch(e => console.warn("Content save error:", e));
+      try {
+        const response = await fetch("/api/content/save.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key, value })
+        });
+        if (response.ok) {
+          const json = await response.json();
+          if (json && json.success && json.data && json.data.updated_at) {
+            localStorage.setItem(key, value);
+            ue.success(` saved`);
+          } else {
+            ue.error("Server did not confirm save");
+          }
+        } else {
+          ue.error("Server returned " + response.status);
+        }
+      } catch (e) {
+        ue.error("Network error saving");
+      }
     } else {
-      ue.success(` saved (offline)`);
+      localStorage.setItem(key, value);
+      ue.success(" saved (offline - will sync later)");
     }
   };  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-6", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs(Card, { children: [
