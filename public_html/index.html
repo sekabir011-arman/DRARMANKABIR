@@ -11,7 +11,43 @@
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <script>
-    // Preload frontpage content from server into localStorage
+    // ─── localStorage health check ───────────────────────────────────────────
+    // Repairs corrupted JSON entries to prevent SyntaxError from JSON.parse
+    (function(){
+      try {
+        var keysToCheck = [
+          'siteConfig', 'doctorContentOverrides', 'staff_auth',
+          'medicare_doctors_registry', 'medicare_clinical_data',
+          'medicare_sync_queue', 'medicare_sync_conflicts',
+          'medicare_content_offline_queue', 'medicare_device_id'
+        ];
+        for (var i = 0; i < keysToCheck.length; i++) {
+          var raw = localStorage.getItem(keysToCheck[i]);
+          if (raw !== null && raw !== '') {
+            try { JSON.parse(raw); } catch(e) {
+              console.warn('[health] Removing corrupted localStorage key:', keysToCheck[i]);
+              localStorage.removeItem(keysToCheck[i]);
+            }
+          }
+        }
+        // Also scan all localStorage keys for JSON corruption
+        for (var j = 0; j < localStorage.length; j++) {
+          var k = localStorage.key(j);
+          if (k && (k.indexOf('_') !== -1 || k.indexOf('medicare_') === 0 || k.indexOf('clinic_') === 0 || k.indexOf('visit_') === 0 || k.indexOf('appointments') === 0 || k.indexOf('patients_') === 0 || k.indexOf('prescriptions_') === 0)) {
+            try {
+              var v = localStorage.getItem(k);
+              if (v !== null && v !== '') {
+                JSON.parse(v);
+              }
+            } catch(e) {
+              console.warn('[health] Removing corrupted localStorage key:', k);
+              localStorage.removeItem(k);
+            }
+          }
+        }
+      } catch(e) { /* localStorage not available */ }
+    })();
+    // ─── Preload frontpage content from server into localStorage ────────────
     (function(){
       var xhr = new XMLHttpRequest();
       xhr.open('GET', '/api/frontpage/get.php', true);
