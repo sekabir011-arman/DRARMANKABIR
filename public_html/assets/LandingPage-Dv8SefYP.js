@@ -20,6 +20,7 @@ import { B as BookOpen } from "./book-open-Bi6sJ5u3.js";
 import { M as MapPin } from "./map-pin-BVGvB4pd.js";
 import { E as ExternalLink } from "./external-link-YRWS9f1T.js";
 import { D as Download } from "./download-qc_8yQ5r.js";
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/index-DJeWhCy-.js","assets/index-JEdqxkTH.css"])))=>i.map(i=>d[i]);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
