@@ -266,7 +266,8 @@ function logAudit(
 
 function handleCors(): void {
     // CORS is handled in .htaccess, but ensure pre-flight works
-    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    $method = $_SERVER['REQUEST_METHOD'] ?? '';
+    if ($method === 'OPTIONS') {
         http_response_code(204);
         exit;
     }
