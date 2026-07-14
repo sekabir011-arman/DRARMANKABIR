@@ -52,7 +52,7 @@
         }
     ],
     "created_at": 1784039657,
-    "updated_at": 1784042102,
+    "updated_at": 1784042112,
     "messages": [
         {
             "id": "msg_compact",
@@ -1384,6 +1384,52 @@
             "content": "    1 | <?php\n    2 | \/**\n    3 |  * Content Get API\n    4 |  * \n    5 |  * GET \/api\/content\/get.php?key=classroom_arman\n    6 |  * \n    7 |  * Retrieves stored content from the site_settings table.\n    8 |  * This endpoint is public for reading content.\n    9 |  * \n   10 |  * Query params:\n   11 |  *   key (optional) - Specific content key. If omitted, returns all content.\n   12 |  *   group (optional) - Filter by group (classroom, chamber, profile, etc.)\n   13 |  * \n   14 |  * Response:\n   15 |  *   { \"success\": true, \"data\": { ... } }\n   16 |  *\/\n   17 | \n   18 | require_once __DIR__ . '\/..\/database.php';\n   19 | require_once __DIR__ . '\/..\/helpers.php';\n   20 | \n   21 | handleCors();\n   22 | requireMethod('GET');\n   23 | \n   24 | $key = getParam('key', '');\n   25 | $group = getParam('group', '');\n   26 | \n   27 | try {\n   28 |     $db = Database::getInstance();\n   29 |     \n   30 |     if ($key) {\n   31 |         \/\/ Validate key format\n   32 |         if (!preg_match('\/^[a-zA-Z0-9_\\-\\.]+$\/', $key)) {\n   33 |             errorResponse('Invalid key format.', 400);\n   34 |         }\n   35 |         \n   36 |         $stmt = $db->prepare('SELECT setting_key, setting_value, setting_group, updated_at FROM site_settings WHERE setting_key = :key');\n   37 |         $stmt->execute([':key' => $key]);\n   38 |         $setting = $stmt->fetch();\n   39 |         \n   40 |         if (!$setting) {\n   41 |             \/\/ Return null for missing key\n   42 |             successResponse(null);\n   43 |         }\n   44 |         \n   45 |         $decoded = json_decode($setting['setting_value'], true);\n   46 |         \/\/ If the decoded value is a simple string, return it directly\n   47 |         if (is_string($decoded) && $decoded === $setting['setting_value']) {\n   48 |             $setting['setting_value'] = $decoded;\n   49 |         } else {\n   50 |             $setting['setting_value'] = $decoded;\n   51 |         }\n   52 |         successResponse($setting);\n   53 |     } elseif ($group) {\n   54 |         \/\/ Validate group format\n   55 |         if (!preg_match('\/^[a-zA-Z0-9_\\-]+$\/', $group)) {\n   56 |             errorResponse('Invalid group format.', 400);\n   57 |         }\n   58 |         \n   59 |         $stmt = $db->prepare('SELECT setting_key, setting_value, setting_group, updated_at FROM site_settings WHERE setting_group = :group ORDER BY setting_key');\n   60 |         $stmt->execute([':group' => $group]);\n   61 |         $settings = $stmt->fetchAll();\n   62 |         \n   63 |         foreach ($settings as &$s) {\n   64 |             $decoded = json_decode($s['setting_value'], true);\n   65 |             if (is_string($decoded) && $decoded === $s['setting_value']) {\n   66 |                 $s['setting_value'] = $decoded;\n   67 |             } else {\n   68 |                 $s['setting_value'] = $decoded;\n   69 |             }\n   70 |         }\n   71 |         \n   72 |         successResponse($settings);\n   73 |     } else {\n   74 |         \/\/ Return all site settings (excluding sensitive ones)\n   75 |         $stmt = $db->query(\"SELECT setting_key, setting_value, setting_group, updated_at FROM site_settings WHERE setting_group IN ('content', 'classroom', 'chamber', 'profile', 'prescription', 'frontpage', 'general', 'features', 'schedule', 'fees') ORDER BY setting_group, setting_key\");\n   76 |         $settings = $stmt->fetchAll();\n   77 |         \n   78 |         $result = [];\n   79 |         foreach ($settings as $s) {\n   80 |             $decoded = json_decode($s['setting_value'], true);",
             "is_error": false,
             "time": 1784042102
+        },
+        {
+            "id": "msg_380589676b",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The API response for a single key returns `{ \"success\": true, \"data\": { \"setting_key\": \"...\", \"setting_value\": \"...\", \"setting_group\": \"...\", \"updated_at\": \"...\" } }`.\n\nThe `setting_value` field contains the actual content. So to get the value for \"classroom_arman\", I'd need to access `response.data.setting_value`.\n\nNow let me rewrite the `AdminPublicContent` component to:\n1. On mount: fetch all 6 fields from MySQL, fall back to localStorage if offline\n2. On save: save to MySQL first, wait for confirmation, then update localStorage\n\nLet me write the replacement code using the edit_file approach.\n\nActually, looking at the component more carefully, I realize the issue is that `localStorage.getItem(\"classroom_arman\")` stores the raw string value directly, while the server stores it as JSON wrapped in `{ setting_key, setting_value, setting_group, updated_at }`.\n\nSo when loading from server, I need to extract the `setting_value` from the response.\n\nAlso, all 6 keys are loaded independently. It might be more efficient to fetch all at once, but for simplicity I'll load all 6 individually or use the `group` parameter to get them.\n\nLet me refactor the component. I'll change `saveSection` to be async and wait for the server response before updating localStorage."
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me rewrite the `AdminPublicContent` component to make MySQL the primary source:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_lEZCbJYuVLlmV1amEqeg2842",
+                    "name": "edit_file",
+                    "input": {
+                        "new_string": "const CONTENT_KEYS = [\"classroom_arman\", \"classroom_samia\", \"chamber_arman\", \"chamber_samia\", \"profile_arman\", \"profile_samia\"];\nfunction useContentLoader(key) {\n  const [value, setValue] = reactExports.useState(() => localStorage.getItem(key) ?? \"\");\n  reactExports.useEffect(() => {\n    let cancelled = false;\n    async function load() {\n      if (!navigator.onLine) return;\n      try {\n        const r2 = await fetch(`\/api\/content\/get.php?key=${encodeURIComponent(key)}`);\n        if (r2.ok) {\n          const json = await r2.json();\n          if (json && json.success && json.data && json.data.setting_value !== null && json.data.setting_value !== void 0) {\n            const serverVal = json.data.setting_value;\n            if (!cancelled) {\n              const strVal = typeof serverVal === \"string\" ? serverVal : JSON.stringify(serverVal);\n              localStorage.setItem(key, strVal);\n              setValue(strVal);\n            }\n          }\n        }\n      } catch {\n      }\n    }\n    load();\n    return () => { cancelled = true; };\n  }, [key]);\n  return [value, setValue];\n}\nfunction AdminPublicContent() {\n  const [classroomArman, setClassroomArman] = useContentLoader(\"classroom_arman\");\n  const [classroomSamia, setClassroomSamia] = useContentLoader(\"classroom_samia\");\n  const [chamberArman, setChamberArman] = useContentLoader(\"chamber_arman\");\n  const [chamberSamia, setChamberSamia] = useContentLoader(\"chamber_samia\");\n  const [profileArman, setProfileArman] = useContentLoader(\"profile_arman\");\n  const [profileSamia, setProfileSamia] = useContentLoader(\"profile_samia\");\n  const saveSection = async (key, value, label) => {\n    if (navigator.onLine) {\n      try {\n        const response = await fetch(\"\/api\/content\/save.php\", {\n          method: \"POST\",\n          headers: { \"Content-Type\": \"application\/json\" },\n          body: JSON.stringify({ key, value })\n        });\n        if (response.ok) {\n          const json = await response.json();\n          if (json && json.success && json.data && json.data.updated_at) {\n            localStorage.setItem(key, value);\n            ue.success(` saved`);\n          } else {\n            ue.error(\"Server did not confirm save\");\n          }\n        } else {\n          ue.error(\"Server returned \" + response.status);\n        }\n      } catch (e) {\n        ue.error(\"Network error saving\");\n      }\n    } else {\n      localStorage.setItem(key, value);\n      ue.success(\" saved (offline - will sync later)\");\n    }\n  };",
+                        "old_string": "function AdminPublicContent() {\n  const [classroomArman, setClassroomArman] = reactExports.useState(\n    () => localStorage.getItem(\"classroom_arman\") ?? \"\"\n  );\n  const [classroomSamia, setClassroomSamia] = reactExports.useState(\n    () => localStorage.getItem(\"classroom_samia\") ?? \"\"\n  );\n  const [chamberArman, setChamberArman] = reactExports.useState(\n    () => localStorage.getItem(\"chamber_arman\") ?? \"\"\n  );\n  const [chamberSamia, setChamberSamia] = reactExports.useState(\n    () => localStorage.getItem(\"chamber_samia\") ?? \"\"\n  );\n  const [profileArman, setProfileArman] = reactExports.useState(\n    () => localStorage.getItem(\"profile_arman\") ?? \"\"\n  );\n  const [profileSamia, setProfileSamia] = reactExports.useState(\n    () => localStorage.getItem(\"profile_samia\") ?? \"\"\n  );\n  const saveSection = (key, value, label) => {\n    localStorage.setItem(key, value);\n    if (navigator.onLine) {\n      fetch(\"\/api\/content\/save.php\", {\n        method: \"POST\",\n        headers: { \"Content-Type\": \"application\/json\" },\n        body: JSON.stringify({ key: key, value: value })\n      }).then(r => {\n        if (r.ok) ue.success(` saved to server`);\n        else console.warn(\"Content save failed:\", r.status);\n      }).catch(e => console.warn(\"Content save error:\", e));\n    } else {\n      ue.success(` saved (offline)`);\n    }\n  };"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 27395,
+                "completion_tokens": 1344,
+                "total_tokens": 28739,
+                "prompt_cache_hit_tokens": 26368,
+                "prompt_cache_miss_tokens": 1027,
+                "prompt_tokens_details": {
+                    "cached_tokens": 26368
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 289
+                }
+            },
+            "time": 1784042112
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_lEZCbJYuVLlmV1amEqeg2842",
+            "content": "Path and old_string are required",
+            "is_error": true,
+            "time": 1784042112
         }
     ]
 }
