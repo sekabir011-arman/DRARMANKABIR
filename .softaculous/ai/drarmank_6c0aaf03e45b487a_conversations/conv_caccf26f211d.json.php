@@ -47,7 +47,7 @@
         }
     ],
     "created_at": 1783959707,
-    "updated_at": 1784038348,
+    "updated_at": 1784038997,
     "messages": [
         {
             "id": "msg_compact",
@@ -6677,6 +6677,27 @@
             "content": "}\nfunction HeroTab({\n  config,\n  updateHero,\n  resetSection\n}) {\n  const h = config.heroSection;\n  return \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"space-y-4\", children: [\n    \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"flex items-center justify-between\", children: [\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\"p\", { className: \"text-xs text-muted-foreground\", children: \"Hero section text and CTAs\" }),\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\n        Button,\n        {\n          size: \"sm\",\n          variant: \"ghost\",\n          className: \"gap-1 text-xs\",\n          onClick: () => {\n            resetSection(\"heroSection\");\n            ue.success(\"Hero reset to default.\");\n          },\n          \"data-ocid\": \"admin_panel.hero.reset_button\",\n          children: [\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(RotateCcw, { className: \"w-3 h-3\" }),\n            \" Reset\"\n          ]\n        }\n      )\n    ] }),\n    \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"space-y-1.5\", children: [\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Label, { className: \"text-xs\", children: \"Tagline (English)\" }),\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\n        Textarea,\n        {\n          rows: 2,\n          value: h.taglineEn,\n          onChange: (e) => updateHero({ taglineEn: e.target.value }),\n          \"data-ocid\": \"admin_panel.hero.tagline_en.textarea\"\n        }\n      )\n    ] }),\n    \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"space-y-1.5\", children: [\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Label, { className: \"text-xs\", children: \"Tagline (Bangla)\" }),\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\n        Textarea,\n        {\n          rows: 2,\n          value: h.taglineBn,\n          onChange: (e) => updateHero({ taglineBn: e.target.value }),\n          style: { fontFamily: \"'Noto Sans Bengali', Arial, sans-serif\" },\n          \"data-ocid\": \"admin_panel.hero.tagline_bn.textarea\"\n        }\n      )\n    ] }),\n    \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"space-y-1.5\", children: [\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Label, { className: \"text-xs\", children: \"Subheading (English)\" }),\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\n        Input,\n        {\n          value: h.subheadingEn,\n          onChange: (e) => updateHero({ subheadingEn: e.target.value }),\n          \"data-ocid\": \"admin_panel.hero.subheading_en.input\"\n        }\n      )\n    ] }),\n    \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"space-y-1.5\", children: [\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Label, { className: \"text-xs\", children: \"Subheading (Bangla)\" }),\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\n        Input,\n        {\n          value: h.subheadingBn,\n          onChange: (e) => updateHero({ subheadingBn: e.target.value }),\n          style: { fontFamily: \"'Noto Sans Bengali', Arial, sans-serif\" },\n          \"data-ocid\": \"admin_panel.hero.subheading_bn.input\"\n        }\n      )\n    ] }),\n    \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"grid grid-cols-2 gap-3\", children: [\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"space-y-1.5\", children: [\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Label, { className: \"text-xs\", children: \"CTA 1 Label\" }),\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\n          Input,\n          {\n            value: h.cta1Label,\n            onChange: (e) => updateHero({ cta1Label: e.target.value }),\n            \"data-ocid\": \"admin_panel.hero.cta1.input\"\n          }\n        )\n      ] }),\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"space-y-1.5\", children: [\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Label, { className: \"text-xs\", children: \"CTA 2 Label\" }),\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\n          Input,\n          {\n            value: h.cta2Label,\n            onChange: (e) => updateHero({ cta2Label: e.target.value }),\n            \"data-ocid\": \"admin_panel.hero.cta2.input\"\n          }\n        )\n      ] })\n    ] })\n  ] });\n}\nfunction AboutTab({\n  config,\n  updateAbout,\n  resetSection\n",
             "is_error": false,
             "time": 1784038348
+        },
+        {
+            "id": "msg_a434c60630",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784038569
+        },
+        {
+            "id": "msg_75cb525e82",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784038691
+        },
+        {
+            "id": "msg_897a89d1a0",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784038997
         }
     ]
 }

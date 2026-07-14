@@ -1,18 +1,30 @@
 <?php
 /**
- * Front Page Save API — MySQL as Source of Truth
+ * Front Page Save API - MySQL Single Source of Truth
  * 
  * POST /api/frontpage/save.php
- * Saves front page content. Returns the saved data with updated_at timestamp.
+ * 
+ * Saves the front page content (siteConfig + doctorContentOverrides)
+ * to the site_settings table. Returns the saved record with updated_at timestamp.
  * 
  * Request body (JSON):
- *   { "siteConfig": { ... }, "doctorContentOverrides": { ... } }
+ *   {
+ *     "siteConfig": { ... },
+ *     "doctorContentOverrides": { ... },
+ *     "overwrite": true  // optional, force overwrite even if newer on server
+ *   }
  * 
- * Response (201):
- *   { "success": true, "data": { "siteConfig": {...}, "doctorContentOverrides": {...}, "updated_at": "..." } }
- * 
- * Error Response (4xx/5xx):
- *   { "success": false, "message": "..." }
+ * Response on success:
+ *   {
+ *     "success": true,
+ *     "message": "Front page content saved successfully",
+ *     "data": {
+ *       "siteConfig": { ... },
+ *       "doctorContentOverrides": { ... },
+ *       "saved_at": "2026-07-14T01:00:00+06:00",
+ *       "version": 3
+ *     }
+ *   }
  */
 
 require_once __DIR__ . '/../database.php';
@@ -27,87 +39,110 @@ $userId = $user ? $user['id'] : 0;
 
 $input = getJsonInput();
 
-// Extract siteConfig and doctorContentOverrides from input
-$siteConfig = isset($input['siteConfig']) ? $input['siteConfig'] : null;
-$doctorContentOverrides = isset($input['doctorContentOverrides']) ? $input['doctorContentOverrides'] : null;
+// Extract content from request
+$siteConfig = $input['siteConfig'] ?? null;
+$doctorContentOverrides = $input['doctorContentOverrides'] ?? null;
+$overwrite = !empty($input['overwrite']);
 
-if ($siteConfig === null && $doctorContentOverrides === null) {
+if (!$siteConfig && !$doctorContentOverrides) {
     errorResponse('At least one of siteConfig or doctorContentOverrides is required.', 400);
 }
 
 try {
     $db = Database::getInstance();
-    $now = date('Y-m-d H:i:s');
-    $updatedAt = $now;
+    $savedAt = date('c');
+    $result = [
+        'saved_at' => $savedAt,
+    ];
 
     if ($siteConfig !== null) {
+        $siteConfigJson = json_encode($siteConfig, JSON_UNESCAPED_UNICODE);
+        
+        // Increment version number for conflict resolution
+        $versionStmt = $db->prepare("SELECT setting_value FROM site_settings WHERE setting_key = 'siteConfig_version'");
+        $versionStmt->execute();
+        $currentVersion = (int)$versionStmt->fetchColumn();
+        $newVersion = $currentVersion + 1;
+        
+        // Check conflict: if client sent a version, compare
+        $clientVersion = isset($input['_version']) ? (int)$input['_version'] : 0;
+        if ($clientVersion > 0 && $clientVersion < $currentVersion && !$overwrite) {
+            errorResponse('Conflict: data has been modified by another session. Refresh and try again.', 409, [
+                'server_version' => $currentVersion,
+                'your_version' => $clientVersion,
+            ]);
+        }
+        
         $stmt = $db->prepare('
             INSERT INTO site_settings (setting_key, setting_value, setting_group, description, updated_by, updated_at)
-            VALUES (:key, :value, :group, :desc, :uid, :ts)
+            VALUES (:key, :value, :group, :description, :user_id, NOW())
             ON DUPLICATE KEY UPDATE
                 setting_value = VALUES(setting_value),
                 setting_group = VALUES(setting_group),
                 updated_by = VALUES(updated_by),
-                updated_at = VALUES(updated_at)
+                updated_at = NOW()
         ');
+        
         $stmt->execute([
             ':key' => 'siteConfig',
-            ':value' => json_encode($siteConfig, JSON_UNESCAPED_UNICODE),
+            ':value' => $siteConfigJson,
             ':group' => 'frontpage',
-            ':desc' => 'Site configuration for landing page',
-            ':uid' => $userId,
-            ':ts' => $now,
+            ':description' => 'Site configuration for landing page',
+            ':user_id' => $userId,
         ]);
+        
+        // Update version
+        $stmtVer = $db->prepare('
+            INSERT INTO site_settings (setting_key, setting_value, setting_group, description, updated_by, updated_at)
+            VALUES (:key, :value, :group, :description, :user_id, NOW())
+            ON DUPLICATE KEY UPDATE
+                setting_value = VALUES(setting_value),
+                updated_at = NOW()
+        ');
+        $stmtVer->execute([
+            ':key' => 'siteConfig_version',
+            ':value' => (string)$newVersion,
+            ':group' => '_internal',
+            ':description' => 'Version counter for siteConfig conflict resolution',
+            ':user_id' => $userId,
+        ]);
+        
+        $result['siteConfig'] = $siteConfig;
+        $result['siteConfig_version'] = $newVersion;
     }
 
     if ($doctorContentOverrides !== null) {
-        $stmt = $db->prepare('
+        $overridesJson = json_encode($doctorContentOverrides, JSON_UNESCAPED_UNICODE);
+        
+        $stmt2 = $db->prepare('
             INSERT INTO site_settings (setting_key, setting_value, setting_group, description, updated_by, updated_at)
-            VALUES (:key, :value, :group, :desc, :uid, :ts)
+            VALUES (:key, :value, :group, :description, :user_id, NOW())
             ON DUPLICATE KEY UPDATE
                 setting_value = VALUES(setting_value),
                 setting_group = VALUES(setting_group),
                 updated_by = VALUES(updated_by),
-                updated_at = VALUES(updated_at)
+                updated_at = NOW()
         ');
-        $stmt->execute([
+        
+        $stmt2->execute([
             ':key' => 'doctorContentOverrides',
-            ':value' => json_encode($doctorContentOverrides, JSON_UNESCAPED_UNICODE),
+            ':value' => $overridesJson,
             ':group' => 'frontpage',
-            ':desc' => 'Doctor content overrides for landing page',
-            ':uid' => $userId,
-            ':ts' => $now,
+            ':description' => 'Doctor content overrides for landing page',
+            ':user_id' => $userId,
         ]);
+        
+        $result['doctorContentOverrides'] = $doctorContentOverrides;
     }
 
-    // Fetch the updated_at from the database to ensure accuracy
-    $stmt = $db->prepare("SELECT updated_at FROM site_settings WHERE setting_key = 'siteConfig' OR setting_key = 'doctorContentOverrides' ORDER BY updated_at DESC LIMIT 1");
-    $stmt->execute();
-    $dbUpdatedAt = $stmt->fetchColumn();
-    if ($dbUpdatedAt) {
-        $updatedAt = $dbUpdatedAt;
-    }
-
-    // Log audit
+    // Log the update
     logAudit($userId, null, 'update', 'frontpage', null, null, [
-        'siteConfig_saved' => $siteConfig !== null,
-        'doctorContentOverrides_saved' => $doctorContentOverrides !== null,
+        'keys_saved' => array_keys($input),
+        'version' => $newVersion ?? null,
     ]);
 
-    // Return saved data
-    $responseData = [];
-    if ($siteConfig !== null) {
-        $responseData['siteConfig'] = $siteConfig;
-    }
-    if ($doctorContentOverrides !== null) {
-        $responseData['doctorContentOverrides'] = $doctorContentOverrides;
-    }
-    $responseData['updated_at'] = $updatedAt;
-
-    http_response_code(201);
-    successResponse($responseData, 'Front page content saved successfully');
-
+    successResponse($result, 'Front page content saved successfully');
 } catch (\Exception $e) {
     error_log('Front page save error: ' . $e->getMessage());
-    errorResponse('Failed to save front page content. Please try again.', 500);
+    errorResponse('Failed to save front page content', 500);
 }
