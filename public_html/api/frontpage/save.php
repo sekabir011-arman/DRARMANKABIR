@@ -25,7 +25,7 @@ requireMethod('POST');
 
 // Try to authenticate
 $user = getAuthUser();
-$userId = $user ? $user['id'] : 0;
+$userId = $user ? $user['id'] : null;
 
 $input = getJsonInput();
 
