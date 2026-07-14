@@ -9,35 +9,41 @@
 // ─── Environment Detection ─────────────────────────────────────────────────
 // On cPanel, you can set these in .env file outside public_html
 // or directly in your cPanel environment variables.
-// The priority is: $_ENV (loaded from .env) > getenv() > config defaults
-// NOTE: putenv() is disabled on this server, so we use $_ENV instead.
+// The priority is: .env file > config defaults
+// NOTE: putenv() is disabled on this server, so we use $_ENV directly.
 
-/**
- * Get environment variable with fallback to $_ENV array.
- * putenv() is disabled on this server, so we manually store .env values in $_ENV.
- */
-function env(string $key, mixed $default = null): mixed {
-    $value = getenv($key);
-    if ($value === false || $value === null) {
-        $value = $_ENV[$key] ?? null;
-    }
-    return $value !== null ? $value : $default;
-}
-
+// Load .env file if it exists
 $dotenvFile = __DIR__ . '/../.env';
+$envConfig = [];
+
 if (file_exists($dotenvFile)) {
     $lines = file($dotenvFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach ($lines as $line) {
-        if (str_starts_with(trim($line), '#')) continue;
-        if (str_contains($line, '=')) {
-            [$key, $value] = explode('=', $line, 2);
-            $key = trim($key);
-            $value = trim($value, " \t\n\r\0\x0B\"'");
-            if (!env($key)) {
-                $_ENV[$key] = $value;
-            }
-        }
+        $line = trim($line);
+        if (str_starts_with($line, '#') || !str_contains($line, '=')) continue;
+        [$key, $value] = explode('=', $line, 2);
+        $key = trim($key);
+        $value = trim($value, " \t\n\r\0\x0B\"'");
+        $envConfig[$key] = $value;
+        // Store in $_ENV for getenv() compatibility
+        $_ENV[$key] = $value;
     }
+}
+
+/**
+ * Get environment variable from local config, $_ENV, or getenv()
+ */
+function env(string $key, mixed $default = null): mixed {
+    // Check $_ENV first (populated from .env file)
+    if (isset($_ENV[$key])) {
+        return $_ENV[$key];
+    }
+    // Check getenv() as fallback (for system-level env vars)
+    $val = getenv($key);
+    if ($val !== false && $val !== '') {
+        return $val;
+    }
+    return $default;
 }
 
 // ─── Database Configuration ────────────────────────────────────────────────
@@ -55,10 +61,6 @@ define('API_URL', APP_URL . '/api');
 
 // ─── Security Configuration ────────────────────────────────────────────────
 define('JWT_SECRET', env('JWT_SECRET') ?: 'change-this-to-a-random-secret-in-production');
-define('API_URL', APP_URL . '/api');
-
-// ─── Security Configuration ────────────────────────────────────────────────
-define('JWT_SECRET', getenv('JWT_SECRET') ?: 'change-this-to-a-random-secret-in-production');
 define('JWT_EXPIRY', 86400); // 24 hours in seconds
 define('SESSION_LIFETIME', 86400 * 7); // 7 days
 define('CSRF_TOKEN_LIFETIME', 3600); // 1 hour
