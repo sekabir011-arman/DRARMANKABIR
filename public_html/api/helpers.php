@@ -256,10 +256,10 @@ function logAudit(
             ':action' => $action,
             ':entity_type' => $entityType,
             ':entity_id' => $entityId,
-            ':old_values' => $oldValues ? json_encode($oldValues) : null,
-            ':new_values' => $newValues ? json_encode($newValues) : null,
-            ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? null,
-            ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,
+            ':old_values' => $oldValues ? json_encode($old_values) : null,
+            ':new_values' => $newValues ? json_encode($new_values) : null,
+            ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? ($_SERVER['SERVER_ADDR'] ?? '127.0.0.1'),
+            ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'CLI',
         ]);
     } catch (\Exception $e) {
         error_log('Audit log failed: ' . $e->getMessage());
