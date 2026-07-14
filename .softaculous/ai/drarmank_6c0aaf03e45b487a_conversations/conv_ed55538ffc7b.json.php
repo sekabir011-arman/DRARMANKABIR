@@ -6,58 +6,53 @@
     "mode": "build",
     "todos": [
         {
+            "priority": "high",
             "content": "Explore project structure and understand current architecture",
-            "status": "completed",
-            "priority": "high"
+            "status": "completed"
         },
         {
+            "priority": "high",
             "content": "Identify React components using localStorage for editable content",
-            "status": "completed",
-            "priority": "high"
+            "status": "completed"
         },
         {
+            "priority": "high",
             "content": "Analyze PHP API endpoints (they already use MySQL correctly)",
-            "status": "completed",
-            "priority": "high"
+            "status": "completed"
         },
         {
+            "priority": "high",
             "content": "Refactor useDoctorContent hook - MySQL as primary source on load and save",
-            "status": "in_progress",
-            "priority": "high"
+            "status": "completed"
         },
         {
-            "content": "Refactor useSiteConfig hook - MySQL as primary source on load and save",
-            "status": "pending",
-            "priority": "high"
+            "priority": "high",
+            "content": "Refactor useSiteConfig in LandingPage - MySQL as primary source",
+            "status": "in_progress"
         },
         {
+            "priority": "high",
+            "content": "Refactor saveFrontPageContentWithSync - async with server confirmation",
+            "status": "completed"
+        },
+        {
+            "priority": "high",
             "content": "Refactor AdminPublicContent in Settings - MySQL as primary source",
-            "status": "pending",
-            "priority": "high"
+            "status": "pending"
         },
         {
-            "content": "Refactor saveFrontPageContentWithSync to be async and wait for MySQL confirmation",
-            "status": "pending",
-            "priority": "high"
+            "priority": "high",
+            "content": "Clean up temporary files",
+            "status": "pending"
         },
         {
-            "content": "Implement proper error handling with retry capability",
-            "status": "pending",
-            "priority": "medium"
-        },
-        {
-            "content": "Remove localStorage as primary source for editable content",
-            "status": "pending",
-            "priority": "high"
-        },
-        {
+            "priority": "medium",
             "content": "Verify changes work correctly",
-            "status": "pending",
-            "priority": "high"
+            "status": "pending"
         }
     ],
     "created_at": 1784039657,
-    "updated_at": 1784041568,
+    "updated_at": 1784041581,
     "messages": [
         {
             "id": "msg_6247891d0d",
@@ -2274,6 +2269,187 @@
             "content": "    } catch {\n      entry.retryCount++;\n      if (entry.retryCount < 5) {\n        remaining.push(entry);\n      }\n    }\n  }\n  setContentOfflineQueue(remaining);\n}\nasync function saveFrontPageContentWithSync(actor) {\n  const allContent = {};\n  const fpKeys = [\"siteConfig\", \"doctorContentOverrides\"];\n  for (const k2 of fpKeys) {\n    try {\n      const raw = localStorage.getItem(k2);\n      if (raw) allContent[k2] = JSON.parse(raw);\n    } catch {\n    }\n  }\n  if (!navigator.onLine) {\n    addToContentOfflineQueue(allContent);\n    return;\n  }\n  try {\n    const response = await fetch(\"\/api\/frontpage\/save.php\", {\n      method: \"POST\",\n      headers: { \"Content-Type\": \"application\/json\" },\n      body: JSON.stringify(allContent)\n    });\n    if (response.ok) {\n      const json = await response.json();\n      if (json && json.success && json.data && json.data.updated_at) {\n        localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());\n      }\n    } else {\n      console.warn(\"[sync] saveFrontPageContent PHP returned\", response.status);\n      addToContentOfflineQueue(allContent);\n    }\n  } catch (err) {\n    console.warn(\"[sync] saveFrontPageContent PHP failed:\", err);\n    addToContentOfflineQueue(allContent);\n  }\n}\nasync function bootstrapFromCanister(actor) {\n  if (!isNetworkOnline() || !actor) {\n    return { success: false, recordsLoaded: 0 };\n",
             "is_error": false,
             "time": 1784041568
+        },
+        {
+            "id": "msg_1fe0897308",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Good, the `saveFrontPageContentWithSync` function and the offline queue functions have been properly updated in `index-DJeWhCy-.js`.\n\nNow let me update the `useDoctorContent` import - it no longer needs `saveFrontPageContentWithSync`."
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me update the import in `useDoctorContent.js`:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_yo6xmFt0Eh6r7z1jzr0T7764",
+                    "name": "edit_file",
+                    "input": {
+                        "path": "public_html\/assets\/useDoctorContent-Cx8T-OwA.js",
+                        "old_string": "import { i as createLucideIcon, r as reactExports, ax as saveFrontPageContentWithSync } from \".\/index-DJeWhCy-.js\";",
+                        "new_string": "import { i as createLucideIcon, r as reactExports } from \".\/index-DJeWhCy-.js\";"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 93939,
+                "completion_tokens": 217,
+                "total_tokens": 94156,
+                "prompt_cache_hit_tokens": 93568,
+                "prompt_cache_miss_tokens": 371,
+                "prompt_tokens_details": {
+                    "cached_tokens": 93568
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 55
+                }
+            },
+            "time": 1784041571
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_yo6xmFt0Eh6r7z1jzr0T7764",
+            "content": "Edited public_html\/assets\/useDoctorContent-Cx8T-OwA.js (1 replacement)\n- import { i as createLucideIcon, r as reactExports, ax as saveFrontPageContentWithSync } from \".\/index-DJeWhCy-.js\";\n+ import { i as createLucideIcon, r as reactExports } from \".\/index-DJeWhCy-.js\";",
+            "is_error": false,
+            "time": 1784041572
+        },
+        {
+            "id": "msg_eae7e4b47e",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I need to check if `saveFrontPageContentWithSync` is used elsewhere in the codebase to make sure it's still exported properly. Let me check."
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me update the `useSiteConfig` hook in `LandingPage-Dv8SefYP.js`:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ZeVCivhMh1qtoswsEBg38839",
+                    "name": "read_file",
+                    "input": {
+                        "path": "public_html\/assets\/LandingPage-Dv8SefYP.js",
+                        "offset": 1158,
+                        "limit": 115
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 94249,
+                "completion_tokens": 147,
+                "total_tokens": 94396,
+                "prompt_cache_hit_tokens": 94080,
+                "prompt_cache_miss_tokens": 169,
+                "prompt_tokens_details": {
+                    "cached_tokens": 94080
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 34
+                }
+            },
+            "time": 1784041576
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ZeVCivhMh1qtoswsEBg38839",
+            "content": " 1158 |   ]\n 1159 | };\n 1160 | const STORAGE_KEY$2 = \"siteConfig\";\n 1161 | function deepMerge(base, overrides) {\n 1162 |   const result = { ...base };\n 1163 |   for (const key of Object.keys(overrides)) {\n 1164 |     const val = overrides[key];\n 1165 |     if (Array.isArray(val)) {\n 1166 |       result[key] = val;\n 1167 |     } else if (val !== null && val !== void 0 && typeof val === \"object\" && typeof result[key] === \"object\" && result[key] !== null && !Array.isArray(result[key])) {\n 1168 |       result[key] = deepMerge(\n 1169 |         result[key],\n 1170 |         val\n 1171 |       );\n 1172 |     } else if (val !== void 0) {\n 1173 |       result[key] = val;\n 1174 |     }\n 1175 |   }\n 1176 |   return result;\n 1177 | }\n 1178 | function loadConfig() {\n 1179 |   try {\n 1180 |     const raw = localStorage.getItem(STORAGE_KEY$2);\n 1181 |     if (!raw) return DEFAULT_SITE_CONFIG;\n 1182 |     return deepMerge(\n 1183 |       DEFAULT_SITE_CONFIG,\n 1184 |       JSON.parse(raw)\n 1185 |     );\n 1186 |   } catch {\n 1187 |     return DEFAULT_SITE_CONFIG;\n 1188 |   }\n 1189 | }\n 1190 | function saveConfig(cfg, actor) {\n 1191 |   localStorage.setItem(STORAGE_KEY$2, JSON.stringify(cfg));\n 1192 |   saveFrontPageContentWithSync(actor ?? null);\n 1193 | }\n 1194 | function resolveActor() {\n 1195 |   var _a;\n 1196 |   try {\n 1197 |     const mod = require(\"..\/hooks\/useQueries\");\n 1198 |     return ((_a = mod.getCanisterActor) == null ? void 0 : _a.call(mod)) ?? null;\n 1199 |   } catch {\n 1200 |     return null;\n 1201 |   }\n 1202 | }\n 1203 | function useSiteConfig() {\n 1204 |   const [config, setConfig] = reactExports.useState(loadConfig);\n 1205 |   reactExports.useEffect(() => {\n 1206 |     if (navigator.onLine) {\n 1207 |       fetch(\"\/api\/frontpage\/get.php?key=siteConfig\")\n 1208 |         .then(r => r.ok ? r.json() : null)\n 1209 |         .then(json => {\n 1210 |           if (json && json.success && json.data) {\n 1211 |             const serverCfg = json.data;\n 1212 |             if (serverCfg && typeof serverCfg === \"object\" && Object.keys(serverCfg).length > 0) {\n 1213 |               localStorage.setItem(\"siteConfig\", JSON.stringify(serverCfg));\n 1214 |               setConfig(serverCfg);\n 1215 |             }\n 1216 |           }\n 1217 |         })\n 1218 |         .catch(e => console.warn(\"[landing] Failed to load siteConfig from server:\", e));\n 1219 |     }\n 1220 |   }, []);\n 1221 |   const updateHero = reactExports.useCallback((hero) => {\n 1222 |     setConfig((prev) => {\n 1223 |       const next = { ...prev, heroSection: { ...prev.heroSection, ...hero } };\n 1224 |       saveConfig(next, resolveActor());\n 1225 |       return next;\n 1226 |     });\n 1227 |   }, []);\n 1228 |   const updateAbout = reactExports.useCallback((about) => {\n 1229 |     setConfig((prev) => {\n 1230 |       const next = {\n 1231 |         ...prev,\n 1232 |         aboutSection: { ...prev.aboutSection, ...about }\n 1233 |       };\n 1234 |       saveConfig(next, resolveActor());\n 1235 |       return next;\n 1236 |     });\n 1237 |   }, []);\n 1238 |   const updateFooter = reactExports.useCallback((footer) => {\n 1239 |     setConfig((prev) => {\n 1240 |       const next = {\n 1241 |         ...prev,\n 1242 |         footerSection: { ...prev.footerSection, ...footer }\n 1243 |       };\n 1244 |       saveConfig(next, resolveActor());\n 1245 |       return next;\n 1246 |     });\n 1247 |   }, []);\n 1248 |   const updateEmergencyContacts = reactExports.useCallback(\n 1249 |     (contacts) => {\n 1250 |       setConfig((prev) => {\n 1251 |         const next = { ...prev, emergencyContacts: contacts };\n 1252 |         saveConfig(next, resolveActor());\n 1253 |         return next;\n 1254 |       });\n 1255 |     },\n 1256 |     []\n 1257 |   );\n 1258 |   const resetSection = reactExports.useCallback((section) => {\n 1259 |     setConfig((prev) => {\n 1260 |       const next = {\n 1261 |         ...prev,\n 1262 |         [section]: DEFAULT_SITE_CONFIG[section]\n 1263 |       };\n 1264 |       saveConfig(next, resolveActor());\n 1265 |       return next;\n 1266 |     });\n 1267 |   }, []);\n 1268 |   return {\n 1269 |     config,\n 1270 |     updateHero,\n 1271 |     updateAbout,\n 1272 |     updateFooter,",
+            "is_error": false,
+            "time": 1784041576
+        },
+        {
+            "id": "msg_78f7f59a07",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I need to refactor the `useSiteConfig` function to:\n1. Load from MySQL first (server), fall back to localStorage cache\n2. Save to server first, wait for confirmation, then update React state\n3. Return success\/error from update functions\n\nLet me write the replacement."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_MWgLBKQnD3HzBo1D6z4O9627",
+                    "name": "todo_write",
+                    "input": {
+                        "todos": [
+                            {
+                                "priority": "high",
+                                "content": "Explore project structure and understand current architecture",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Identify React components using localStorage for editable content",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Analyze PHP API endpoints (they already use MySQL correctly)",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Refactor useDoctorContent hook - MySQL as primary source on load and save",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Refactor useSiteConfig in LandingPage - MySQL as primary source",
+                                "status": "in_progress"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Refactor saveFrontPageContentWithSync - async with server confirmation",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Refactor AdminPublicContent in Settings - MySQL as primary source",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Clean up temporary files",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Verify changes work correctly",
+                                "status": "pending"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 95712,
+                "completion_tokens": 350,
+                "total_tokens": 96062,
+                "prompt_cache_hit_tokens": 94336,
+                "prompt_cache_miss_tokens": 1376,
+                "prompt_tokens_details": {
+                    "cached_tokens": 94336
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 62
+                }
+            },
+            "time": 1784041581
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_MWgLBKQnD3HzBo1D6z4O9627",
+            "content": "Todo list updated with 9 items.",
+            "is_error": false,
+            "time": 1784041581
         }
     ]
 }

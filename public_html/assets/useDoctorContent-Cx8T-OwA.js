@@ -1,4 +1,4 @@
-import { i as createLucideIcon, r as reactExports, ax as saveFrontPageContentWithSync } from "./index-DJeWhCy-.js";
+import { i as createLucideIcon, r as reactExports } from "./index-DJeWhCy-.js";
 /**
  * @license lucide-react v0.511.0 - ISC
  *
