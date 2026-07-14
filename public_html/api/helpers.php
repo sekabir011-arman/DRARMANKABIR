@@ -62,6 +62,7 @@ function getParam(string $key, mixed $default = null): mixed {
 }
 
 function getMethod(): string {
+    // For CLI (php -r, cron jobs), return 'CLI' so requireMethod() passes through
     return $_SERVER['REQUEST_METHOD'] ?? 'CLI';
 }
 
