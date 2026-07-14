@@ -57,7 +57,7 @@
         }
     ],
     "created_at": 1784039657,
-    "updated_at": 1784041475,
+    "updated_at": 1784041502,
     "messages": [
         {
             "id": "msg_6247891d0d",
@@ -1680,6 +1680,177 @@
             "content": "function saveFrontPageContentWithSync(actor) {\n  const allContent = {};\n  const fpKeys = [\"siteConfig\", \"doctorContentOverrides\"];\n  for (const k2 of fpKeys) {\n    try {\n      const raw = localStorage.getItem(k2);\n      if (raw) allContent[k2] = JSON.parse(raw);\n    } catch {\n    }\n  }\n  if (navigator.onLine) {\n    fetch(\"\/api\/frontpage\/save.php\", {\n      method: \"POST\",\n      headers: { \"Content-Type\": \"application\/json\" },\n      body: JSON.stringify(allContent)\n    }).then(r => {\n      if (r.ok) {\n        localStorage.setItem(LAST_SYNC_KEY, (\/* @__PURE__ *\/ new Date()).toISOString());\n      } else {\n        console.warn(\"[sync] saveFrontPageContent PHP returned\", r.status);\n      }\n    }).catch(err => {\n      console.warn(\"[sync] saveFrontPageContent PHP failed:\", err);\n    });\n  }\n  localStorage.setItem(LAST_SYNC_KEY, (\/* @__PURE__ *\/ new Date()).toISOString());\n}\nasync function bootstrapFromCanister(actor) {\n  if (!isNetworkOnline() || !actor) {\n    return { success: false, recordsLoaded: 0 };\n  }\n  let recordsLoaded = 0;\n  try {\n    const [remotePatients, remoteVisits, remotePrescriptions, syncDataResult] = await Promise.all([\n      actor.getAllPatients(),\n      actor.getAllVisits(),\n      actor.getAllPrescriptions(),\n      actor.getFullSyncData(getDoctorEmail())\n    ]);\n    if (Array.isArray(remotePatients) && remotePatients.length > 0) {\n      const key = storageKey(\"patients\");\n      const local = loadFromStorage(key);\n      const merged = mergeByIdLastWriterWins(\n",
             "is_error": false,
             "time": 1784041475
+        },
+        {
+            "id": "msg_e069e68b51",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me replace the `saveFrontPageContentWithSync` function with an async version that waits for server confirmation. I'll also add a proper offline queue mechanism."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_9bgtLGe5Nj2FQAj5qJqO0070",
+                    "name": "edit_file",
+                    "input": {
+                        "path": "public_html\/assets\/index-DJeWhCy-.js",
+                        "old_string": "function saveFrontPageContentWithSync(actor) {\n  const allContent = {};\n  const fpKeys = [\"siteConfig\", \"doctorContentOverrides\"];\n  for (const k2 of fpKeys) {\n    try {\n      const raw = localStorage.getItem(k2);\n      if (raw) allContent[k2] = JSON.parse(raw);\n    } catch {\n    }\n  }\n  if (navigator.onLine) {\n    fetch(\"\/api\/frontpage\/save.php\", {\n      method: \"POST\",\n      headers: { \"Content-Type\": \"application\/json\" },\n      body: JSON.stringify(allContent)\n    }).then(r => {\n      if (r.ok) {\n        localStorage.setItem(LAST_SYNC_KEY, (\/* @__PURE__ *\/ new Date()).toISOString());\n      } else {\n        console.warn(\"[sync] saveFrontPageContent PHP returned\", r.status);\n      }\n    }).catch(err => {\n      console.warn(\"[sync] saveFrontPageContent PHP failed:\", err);\n    });\n  }\n  localStorage.setItem(LAST_SYNC_KEY, (\/* @__PURE__ *\/ new Date()).toISOString());\n}",
+                        "new_string": "const CONTENT_OFFLINE_QUEUE_KEY = \"medicare_content_offline_queue\";\nfunction getContentOfflineQueue() {\n  try {\n    const raw = localStorage.getItem(CONTENT_OFFLINE_QUEUE_KEY);\n    if (!raw) return [];\n    return JSON.parse(raw);\n  } catch {\n    return [];\n  }\n}\nfunction setContentOfflineQueue(queue) {\n  try {\n    localStorage.setItem(CONTENT_OFFLINE_QUEUE_KEY, JSON.stringify(queue));\n  } catch {\n  }\n}\nfunction addToContentOfflineQueue(payload, updatedAt) {\n  const queue = getContentOfflineQueue();\n  queue.push({\n    id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,\n    payload,\n    updatedAt: updatedAt || new Date().toISOString(),\n    retryCount: 0,\n    queuedAt: new Date().toISOString()\n  });\n  setContentOfflineQueue(queue);\n}\nasync function processContentOfflineQueue() {\n  let queue = getContentOfflineQueue();\n  if (queue.length === 0) return;\n  const remaining = [];\n  for (const entry of queue) {\n    try {\n      const response = await fetch(\"\/api\/frontpage\/save.php\", {\n        method: \"POST\",\n        headers: { \"Content-Type\": \"application\/json\" },\n        body: JSON.stringify(entry.payload)\n      });\n      if (!response.ok) {\n        entry.retryCount++;\n        if (entry.retryCount < 5) {\n          remaining.push(entry);\n        }\n        continue;\n      }\n      const json = await response.json();\n      if (json && json.success && json.data && json.data.updated_at) {\n        localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());\n        for (const [k2, v2] of Object.entries(entry.payload)) {\n          const existing = localStorage.getItem(k2);\n          if (existing) {\n            try {\n              const parsed = JSON.parse(existing);\n              if (parsed._updatedAt && parsed._updatedAt > entry.updatedAt) {\n                remaining.push(entry);\n                continue;\n              }\n            } catch {}\n          }\n          localStorage.setItem(k2, JSON.stringify(v2));\n        }\n      }\n    } catch {\n      entry.retryCount++;\n      if (entry.retryCount < 5) {\n        remaining.push(entry);\n      }\n    }\n  }\n  setContentOfflineQueue(remaining);\n}\nasync function saveFrontPageContentWithSync(actor) {\n  const allContent = {};\n  const fpKeys = [\"siteConfig\", \"doctorContentOverrides\"];\n  for (const k2 of fpKeys) {\n    try {\n      const raw = localStorage.getItem(k2);\n      if (raw) allContent[k2] = JSON.parse(raw);\n    } catch {\n    }\n  }\n  if (!navigator.onLine) {\n    addToContentOfflineQueue(allContent);\n    return;\n  }\n  try {\n    const response = await fetch(\"\/api\/frontpage\/save.php\", {\n      method: \"POST\",\n      headers: { \"Content-Type\": \"application\/json\" },\n      body: JSON.stringify(allContent)\n    });\n    if (response.ok) {\n      const json = await response.json();\n      if (json && json.success && json.data && json.data.updated_at) {\n        localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());\n      }\n    } else {\n      console.warn(\"[sync] saveFrontPageContent PHP returned\", response.status);\n      addToContentOfflineQueue(allContent);\n    }\n  } catch (err) {\n    console.warn(\"[sync] saveFrontPageContent PHP failed:\", err);\n    addToContentOfflineQueue(allContent);\n  }\n}"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 82420,
+                "completion_tokens": 1161,
+                "total_tokens": 83581,
+                "prompt_cache_hit_tokens": 81920,
+                "prompt_cache_miss_tokens": 500,
+                "prompt_tokens_details": {
+                    "cached_tokens": 81920
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 33
+                }
+            },
+            "time": 1784041484
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_9bgtLGe5Nj2FQAj5qJqO0070",
+            "content": "File too large (max: 500 KB)",
+            "is_error": true,
+            "time": 1784041485
+        },
+        {
+            "id": "msg_c4c3c3aa5b",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The `index-DJeWhCy-.js` file is too large to edit directly. I need to use a different approach. Let me use a smaller targeted edit, or use `bash` with `sed` to make the replacement.\n\nActually, the edit_file tool should work with just the specific text to replace. Let me try with a smaller search string."
+                },
+                {
+                    "type": "text",
+                    "text": "The file is too large, let me use a more targeted approach:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_2uH2cAu8TDFHjZpm4dlE1292",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && grep -n \"function saveFrontPageContentWithSync\" public_html\/assets\/index-DJeWhCy-.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 83602,
+                "completion_tokens": 158,
+                "total_tokens": 83760,
+                "prompt_cache_hit_tokens": 83456,
+                "prompt_cache_miss_tokens": 146,
+                "prompt_tokens_details": {
+                    "cached_tokens": 83456
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 73
+                }
+            },
+            "time": 1784041488
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_2uH2cAu8TDFHjZpm4dlE1292",
+            "content": "51568:function saveFrontPageContentWithSync(actor) {\n",
+            "is_error": false,
+            "time": 1784041488
+        },
+        {
+            "id": "msg_b624305375",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The file is 65000 lines long, and `edit_file` can't handle it because it's too large. Let me use a different approach - I'll use `bash` with `sed` to do the replacement."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_XVQeRArttT5rKqtT2k635680",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && python3 -c \"\nwith open('public_html\/assets\/index-DJeWhCy-.js', 'r') as f:\n    content = f.read()\n\nold = '''function saveFrontPageContentWithSync(actor) {\n  const allContent = {};\n  const fpKeys = [\\\"siteConfig\\\", \\\"doctorContentOverrides\\\"];\n  for (const k2 of fpKeys) {\n    try {\n      const raw = localStorage.getItem(k2);\n      if (raw) allContent[k2] = JSON.parse(raw);\n    } catch {\n    }\n  }\n  if (navigator.onLine) {\n    fetch(\\\"\/api\/frontpage\/save.php\\\", {\n      method: \\\"POST\\\",\n      headers: { \\\"Content-Type\\\": \\\"application\/json\\\" },\n      body: JSON.stringify(allContent)\n    }).then(r => {\n      if (r.ok) {\n        localStorage.setItem(LAST_SYNC_KEY, (\/* @__PURE__ *\/ new Date()).toISOString());\n      } else {\n        console.warn(\\\"[sync] saveFrontPageContent PHP returned\\\", r.status);\n      }\n    }).catch(err => {\n      console.warn(\\\"[sync] saveFrontPageContent PHP failed:\\\", err);\n    });\n  }\n  localStorage.setItem(LAST_SYNC_KEY, (\/* @__PURE__ *\/ new Date()).toISOString());\n}'''\n\nnew_content = '''const CONTENT_OFFLINE_QUEUE_KEY = \\\"medicare_content_offline_queue\\\";\nfunction getContentOfflineQueue() {\n  try {\n    const raw = localStorage.getItem(CONTENT_OFFLINE_QUEUE_KEY);\n    if (!raw) return [];\n    return JSON.parse(raw);\n  } catch {\n    return [];\n  }\n}\nfunction setContentOfflineQueue(queue) {\n  try {\n    localStorage.setItem(CONTENT_OFFLINE_QUEUE_KEY, JSON.stringify(queue));\n  } catch {\n  }\n}\nfunction addToContentOfflineQueue(payload, updatedAt) {\n  const queue = getContentOfflineQueue();\n  queue.push({\n    id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,\n    payload,\n    updatedAt: updatedAt || new Date().toISOString(),\n    retryCount: 0,\n    queuedAt: new Date().toISOString()\n  });\n  setContentOfflineQueue(queue);\n}\nasync function processContentOfflineQueue() {\n  let queue = getContentOfflineQueue();\n  if (queue.length === 0) return;\n  const remaining = [];\n  for (const entry of queue) {\n    try {\n      const response = await fetch(\\\"\/api\/frontpage\/save.php\\\", {\n        method: \\\"POST\\\",\n        headers: { \\\"Content-Type\\\": \\\"application\/json\\\" },\n        body: JSON.stringify(entry.payload)\n      });\n      if (!response.ok) {\n        entry.retryCount++;\n        if (entry.retryCount < 5) {\n          remaining.push(entry);\n        }\n        continue;\n      }\n      const json = await response.json();\n      if (json && json.success && json.data && json.data.updated_at) {\n        localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());\n        for (const [k2, v2] of Object.entries(entry.payload)) {\n          const existing = localStorage.getItem(k2);\n          if (existing) {\n            try {\n              const parsed = JSON.parse(existing);\n              if (parsed._updatedAt && parsed._updatedAt > entry.updatedAt) {\n                remaining.push(entry);\n                continue;\n              }\n            } catch {}\n          }\n          localStorage.setItem(k2, JSON.stringify(v2));\n        }\n      }\n    } catch {\n      entry.retryCount++;\n      if (entry.retryCount < 5) {\n        remaining.push(entry);\n      }\n    }\n  }\n  setContentOfflineQueue(remaining);\n}\nasync function saveFrontPageContentWithSync(actor) {\n  const allContent = {};\n  const fpKeys = [\\\"siteConfig\\\", \\\"doctorContentOverrides\\\"];\n  for (const k2 of fpKeys) {\n    try {\n      const raw = localStorage.getItem(k2);\n      if (raw) allContent[k2] = JSON.parse(raw);\n    } catch {\n    }\n  }\n  if (!navigator.onLine) {\n    addToContentOfflineQueue(allContent);\n    return;\n  }\n  try {\n    const response = await fetch(\\\"\/api\/frontpage\/save.php\\\", {\n      method: \\\"POST\\\",\n      headers: { \\\"Content-Type\\\": \\\"application\/json\\\" },\n      body: JSON.stringify(allContent)\n    });\n    if (response.ok) {\n      const json = await response.json();\n      if (json && json.success && json.data && json.data.updated_at) {\n        localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());\n      }\n    } else {\n      console.warn(\\\"[sync] saveFrontPageContent PHP returned\\\", response.status);\n      addToContentOfflineQueue(allContent);\n    }\n  } catch (err) {\n    console.warn(\\\"[sync] saveFrontPageContent PHP failed:\\\", err);\n    addToContentOfflineQueue(allContent);\n  }\n}'''\n\nif old in content:\n    content = content.replace(old, new_content, 1)\n    with open('public_html\/assets\/index-DJeWhCy-.js', 'w') as f:\n        f.write(content)\n    print('Replacement successful')\nelse:\n    print('Old string not found')\n\"\n",
+                        "timeout": 30
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 83786,
+                "completion_tokens": 1277,
+                "total_tokens": 85063,
+                "prompt_cache_hit_tokens": 83712,
+                "prompt_cache_miss_tokens": 74,
+                "prompt_tokens_details": {
+                    "cached_tokens": 83712
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 46
+                }
+            },
+            "time": 1784041497
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_XVQeRArttT5rKqtT2k635680",
+            "content": "This command is blocked for safety reasons.",
+            "is_error": true,
+            "time": 1784041497
+        },
+        {
+            "id": "msg_b1fd21cae2",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The `bash` tool is blocking Python and potentially other scripting languages for safety reasons. Let me try using `sed` or another approach.\n\nActually, the `read_file` tool says the file is too large (max 500 KB). But `edit_file` should work if I provide a smaller replacement. Let me try to use a very specific and short search string to replace just the function body.\n\nWait, the error was \"File too large (max: 500 KB)\" - that's the read_file tool, not the edit_file tool. Let me try edit_file with a smaller chunk."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_POxQsnoneSQg1KlMMnXw3883",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && sed -n '51568,51604p' public_html\/assets\/index-DJeWhCy-.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 85082,
+                "completion_tokens": 192,
+                "total_tokens": 85274,
+                "prompt_cache_hit_tokens": 84992,
+                "prompt_cache_miss_tokens": 90,
+                "prompt_tokens_details": {
+                    "cached_tokens": 84992
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 121
+                }
+            },
+            "time": 1784041502
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_POxQsnoneSQg1KlMMnXw3883",
+            "content": "function saveFrontPageContentWithSync(actor) {\n  const allContent = {};\n  const fpKeys = [\"siteConfig\", \"doctorContentOverrides\"];\n  for (const k2 of fpKeys) {\n    try {\n      const raw = localStorage.getItem(k2);\n      if (raw) allContent[k2] = JSON.parse(raw);\n    } catch {\n    }\n  }\n  if (navigator.onLine) {\n    fetch(\"\/api\/frontpage\/save.php\", {\n      method: \"POST\",\n      headers: { \"Content-Type\": \"application\/json\" },\n      body: JSON.stringify(allContent)\n    }).then(r => {\n      if (r.ok) {\n        localStorage.setItem(LAST_SYNC_KEY, (\/* @__PURE__ *\/ new Date()).toISOString());\n      } else {\n        console.warn(\"[sync] saveFrontPageContent PHP returned\", r.status);\n      }\n    }).catch(err => {\n      console.warn(\"[sync] saveFrontPageContent PHP failed:\", err);\n    });\n  }\n  localStorage.setItem(LAST_SYNC_KEY, (\/* @__PURE__ *\/ new Date()).toISOString());\n}\nasync function bootstrapFromCanister(actor) {\n  if (!isNetworkOnline() || !actor) {\n    return { success: false, recordsLoaded: 0 };\n  }\n  let recordsLoaded = 0;\n  try {\n    const [remotePatients, remoteVisits, remotePrescriptions, syncDataResult] = await Promise.all([\n      actor.getAllPatients(),\n      actor.getAllVisits(),\n      actor.getAllPrescriptions(),\n",
+            "is_error": false,
+            "time": 1784041502
         }
     ]
 }
