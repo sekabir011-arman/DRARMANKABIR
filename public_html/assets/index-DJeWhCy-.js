@@ -64461,6 +64461,7 @@ function AppInner() {
           open: showNavReminderPanel,
           onOpenChange: setShowNavReminderPanel,
           children: /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "max-w-md", "data-ocid": "patient_nav.dialog", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(DialogDescription, { className: "sr-only", children: "Drug reminder notifications" }),
             /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogTitle, { className: "flex items-center gap-2", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(Bell, { className: "w-5 h-5 text-amber-600" }),
               "Drug Reminders",
@@ -64656,6 +64657,7 @@ function AppInner() {
         }
       ),
       /* @__PURE__ */ jsxRuntimeExports.jsx(Dialog, { open: showAuthModal, onOpenChange: setShowAuthModal, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "max-w-md max-h-[90vh] overflow-y-auto", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(DialogDescription, { className: "sr-only", children: "Login dialog for staff and doctors" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { className: "sr-only", children: /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { children: "Login" }) }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs(
           motion.div,
@@ -64706,6 +64708,7 @@ function AppInner() {
             if (!v2) setAdminError("");
           },
           children: /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "max-w-sm", "data-ocid": "admin.login.dialog", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(DialogDescription, { className: "sr-only", children: "Admin login dialog for content management" }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogHeader, { children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 mb-1", children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(ShieldCheck, { className: "w-5 h-5 text-amber-700" }) }),
@@ -64783,6 +64786,7 @@ function AppInner() {
         }
       ),
       /* @__PURE__ */ jsxRuntimeExports.jsx(Dialog, { open: showPendingPanel, onOpenChange: setShowPendingPanel, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "max-w-lg max-h-[80vh] overflow-y-auto", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(DialogDescription, { className: "sr-only", children: "Pending approvals for patient registrations" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(DialogHeader, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(UserCheck, { className: "w-5 h-5 text-amber-600" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { children: "Pending Approvals" })

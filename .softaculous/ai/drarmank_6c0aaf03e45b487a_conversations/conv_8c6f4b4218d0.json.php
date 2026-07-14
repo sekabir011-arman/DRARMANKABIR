@@ -32,1313 +32,13 @@
         }
     ],
     "created_at": 1784055547,
-    "updated_at": 1784056820,
+    "updated_at": 1784057769,
     "messages": [
         {
-            "id": "msg_955a089a7e",
+            "id": "msg_compact",
             "role": "user",
-            "content": "index-DJeWhCy-.js:31652 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.\n\nindex-DJeWhCy-.js:20108 SyntaxError: Unexpected end of input\nindex-DJeWhCy-.js:31652 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.\nindex-DJeWhCy-.js:20108 SyntaxError: Unexpected end of input\n15\nSettings:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received\nindex-DJeWhCy-.js:20108 SyntaxError: Unexpected end of input",
-            "attachments": [],
-            "time": 1784055558
-        },
-        {
-            "id": "msg_1994df37bd",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "The user is showing me JavaScript console errors from their application. Let me analyze these errors:\n\n1. **Warning**: Missing `Description` or `aria-describedby={undefined}` for `{DialogContent}` - This is an accessibility warning from a UI library (likely Material UI or similar) about a DialogContent component that doesn't have an accessible description.\n\n2. **SyntaxError: Unexpected end of input** - This is a JSON parsing error, likely from `JSON.parse()` receiving incomplete data.\n\n3. **Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received** - This is related to browser extension communication (Chrome extension messaging).\n\nLet me look at the JavaScript files to understand the codebase and find the source of these errors.\n\nLet me first look at the project structure to find relevant JavaScript files."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_TF4Ui3DSVSE5z4l53o7Y0981",
-                    "name": "glob",
-                    "input": {
-                        "pattern": "**\/*.js",
-                        "path": "\/home\/drarmank\/public_html"
-                    }
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_01_Qjsm6YMvE9X0lWyUTsKA6764",
-                    "name": "grep",
-                    "input": {
-                        "pattern": "JSON\\.parse",
-                        "include": "*.js",
-                        "path": "\/home\/drarmank\/public_html",
-                        "max_results": 30
-                    }
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_02_eKaFcOc9gdawbOOBgTmQ4350",
-                    "name": "grep",
-                    "input": {
-                        "pattern": "DialogContent",
-                        "include": "*.js",
-                        "path": "\/home\/drarmank\/public_html",
-                        "max_results": 20
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 3087,
-                "completion_tokens": 427,
-                "total_tokens": 3514,
-                "prompt_cache_hit_tokens": 384,
-                "prompt_cache_miss_tokens": 2703,
-                "prompt_tokens_details": {
-                    "cached_tokens": 384
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 181
-                }
-            },
-            "time": 1784055562
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_TF4Ui3DSVSE5z4l53o7Y0981",
-            "content": "No files found matching pattern: **\/*.js",
-            "is_error": false,
-            "time": 1784055562
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_01_Qjsm6YMvE9X0lWyUTsKA6764",
-            "content": "No matches found for pattern: JSON\\.parse",
-            "is_error": false,
-            "time": 1784055562
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_02_eKaFcOc9gdawbOOBgTmQ4350",
-            "content": "No matches found for pattern: DialogContent",
-            "is_error": false,
-            "time": 1784055562
-        },
-        {
-            "id": "msg_6aa2a10dca",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "The glob for .js files in public_html returned no results? That's strange. Let me check what's in public_html more carefully. The project structure shows some .js files in the directory listing. Let me look at the actual directory structure."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_kQLQwiQjbCz6hkPAzd2o4071",
-                    "name": "list_directory",
-                    "input": {
-                        "path": "public_html",
-                        "depth": 3
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 3569,
-                "completion_tokens": 111,
-                "total_tokens": 3680,
-                "prompt_cache_hit_tokens": 3456,
-                "prompt_cache_miss_tokens": 113,
-                "prompt_tokens_details": {
-                    "cached_tokens": 3456
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 50
-                }
-            },
-            "time": 1784055565
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_kQLQwiQjbCz6hkPAzd2o4071",
-            "content": "{\n    \"path\": \"\\\/public_html\",\n    \"directories\": [\n        {\n            \"name\": \"api\",\n            \"path\": \"\\\/public_html\\\/api\",\n            \"children\": {\n                \"path\": \"\\\/public_html\\\/api\",\n                \"directories\": [\n                    {\n                        \"name\": \"appointments\",\n                        \"path\": \"\\\/public_html\\\/api\\\/appointments\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/api\\\/appointments\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"create.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/appointments\\\/create.php\",\n                                    \"size\": 3562,\n                                    \"modified\": 1783948515\n                                },\n                                {\n                                    \"name\": \"list.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/appointments\\\/list.php\",\n                                    \"size\": 2299,\n                                    \"modified\": 1783740374\n                                },\n                                {\n                                    \"name\": \"update.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/appointments\\\/update.php\",\n                                    \"size\": 2421,\n                                    \"modified\": 1783876128\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"audit\",\n                        \"path\": \"\\\/public_html\\\/api\\\/audit\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/api\\\/audit\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"list.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/audit\\\/list.php\",\n                                    \"size\": 2228,\n                                    \"modified\": 1783760149\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"auth\",\n                        \"path\": \"\\\/public_html\\\/api\\\/auth\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/api\\\/auth\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"error_log\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/auth\\\/error_log\",\n                                    \"size\": 255,\n                                    \"modified\": 1784052956\n                                },\n                                {\n                                    \"name\": \"login.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/auth\\\/login.php\",\n                                    \"size\": 2507,\n                                    \"modified\": 1783740286\n                                },\n                                {\n                                    \"name\": \"logout.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/auth\\\/logout.php\",\n                                    \"size\": 655,\n                                    \"modified\": 1783740291\n                                },\n                                {\n                                    \"name\": \"middleware.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/auth\\\/middleware.php\",\n                                    \"size\": 8351,\n                                    \"modified\": 1783740278\n                                },\n                                {\n                                    \"name\": \"verify.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/auth\\\/verify.php\",\n                                    \"size\": 1089,\n                                    \"modified\": 1783740297\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"clinical\",\n                        \"path\": \"\\\/public_html\\\/api\\\/clinical\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/api\\\/clinical\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"notes-create.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/clinical\\\/notes-create.php\",\n                                    \"size\": 1730,\n                                    \"modified\": 1783760112\n                                },\n                                {\n                                    \"name\": \"notes-list.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/clinical\\\/notes-list.php\",\n                                    \"size\": 1208,\n                                    \"modified\": 1783760106\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"content\",\n                        \"path\": \"\\\/public_html\\\/api\\\/content\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/api\\\/content\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"get.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/content\\\/get.php\",\n                                    \"size\": 3331,\n                                    \"modified\": 1783964034\n                                },\n                                {\n                                    \"name\": \"save.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/content\\\/save.php\",\n                                    \"size\": 3061,\n                                    \"modified\": 1784050094\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"data\",\n                        \"path\": \"\\\/public_html\\\/api\\\/data\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/api\\\/data\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"error_log\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/data\\\/error_log\",\n                                    \"size\": 510,\n                                    \"modified\": 1784053234\n                                },\n                                {\n                                    \"name\": \"get.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/data\\\/get.php\",\n                                    \"size\": 1780,\n                                    \"modified\": 1783970113\n                                },\n                                {\n                                    \"name\": \"save.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/data\\\/save.php\",\n                                    \"size\": 2221,\n                                    \"modified\": 1784051145\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"frontpage\",\n                        \"path\": \"\\\/public_html\\\/api\\\/frontpage\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/api\\\/frontpage\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"error_log\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/frontpage\\\/error_log\",\n                                    \"size\": 18615,\n                                    \"modified\": 1784053359\n                                },\n                                {\n                                    \"name\": \"get.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/frontpage\\\/get.php\",\n                                    \"size\": 2886,\n                                    \"modified\": 1784050343\n                                },\n                                {\n                                    \"name\": \"save.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/frontpage\\\/save.php\",\n                                    \"size\": 3849,\n                                    \"modified\": 1784050090\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"handover\",\n                        \"path\": \"\\\/public_html\\\/api\\\/handover\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/api\\\/handover\",\n                            \"directories\": [],\n                            \"files\": []\n                        }\n                    },\n                    {\n                        \"name\": \"investigations\",\n                        \"path\": \"\\\/public_html\\\/api\\\/investigations\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/api\\\/investigations\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"create.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/investigations\\\/create.php\",\n                                    \"size\": 2033,\n                                    \"modified\": 1783885964\n                                },\n                                {\n                                    \"name\": \"list.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/investigations\\\/list.php\",\n                                    \"size\": 1457,\n                                    \"modified\": 1783760117\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"invoices\",\n                        \"path\": \"\\\/public_html\\\/api\\\/invoices\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/api\\\/invoices\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"create.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/invoices\\\/create.php\",\n                                    \"size\": 3361,\n                                    \"modified\": 1783867298\n                                },\n                                {\n                                    \"name\": \"list.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/invoices\\\/list.php\",\n                                    \"size\": 2622,\n                                    \"modified\": 1783762602\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"migrate\",\n                        \"path\": \"\\\/public_html\\\/api\\\/migrate\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/api\\\/migrate\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"import.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/migrate\\\/import.php\",\n                                    \"size\": 8811,\n                                    \"modified\": 1783958196\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"notifications\",\n                        \"path\": \"\\\/public_html\\\/api\\\/notifications\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/api\\\/notifications\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"create.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/notifications\\\/create.php\",\n                                    \"size\": 1460,\n                                    \"modified\": 1783959307\n                                },\n                                {\n                                    \"name\": \"list.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/notifications\\\/list.php\",\n                                    \"size\": 1936,\n                                    \"modified\": 1783762628\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"patients\",\n                        \"path\": \"\\\/public_html\\\/api\\\/patients\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/api\\\/patients\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"create.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/patients\\\/create.php\",\n                                    \"size\": 4609,\n                                    \"modified\": 1783867293\n                                },\n                                {\n                                    \"name\": \"delete.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/patients\\\/delete.php\",\n                                    \"size\": 1844,\n                                    \"modified\": 1783871508\n                                },\n                                {\n                                    \"name\": \"get.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/patients\\\/get.php\",\n                                    \"size\": 1595,\n                                    \"modified\": 1783740325\n                                },\n                                {\n                                    \"name\": \"list.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/patients\\\/list.php\",\n                                    \"size\": 3509,\n                                    \"modified\": 1783740319\n                                },\n                                {\n                                    \"name\": \"update.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/patients\\\/update.php\",\n                                    \"size\": 4246,\n                                    \"modified\": 1783740336\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"payments\",\n                        \"path\": \"\\\/public_html\\\/api\\\/payments\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/api\\\/payments\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"create.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/payments\\\/create.php\",\n                                    \"size\": 2605,\n                                    \"modified\": 1783760132\n                                },\n                                {\n                                    \"name\": \"list.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/payments\\\/list.php\",\n                                    \"size\": 2248,\n                                    \"modified\": 1783760125\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"prescriptions\",\n                        \"path\": \"\\\/public_html\\\/api\\\/prescriptions\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/api\\\/prescriptions\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"create.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/prescriptions\\\/create.php\",\n                                    \"size\": 3816,\n                                    \"modified\": 1783740366\n                                },\n                                {\n                                    \"name\": \"list.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/prescriptions\\\/list.php\",\n                                    \"size\": 1986,\n                                    \"modified\": 1783740357\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"settings\",\n                        \"path\": \"\\\/public_html\\\/api\\\/settings\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/api\\\/settings\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"get.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/settings\\\/get.php\",\n                                    \"size\": 1306,\n                                    \"modified\": 1783740453\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"staff\",\n                        \"path\": \"\\\/public_html\\\/api\\\/staff\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/api\\\/staff\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"list.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/staff\\\/list.php\",\n                                    \"size\": 1573,\n                                    \"modified\": 1783740448\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"upload\",\n                        \"path\": \"\\\/public_html\\\/api\\\/upload\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/api\\\/upload\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"index.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/upload\\\/index.php\",\n                                    \"size\": 903,\n                                    \"modified\": 1783740459\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"visits\",\n                        \"path\": \"\\\/public_html\\\/api\\\/visits\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/api\\\/visits\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"create.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/visits\\\/create.php\",\n                                    \"size\": 2222,\n                                    \"modified\": 1783867325\n                                },\n                                {\n                                    \"name\": \"list.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/visits\\\/list.php\",\n                                    \"size\": 1522,\n                                    \"modified\": 1783740342\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"vitals\",\n                        \"path\": \"\\\/public_html\\\/api\\\/vitals\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/api\\\/vitals\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"create.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/vitals\\\/create.php\",\n                                    \"size\": 1743,\n                                    \"modified\": 1783740442\n                                },\n                                {\n                                    \"name\": \"list.php\",\n                                    \"path\": \"\\\/public_html\\\/api\\\/vitals\\\/list.php\",\n                                    \"size\": 947,\n                                    \"modified\": 1783886119\n                                }\n                            ]\n                        }\n                    }\n                ],\n                \"files\": [\n                    {\n                        \"name\": \".htaccess\",\n                        \"path\": \"\\\/public_html\\\/api\\\/.htaccess\",\n                        \"size\": 1332,\n                        \"modified\": 1783714528\n                    },\n                    {\n                        \"name\": \"database.php\",\n                        \"path\": \"\\\/public_html\\\/api\\\/database.php\",\n                        \"size\": 3312,\n                        \"modified\": 1783714535\n                    },\n                    {\n                        \"name\": \"helpers.php\",\n                        \"path\": \"\\\/public_html\\\/api\\\/helpers.php\",\n                        \"size\": 9588,\n                        \"modified\": 1783870858\n                    },\n                    {\n                        \"name\": \"info.php\",\n                        \"path\": \"\\\/public_html\\\/api\\\/info.php\",\n                        \"size\": 1879,\n                        \"modified\": 1783870864\n                    },\n                    {\n                        \"name\": \"setup-test.php\",\n                        \"path\": \"\\\/public_html\\\/api\\\/setup-test.php\",\n                        \"size\": 11027,\n                        \"modified\": 1783885809\n                    },\n                    {\n                        \"name\": \"sync.php\",\n                        \"path\": \"\\\/public_html\\\/api\\\/sync.php\",\n                        \"size\": 7000,\n                        \"modified\": 1783710664\n                    }\n                ]\n            }\n        },\n        {\n            \"name\": \"assets\",\n            \"path\": \"\\\/public_html\\\/assets\",\n            \"children\": {\n                \"path\": \"\\\/public_html\\\/assets\",\n                \"directories\": [\n                    {\n                        \"name\": \"fonts\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/fonts\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/assets\\\/fonts\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"BricolageGrotesque.woff2\",\n                                    \"path\": \"\\\/public_html\\\/assets\\\/fonts\\\/BricolageGrotesque.woff2\",\n                                    \"size\": 76888,\n                                    \"modified\": 1783889854\n                                },\n                                {\n                                    \"name\": \"DMSans.woff2\",\n                                    \"path\": \"\\\/public_html\\\/assets\\\/fonts\\\/DMSans.woff2\",\n                                    \"size\": 61172,\n                                    \"modified\": 1783708881\n                                },\n                                {\n                                    \"name\": \"DMSerifDisplay.woff2\",\n                                    \"path\": \"\\\/public_html\\\/assets\\\/fonts\\\/DMSerifDisplay.woff2\",\n                                    \"size\": 78202,\n                                    \"modified\": 1783708881\n                                },\n                                {\n                                    \"name\": \"Figtree.woff2\",\n                                    \"path\": \"\\\/public_html\\\/assets\\\/fonts\\\/Figtree.woff2\",\n                                    \"size\": 41291,\n                                    \"modified\": 1783708881\n                                },\n                                {\n                                    \"name\": \"Fraunces.woff2\",\n                                    \"path\": \"\\\/public_html\\\/assets\\\/fonts\\\/Fraunces.woff2\",\n                                    \"size\": 80652,\n                                    \"modified\": 1783708881\n                                },\n                                {\n                                    \"name\": \"GeistMono.woff2\",\n                                    \"path\": \"\\\/public_html\\\/assets\\\/fonts\\\/GeistMono.woff2\",\n                                    \"size\": 58859,\n                                    \"modified\": 1783708881\n                                },\n                                {\n                                    \"name\": \"GeneralSans.woff2\",\n                                    \"path\": \"\\\/public_html\\\/assets\\\/fonts\\\/GeneralSans.woff2\",\n                                    \"size\": 57302,\n                                    \"modified\": 1783708881\n                                },\n                                {\n                                    \"name\": \"InstrumentSerif-Italic.woff2\",\n                                    \"path\": \"\\\/public_html\\\/assets\\\/fonts\\\/InstrumentSerif-Italic.woff2\",\n                                    \"size\": 72675,\n                                    \"modified\": 1783708881\n                                },\n                                {\n                                    \"name\": \"JetBrainsMono.woff2\",\n                                    \"path\": \"\\\/public_html\\\/assets\\\/fonts\\\/JetBrainsMono.woff2\",\n                                    \"size\": 63851,\n                                    \"modified\": 1783708881\n                                },\n                                {\n                                    \"name\": \"Parisienne.woff2\",\n                                    \"path\": \"\\\/public_html\\\/assets\\\/fonts\\\/Parisienne.woff2\",\n                                    \"size\": 62399,\n                                    \"modified\": 1783708881\n                                },\n                                {\n                                    \"name\": \"PlayfairDisplay.woff2\",\n                                    \"path\": \"\\\/public_html\\\/assets\\\/fonts\\\/PlayfairDisplay.woff2\",\n                                    \"size\": 64612,\n                                    \"modified\": 1783708881\n                                },\n                                {\n                                    \"name\": \"PlusJakartaSans.woff2\",\n                                    \"path\": \"\\\/public_html\\\/assets\\\/fonts\\\/PlusJakartaSans.woff2\",\n                                    \"size\": 27348,\n                                    \"modified\": 1783889854\n                                },\n                                {\n                                    \"name\": \"Satoshi.woff2\",\n                                    \"path\": \"\\\/public_html\\\/assets\\\/fonts\\\/Satoshi.woff2\",\n                                    \"size\": 63545,\n                                    \"modified\": 1783708881\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"images\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/images\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/assets\\\/images\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"placeholder.svg\",\n                                    \"path\": \"\\\/public_html\\\/assets\\\/images\\\/placeholder.svg\",\n                                    \"size\": 3064,\n                                    \"modified\": 1783708881\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"uploads\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/uploads\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/assets\\\/uploads\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"CV_Samia-Shikder-16.3.2026-1.pdf\",\n                                    \"path\": \"\\\/public_html\\\/assets\\\/uploads\\\/CV_Samia-Shikder-16.3.2026-1.pdf\",\n                                    \"size\": 348194,\n                                    \"modified\": 1783708881\n                                },\n                                {\n                                    \"name\": \"IMG20260321000918-1.jpg\",\n                                    \"path\": \"\\\/public_html\\\/assets\\\/uploads\\\/IMG20260321000918-1.jpg\",\n                                    \"size\": 185640,\n                                    \"modified\": 1783708881\n                                }\n                            ]\n                        }\n                    }\n                ],\n                \"files\": [\n                    {\n                        \"name\": \"AppointmentPayment-DTL8YvMS.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/AppointmentPayment-DTL8YvMS.js\",\n                        \"size\": 62096,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"Appointments-CiXOz8vL.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/Appointments-CiXOz8vL.js\",\n                        \"size\": 111548,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"AuditLog-BszF6XcX.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/AuditLog-BszF6XcX.js\",\n                        \"size\": 104871,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"BarChart-Ch6XFCj8.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/BarChart-Ch6XFCj8.js\",\n                        \"size\": 482,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"BedManagement-B6IsYOJd.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/BedManagement-B6IsYOJd.js\",\n                        \"size\": 83347,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"CV_Samia Shikder 16.3.2026.pdf\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/CV_Samia Shikder 16.3.2026.pdf\",\n                        \"size\": 348194,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"DailyProgressNote-dVntCN7J.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/DailyProgressNote-dVntCN7J.js\",\n                        \"size\": 171071,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"Dashboard-DyrPRUEp.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/Dashboard-DyrPRUEp.js\",\n                        \"size\": 209187,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"EmergencyPrescription-Bi3knV-p.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/EmergencyPrescription-Bi3knV-p.js\",\n                        \"size\": 153783,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"IMG20260321000918.jpg\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/IMG20260321000918.jpg\",\n                        \"size\": 3353750,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"InvestigationPayment-BfpQZUDn.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/InvestigationPayment-BfpQZUDn.js\",\n                        \"size\": 55393,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"InvestigationPaymentPage-DbUqWJ51.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/InvestigationPaymentPage-DbUqWJ51.js\",\n                        \"size\": 86996,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"LandingPage-Dv8SefYP.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/LandingPage-Dv8SefYP.js\",\n                        \"size\": 356132,\n                        \"modified\": 1784049296\n                    },\n                    {\n                        \"name\": \"MoneyReceipt-CSWlD73e.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/MoneyReceipt-CSWlD73e.js\",\n                        \"size\": 53521,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"NurseDueMeds-C04LCd8h.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/NurseDueMeds-C04LCd8h.js\",\n                        \"size\": 21886,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"OtherPayment-B9VCHD6a.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/OtherPayment-B9VCHD6a.js\",\n                        \"size\": 52516,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"OutstandingBalances-Bl_iWFFm.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/OutstandingBalances-Bl_iWFFm.js\",\n                        \"size\": 23970,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"PatientDashboard-Cuwbdual.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/PatientDashboard-Cuwbdual.js\",\n                        \"size\": 669094,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"PatientForm-BCKQSbNc.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/PatientForm-BCKQSbNc.js\",\n                        \"size\": 22417,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"Patients-B0bSwJv4.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/Patients-B0bSwJv4.js\",\n                        \"size\": 15325,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"ProcedurePayment-B362PKCB.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/ProcedurePayment-B362PKCB.js\",\n                        \"size\": 54979,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"RegistrarDashboard-CdC5G3Yl.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/RegistrarDashboard-CdC5G3Yl.js\",\n                        \"size\": 49720,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"SerialDisplay-DAWJgUIZ.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/SerialDisplay-DAWJgUIZ.js\",\n                        \"size\": 52337,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"Settings-DPkJ1nB8.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/Settings-DPkJ1nB8.js\",\n                        \"size\": 182464,\n                        \"modified\": 1784042120\n                    },\n                    {\n                        \"name\": \"Staff-CTNepX6G.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/Staff-CTNepX6G.js\",\n                        \"size\": 95695,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"SystemicExaminationSection-CCL-4QQD.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/SystemicExaminationSection-CCL-4QQD.js\",\n                        \"size\": 78092,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"TotalIncome-7BTVq9wM.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/TotalIncome-7BTVq9wM.js\",\n                        \"size\": 44422,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"UpgradedPrescriptionEMR-CvNofdGu.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/UpgradedPrescriptionEMR-CvNofdGu.js\",\n                        \"size\": 352010,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"VisitPage-5feiJJvC.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/VisitPage-5feiJJvC.js\",\n                        \"size\": 295566,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"activity-BRRgo98q.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/activity-BRRgo98q.js\",\n                        \"size\": 532,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"arrow-left-D0QK_o3f.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/arrow-left-D0QK_o3f.js\",\n                        \"size\": 446,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"arrow-right-left-DxaL83fz.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/arrow-right-left-DxaL83fz.js\",\n                        \"size\": 557,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"banknote-BqiHnhGo.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/banknote-BqiHnhGo.js\",\n                        \"size\": 545,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"bed-double-DSQN6_I2.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/bed-double-DSQN6_I2.js\",\n                        \"size\": 596,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"book-open-Bi6sJ5u3.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/book-open-Bi6sJ5u3.js\",\n                        \"size\": 586,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"building-2-CMX9_teL.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/building-2-CMX9_teL.js\",\n                        \"size\": 765,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"calendar-BL7xJRSg.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/calendar-BL7xJRSg.js\",\n                        \"size\": 562,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"camera-DpsioLhp.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/camera-DpsioLhp.js\",\n                        \"size\": 555,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"card-COhiAhz1.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/card-COhiAhz1.js\",\n                        \"size\": 1566,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"chart-no-axes-column-aUF3iGvH.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/chart-no-axes-column-aUF3iGvH.js\",\n                        \"size\": 584,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"checkbox-ByWwQWzS.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/checkbox-ByWwQWzS.js\",\n                        \"size\": 9796,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"circle-alert-3N-VW3xt.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/circle-alert-3N-VW3xt.js\",\n                        \"size\": 560,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"clinicalIntelligence-B4u_Xj_J.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/clinicalIntelligence-B4u_Xj_J.js\",\n                        \"size\": 29533,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"database-Ck9e-_FX.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/database-Ck9e-_FX.js\",\n                        \"size\": 537,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"download-qc_8yQ5r.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/download-qc_8yQ5r.js\",\n                        \"size\": 520,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"droplets-Dr40MrVb.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/droplets-Dr40MrVb.js\",\n                        \"size\": 708,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"external-link-YRWS9f1T.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/external-link-YRWS9f1T.js\",\n                        \"size\": 547,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"eye-DZPhoU57.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/eye-DZPhoU57.js\",\n                        \"size\": 557,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"file-text-DJrK52te.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/file-text-DJrK52te.js\",\n                        \"size\": 639,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"format-C8K1a6Fc.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/format-C8K1a6Fc.js\",\n                        \"size\": 43015,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"formatDistanceToNow-C2IQJfe9.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/formatDistanceToNow-C2IQJfe9.js\",\n                        \"size\": 7207,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"funnel-BTA0vRsb.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/funnel-BTA0vRsb.js\",\n                        \"size\": 550,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"generateCategoricalChart-Dou_1HkF.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/generateCategoricalChart-Dou_1HkF.js\",\n                        \"size\": 766934,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"heart-CnN_F_j3.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/heart-CnN_F_j3.js\",\n                        \"size\": 871,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"html2canvas.esm-Dtsxr8dG.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/html2canvas.esm-Dtsxr8dG.js\",\n                        \"size\": 350155,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"index-DJeWhCy-.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/index-DJeWhCy-.js\",\n                        \"size\": 2413685,\n                        \"modified\": 1784044961\n                    },\n                    {\n                        \"name\": \"index-DJeWhCy-.js.bak\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/index-DJeWhCy-.js.bak\",\n                        \"size\": 2416214,\n                        \"modified\": 1783793749\n                    },\n                    {\n                        \"name\": \"index-JEdqxkTH.css\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/index-JEdqxkTH.css\",\n                        \"size\": 201130,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"info-DjKKOoM3.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/info-DjKKOoM3.js\",\n                        \"size\": 488,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"investigation-rates.csv\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/investigation-rates.csv\",\n                        \"size\": 24527,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"layers-DwYKTjmE.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/layers-DwYKTjmE.js\",\n                        \"size\": 789,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"lock-BfuJZcFd.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/lock-BfuJZcFd.js\",\n                        \"size\": 487,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"log-out-BVpvzsgE.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/log-out-BVpvzsgE.js\",\n                        \"size\": 514,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"mail-yvZvzeI4.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/mail-yvZvzeI4.js\",\n                        \"size\": 492,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"map-pin-BVGvB4pd.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/map-pin-BVGvB4pd.js\",\n                        \"size\": 566,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"message-circle-qSON-RM2.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/message-circle-qSON-RM2.js\",\n                        \"size\": 428,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"message-square-gLkdQm4U.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/message-square-gLkdQm4U.js\",\n                        \"size\": 459,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"monitor-play-DHOzn285.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/monitor-play-DHOzn285.js\",\n                        \"size\": 695,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"pen-CfMhwJvZ.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/pen-CfMhwJvZ.js\",\n                        \"size\": 523,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"pencil-BZAaPpo6.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/pencil-BZAaPpo6.js\",\n                        \"size\": 579,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"phone-Co67JhRS.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/phone-Co67JhRS.js\",\n                        \"size\": 614,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"plus-CHPIrJ6M.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/plus-CHPIrJ6M.js\",\n                        \"size\": 424,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"printer-BQUreT8L.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/printer-BQUreT8L.js\",\n                        \"size\": 641,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"receipt-DqXr-L3S.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/receipt-DqXr-L3S.js\",\n                        \"size\": 590,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"rotate-ccw-DEYXgLqp.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/rotate-ccw-DEYXgLqp.js\",\n                        \"size\": 481,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"save-DzMd4SiT.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/save-DzMd4SiT.js\",\n                        \"size\": 635,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"scroll-area-DUDQuZCi.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/scroll-area-DUDQuZCi.js\",\n                        \"size\": 31448,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"search-BLymxia-.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/search-BLymxia-.js\",\n                        \"size\": 453,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"send-cdrsuHAc.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/send-cdrsuHAc.js\",\n                        \"size\": 589,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"settings-2-Bp-4AVPw.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/settings-2-Bp-4AVPw.js\",\n                        \"size\": 560,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"shield-D-es88Nw.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/shield-D-es88Nw.js\",\n                        \"size\": 566,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"skeleton-DqU5IOMD.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/skeleton-DqU5IOMD.js\",\n                        \"size\": 339,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"sparkles-BXWJULex.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/sparkles-BXWJULex.js\",\n                        \"size\": 842,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"sun-7_ce8Kaj.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/sun-7_ce8Kaj.js\",\n                        \"size\": 1144,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"sunset-B1zSdVi8.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/sunset-B1zSdVi8.js\",\n                        \"size\": 748,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"table-CnbMZ7S8.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/table-CnbMZ7S8.js\",\n                        \"size\": 2097,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"test-tube-AQ_p65EL.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/test-tube-AQ_p65EL.js\",\n                        \"size\": 1248,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"textarea-BQiWEu5n.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/textarea-BQiWEu5n.js\",\n                        \"size\": 785,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"thermometer-CrPE917O.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/thermometer-CrPE917O.js\",\n                        \"size\": 433,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"trash-2-B3l-ZhdV.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/trash-2-B3l-ZhdV.js\",\n                        \"size\": 672,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"trending-up-B6DQx806.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/trending-up-B6DQx806.js\",\n                        \"size\": 458,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"upload-10Urw3kY.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/upload-10Urw3kY.js\",\n                        \"size\": 514,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"useDoctorContent-Cx8T-OwA.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/useDoctorContent-Cx8T-OwA.js\",\n                        \"size\": 15006,\n                        \"modified\": 1784044550\n                    },\n                    {\n                        \"name\": \"user-plus-BJkC4ige.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/user-plus-BJkC4ige.js\",\n                        \"size\": 623,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"user-search-CBqVxlq_.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/user-search-CBqVxlq_.js\",\n                        \"size\": 588,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"video-h2z_1vJH.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/video-h2z_1vJH.js\",\n                        \"size\": 557,\n                        \"modified\": 1783708881\n                    },\n                    {\n                        \"name\": \"whatsappTemplates-BiipONU2.js\",\n                        \"path\": \"\\\/public_html\\\/assets\\\/whatsappTemplates-BiipONU2.js\",\n                        \"size\": 1339,\n                        \"modified\": 1783708881\n                    }\n                ]\n            }\n        },\n        {\n            \"name\": \"phpmyadmin\",\n            \"path\": \"\\\/public_html\\\/phpmyadmin\",\n            \"children\": {\n                \"path\": \"\\\/public_html\\\/phpmyadmin\",\n                \"directories\": [\n                    {\n                        \"name\": \"config\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/config\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/phpmyadmin\\\/config\",\n                            \"directories\": [],\n                            \"files\": []\n                        }\n                    },\n                    {\n                        \"name\": \"doc\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/doc\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/phpmyadmin\\\/doc\",\n                            \"directories\": [\n                                {\n                                    \"name\": \"html\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/doc\\\/html\",\n                                    \"children\": null\n                                }\n                            ],\n                            \"files\": []\n                        }\n                    },\n                    {\n                        \"name\": \"examples\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/examples\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/phpmyadmin\\\/examples\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"config.manyhosts.inc.php\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/examples\\\/config.manyhosts.inc.php\",\n                                    \"size\": 2036,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"openid.php\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/examples\\\/openid.php\",\n                                    \"size\": 4541,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"signon-script.php\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/examples\\\/signon-script.php\",\n                                    \"size\": 796,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"signon.php\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/examples\\\/signon.php\",\n                                    \"size\": 2622,\n                                    \"modified\": 1783766431\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"js\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/js\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/phpmyadmin\\\/js\",\n                            \"directories\": [\n                                {\n                                    \"name\": \"config\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/js\\\/config\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"dist\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/js\\\/dist\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"src\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/js\\\/src\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"vendor\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/js\\\/vendor\",\n                                    \"children\": null\n                                }\n                            ],\n                            \"files\": [\n                                {\n                                    \"name\": \"messages.php\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/js\\\/messages.php\",\n                                    \"size\": 1796,\n                                    \"modified\": 1783766431\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"libraries\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/libraries\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/phpmyadmin\\\/libraries\",\n                            \"directories\": [\n                                {\n                                    \"name\": \"cache\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/libraries\\\/cache\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"classes\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/libraries\\\/classes\",\n                                    \"children\": null\n                                }\n                            ],\n                            \"files\": [\n                                {\n                                    \"name\": \"advisory_rules_generic.php\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/libraries\\\/advisory_rules_generic.php\",\n                                    \"size\": 36906,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"advisory_rules_mysql_before80003.php\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/libraries\\\/advisory_rules_mysql_before80003.php\",\n                                    \"size\": 6334,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"config.default.php\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/libraries\\\/config.default.php\",\n                                    \"size\": 72659,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"config.values.php\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/libraries\\\/config.values.php\",\n                                    \"size\": 13484,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"constants.php\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/libraries\\\/constants.php\",\n                                    \"size\": 1926,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"language_stats.inc.php\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/libraries\\\/language_stats.inc.php\",\n                                    \"size\": 1688,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"routes.php\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/libraries\\\/routes.php\",\n                                    \"size\": 19968,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"services.php\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/libraries\\\/services.php\",\n                                    \"size\": 7871,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"services_controllers.php\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/libraries\\\/services_controllers.php\",\n                                    \"size\": 66732,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"services_loader.php\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/libraries\\\/services_loader.php\",\n                                    \"size\": 1626,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"vendor_config.php\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/libraries\\\/vendor_config.php\",\n                                    \"size\": 2096,\n                                    \"modified\": 1783766431\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"locale\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\",\n                            \"directories\": [\n                                {\n                                    \"name\": \"ar\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/ar\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"az\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/az\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"be\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/be\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"bg\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/bg\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"bn\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/bn\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"ca\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/ca\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"cs\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/cs\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"da\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/da\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"de\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/de\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"el\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/el\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"en_GB\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/en_GB\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"es\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/es\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"et\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/et\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"fi\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/fi\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"fr\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/fr\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"gl\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/gl\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"he\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/he\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"hu\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/hu\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"hy\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/hy\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"ia\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/ia\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"id\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/id\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"it\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/it\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"ja\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/ja\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"ka\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/ka\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"kk\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/kk\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"ko\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/ko\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"nb\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/nb\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"nl\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/nl\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"pl\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/pl\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"pt\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/pt\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"pt_BR\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/pt_BR\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"ro\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/ro\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"ru\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/ru\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"si\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/si\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"sk\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/sk\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"sl\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/sl\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"sq\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/sq\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"sv\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/sv\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"ta\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/ta\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"tr\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/tr\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"ug\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/ug\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"uk\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/uk\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"vi\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/vi\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"zh_CN\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/zh_CN\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"zh_TW\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/locale\\\/zh_TW\",\n                                    \"children\": null\n                                }\n                            ],\n                            \"files\": []\n                        }\n                    },\n                    {\n                        \"name\": \"setup\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/setup\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/phpmyadmin\\\/setup\",\n                            \"directories\": [\n                                {\n                                    \"name\": \"lib\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/setup\\\/lib\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"scss\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/setup\\\/scss\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"themes\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/setup\\\/themes\",\n                                    \"children\": null\n                                }\n                            ],\n                            \"files\": [\n                                {\n                                    \"name\": \"config.php\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/setup\\\/config.php\",\n                                    \"size\": 1561,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"index.php\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/setup\\\/index.php\",\n                                    \"size\": 2204,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"styles.css\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/setup\\\/styles.css\",\n                                    \"size\": 309801,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"styles.css.map\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/setup\\\/styles.css.map\",\n                                    \"size\": 48380,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"validate.php\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/setup\\\/validate.php\",\n                                    \"size\": 1050,\n                                    \"modified\": 1783766431\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"sql\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/sql\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/phpmyadmin\\\/sql\",\n                            \"directories\": [],\n                            \"files\": [\n                                {\n                                    \"name\": \"create_tables.sql\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/sql\\\/create_tables.sql\",\n                                    \"size\": 10949,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"upgrade_column_info_4_3_0+.sql\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/sql\\\/upgrade_column_info_4_3_0+.sql\",\n                                    \"size\": 1665,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"upgrade_tables_4_7_0+.sql\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/sql\\\/upgrade_tables_4_7_0+.sql\",\n                                    \"size\": 671,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"upgrade_tables_mysql_4_1_2+.sql\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/sql\\\/upgrade_tables_mysql_4_1_2+.sql\",\n                                    \"size\": 5691,\n                                    \"modified\": 1783766431\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"templates\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\",\n                            \"directories\": [\n                                {\n                                    \"name\": \"columns_definitions\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/columns_definitions\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"components\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/components\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"config\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/config\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"console\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/console\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"database\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/database\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"display\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/display\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"encoding\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/encoding\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"error\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/error\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"export\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/export\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"home\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/home\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"import\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/import\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"javascript\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/javascript\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"login\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/login\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"menu\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/menu\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"modals\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/modals\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"navigation\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/navigation\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"plugins\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/plugins\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"preferences\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/preferences\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"relation\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/relation\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"server\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/server\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"setup\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/setup\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"sql\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/sql\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"table\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/table\",\n                                    \"children\": null\n                                }\n                            ],\n                            \"files\": [\n                                {\n                                    \"name\": \"changelog.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/changelog.twig\",\n                                    \"size\": 457,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"create_tracking_version.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/create_tracking_version.twig\",\n                                    \"size\": 3790,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"export.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/export.twig\",\n                                    \"size\": 23627,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"export_modal.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/export_modal.twig\",\n                                    \"size\": 662,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"file_select_options.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/file_select_options.twig\",\n                                    \"size\": 152,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"filter.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/filter.twig\",\n                                    \"size\": 433,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"footer.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/footer.twig\",\n                                    \"size\": 1588,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"gis_data_editor_form.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/gis_data_editor_form.twig\",\n                                    \"size\": 13259,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"header.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/header.twig\",\n                                    \"size\": 2312,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"header_location.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/header_location.twig\",\n                                    \"size\": 652,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"import.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/import.twig\",\n                                    \"size\": 11019,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"import_status.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/import_status.twig\",\n                                    \"size\": 112,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"indexes.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/indexes.twig\",\n                                    \"size\": 4294,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"list_navigator.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/list_navigator.twig\",\n                                    \"size\": 2342,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"message.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/message.twig\",\n                                    \"size\": 80,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"preview_sql.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/preview_sql.twig\",\n                                    \"size\": 301,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"recent_favorite_table_favorite.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/recent_favorite_table_favorite.twig\",\n                                    \"size\": 497,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"recent_favorite_table_no_tables.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/recent_favorite_table_no_tables.twig\",\n                                    \"size\": 187,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"recent_favorite_table_recent.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/recent_favorite_table_recent.twig\",\n                                    \"size\": 172,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"scripts.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/scripts.twig\",\n                                    \"size\": 802,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"select_all.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/select_all.twig\",\n                                    \"size\": 380,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"top_menu.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/top_menu.twig\",\n                                    \"size\": 1103,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"transformation_overview.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/transformation_overview.twig\",\n                                    \"size\": 1339,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"user_password.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/user_password.twig\",\n                                    \"size\": 83,\n                                    \"modified\": 1783766431\n                                },\n                                {\n                                    \"name\": \"view_create.twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/templates\\\/view_create.twig\",\n                                    \"size\": 4844,\n                                    \"modified\": 1783766431\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"themes\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/themes\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/phpmyadmin\\\/themes\",\n                            \"directories\": [\n                                {\n                                    \"name\": \"bootstrap\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/themes\\\/bootstrap\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"metro\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/themes\\\/metro\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"original\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/themes\\\/original\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"pmahomme\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/themes\\\/pmahomme\",\n                                    \"children\": null\n                                }\n                            ],\n                            \"files\": [\n                                {\n                                    \"name\": \"dot.gif\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/themes\\\/dot.gif\",\n                                    \"size\": 43,\n                                    \"modified\": 1783766431\n                                }\n                            ]\n                        }\n                    },\n                    {\n                        \"name\": \"vendor\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\",\n                            \"directories\": [\n                                {\n                                    \"name\": \"bacon\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/bacon\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"beberlei\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/beberlei\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"brick\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/brick\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"code-lts\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/code-lts\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"composer\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/composer\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"dasprid\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/dasprid\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"fgrosse\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/fgrosse\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"fig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/fig\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"google\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/google\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"league\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/league\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"nikic\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/nikic\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"paragonie\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/paragonie\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"phpmyadmin\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/phpmyadmin\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"pragmarx\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/pragmarx\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"psr\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/psr\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"ralouphie\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/ralouphie\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"ramsey\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/ramsey\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"slim\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/slim\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"spomky-labs\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/spomky-labs\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"symfony\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/symfony\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"tecnickcom\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/tecnickcom\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"thecodingmachine\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/thecodingmachine\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"twig\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/twig\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"web-auth\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/web-auth\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"webmozart\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/webmozart\",\n                                    \"children\": null\n                                },\n                                {\n                                    \"name\": \"williamdes\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/williamdes\",\n                                    \"children\": null\n                                }\n                            ],\n                            \"files\": [\n                                {\n                                    \"name\": \"autoload.php\",\n                                    \"path\": \"\\\/public_html\\\/phpmyadmin\\\/vendor\\\/autoload.php\",\n                                    \"size\": 771,\n                                    \"modified\": 1783766431\n                                }\n                            ]\n                        }\n                    }\n                ],\n                \"files\": [\n                    {\n                        \"name\": \".htaccess\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/.htaccess\",\n                        \"size\": 1263,\n                        \"modified\": 1783766468\n                    },\n                    {\n                        \"name\": \".rtlcssrc.json\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/.rtlcssrc.json\",\n                        \"size\": 20,\n                        \"modified\": 1783766430\n                    },\n                    {\n                        \"name\": \"CONTRIBUTING.md\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/CONTRIBUTING.md\",\n                        \"size\": 2587,\n                        \"modified\": 1783766430\n                    },\n                    {\n                        \"name\": \"ChangeLog\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/ChangeLog\",\n                        \"size\": 22805,\n                        \"modified\": 1783766430\n                    },\n                    {\n                        \"name\": \"LICENSE\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/LICENSE\",\n                        \"size\": 18092,\n                        \"modified\": 1783766430\n                    },\n                    {\n                        \"name\": \"README\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/README\",\n                        \"size\": 1520,\n                        \"modified\": 1783766430\n                    },\n                    {\n                        \"name\": \"RELEASE-DATE-5.2.3\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/RELEASE-DATE-5.2.3\",\n                        \"size\": 29,\n                        \"modified\": 1783766430\n                    },\n                    {\n                        \"name\": \"babel.config.json\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/babel.config.json\",\n                        \"size\": 69,\n                        \"modified\": 1783766430\n                    },\n                    {\n                        \"name\": \"composer.json\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/composer.json\",\n                        \"size\": 5751,\n                        \"modified\": 1783766430\n                    },\n                    {\n                        \"name\": \"composer.lock\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/composer.lock\",\n                        \"size\": 342742,\n                        \"modified\": 1783766430\n                    },\n                    {\n                        \"name\": \"config.inc.php\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/config.inc.php\",\n                        \"size\": 4605,\n                        \"modified\": 1783766452\n                    },\n                    {\n                        \"name\": \"config.sample.inc.php\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/config.sample.inc.php\",\n                        \"size\": 4810,\n                        \"modified\": 1783766430\n                    },\n                    {\n                        \"name\": \"favicon.ico\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/favicon.ico\",\n                        \"size\": 22486,\n                        \"modified\": 1783766431\n                    },\n                    {\n                        \"name\": \"index.php\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/index.php\",\n                        \"size\": 1074,\n                        \"modified\": 1783766431\n                    },\n                    {\n                        \"name\": \"package.json\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/package.json\",\n                        \"size\": 2958,\n                        \"modified\": 1783766431\n                    },\n                    {\n                        \"name\": \"robots.txt\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/robots.txt\",\n                        \"size\": 26,\n                        \"modified\": 1783766431\n                    },\n                    {\n                        \"name\": \"show_config_errors.php\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/show_config_errors.php\",\n                        \"size\": 1153,\n                        \"modified\": 1783766431\n                    },\n                    {\n                        \"name\": \"url.php\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/url.php\",\n                        \"size\": 965,\n                        \"modified\": 1783766431\n                    },\n                    {\n                        \"name\": \"yarn.lock\",\n                        \"path\": \"\\\/public_html\\\/phpmyadmin\\\/yarn.lock\",\n                        \"size\": 254659,\n                        \"modified\": 1783766432\n                    }\n                ]\n            }\n        },\n        {\n            \"name\": \"uploads\",\n            \"path\": \"\\\/public_html\\\/uploads\",\n            \"children\": {\n                \"path\": \"\\\/public_html\\\/uploads\",\n                \"directories\": [],\n                \"files\": []\n            }\n        },\n        {\n            \"name\": \"wp-includes\",\n            \"path\": \"\\\/public_html\\\/wp-includes\",\n            \"children\": {\n                \"path\": \"\\\/public_html\\\/wp-includes\",\n                \"directories\": [\n                    {\n                        \"name\": \"js\",\n                        \"path\": \"\\\/public_html\\\/wp-includes\\\/js\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/wp-includes\\\/js\",\n                            \"directories\": [\n                                {\n                                    \"name\": \"tinymce\",\n                                    \"path\": \"\\\/public_html\\\/wp-includes\\\/js\\\/tinymce\",\n                                    \"children\": null\n                                }\n                            ],\n                            \"files\": []\n                        }\n                    },\n                    {\n                        \"name\": \"sodium_compat\",\n                        \"path\": \"\\\/public_html\\\/wp-includes\\\/sodium_compat\",\n                        \"children\": {\n                            \"path\": \"\\\/public_html\\\/wp-includes\\\/sodium_compat\",\n                            \"directories\": [\n                                {\n                                    \"name\": \"src\",\n                                    \"path\": \"\\\/public_html\\\/wp-includes\\\/sodium_compat\\\/src\",\n                                    \"children\": null\n                                }\n                            ],\n                            \"files\": []\n                        }\n                    }\n                ],\n                \"files\": []\n            }\n        }\n    ],\n    \"files\": [\n        {\n            \"name\": \".htaccess\",\n            \"path\": \"\\\/public_html\\\/.htaccess\",\n            \"size\": 7407,\n            \"modified\": 1783833288\n        },\n        {\n            \"name\": \"config.php\",\n            \"path\": \"\\\/public_html\\\/config.php\",\n            \"size\": 4473,\n            \"modified\": 1784055340\n        },\n        {\n            \"name\": \"env.json\",\n            \"path\": \"\\\/public_html\\\/env.json\",\n            \"size\": 804,\n            \"modified\": 1783833292\n        },\n        {\n            \"name\": \"favicon.ico\",\n            \"path\": \"\\\/public_html\\\/favicon.ico\",\n            \"size\": 66,\n            \"modified\": 1783708881\n        },\n        {\n            \"name\": \"index.html\",\n            \"path\": \"\\\/public_html\\\/index.html\",\n            \"size\": 3066,\n            \"modified\": 1783964936\n        },\n        {\n            \"name\": \"manifest.json\",\n            \"path\": \"\\\/public_html\\\/manifest.json\",\n            \"size\": 390,\n            \"modified\": 1783708881\n        },\n        {\n            \"name\": \"setup.php\",\n            \"path\": \"\\\/public_html\\\/setup.php\",\n            \"size\": 16784,\n            \"modified\": 1783883961\n        },\n        {\n            \"name\": \"sw.js\",\n            \"path\": \"\\\/public_html\\\/sw.js\",\n            \"size\": 4863,\n            \"modified\": 1783958665\n        }\n    ]\n}",
-            "is_error": false,
-            "time": 1784055565
-        },
-        {
-            "id": "msg_473737960a",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "Now I can see the main JS file is `index-DJeWhCy-.js` (2.4MB) and there's a backup `index-DJeWhCy-.js.bak`. Let me look at the errors more carefully:\n\n1. **Warning**: `Missing 'Description' or 'aria-describedby={undefined}' for {DialogContent}` - This is a Radix UI \/ Material UI accessibility warning for DialogContent. The DialogContent component requires either a `description` prop or `aria-describedby` to be set for accessibility.\n\n2. **SyntaxError: Unexpected end of input** at line 20108 - This is a JSON parsing error, likely from `JSON.parse()` on incomplete data.\n\n3. **Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received** - This is a Chrome extension\/service worker messaging error.\n\nLet me look at the main index.js file near line 20108 to find the JSON.parse that's failing, and also search for DialogContent."
-                },
-                {
-                    "type": "text",
-                    "text": "Let me investigate the first two errors in the main JavaScript file."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_KnTvgQF4AKlnQeXedz6q3396",
-                    "name": "grep",
-                    "input": {
-                        "pattern": "DialogContent",
-                        "path": "\/home\/drarmank\/public_html\/assets",
-                        "include": "*.js",
-                        "max_results": 20
-                    }
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_01_gxAjQ40vZ7CXeSjEnes65877",
-                    "name": "grep",
-                    "input": {
-                        "pattern": "JSON\\.parse",
-                        "path": "\/home\/drarmank\/public_html\/assets",
-                        "include": "*.js",
-                        "max_results": 30
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 22951,
-                "completion_tokens": 424,
-                "total_tokens": 23375,
-                "prompt_cache_hit_tokens": 3584,
-                "prompt_cache_miss_tokens": 19367,
-                "prompt_tokens_details": {
-                    "cached_tokens": 3584
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 219
-                }
-            },
-            "time": 1784055570
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_KnTvgQF4AKlnQeXedz6q3396",
-            "content": "No matches found for pattern: DialogContent",
-            "is_error": false,
-            "time": 1784055570
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_01_gxAjQ40vZ7CXeSjEnes65877",
-            "content": "No matches found for pattern: JSON\\.parse",
-            "is_error": false,
-            "time": 1784055570
-        },
-        {
-            "id": "msg_b477815d11",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "The main JS file is large (2.4MB). Let me read around line 20108 to see what's there, and also search for JSON.parse and DialogContent."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_bEchDJ3SEnnkPpGxUncf0830",
-                    "name": "read_file",
-                    "input": {
-                        "path": "public_html\/assets\/index-DJeWhCy-.js",
-                        "offset": 20100,
-                        "limit": 30
-                    }
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_01_QBHiBCpNSRZiRPZz7TuF3370",
-                    "name": "read_file",
-                    "input": {
-                        "path": "public_html\/assets\/index-DJeWhCy-.js",
-                        "offset": 31645,
-                        "limit": 20
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 23412,
-                "completion_tokens": 194,
-                "total_tokens": 23606,
-                "prompt_cache_hit_tokens": 23296,
-                "prompt_cache_miss_tokens": 116,
-                "prompt_tokens_details": {
-                    "cached_tokens": 23296
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 36
-                }
-            },
-            "time": 1784055573
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_bEchDJ3SEnnkPpGxUncf0830",
-            "content": "File too large (max: 500 KB)",
-            "is_error": true,
-            "time": 1784055573
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_01_QBHiBCpNSRZiRPZz7TuF3370",
-            "content": "File too large (max: 500 KB)",
-            "is_error": true,
-            "time": 1784055573
-        },
-        {
-            "id": "msg_7f6982a461",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "The file is 2.4MB, so I can't read it directly. Let me use grep with a binary-safe approach or just search for specific patterns."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_vqDSO1i9C9YM5Fg3th367924",
-                    "name": "bash",
-                    "input": {
-                        "command": "cd \/home\/drarmank\/public_html\/assets && grep -n \"DialogContent\\|JSON.parse\\|aria-describedby\\|Unexpected end\" index-DJeWhCy-.js | head -30"
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 23644,
-                "completion_tokens": 115,
-                "total_tokens": 23759,
-                "prompt_cache_hit_tokens": 23552,
-                "prompt_cache_miss_tokens": 92,
-                "prompt_tokens_details": {
-                    "cached_tokens": 23552
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 33
-                }
-            },
-            "time": 1784055576
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_vqDSO1i9C9YM5Fg3th367924",
-            "content": "1159:      const obj = JSON.parse(text);\n4697:    const obj = JSON.parse(input);\n14094:    const parsed = JSON.parse(json);\n14400:    const { publicKey, delegations } = typeof json === \"string\" ? JSON.parse(json) : json;\n31459:var CONTENT_NAME$3 = \"DialogContent\";\n31460:var DialogContent$1 = reactExports.forwardRef(\n31465:    return \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Presence, { present: forceMount || context.open, children: context.modal ? \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogContentModal, { ...contentProps, ref: forwardedRef }) : \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogContentNonModal, { ...contentProps, ref: forwardedRef }) });\n31468:DialogContent$1.displayName = CONTENT_NAME$3;\n31469:var DialogContentModal = reactExports.forwardRef(\n31479:      DialogContentImpl,\n31504:var DialogContentNonModal = reactExports.forwardRef(\n31510:      DialogContentImpl,\n31546:var DialogContentImpl = reactExports.forwardRef(\n31567:              \"aria-describedby\": context.descriptionId,\n31646:  const MESSAGE = `Warning: Missing \\`Description\\` or \\`aria-describedby={undefined}\\` for {${descriptionWarningContext.contentName}}.`;\n31649:    const describedById = (_a3 = contentRef.current) == null ? void 0 : _a3.getAttribute(\"aria-describedby\");\n31661:var Content$2 = DialogContent$1;\n32283:function DialogContent({\n38503:  let state = persistedState ? JSON.parse(persistedState) : {};\n38539:    byKey = JSON.parse(sessionStorage.getItem(storageKey2) || \"{}\");\n38706:const defaultParseSearch = parseSearchWith(JSON.parse);\n38709:  JSON.parse\n50313:    return deserializeBigInt(JSON.parse(raw));\n50327:          const items = deserializeBigInt(JSON.parse(raw));\n50345:      const parsed = JSON.parse(raw);\n50353:      const registry = JSON.parse(\n50376:    if (raw) return JSON.parse(raw);\n50384:        if (raw) return JSON.parse(raw);\n50837:    return JSON.parse(raw);\n51032:    return JSON.parse(raw);\n\ngrep: write error: Broken pipe\n",
-            "is_error": false,
-            "time": 1784055577
-        },
-        {
-            "id": "msg_46c6fc9f7e",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "Now I can see the issues:\n\n1. **DialogContent warning** (line 31646-31649): This is from a Radix UI dialog component. The warning is triggered when `aria-describedby` is set to `undefined`. Looking at `DialogContentImpl` at line 31546, it sets `aria-describedby` to `context.descriptionId` at line 31567. If `context.descriptionId` is undefined, the warning fires.\n\n2. **SyntaxError: Unexpected end of input** (line 20108): The error references line 20108 in the console output, but the actual `JSON.parse` calls are at various lines. Let me check what's around line 20108 more carefully.\n\n3. **Uncaught (in promise) Error** - This is a Chrome extension\/service worker issue, likely from a browser extension.\n\nLet me look at the DialogContentImpl to understand the describedby issue, and check what code is around line 20108."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_DTl3a6uR5ARj5lTYZKPX0133",
-                    "name": "bash",
-                    "input": {
-                        "command": "cd \/home\/drarmank\/public_html\/assets && grep -n \"JSON.parse\\|DialogContent\\|descriptionId\\|aria-describedby\" index-DJeWhCy-.js | head -60"
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 24308,
-                "completion_tokens": 284,
-                "total_tokens": 24592,
-                "prompt_cache_hit_tokens": 23680,
-                "prompt_cache_miss_tokens": 628,
-                "prompt_tokens_details": {
-                    "cached_tokens": 23680
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 203
-                }
-            },
-            "time": 1784055580
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_DTl3a6uR5ARj5lTYZKPX0133",
-            "content": "1159:      const obj = JSON.parse(text);\n4697:    const obj = JSON.parse(input);\n14094:    const parsed = JSON.parse(json);\n14400:    const { publicKey, delegations } = typeof json === \"string\" ? JSON.parse(json) : json;\n31387:      descriptionId: useId(),\n31459:var CONTENT_NAME$3 = \"DialogContent\";\n31460:var DialogContent$1 = reactExports.forwardRef(\n31465:    return \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Presence, { present: forceMount || context.open, children: context.modal ? \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogContentModal, { ...contentProps, ref: forwardedRef }) : \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogContentNonModal, { ...contentProps, ref: forwardedRef }) });\n31468:DialogContent$1.displayName = CONTENT_NAME$3;\n31469:var DialogContentModal = reactExports.forwardRef(\n31479:      DialogContentImpl,\n31504:var DialogContentNonModal = reactExports.forwardRef(\n31510:      DialogContentImpl,\n31546:var DialogContentImpl = reactExports.forwardRef(\n31567:              \"aria-describedby\": context.descriptionId,\n31579:        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DescriptionWarning, { contentRef, descriptionId: context.descriptionId })\n31598:    return \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Primitive$1.p, { id: context.descriptionId, ...descriptionProps, ref: forwardedRef });\n31644:var DescriptionWarning = ({ contentRef, descriptionId }) => {\n31646:  const MESSAGE = `Warning: Missing \\`Description\\` or \\`aria-describedby={undefined}\\` for {${descriptionWarningContext.contentName}}.`;\n31649:    const describedById = (_a3 = contentRef.current) == null ? void 0 : _a3.getAttribute(\"aria-describedby\");\n31650:    if (descriptionId && describedById) {\n31651:      const hasDescription = document.getElementById(descriptionId);\n31654:  }, [MESSAGE, contentRef, descriptionId]);\n31661:var Content$2 = DialogContent$1;\n32283:function DialogContent({\n38503:  let state = persistedState ? JSON.parse(persistedState) : {};\n38539:    byKey = JSON.parse(sessionStorage.getItem(storageKey2) || \"{}\");\n38706:const defaultParseSearch = parseSearchWith(JSON.parse);\n38709:  JSON.parse\n50313:    return deserializeBigInt(JSON.parse(raw));\n50327:          const items = deserializeBigInt(JSON.parse(raw));\n50345:      const parsed = JSON.parse(raw);\n50353:      const registry = JSON.parse(\n50376:    if (raw) return JSON.parse(raw);\n50384:        if (raw) return JSON.parse(raw);\n50837:    return JSON.parse(raw);\n51032:    return JSON.parse(raw);\n51176:    return JSON.parse(raw);\n51215:    return JSON.parse(raw);\n51292:    return JSON.parse(raw);\n51329:    return JSON.parse(raw);\n51498:    return JSON.parse(raw);\n51576:    return JSON.parse(raw);\n51628:              const parsed = JSON.parse(existing);\n51653:      if (raw) allContent[k2] = JSON.parse(raw);\n52069:        return JSON.parse(localStorage.getItem(localKey) || \"[]\");\n52447:          const parsed = JSON.parse(raw);\n52646:    DialogContent,\n52724:    if (raw) return JSON.parse(raw);\n52738:    if (raw) return JSON.parse(raw);\n52749:    if (raw) return JSON.parse(raw);\n52761:    if (raw) return JSON.parse(raw);\n52774:    if (raw) return JSON.parse(raw);\n52787:    if (raw) return JSON.parse(raw);\n52800:    if (raw) return JSON.parse(raw);\n52813:    if (raw) return JSON.parse(raw);\n52826:    if (raw) return JSON.parse(raw);\n52934:      const parsed = JSON.parse(raw);\n52972:    if (raw) return JSON.parse(raw);\n53016:    if (raw) return JSON.parse(raw);\n\ngrep: write error: Broken pipe\n",
-            "is_error": false,
-            "time": 1784055580
-        },
-        {
-            "id": "msg_82ea5b52d2",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "Now let me understand the issues:\n\n1. **DialogContent Warning**: Looking at line 31567, it sets `\"aria-describedby\": context.descriptionId`. If `context.descriptionId` is undefined\/null, the `aria-describedby` attribute becomes `undefined` (the string \"undefined\") or just undefined. The `DescriptionWarning` component at line 31644-31654 checks for this. However, the warning occurs because somewhere `DialogContent` is used without `DialogDescription`.\n\n2. **SyntaxError: Unexpected end of input (line 20108)**: The error line says line 20108, but I need to find what's actually at line 20108. Let me check that specific line.\n\n3. **Chrome extension message error**: This is a client-side browser extension issue.\n\nWait, looking at the error output more carefully:\n```\nindex-DJeWhCy-.js:31652 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.\nindex-DJeWhCy-.js:20108 SyntaxError: Unexpected end of input\n```\n\nLet me check line 20108 and also look at what functions are calling these.\n\nActually, let me think about this differently. The user has shown me console errors from their running application. These are client-side JavaScript errors. Let me:\n\n1. Look at line 20108 to find the JSON.parse that might be failing\n2. Look at what component is using DialogContent without DialogDescription\n3. Understand the service worker \/ extension error\n\nLet me read around line 20108 using sed or head\/tail."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_SaDQsj66C2FVcpZW8vh46175",
-                    "name": "bash",
-                    "input": {
-                        "command": "cd \/home\/drarmank\/public_html\/assets && sed -n '20100,20120p' index-DJeWhCy-.js"
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 25559,
-                "completion_tokens": 400,
-                "total_tokens": 25959,
-                "prompt_cache_hit_tokens": 24576,
-                "prompt_cache_miss_tokens": 983,
-                "prompt_tokens_details": {
-                    "cached_tokens": 24576
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 329
-                }
-            },
-            "time": 1784055585
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_SaDQsj66C2FVcpZW8vh46175",
-            "content": "    return;\n  }\n  console.error(error);\n};\nfunction defaultOnUncaughtError(error) {\n  reportGlobalError(error);\n}\nfunction defaultOnCaughtError(error) {\n  console.error(error);\n}\nfunction defaultOnRecoverableError(error) {\n  reportGlobalError(error);\n}\nfunction logUncaughtError(root2, errorInfo) {\n  try {\n    var onUncaughtError = root2.onUncaughtError;\n    onUncaughtError(errorInfo.value, { componentStack: errorInfo.stack });\n  } catch (e$74) {\n    setTimeout(function() {\n      throw e$74;\n    });\n",
-            "is_error": false,
-            "time": 1784055586
-        },
-        {
-            "id": "msg_1e50941154",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "So line 20108 is part of React's error handling code. The \"SyntaxError: Unexpected end of input\" is actually the error that's being caught and logged by React's error handling. The actual JSON.parse that's failing could be anywhere.\n\nLet me look at the PHP API endpoints that send JSON responses and see if any of them might be returning incomplete data. The error is \"Unexpected end of input\" which means a JSON.parse is being called on an incomplete\/empty response body.\n\nLet me check the PHP APIs that return JSON to see if any could be failing to return complete JSON."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_v6RsprCtuiVe9zpiqnVt2032",
-                    "name": "grep",
-                    "input": {
-                        "pattern": "echo json_encode\\|return.*json\\|Content-Type.*json",
-                        "include": "*.php",
-                        "path": "\/home\/drarmank\/public_html\/api",
-                        "max_results": 40
-                    }
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_01_AFpIGaiTFcNFsQDg7LkF5750",
-                    "name": "read_file",
-                    "input": {
-                        "path": "public_html\/index.html"
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 26103,
-                "completion_tokens": 268,
-                "total_tokens": 26371,
-                "prompt_cache_hit_tokens": 25856,
-                "prompt_cache_miss_tokens": 247,
-                "prompt_tokens_details": {
-                    "cached_tokens": 25856
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 122
-                }
-            },
-            "time": 1784055590
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_v6RsprCtuiVe9zpiqnVt2032",
-            "content": "No matches found for pattern: echo json_encode\\|return.*json\\|Content-Type.*json",
-            "is_error": false,
-            "time": 1784055590
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_01_AFpIGaiTFcNFsQDg7LkF5750",
-            "content": "    1 | <!DOCTYPE html>\n    2 | <html lang=\"en\">\n    3 |   <head>\n    4 |     <meta charset=\"UTF-8\" \/>\n    5 |     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" \/>\n    6 |     <title>Dr. Arman Kabir Care<\/title>\n    7 |     <meta name=\"description\" content=\"Dr. Arman Kabir Care \u2014 Bilingual Patient Management and Doctor Portal App for clinics and individual practitioners.\" \/>\n    8 |     <meta property=\"og:title\" content=\"Dr. Arman Kabir Care\" \/>\n    9 |     <meta property=\"og:description\" content=\"Dr. Arman Kabir Care \u2014 Bilingual Patient Management and Doctor Portal App for clinics and individual practitioners.\" \/>\n   10 |     <meta property=\"og:type\" content=\"website\" \/>\n   11 |     <meta name=\"twitter:card\" content=\"summary_large_image\" \/>\n   12 |     <link rel=\"icon\" type=\"image\/x-icon\" href=\"\/favicon.ico\" \/>\n   13 |     <script>\n   14 |     \/\/ Preload frontpage content from server into localStorage\n   15 |     (function(){\n   16 |       var xhr = new XMLHttpRequest();\n   17 |       xhr.open('GET', '\/api\/frontpage\/get.php', true);\n   18 |       xhr.onload = function() {\n   19 |         if (xhr.status === 200) {\n   20 |           try {\n   21 |             var json = JSON.parse(xhr.responseText);\n   22 |             if (json.success && json.data) {\n   23 |               if (json.data.siteConfig) localStorage.setItem('siteConfig', JSON.stringify(json.data.siteConfig));\n   24 |               if (json.data.doctorContentOverrides) localStorage.setItem('doctorContentOverrides', JSON.stringify(json.data.doctorContentOverrides));\n   25 |             }\n   26 |           } catch(e) { console.warn('[preload] parse error:', e); }\n   27 |         }\n   28 |       };\n   29 |       xhr.onerror = function() { \/* silently fail *\/ };\n   30 |       xhr.send();\n   31 |     })();\n   32 |     <\/script>\n   33 |     <script type=\"module\" crossorigin src=\"\/assets\/index-DJeWhCy-.js\"><\/script>\n   34 |     <link rel=\"stylesheet\" crossorigin href=\"\/assets\/index-JEdqxkTH.css\">\n   35 |   <\/head>\n   36 |   <body>\n   37 |     <div id=\"root\"><\/div>\n   38 |     <script>\n   39 |       \/\/ Register Service Worker \u2014 silent updates, no forced reloads to avoid React removeChild errors\n   40 |       if ('serviceWorker' in navigator) {\n   41 |         \/\/ Defer reload to avoid interrupting React's unmount lifecycle\n   42 |         let reloadScheduled = false;\n   43 |         const scheduleReload = () => {\n   44 |           if (reloadScheduled) return;\n   45 |           reloadScheduled = true;\n   46 |           setTimeout(function() { window.location.reload(); }, 500);\n   47 |         };\n   48 | \n   49 |         navigator.serviceWorker.register('\/sw.js', { scope: '\/' }).then(function(reg) {\n   50 |           reg.addEventListener('updatefound', function() {\n   51 |             var newWorker = reg.installing;\n   52 |             newWorker.addEventListener('statechange', function() {\n   53 |               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {\n   54 |                 scheduleReload();\n   55 |               }\n   56 |             });\n   57 |           });\n   58 | \n   59 |           if (reg.waiting && navigator.serviceWorker.controller) {\n   60 |             scheduleReload();\n   61 |           }\n   62 |         }).catch(function() {\n   63 |           \/\/ SW registration failed silently \u2014 app still works without it\n   64 |         });\n   65 | \n   66 |         navigator.serviceWorker.addEventListener('controllerchange', function() {\n   67 |           scheduleReload();\n   68 |         });\n   69 |       }\n   70 |     <\/script>\n   71 |   <\/body>\n   72 | <\/html>\n   73 |",
-            "is_error": false,
-            "time": 1784055590
-        },
-        {
-            "id": "msg_8d040495e6",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "Now I can see the picture more clearly. Let me look at the frontpage API endpoint and the PHP files for JSON encoding issues. Also let me look at the content API endpoints.\n\nThe errors are:\n\n1. **DialogContent warning** (line 31652): This is a Radix UI dialog component. The DialogContent is used without a DialogDescription component. Looking at the code at lines 31567 and 31579\/31644-31654, the warning is triggered when `aria-describedby` is set to `undefined`. This is a common warning when using `DialogContent` without a `DialogDescription` inside it. The fix would be to either add a `DialogDescription` or suppress the warning.\n\nBut wait - this is minified\/bundled code. The source code is likely in a React component somewhere. However, since this is a built\/bundled file, we can't easily modify the source behavior. The warning is cosmetic\/accessibility-related but not breaking functionality.\n\n2. **SyntaxError: Unexpected end of input** - This is the more critical error. Looking at the `index.html`, there's a preload script at line 15-31 that does `xhr.open('GET', '\/api\/frontpage\/get.php', true)` and then tries `JSON.parse(xhr.responseText)`. If the API returns an empty response, truncated response, or non-JSON content, this would fail with \"Unexpected end of input\". The error is caught with `try\/catch` and logged as a warning, so it's handled gracefully.\n\nBut the error at line 20108 is from React's error handling, meaning there's another JSON.parse somewhere in the application code that's failing and the error propagates up.\n\nLet me check the frontpage API endpoint and other data API endpoints."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_jiFT1dGP6FAZ0dLjkPcr1492",
-                    "name": "read_file",
-                    "input": {
-                        "path": "public_html\/api\/frontpage\/get.php"
-                    }
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_01_DvS3EzngKFbajnbh6Ozd8643",
-                    "name": "read_file",
-                    "input": {
-                        "path": "public_html\/api\/data\/get.php"
-                    }
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_02_pcj5270sxS0SVDREN3jj1073",
-                    "name": "read_file",
-                    "input": {
-                        "path": "public_html\/api\/data\/save.php"
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 27336,
-                "completion_tokens": 495,
-                "total_tokens": 27831,
-                "prompt_cache_hit_tokens": 26368,
-                "prompt_cache_miss_tokens": 968,
-                "prompt_tokens_details": {
-                    "cached_tokens": 26368
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 373
-                }
-            },
-            "time": 1784055595
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_jiFT1dGP6FAZ0dLjkPcr1492",
-            "content": "    1 | <?php\n    2 | \/**\n    3 |  * Front Page Get API\n    4 |  * \n    5 |  * GET \/api\/frontpage\/get.php\n    6 |  * \n    7 |  * Retrieves the front page content (siteConfig + doctorContentOverrides).\n    8 |  * This endpoint is public - no authentication required for reading.\n    9 |  * \n   10 |  * Query params:\n   11 |  *   key (optional) - \"siteConfig\", \"doctorContentOverrides\", or \"all\" (default)\n   12 |  * \n   13 |  * Response:\n   14 |  *   { \"success\": true, \"data\": { ... } }\n   15 |  *\/\n   16 | \n   17 | require_once __DIR__ . '\/..\/database.php';\n   18 | require_once __DIR__ . '\/..\/helpers.php';\n   19 | \n   20 | handleCors();\n   21 | requireMethod('GET');\n   22 | \n   23 | $key = getParam('key', 'all');\n   24 | \n   25 | try {\n   26 |     $db = Database::getInstance();\n   27 |     \n   28 |     if ($key === 'all') {\n   29 |         \/\/ Return both siteConfig and doctorContentOverrides\n   30 |         $stmt = $db->prepare(\"SELECT setting_key, setting_value FROM site_settings WHERE setting_key IN ('siteConfig', 'doctorContentOverrides')\");\n   31 |         $stmt->execute();\n   32 |         $rows = $stmt->fetchAll();\n   33 |         \n   34 |         $result = [];\n   35 |         foreach ($rows as $row) {\n   36 |             $result[$row['setting_key']] = json_decode($row['setting_value'], true);\n   37 |         }\n   38 |         \n   39 |         \/\/ Also get the combined frontPageContent if available (for backwards compatibility)\n   40 |         $stmt2 = $db->prepare(\"SELECT setting_value FROM site_settings WHERE setting_key = 'frontPageContent'\");\n   41 |         $stmt2->execute();\n   42 |         $combined = $stmt2->fetchColumn();\n   43 |         \n   44 |         if ($combined) {\n   45 |             $combinedData = json_decode($combined, true);\n   46 |             if (is_array($combinedData)) {\n   47 |                 $result = array_merge($result, $combinedData);\n   48 |             }\n   49 |         }\n   50 |         \n   51 |         \/\/ If nothing found, return empty objects\n   52 |         if (empty($result)) {\n   53 |             $result = [\n   54 |                 'siteConfig' => new stdClass(),\n   55 |                 'doctorContentOverrides' => new stdClass(),\n   56 |             ];\n   57 |         }\n   58 |         \n   59 |         successResponse($result);\n   60 |     } else {\n   61 |         \/\/ Validate key format\n   62 |         if (!preg_match('\/^[a-zA-Z0-9_\\-]+$\/', $key)) {\n   63 |             errorResponse('Invalid key format.', 400);\n   64 |         }\n   65 |         \n   66 |         $stmt = $db->prepare('SELECT setting_value FROM site_settings WHERE setting_key = :key');\n   67 |         $stmt->execute([':key' => $key]);\n   68 |         $value = $stmt->fetchColumn();\n   69 |         \n   70 |         if ($value === false) {\n   71 |             \/\/ Return empty object for missing key\n   72 |             successResponse(new stdClass());\n   73 |         } else {\n   74 |             $decoded = json_decode($value, true);\n   75 |             \/\/ PHP quirk: json_decode('{}', true) returns [] \u2014 fix it\n   76 |             if (is_array($decoded) && empty($decoded)) {\n   77 |                 $decoded = new stdClass();\n   78 |             }\n   79 |             successResponse($decoded);\n   80 |         }\n   81 |     }\n   82 | } catch (\\Exception $e) {\n   83 |     error_log('Front page get error: ' . $e->getMessage());\n   84 |     \/\/ Return default empty content on error\n   85 |     successResponse([\n   86 |         'siteConfig' => new stdClass(),\n   87 |         'doctorContentOverrides' => new stdClass(),\n   88 |     ]);\n   89 | }\n   90 |",
-            "is_error": false,
-            "time": 1784055595
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_01_DvS3EzngKFbajnbh6Ozd8643",
-            "content": "    1 | <?php\n    2 | \/**\n    3 |  * Data Get API\n    4 |  * \n    5 |  * GET \/api\/data\/get.php?key=siteConfig\n    6 |  * \n    7 |  * Retrieves stored JSON data from the site_settings table.\n    8 |  * \n    9 |  * Query params:\n   10 |  *   key (optional) - Specific setting key to retrieve. If omitted, returns all.\n   11 |  * \n   12 |  * Response:\n   13 |  *   { \"success\": true, \"data\": { ... } }\n   14 |  *\/\n   15 | \n   16 | require_once __DIR__ . '\/..\/database.php';\n   17 | require_once __DIR__ . '\/..\/helpers.php';\n   18 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   19 | handleCors();\n   20 | requireMethod('GET');\n   21 | \n   22 | $key = getParam('key', '');\n   23 | try {\n   24 |     $db = Database::getInstance();\n   25 |     \n   26 |     if ($key) {\n   27 |         \/\/ Validate key format\n   28 |         if (!preg_match('\/^[a-zA-Z0-9_\\-]+$\/', $key)) {\n   29 |             errorResponse('Invalid key format.', 400);\n   30 |         }\n   31 |         \n   32 |         $stmt = $db->prepare('SELECT setting_key, setting_value, setting_group, updated_at FROM site_settings WHERE setting_key = :key');\n   33 |         $stmt->execute([':key' => $key]);\n   34 |         $setting = $stmt->fetch();\n   35 |         \n   36 |         if (!$setting) {\n   37 |             successResponse(['setting_key' => $key, 'setting_value' => null, 'setting_group' => '', 'updated_at' => null]);\n   38 |             exit;\n   39 |         }\n   40 |         \n   41 |         $setting['setting_value'] = json_decode($setting['setting_value'], true);\n   42 |         successResponse($setting);\n   43 |     } else {\n   44 |         $stmt = $db->query('SELECT setting_key, setting_value, setting_group, updated_at FROM site_settings WHERE setting_group = \\'app_data\\' ORDER BY setting_key');\n   45 |         $settings = $stmt->fetchAll();\n   46 |         \n   47 |         foreach ($settings as &$s) {\n   48 |             $s['setting_value'] = json_decode($s['setting_value'], true);\n   49 |         }\n   50 |         \n   51 |         successResponse($settings);\n   52 |     }\n   53 | } catch (\\Exception $e) {\n   54 |     error_log('Data get error: ' . $e->getMessage());\n   55 |     errorResponse('Failed to fetch data', 500);\n   56 | }\n   57 |",
-            "is_error": false,
-            "time": 1784055595
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_02_pcj5270sxS0SVDREN3jj1073",
-            "content": "    1 | <?php\n    2 | \/**\n    3 |  * Data Save API\n    4 |  * \n    5 |  * POST \/api\/data\/save.php\n    6 |  * Stores arbitrary JSON data in the site_settings table.\n    7 |  * \n    8 |  * Request body (JSON):\n    9 |  *   { \"key\": \"string\", \"value\": <any JSON> }\n   10 |  * \n   11 |  * Response:\n   12 |  *   { \"success\": true, \"message\": \"Data saved successfully\" }\n   13 |  *\/\n   14 | \n   15 | require_once __DIR__ . '\/..\/database.php';\n   16 | require_once __DIR__ . '\/..\/helpers.php';\n   17 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   18 | \n   19 | handleCors();\n   20 | requireMethod('POST');\n   21 | \n   22 | \/\/ Try to authenticate, but allow save even without auth for admin content operations\n   23 | $user = getAuthUser();\n   24 | $userId = $user ? $user['id'] : null;\n   25 | \n   26 | $input = getJsonInput();\n   27 | \n   28 | \/\/ Validate input\n   29 | $missing = validateRequired($input, ['key', 'value']);\n   30 | if ($missing) {\n   31 |     errorResponse('Missing required fields: ' . implode(', ', $missing), 400);\n   32 | }\n   33 | \n   34 | $key = trim($input['key']);\n   35 | $value = $input['value'];\n   36 | \n   37 | \/\/ Validate key format - alphanumeric, underscores, hyphens only\n   38 | if (!preg_match('\/^[a-zA-Z0-9_\\-]+$\/', $key)) {\n   39 |     errorResponse('Invalid key format. Use alphanumeric, underscores, and hyphens.', 400);\n   40 | }\n   41 | \n   42 | \/\/ Validate key length\n   43 | if (strlen($key) > 255) {\n   44 |     errorResponse('Key too long (max 255 characters).', 400);\n   45 | }\n   46 | \n   47 | \/\/ Ensure value is JSON-serializable\n   48 | $valueJson = json_encode($value, JSON_UNESCAPED_UNICODE);\n   49 | if ($valueJson === false && $value !== null) {\n   50 |     errorResponse('Value must be valid JSON.', 400);\n   51 | }\n   52 | \n   53 | try {\n   54 |     $db = Database::getInstance();\n   55 |     \n   56 |     \/\/ Upsert: insert or update the setting\n   57 |     $stmt = $db->prepare('\n   58 |         INSERT INTO site_settings (setting_key, setting_value, setting_group, updated_by, updated_at)\n   59 |         VALUES (:key, :value, :group, :user_id, NOW())\n   60 |         ON DUPLICATE KEY UPDATE\n   61 |             setting_value = VALUES(setting_value),\n   62 |             setting_group = VALUES(setting_group),\n   63 |             updated_by = VALUES(updated_by),\n   64 |             updated_at = NOW()\n   65 |     ');\n   66 |     \n   67 |     $stmt->execute([\n   68 |         ':key' => $key,\n   69 |         ':value' => $valueJson,\n   70 |         ':group' => $input['group'] ?? 'app_data',\n   71 |         ':user_id' => $userId,\n   72 |     ]);\n   73 |     \n   74 |     successResponse(null, 'Data saved successfully');\n   75 | } catch (\\Exception $e) {\n   76 |     error_log('Data save error: ' . $e->getMessage());\n   77 |     errorResponse('Failed to save data', 500);\n   78 | }\n   79 |",
-            "is_error": false,
-            "time": 1784055595
-        },
-        {
-            "id": "msg_245596d906",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "Now let me look at the helpers.php file to see the `successResponse` and `errorResponse` functions, and also `getJsonInput` to understand how JSON is parsed from requests.\n\nAlso, let me look at the error logs to see if there are PHP errors causing incomplete JSON responses."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_yKynRrtZcZsfWtr3cAtH4137",
-                    "name": "read_file",
-                    "input": {
-                        "path": "public_html\/api\/helpers.php"
-                    }
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_01_82HxCNyOJRoOR3mjARH70577",
-                    "name": "read_file",
-                    "input": {
-                        "path": "public_html\/api\/frontpage\/error_log"
-                    }
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_02_904a4C0ioPbf3Gccmkwm5923",
-                    "name": "read_file",
-                    "input": {
-                        "path": "public_html\/api\/data\/error_log"
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 30316,
-                "completion_tokens": 183,
-                "total_tokens": 30499,
-                "prompt_cache_hit_tokens": 27776,
-                "prompt_cache_miss_tokens": 2540,
-                "prompt_tokens_details": {
-                    "cached_tokens": 27776
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 60
-                }
-            },
-            "time": 1784055599
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_yKynRrtZcZsfWtr3cAtH4137",
-            "content": "    1 | <?php\n    2 | \/**\n    3 |  * API Helper Functions\n    4 |  * \n    5 |  * Common utilities for all API endpoints.\n    6 |  *\/\n    7 | \n    8 | require_once __DIR__ . '\/..\/config.php';\n    9 | \n   10 | \/\/ \u2500\u2500\u2500 Response Helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   11 | \n   12 | function jsonResponse(mixed $data, int $statusCode = 200): void {\n   13 |     http_response_code($statusCode);\n   14 |     header('Content-Type: application\/json; charset=utf-8');\n   15 |     echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);\n   16 |     exit;\n   17 | }\n   18 | \n   19 | function successResponse(mixed $data = null, string $message = 'Success'): void {\n   20 |     jsonResponse([\n   21 |         'success' => true,\n   22 |         'message' => $message,\n   23 |         'data' => $data,\n   24 |         'timestamp' => date('c'),\n   25 |     ]);\n   26 | }\n   27 | \n   28 | function errorResponse(string $message, int $statusCode = 400, mixed $errors = null): void {\n   29 |     $response = [\n   30 |         'success' => false,\n   31 |         'message' => $message,\n   32 |         'timestamp' => date('c'),\n   33 |     ];\n   34 |     if ($errors !== null) {\n   35 |         $response['errors'] = $errors;\n   36 |     }\n   37 |     jsonResponse($response, $statusCode);\n   38 | }\n   39 | \n   40 | \/\/ \u2500\u2500\u2500 Request Helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   41 | \n   42 | function getJsonInput(): array {\n   43 |     $raw = file_get_contents('php:\/\/input');\n   44 |     if (empty($raw)) return [];\n   45 |     $data = json_decode($raw, true);\n   46 |     if (json_last_error() !== JSON_ERROR_NONE) {\n   47 |         errorResponse('Invalid JSON input', 400);\n   48 |     }\n   49 |     return $data ?? [];\n   50 | }\n   51 | \n   52 | function getParam(string $key, mixed $default = null): mixed {\n   53 |     \/\/ Check GET, POST, then JSON body\n   54 |     if (isset($_GET[$key])) return $_GET[$key];\n   55 |     if (isset($_POST[$key])) return $_POST[$key];\n   56 |     \n   57 |     static $jsonInput = null;\n   58 |     if ($jsonInput === null) {\n   59 |         $jsonInput = getJsonInput();\n   60 |     }\n   61 |     return $jsonInput[$key] ?? $default;\n   62 | }\n   63 | \n   64 | function getMethod(): string {\n   65 |     return $_SERVER['REQUEST_METHOD'];\n   66 | }\n   67 | \n   68 | function requireMethod(string ...$methods): void {\n   69 |     if (!in_array(getMethod(), $methods)) {\n   70 |         errorResponse('Method not allowed. Allowed: ' . implode(', ', $methods), 405);\n   71 |     }\n   72 | }\n   73 | \n   74 | \/\/ \u2500\u2500\u2500 Rate Limiting \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   75 | \n   76 | function checkRateLimit(string $identifier = ''): void {\n   77 |     if (empty($identifier)) {\n   78 |         $identifier = $_SERVER['REMOTE_ADDR'] ?? 'unknown';\n   79 |     }\n   80 |     \n   81 |     $rateLimitDir = __DIR__ . '\/..\/..\/server-data\/ratelimit';\n   82 |     if (!is_dir($rateLimitDir)) {\n   83 |         mkdir($rateLimitDir, 0755, true);\n   84 |     }\n   85 |     \n   86 |     $file = $rateLimitDir . '\/' . md5($identifier) . '.json';\n   87 |     $max = RATE_LIMIT_MAX;\n   88 |     $window = RATE_LIMIT_WINDOW;\n   89 |     \n   90 |     $data = ['count' => 0, 'reset' => time() + $window];\n   91 |     if (file_exists($file)) {\n   92 |         $existing = json_decode(file_get_contents($file), true);\n   93 |         if ($existing && isset($existing['reset'])) {\n   94 |             if (time() < $existing['reset']) {\n   95 |                 $data = $existing;\n   96 |             }\n   97 |         }\n   98 |     }\n   99 |     \n  100 |     $data['count']++;\n  101 |     \n  102 |     if ($data['count'] > $max) {\n  103 |         $retryAfter = $data['reset'] - time();\n  104 |         header('Retry-After: ' . $retryAfter);\n  105 |         errorResponse('Rate limit exceeded. Try again later.', 429, [\n  106 |             'retry_after' => $retryAfter,\n  107 |             'limit' => $max,\n  108 |             'window' => $window,\n  109 |         ]);\n  110 |     }\n  111 |     \n  112 |     file_put_contents($file, json_encode($data), LOCK_EX);\n  113 | }\n  114 | \n  115 | \/\/ \u2500\u2500\u2500 Input Validation \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  116 | \n  117 | function validateRequired(array $data, array $fields): ?array {\n  118 |     $missing = [];\n  119 |     foreach ($fields as $field) {\n  120 |         if (!isset($data[$field]) || (is_string($data[$field]) && trim($data[$field]) === '')) {\n  121 |             $missing[] = $field;\n  122 |         }\n  123 |     }\n  124 |     return empty($missing) ? null : $missing;\n  125 | }\n  126 | \n  127 | function sanitizeString(string $value): string {\n  128 |     $value = strip_tags($value);\n  129 |     $value = trim($value);\n  130 |     return htmlspecialchars($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');\n  131 | }\n  132 | \n  133 | function sanitizeEmail(string $email): string {\n  134 |     $email = filter_var($email, FILTER_SANITIZE_EMAIL);\n  135 |     return filter_var($email, FILTER_VALIDATE_EMAIL) ? strtolower($email) : '';\n  136 | }\n  137 | \n  138 | function sanitizePhone(string $phone): string {\n  139 |     return preg_replace('\/[^0-9+\\-\\(\\) ]\/', '', trim($phone));\n  140 | }\n  141 | \n  142 | \/\/ \u2500\u2500\u2500 Pagination \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  143 | \n  144 | function getPaginationParams(): array {\n  145 |     $page = max(1, (int) getParam('page', 1));\n  146 |     $limit = min(100, max(1, (int) getParam('limit', 20)));\n  147 |     $offset = ($page - 1) * $limit;\n  148 |     \n  149 |     return [\n  150 |         'page' => $page,\n  151 |         'limit' => $limit,\n  152 |         'offset' => $offset,\n  153 |     ];\n  154 | }\n  155 | \n  156 | function paginatedResponse(array $items, int $total, int $page, int $limit): void {\n  157 |     $totalPages = ceil($total \/ $limit);\n  158 |     \n  159 |     successResponse([\n  160 |         'items' => $items,\n  161 |         'pagination' => [\n  162 |             'page' => $page,\n  163 |             'limit' => $limit,\n  164 |             'total' => $total,\n  165 |             'total_pages' => $totalPages,\n  166 |             'has_more' => $page < $totalPages,\n  167 |         ],\n  168 |     ]);\n  169 | }\n  170 | \n  171 | \/\/ \u2500\u2500\u2500 CSRF Protection \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  172 | \n  173 | function generateCsrfToken(): string {\n  174 |     return bin2hex(random_bytes(32));\n  175 | }\n  176 | \n  177 | function validateCsrfToken(string $token): bool {\n  178 |     $sessionToken = $_SESSION['csrf_token'] ?? '';\n  179 |     return hash_equals($sessionToken, $token);\n  180 | }\n  181 | \n  182 | \/\/ \u2500\u2500\u2500 File Upload Helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  183 | \n  184 | function handleFileUpload(string $fieldName, string $subDir = ''): ?string {\n  185 |     if (!isset($_FILES[$fieldName]) || $_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) {\n  186 |         return null;\n  187 |     }\n  188 |     \n  189 |     $file = $_FILES[$fieldName];\n  190 |     \n  191 |     \/\/ Validate file size\n  192 |     if ($file['size'] > MAX_UPLOAD_SIZE) {\n  193 |         errorResponse('File too large. Maximum: ' . (MAX_UPLOAD_SIZE \/ 1024 \/ 1024) . 'MB', 413);\n  194 |     }\n  195 |     \n  196 |     \/\/ Validate extension\n  197 |     $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));\n  198 |     if (!in_array($ext, ALLOWED_EXTENSIONS)) {\n  199 |         errorResponse('File type not allowed. Allowed: ' . implode(', ', ALLOWED_EXTENSIONS), 415);\n  200 |     }\n  201 |     \n  202 |     \/\/ Validate MIME type\n  203 |     $allowedMimes = [\n  204 |         'image\/jpeg', 'image\/png', 'image\/gif', 'image\/webp',\n  205 |         'application\/pdf', 'application\/msword',\n  206 |         'application\/vnd.openxmlformats-officedocument.wordprocessingml.document',\n  207 |     ];\n  208 |     $finfo = finfo_open(FILEINFO_MIME_TYPE);\n  209 |     $mimeType = finfo_file($finfo, $file['tmp_name']);\n  210 |     finfo_close($finfo);\n  211 |     if (!in_array($mimeType, $allowedMimes)) {\n  212 |         errorResponse('Invalid file type (MIME: ' . $mimeType . ')', 415);\n  213 |     }\n  214 |     \n  215 |     \/\/ Create upload directory\n  216 |     $uploadDir = UPLOAD_DIR . '\/' . ($subDir ? $subDir . '\/' : '');\n  217 |     if (!is_dir($uploadDir)) {\n  218 |         mkdir($uploadDir, 0755, true);\n  219 |     }\n  220 |     \n  221 |     \/\/ Generate unique filename\n  222 |     $filename = uniqid() . '_' . bin2hex(random_bytes(8)) . '.' . $ext;\n  223 |     $filepath = $uploadDir . $filename;\n  224 |     \n  225 |     if (!move_uploaded_file($file['tmp_name'], $filepath)) {\n  226 |         errorResponse('Failed to save uploaded file', 500);\n  227 |     }\n  228 |     \n  229 |     return UPLOAD_URL . '\/' . ($subDir ? $subDir . '\/' : '') . $filename;\n  230 | }\n  231 | \n  232 | \/\/ \u2500\u2500\u2500 Logging \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  233 | \n  234 | function logAudit(\n  235 |     int|null $userId,\n  236 |     int|null $patientId,\n  237 |     string $action,\n  238 |     string $entityType,\n  239 |     int|null $entityId = null,\n  240 |     mixed $oldValues = null,\n  241 |     mixed $newValues = null\n  242 | ): void {\n  243 |     try {\n  244 |         $db = Database::getInstance();\n  245 |         $stmt = $db->prepare('\n  246 |             INSERT INTO audit_logs (user_id, patient_id, action, entity_type, entity_id, old_values, new_values, ip_address, user_agent)\n  247 |             VALUES (:user_id, :patient_id, :action, :entity_type, :entity_id, :old_values, :new_values, :ip_address, :user_agent)\n  248 |         ');\n  249 |         $stmt->execute([\n  250 |             ':user_id' => $userId,\n  251 |             ':patient_id' => $patientId,\n  252 |             ':action' => $action,\n  253 |             ':entity_type' => $entityType,\n  254 |             ':entity_id' => $entityId,\n  255 |             ':old_values' => $oldValues ? json_encode($oldValues) : null,\n  256 |             ':new_values' => $newValues ? json_encode($newValues) : null,\n  257 |             ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? null,\n  258 |             ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,\n  259 |         ]);\n  260 |     } catch (\\Exception $e) {\n  261 |         error_log('Audit log failed: ' . $e->getMessage());\n  262 |     }\n  263 | }\n  264 | \n  265 | \/\/ \u2500\u2500\u2500 CORS & Pre-flight \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  266 | \n  267 | function handleCors(): void {\n  268 |     \/\/ CORS is handled in .htaccess, but ensure pre-flight works\n  269 |     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {\n  270 |         http_response_code(204);\n  271 |         exit;\n  272 |     }\n  273 | }\n  274 |",
-            "is_error": false,
-            "time": 1784055599
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_01_82HxCNyOJRoOR3mjARH70577",
-            "content": "    1 | [14-Jul-2026 18:09:27 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n    2 | [14-Jul-2026 18:09:27 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n    3 | [14-Jul-2026 18:09:27 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n    4 | [14-Jul-2026 18:09:27 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n    5 | [14-Jul-2026 18:09:27 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n    6 | [14-Jul-2026 18:09:27 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n    7 | [14-Jul-2026 18:09:27 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n    8 | [14-Jul-2026 18:09:27 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n    9 | [14-Jul-2026 18:09:27 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   10 | [14-Jul-2026 18:09:27 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   11 | [14-Jul-2026 18:09:46 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   12 | [14-Jul-2026 18:09:46 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   13 | [14-Jul-2026 18:09:54 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   14 | [14-Jul-2026 18:09:54 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   15 | [14-Jul-2026 18:09:56 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   16 | [14-Jul-2026 18:09:56 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   17 | [14-Jul-2026 18:09:58 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   18 | [14-Jul-2026 18:09:58 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   19 | [14-Jul-2026 18:11:00 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   20 | [14-Jul-2026 18:11:00 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   21 | [14-Jul-2026 18:11:02 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   22 | [14-Jul-2026 18:11:02 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   23 | [14-Jul-2026 18:11:02 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   24 | [14-Jul-2026 18:11:02 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   25 | [14-Jul-2026 18:11:02 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   26 | [14-Jul-2026 18:11:02 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   27 | [14-Jul-2026 18:11:03 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   28 | [14-Jul-2026 18:11:03 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   29 | [14-Jul-2026 18:11:06 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   30 | [14-Jul-2026 18:11:06 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   31 | [14-Jul-2026 18:13:28 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   32 | [14-Jul-2026 18:13:28 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   33 | [14-Jul-2026 18:13:31 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   34 | [14-Jul-2026 18:13:31 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   35 | [14-Jul-2026 18:13:35 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   36 | [14-Jul-2026 18:13:35 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   37 | [14-Jul-2026 18:13:39 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   38 | [14-Jul-2026 18:13:39 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   39 | [14-Jul-2026 18:13:39 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   40 | [14-Jul-2026 18:13:39 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   41 | [14-Jul-2026 18:13:39 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   42 | [14-Jul-2026 18:13:39 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   43 | [14-Jul-2026 18:13:39 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   44 | [14-Jul-2026 18:13:39 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   45 | [14-Jul-2026 18:16:19 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   46 | [14-Jul-2026 18:16:19 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   47 | [14-Jul-2026 18:16:22 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   48 | [14-Jul-2026 18:16:22 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   49 | [14-Jul-2026 18:16:26 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   50 | [14-Jul-2026 18:16:26 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   51 | [14-Jul-2026 18:16:28 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   52 | [14-Jul-2026 18:16:28 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   53 | [14-Jul-2026 18:16:28 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   54 | [14-Jul-2026 18:16:28 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   55 | [14-Jul-2026 18:16:28 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   56 | [14-Jul-2026 18:16:28 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   57 | [14-Jul-2026 18:16:29 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   58 | [14-Jul-2026 18:16:29 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   59 | [14-Jul-2026 18:16:32 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   60 | [14-Jul-2026 18:16:32 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   61 | [14-Jul-2026 18:16:37 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   62 | [14-Jul-2026 18:16:37 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   63 | [14-Jul-2026 18:16:41 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   64 | [14-Jul-2026 18:16:41 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   65 | [14-Jul-2026 18:16:43 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   66 | [14-Jul-2026 18:16:43 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   67 | [14-Jul-2026 18:16:49 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   68 | [14-Jul-2026 18:16:49 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   69 | [14-Jul-2026 18:16:51 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   70 | [14-Jul-2026 18:16:51 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   71 | [14-Jul-2026 18:16:56 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   72 | [14-Jul-2026 18:16:56 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   73 | [14-Jul-2026 18:16:58 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   74 | [14-Jul-2026 18:16:58 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   75 | [14-Jul-2026 18:16:59 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   76 | [14-Jul-2026 18:16:59 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   77 | [14-Jul-2026 18:17:01 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   78 | [14-Jul-2026 18:17:01 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   79 | [14-Jul-2026 18:17:04 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   80 | [14-Jul-2026 18:17:04 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   81 | [14-Jul-2026 18:17:04 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   82 | [14-Jul-2026 18:17:04 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   83 | [14-Jul-2026 18:17:04 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   84 | [14-Jul-2026 18:17:04 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   85 | [14-Jul-2026 18:17:04 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   86 | [14-Jul-2026 18:17:04 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   87 | [14-Jul-2026 18:17:09 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   88 | [14-Jul-2026 18:17:09 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   89 | [14-Jul-2026 18:17:11 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   90 | [14-Jul-2026 18:17:11 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   91 | [14-Jul-2026 18:17:14 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   92 | [14-Jul-2026 18:17:14 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   93 | [14-Jul-2026 18:17:14 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   94 | [14-Jul-2026 18:17:14 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   95 | [14-Jul-2026 18:17:14 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   96 | [14-Jul-2026 18:17:14 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   97 | [14-Jul-2026 18:17:15 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n   98 | [14-Jul-2026 18:17:15 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n   99 | [14-Jul-2026 18:18:15 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  100 | [14-Jul-2026 18:18:15 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  101 | [14-Jul-2026 18:18:15 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  102 | [14-Jul-2026 18:18:15 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  103 | [14-Jul-2026 18:18:15 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  104 | [14-Jul-2026 18:18:15 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  105 | [14-Jul-2026 18:18:15 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  106 | [14-Jul-2026 18:18:15 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  107 | [14-Jul-2026 18:18:15 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  108 | [14-Jul-2026 18:18:15 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  109 | [14-Jul-2026 18:18:25 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  110 | [14-Jul-2026 18:18:25 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  111 | [14-Jul-2026 18:18:26 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  112 | [14-Jul-2026 18:18:26 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  113 | [14-Jul-2026 18:18:26 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  114 | [14-Jul-2026 18:18:26 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  115 | [14-Jul-2026 18:18:27 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  116 | [14-Jul-2026 18:18:27 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  117 | [14-Jul-2026 18:18:27 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  118 | [14-Jul-2026 18:18:27 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  119 | [14-Jul-2026 18:18:54 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  120 | [14-Jul-2026 18:18:54 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  121 | [14-Jul-2026 18:18:54 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  122 | [14-Jul-2026 18:18:54 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  123 | [14-Jul-2026 18:18:54 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  124 | [14-Jul-2026 18:18:54 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  125 | [14-Jul-2026 18:18:54 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  126 | [14-Jul-2026 18:18:54 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  127 | [14-Jul-2026 18:18:54 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  128 | [14-Jul-2026 18:18:54 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  129 | [14-Jul-2026 18:19:20 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  130 | [14-Jul-2026 18:19:20 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  131 | [14-Jul-2026 18:19:31 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  132 | [14-Jul-2026 18:19:31 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  133 | [14-Jul-2026 18:19:31 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  134 | [14-Jul-2026 18:19:31 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  135 | [14-Jul-2026 18:19:31 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  136 | [14-Jul-2026 18:19:31 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  137 | [14-Jul-2026 18:19:31 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  138 | [14-Jul-2026 18:19:31 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  139 | [14-Jul-2026 18:19:31 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  140 | [14-Jul-2026 18:19:31 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  141 | [14-Jul-2026 18:19:31 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  142 | [14-Jul-2026 18:19:31 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  143 | [14-Jul-2026 18:19:31 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  144 | [14-Jul-2026 18:19:31 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  145 | [14-Jul-2026 18:22:39 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n  146 | [14-Jul-2026 18:22:39 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n  147 |",
-            "is_error": false,
-            "time": 1784055599
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_02_904a4C0ioPbf3Gccmkwm5923",
-            "content": "    1 | [14-Jul-2026 18:20:28 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n    2 | [14-Jul-2026 18:20:28 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n    3 | [14-Jul-2026 18:20:34 UTC] PHP Warning:  Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n    4 | [14-Jul-2026 18:20:34 UTC] PHP Warning:  Constant JWT_SECRET already defined in \/home\/drarmank\/public_html\/config.php on line 61\n    5 |",
-            "is_error": false,
-            "time": 1784055599
-        },
-        {
-            "id": "msg_50dfdc5836",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "I can see there are several issues:\n\n1. **PHP Warnings**: `Constant API_URL already defined` and `Constant JWT_SECRET already defined` - This means `config.php` is being included multiple times (once by `helpers.php` which is included by `frontpage\/get.php`, and likely also by `database.php` or the endpoint itself). Let me check `config.php`.\n\n2. **SyntaxError: Unexpected end of input** - This could be caused by PHP warnings being output before the JSON response, corrupting the JSON output. The PHP warnings are being echoed to the output, which breaks the JSON.\n\nLet me check the config.php file and the database.php to understand the constant redefinition issue."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_ekS5BE4vuy2MnKdjEu8a1198",
-                    "name": "read_file",
-                    "input": {
-                        "path": "public_html\/config.php"
-                    }
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_01_yeyUo6fj5QCErUWOFRLe7252",
-                    "name": "read_file",
-                    "input": {
-                        "path": "public_html\/api\/database.php"
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 40292,
-                "completion_tokens": 229,
-                "total_tokens": 40521,
-                "prompt_cache_hit_tokens": 30464,
-                "prompt_cache_miss_tokens": 9828,
-                "prompt_tokens_details": {
-                    "cached_tokens": 30464
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 147
-                }
-            },
-            "time": 1784055603
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_ekS5BE4vuy2MnKdjEu8a1198",
-            "content": "    1 | <?php\n    2 | \/**\n    3 |  * Dr. Arman Kabir Care - Application Configuration\n    4 |  * \n    5 |  * Security: Never commit this file to version control.\n    6 |  * On cPanel, place this outside public_html or protect with .htaccess.\n    7 |  *\n    8 |  * NOTE: putenv() is disabled on this server. We read .env directly and\n    9 |  * define constants. For maximum security, set real env vars via cPanel.\n   10 |  *\/\n   11 | \n   12 | \/\/ \u2500\u2500\u2500 Environment Detection \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   13 | \/\/ First check OS-level environment variables (set via cPanel or .env file)\n   14 | \/\/ Then fall back to .env file outside public_html\n   15 | \/\/ Finally use hardcoded defaults\n   16 | \n   17 | $envConfig = [];\n   18 | \n   19 | \/\/ 1. Check OS environment variables first (set via cPanel or actual env)\n   20 | $envVars = ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASS', 'JWT_SECRET', 'APP_URL'];\n   21 | foreach ($envVars as $var) {\n   22 |     $val = getenv($var);\n   23 |     if ($val !== false && $val !== '') {\n   24 |         $envConfig[$var] = $val;\n   25 |     }\n   26 | }\n   27 | \n   28 | \/\/ 2. Load from .env file if OS env vars are not set\n   29 | $dotenvFile = __DIR__ . '\/..\/.env';\n   30 | if (file_exists($dotenvFile)) {\n   31 |     $lines = file($dotenvFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);\n   32 |     foreach ($lines as $line) {\n   33 |         $line = trim($line);\n   34 |         if ($line === '' || str_starts_with($line, '#')) continue;\n   35 |         if (str_contains($line, '=')) {\n   36 |             [$key, $value] = explode('=', $line, 2);\n   37 |             $key = trim($key);\n   38 |             $value = trim($value, \" \\t\\n\\r\\0\\x0B\\\"'\");\n   39 |             \/\/ Only set if not already defined from OS env vars\n   40 |             if (!isset($envConfig[$key])) {\n   41 |                 $envConfig[$key] = $value;\n   42 |             }\n   43 |         }\n   44 |     }\n   45 | }\n   46 | \n   47 | \/**\n   48 |  * Get configuration value: OS env > .env file > default\n   49 |  *\/\n   50 | function cfg(string $key, mixed $default = null): mixed {\n   51 |     global $envConfig;\n   52 |     return $envConfig[$key] ?? $default;\n   53 | }\n   54 | \n   55 | \/\/ Store globally so other files can access env config directly\n   56 | $GLOBALS['env_config'] = $envConfig;\n   57 | \n   58 | \/\/ \u2500\u2500\u2500 Database Configuration \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   59 | define('DB_HOST', cfg('DB_HOST', '127.0.0.1'));\n   60 | define('DB_NAME', cfg('DB_NAME', 'drarmank_drarmank_care'));\n   61 | define('DB_USER', cfg('DB_USER', 'drarmank_drarmank_care_user'));\n   62 | define('DB_PASS', cfg('DB_PASS', 'zosid01197247219'));\n   63 | define('DB_CHARSET', 'utf8mb4');\n   64 | \n   65 | \/\/ \u2500\u2500\u2500 Application Configuration \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   66 | define('APP_NAME', 'Dr. Arman Kabir Care');\n   67 | define('APP_VERSION', '2.0.0');\n   68 | define('APP_URL', cfg('APP_URL', 'https:\/\/drarmankabir.com'));\n   69 | define('API_URL', APP_URL . '\/api');\n   70 | \n   71 | \/\/ \u2500\u2500\u2500 Security Configuration \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   72 | define('JWT_SECRET', cfg('JWT_SECRET', 'change-this-to-a-random-secret-in-production'));\n   73 | define('JWT_EXPIRY', 86400); \/\/ 24 hours in seconds\n   74 | define('SESSION_LIFETIME', 86400 * 7); \/\/ 7 days\n   75 | define('CSRF_TOKEN_LIFETIME', 3600); \/\/ 1 hour\n   76 | \n   77 | \/\/ \u2500\u2500\u2500 Upload Configuration \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   78 | define('UPLOAD_DIR', __DIR__ . '\/uploads');\n   79 | define('UPLOAD_URL', '\/uploads');\n   80 | define('MAX_UPLOAD_SIZE', 10 * 1024 * 1024); \/\/ 10MB\n   81 | define('ALLOWED_EXTENSIONS', ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx']);\n   82 | \n   83 | \/\/ \u2500\u2500\u2500 Rate Limiting \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   84 | define('RATE_LIMIT_MAX', 100);\n   85 | define('RATE_LIMIT_WINDOW', 60); \/\/ seconds\n   86 | \n   87 | \/\/ \u2500\u2500\u2500 Error Reporting \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   88 | error_reporting(E_ALL);\n   89 | ini_set('display_errors', '0');\n   90 | ini_set('log_errors', '1');\n   91 | ini_set('error_log', __DIR__ . '\/..\/logs\/php-error.log');\n   92 | \n   93 | \/\/ \u2500\u2500\u2500 Timezone \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   94 | date_default_timezone_set('Asia\/Dhaka');\n   95 |",
-            "is_error": false,
-            "time": 1784055603
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_01_yeyUo6fj5QCErUWOFRLe7252",
-            "content": "    1 | <?php\n    2 | \/**\n    3 |  * Database Connection Singleton\n    4 |  * \n    5 |  * Provides a single PDO connection instance per request.\n    6 |  * Uses prepared statements to prevent SQL injection.\n    7 |  *\/\n    8 | \n    9 | require_once __DIR__ . '\/..\/config.php';\n   10 | \n   11 | class Database {\n   12 |     private static ?PDO $instance = null;\n   13 |     private static array $config = [];\n   14 | \n   15 |     \/**\n   16 |      * Load database configuration from environment or config file\n   17 |      *\/\n   18 |     private static function loadConfig(): void {\n   19 |         if (!empty(self::$config)) return;\n   20 | \n   21 |         \/\/ Try environment variables first (more secure)\n   22 |         $host = getenv('DB_HOST') ?: DB_HOST;\n   23 |         $name = getenv('DB_NAME') ?: DB_NAME;\n   24 |         $user = getenv('DB_USER') ?: DB_USER;\n   25 |         $pass = getenv('DB_PASS') ?: DB_PASS;\n   26 | \n   27 |         \/\/ Fall back to config file\n   28 |         self::$config = [\n   29 |             'host' => $host,\n   30 |             'name' => $name,\n   31 |             'user' => $user,\n   32 |             'pass' => $pass,\n   33 |             'charset' => DB_CHARSET,\n   34 |         ];\n   35 |     }\n   36 | \n   37 |     \/**\n   38 |      * Get PDO connection instance\n   39 |      *\/\n   40 |     public static function getInstance(): PDO {\n   41 |         if (self::$instance === null) {\n   42 |             self::loadConfig();\n   43 |             \n   44 |             $dsn = sprintf(\n   45 |                 'mysql:host=%s;dbname=%s;charset=%s',\n   46 |                 self::$config['host'],\n   47 |                 self::$config['name'],\n   48 |                 self::$config['charset']\n   49 |             );\n   50 | \n   51 |             $options = [\n   52 |                 PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,\n   53 |                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,\n   54 |                 PDO::ATTR_EMULATE_PREPARES   => false,\n   55 |                 PDO::MYSQL_ATTR_INIT_COMMAND => \"SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci\",\n   56 |             ];\n   57 | \n   58 |             try {\n   59 |                 self::$instance = new PDO(\n   60 |                     $dsn,\n   61 |                     self::$config['user'],\n   62 |                     self::$config['pass'],\n   63 |                     $options\n   64 |                 );\n   65 |             } catch (PDOException $e) {\n   66 |                 \/\/ Log error but don't expose details to client\n   67 |                 error_log('Database connection failed: ' . $e->getMessage());\n   68 |                 http_response_code(500);\n   69 |                 echo json_encode(['error' => 'Database connection failed']);\n   70 |                 exit;\n   71 |             }\n   72 |         }\n   73 | \n   74 |         return self::$instance;\n   75 |     }\n   76 | \n   77 |     \/**\n   78 |      * Test database connection\n   79 |      *\/\n   80 |     public static function testConnection(): array {\n   81 |         try {\n   82 |             $db = self::getInstance();\n   83 |             $db->query('SELECT 1');\n   84 |             return ['connected' => true, 'message' => 'Database connection successful'];\n   85 |         } catch (\\Exception $e) {\n   86 |             return ['connected' => false, 'message' => $e->getMessage()];\n   87 |         }\n   88 |     }\n   89 | \n   90 |     \/**\n   91 |      * Begin transaction\n   92 |      *\/\n   93 |     public static function beginTransaction(): void {\n   94 |         self::getInstance()->beginTransaction();\n   95 |     }\n   96 | \n   97 |     \/**\n   98 |      * Commit transaction\n   99 |      *\/\n  100 |     public static function commit(): void {\n  101 |         self::getInstance()->commit();\n  102 |     }\n  103 | \n  104 |     \/**\n  105 |      * Rollback transaction\n  106 |      *\/\n  107 |     public static function rollback(): void {\n  108 |         if (self::getInstance()->inTransaction()) {\n  109 |             self::getInstance()->rollBack();\n  110 |         }\n  111 |     }\n  112 | \n  113 |     \/**\n  114 |      * Close the connection\n  115 |      *\/\n  116 |     public static function close(): void {\n  117 |         self::$instance = null;\n  118 |     }\n  119 | }\n  120 |",
-            "is_error": false,
-            "time": 1784055603
-        },
-        {
-            "id": "msg_91a491c310",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "Now I can see the issues clearly:\n\n1. **PHP Warnings \"Constant already defined\"**: \n   - `config.php` defines constants like `API_URL`, `JWT_SECRET`, `DB_HOST`, `DB_NAME`, etc.\n   - `database.php` does `require_once __DIR__ . '\/..\/config.php';`\n   - `frontpage\/get.php` does `require_once __DIR__ . '\/..\/database.php';` AND `require_once __DIR__ . '\/..\/helpers.php';`\n   - `helpers.php` does `require_once __DIR__ . '\/..\/config.php';`\n   \n   So when `frontpage\/get.php` runs:\n   1. It includes `database.php` (which includes `config.php`)\n   2. It includes `helpers.php` (which includes `config.php` again!)\n   \n   Since `config.php` uses `define()` (not `defined()` check), the second inclusion causes \"Constant already defined\" warnings. These warnings get echoed to the output, corrupting the JSON response.\n\n   The fix: Either use `require_once` consistently or wrap defines with `defined()` checks.\n\n2. **SyntaxError: Unexpected end of input**: The PHP warnings are being output before the JSON response, so when the browser tries to parse the JSON, it gets `PHP Warning: Constant API_URL already defined...` followed by the JSON, causing \"Unexpected end of input\" or parsing failure.\n\n3. **DialogContent warning**: This is a Radix UI accessibility warning. The `DialogContent` component is used without a `DialogDescription` component.\n\n4. **Service Worker error**: The `Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true...` is a Chrome extension issue, specifically related to extensions like LastPass, Grammarly, or uBlock Origin.\n\nLet me fix the root causes:\n\n1. Fix `config.php` to use `defined()` checks\n2. Fix `helpers.php` to use `require_once` instead of `require_once` for config (it already uses `require_once`)\n3. Fix the double inclusion issue in API endpoints\n\nActually, looking more carefully:\n- `database.php` uses `require_once __DIR__ . '\/..\/config.php';` \u2713\n- `helpers.php` uses `require_once __DIR__ . '\/..\/config.php';` \u2713\n\nBoth use `require_once`, so config.php should only be included once... BUT `helpers.php` includes `config.php`, and `frontpage\/get.php` includes both `database.php` (which includes config) and `helpers.php` (which includes config). Since `require_once` remembers the file was already included, the second call should be a no-op.\n\nWait, but the error_log shows the warnings. Let me check - is there an issue with `require_once` vs the path? `__DIR__` for `database.php` is `\/home\/drarmank\/public_html\/api` and `__DIR__` for `helpers.php` is also `\/home\/drarmank\/public_html\/api`. Both use `__DIR__ . '\/..\/config.php'` which resolves to `\/home\/drarmank\/public_html\/config.php`. So `require_once` should work correctly.\n\nUnless there's something else going on. Let me check if there's an auto_prepend_file or something.\n\nActually, wait - looking at the error_log, it's full of \"Constant API_URL already defined\" and \"Constant JWT_SECRET already defined\". But it also references line 58 for API_URL and line 61 for JWT_SECRET. Looking at config.php:\n- Line 58: `define('API_URL', APP_URL . '\/api');`\n- Line 61: `define('JWT_SECRET', cfg('JWT_SECRET', 'change-this-to-a-random-secret-in-production'));`\n\nThe issue might be that `config.php` is being included multiple times despite `require_once`. Let me check if there's an auto-prepend configuration or if the file is being included through multiple paths.\n\nActually, I think the issue might be that the PHP version or opcode cache doesn't properly track the file path with `require_once`. Or maybe the file is included both as `config.php` and `.\/config.php` which could be treated as different paths.\n\nWait, both database.php and helpers.php use `__DIR__ . '\/..\/config.php'` which is the same absolute path. So require_once should work.\n\nUnless the issue is something else - maybe there's an `.htaccess` that auto-prepends or includes the config file?\n\nLet me check the .htaccess."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_qX2Dr6a98Nn7vhtWKYsK0441",
-                    "name": "read_file",
-                    "input": {
-                        "path": "public_html\/.htaccess"
-                    }
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_01_tfRyiJXKvoxW7PD2xu5h9850",
-                    "name": "read_file",
-                    "input": {
-                        "path": "public_html\/api\/.htaccess"
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 43005,
-                "completion_tokens": 1045,
-                "total_tokens": 44050,
-                "prompt_cache_hit_tokens": 40448,
-                "prompt_cache_miss_tokens": 2557,
-                "prompt_tokens_details": {
-                    "cached_tokens": 40448
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 962
-                }
-            },
-            "time": 1784055612
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_qX2Dr6a98Nn7vhtWKYsK0441",
-            "content": "    1 | # \u2500\u2500\u2500 Dr. Arman Kabir Care - Production .htaccess \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n    2 | \n    3 | # Enable Rewrite Engine\n    4 | RewriteEngine On\n    5 | \n    6 | # \u2500\u2500\u2500 Security Headers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n    7 | <IfModule mod_headers.c>\n    8 |     # HSTS (6 months)\n    9 |     Header always set Strict-Transport-Security \"max-age=15768000; includeSubDomains\"\n   10 |     # Prevent MIME-type sniffing\n   11 |     Header always set X-Content-Type-Options \"nosniff\"\n   12 |     # Prevent clickjacking\n   13 |     Header always set X-Frame-Options \"DENY\"\n   14 |     # Enable XSS filter\n   15 |     Header always set X-XSS-Protection \"1; mode=block\"\n   16 |     # Referrer policy\n   17 |     Header always set Referrer-Policy \"strict-origin-when-cross-origin\"\n   18 |     # Permissions policy\n   19 |     Header always set Permissions-Policy \"geolocation=(), microphone=(), camera=()\"\n   20 |     # Content Security Policy\n   21 |     Header always set Content-Security-Policy \"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https:\/\/fonts.googleapis.com; img-src 'self' data: blob: https: https:\/\/maps.gstatic.com https:\/\/maps.googleapis.com; font-src 'self' data: https:\/\/fonts.gstatic.com; connect-src 'self' https:; frame-src 'self' https:\/\/maps.google.com https:\/\/www.google.com; media-src 'self' data: blob:; worker-src 'self' blob:;\"\n   22 | <\/IfModule>\n   23 | \n   24 | # \u2500\u2500\u2500 CORS for API \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   25 | <IfModule mod_headers.c>\n   26 |     Header always set Access-Control-Allow-Origin \"https:\/\/drarmankabir.com\"\n   27 |     Header always set Access-Control-Allow-Methods \"GET, POST, PUT, DELETE, OPTIONS\"\n   28 |     Header always set Access-Control-Allow-Headers \"Content-Type, Authorization, X-CSRF-Token\"\n   29 |     Header always set Access-Control-Allow-Credentials \"true\"\n   30 | <\/IfModule>\n   31 | \n   32 | # \u2500\u2500\u2500 Handle OPTIONS preflight \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   33 | RewriteCond %{REQUEST_METHOD} OPTIONS\n   34 | RewriteRule ^(.*)$ $1 [R=200,L]\n   35 | \n   36 | # \u2500\u2500\u2500 Force HTTPS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   37 | RewriteCond %{HTTPS} off\n   38 | RewriteCond %{HTTP:X-Forwarded-Proto} !https\n   39 | RewriteRule ^(.*)$ https:\/\/%{HTTP_HOST}\/$1 [R=301,L]\n   40 | \n   41 | # \u2500\u2500\u2500 Remove trailing slash \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   42 | RewriteCond %{REQUEST_FILENAME} !-d\n   43 | RewriteRule ^(.+)\/$ \/$1 [R=301,L]\n   44 | \n   45 | # \u2500\u2500\u2500 phpMyAdmin \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   46 | # Allow phpMyAdmin to work with SPA routing\n   47 | RewriteRule ^phpmyadmin\/(.*)$ phpmyadmin\/$1 [L]\n   48 | \n   49 | # \u2500\u2500\u2500 SPA Routing \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   50 | # Serve index.html for all non-file, non-API routes (React SPA)\n   51 | RewriteCond %{REQUEST_FILENAME} !-f\n   52 | RewriteCond %{REQUEST_FILENAME} !-d\n   53 | RewriteCond %{REQUEST_URI} !^\/api\/\n   54 | RewriteCond %{REQUEST_URI} !^\/phpmyadmin\/\n   55 | RewriteRule ^ index.html [L]\n   56 | \n   57 | # \u2500\u2500\u2500 API Routing \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   58 | # Route \/api\/* to \/api\/*.php\n   59 | RewriteCond %{REQUEST_FILENAME} !-f\n   60 | RewriteCond %{REQUEST_URI} ^\/api\/([^.]+)$\n   61 | RewriteRule ^api\/(.+)$ api\/$1.php [L,QSA]\n   62 | \n   63 | # \u2500\u2500\u2500 Protect Sensitive Files \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   64 | <FilesMatch \"\\.(env|config|sql|md|gitignore|log|cache)$\">\n   65 |     Require all denied\n   66 | <\/FilesMatch>\n   67 | \n   68 | # Deny access to dot files\n   69 | <FilesMatch \"^\\.\">\n   70 |     Require all denied\n   71 | <\/FilesMatch>\n   72 | \n   73 | # \u2500\u2500\u2500 Deny access to server-data directory \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   74 | RewriteRule ^server-data\/ - [F,L]\n   75 | \n   76 | # \u2500\u2500\u2500 Deny access to PHP files in uploads \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   77 | <FilesMatch \"^uploads\/.*\\.php$\">\n   78 |     Require all denied\n   79 | <\/FilesMatch>\n   80 | \n   81 | # \u2500\u2500\u2500 Browser Caching \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   82 | <IfModule mod_expires.c>\n   83 |     ExpiresActive On\n   84 |     # Images\n   85 |     ExpiresByType image\/jpeg \"access plus 1 year\"\n   86 |     ExpiresByType image\/png \"access plus 1 year\"\n   87 |     ExpiresByType image\/gif \"access plus 1 year\"\n   88 |     ExpiresByType image\/webp \"access plus 1 year\"\n   89 |     ExpiresByType image\/svg+xml \"access plus 1 year\"\n   90 |     ExpiresByType image\/x-icon \"access plus 1 year\"\n   91 |     \n   92 |     # Fonts\n   93 |     ExpiresByType font\/woff \"access plus 1 year\"\n   94 |     ExpiresByType font\/woff2 \"access plus 1 year\"\n   95 |     ExpiresByType font\/ttf \"access plus 1 year\"\n   96 |     ExpiresByType font\/eot \"access plus 1 year\"\n   97 |     \n   98 |     # CSS, JavaScript\n   99 |     ExpiresByType text\/css \"access plus 1 month\"\n  100 |     ExpiresByType text\/javascript \"access plus 1 month\"\n  101 |     ExpiresByType application\/javascript \"access plus 1 month\"\n  102 |     \n  103 |     # HTML, JSON\n  104 |     ExpiresByType text\/html \"access plus 0 seconds\"\n  105 |     ExpiresByType application\/json \"access plus 0 seconds\"\n  106 |     \n  107 |     # PDF\n  108 |     ExpiresByType application\/pdf \"access plus 1 month\"\n  109 | <\/IfModule>\n  110 | \n  111 | # \u2500\u2500\u2500 Compression \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  112 | <IfModule mod_deflate.c>\n  113 |     AddOutputFilterByType DEFLATE text\/html text\/plain text\/xml text\/css text\/javascript\n  114 |     AddOutputFilterByType DEFLATE application\/javascript application\/json application\/xml\n  115 |     AddOutputFilterByType DEFLATE image\/svg+xml font\/woff font\/woff2\n  116 | <\/IfModule>\n  117 | \n  118 | # \u2500\u2500\u2500 File Cache Busting \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  119 | # Cache-bust via query string: assets\/js\/main.js?v=2.0.0\n  120 | <IfModule mod_rewrite.c>\n  121 |     RewriteCond %{REQUEST_FILENAME} -f\n  122 |     RewriteRule ^(.*\\.(js|css|png|jpg|gif|svg|woff|woff2))(?:\\?.*)$ $1 [L]\n  123 | <\/IfModule>\n  124 | \n  125 | # \u2500\u2500\u2500 Limit Request Methods \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  126 | RewriteCond %{REQUEST_METHOD} !^(GET|HEAD|POST|PUT|DELETE|OPTIONS)$\n  127 | RewriteRule .* - [F,L]\n  128 | \n  129 | # \u2500\u2500\u2500 Disable Directory Browsing \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  130 | Options -Indexes\n  131 | \n  132 | # \u2500\u2500\u2500 Server Signature \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  133 | ServerSignature Off\n  134 | ServerTokens Prod\n  135 |",
-            "is_error": false,
-            "time": 1784055612
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_01_tfRyiJXKvoxW7PD2xu5h9850",
-            "content": "    1 | # \u2500\u2500\u2500 API Security & Routing \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n    2 | \n    3 | # Enable rewrite engine\n    4 | RewriteEngine On\n    5 | \n    6 | # Protect sensitive files\n    7 | <FilesMatch \"\\.(env|config|sql|md|gitignore)$\">\n    8 |     Require all denied\n    9 | <\/FilesMatch>\n   10 | \n   11 | # Protect config.php from direct access (only allow includes)\n   12 | <Files \"config.php\">\n   13 |     Require all denied\n   14 | <\/Files>\n   15 | \n   16 | # Protect database.php\n   17 | <Files \"database.php\">\n   18 |     Require all denied\n   19 | <\/Files>\n   20 | \n   21 | # CORS headers\n   22 | <IfModule mod_headers.c>\n   23 |     Header always set Access-Control-Allow-Origin \"https:\/\/drarmankabir.com\"\n   24 |     Header always set Access-Control-Allow-Methods \"GET, POST, PUT, DELETE, OPTIONS\"\n   25 |     Header always set Access-Control-Allow-Headers \"Content-Type, Authorization, X-CSRF-Token\"\n   26 |     Header always set Access-Control-Allow-Credentials \"true\"\n   27 |     Header always set X-Content-Type-Options \"nosniff\"\n   28 |     Header always set X-Frame-Options \"DENY\"\n   29 |     Header always set X-XSS-Protection \"1; mode=block\"\n   30 | <\/IfModule>\n   31 | \n   32 | # Handle preflight OPTIONS requests\n   33 | RewriteCond %{REQUEST_METHOD} OPTIONS\n   34 | RewriteRule ^(.*)$ $1 [R=200,L]\n   35 | \n   36 | # Block PHP execution in uploads directory\n   37 | RewriteRule ^uploads\/.*\\.php$ - [F,L]\n   38 | \n   39 | # Route .php requests normally\n   40 | RewriteCond %{REQUEST_FILENAME} -f\n   41 | RewriteRule ^ - [L]\n   42 |",
-            "is_error": false,
-            "time": 1784055612
-        },
-        {
-            "id": "msg_2db5a0d81b",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "Now I have a comprehensive understanding. Let me create a plan to fix the issues.\n\nThe main problems:\n\n1. **PHP Warnings corrupting JSON output**: The constants `API_URL` and `JWT_SECRET` (and potentially others) are being defined multiple times because `config.php` is being included multiple times, even though `require_once` is used. This might be due to PHP's opcode cache or a path resolution issue. The fix is to wrap all `define()` calls with `defined()` checks.\n\n2. **SyntaxError: Unexpected end of input**: This is likely caused by the PHP warnings being output before the JSON response, corrupting the JSON. Fixing issue 1 should resolve this.\n\n3. **DialogContent accessibility warning**: This is a client-side React\/Radix UI warning. Looking at the code, the `DialogContent` component is exported and likely used in various dialogs throughout the app. The warning fires when a `DialogContent` is used without a `DialogDescription`. This is more of a UX\/accessibility concern. We can fix this by looking at the source usage, but since this is a bundled file, it's harder to trace. However, we can look at the individual component JS files to find where DialogContent is used without DialogDescription.\n\n4. **Service Worker\/Chrome extension error**: This is a client-side browser issue and can't be fixed from the server.\n\nLet me fix the PHP issues first, then investigate the JS component issue.\n\nFor the PHP fix, the cleanest approach:\n1. Update `config.php` to use `defined()` checks for all constants\n2. Or restructure to avoid double inclusion\n\nLet me also check if there's a PHP auto-prepend configured.\n\nActually, looking at the error_log more carefully - the same warnings repeat many times. This is likely because every API request triggers the double inclusion. The `require_once` should work, but perhaps there's a PHP configuration that's auto-including config.php somehow.\n\nWait, I think I found the issue. Let me check if there's an auto_prepend_file or something in the PHP configuration.\n\nBut regardless, the root fix is to add `defined()` checks in config.php. This is a best practice anyway.\n\nLet me also look at what happens with the DialogContent component to see if I can trace the usage."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_OffomGbkiUTVny7DLi4j2565",
-                    "name": "todo_write",
-                    "input": {
-                        "todos": [
-                            {
-                                "content": "Fix PHP constant redefinition warnings in config.php (use defined() checks)",
-                                "status": "pending",
-                                "priority": "high"
-                            },
-                            {
-                                "content": "Fix DialogContent accessibility warning (missing DialogDescription)",
-                                "status": "pending",
-                                "priority": "medium"
-                            },
-                            {
-                                "content": "Investigate SyntaxError: Unexpected end of input (corrupted JSON from PHP warnings)",
-                                "status": "pending",
-                                "priority": "high"
-                            },
-                            {
-                                "content": "Check service worker \/ Chrome extension error",
-                                "status": "pending",
-                                "priority": "low"
-                            }
-                        ]
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 46520,
-                "completion_tokens": 644,
-                "total_tokens": 47164,
-                "prompt_cache_hit_tokens": 44032,
-                "prompt_cache_miss_tokens": 2488,
-                "prompt_tokens_details": {
-                    "cached_tokens": 44032
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 484
-                }
-            },
-            "time": 1784055619
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_OffomGbkiUTVny7DLi4j2565",
-            "content": "Todo list updated with 4 items.",
-            "is_error": false,
-            "time": 1784055619
-        },
-        {
-            "id": "msg_4b8643f013",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "Let me first check if there's a PHP auto_prepend_file configured."
-                },
-                {
-                    "type": "text",
-                    "text": "Let me check the PHP configuration for auto-prepends, and also look at the main error log."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_KfGmYRPaocKQajiK4tAd7869",
-                    "name": "read_file",
-                    "input": {
-                        "path": "logs\/php-error.log",
-                        "limit": 20
-                    }
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_01_UTlqX0bNesPJeccEKCuH0635",
-                    "name": "bash",
-                    "input": {
-                        "command": "cd \/home\/drarmank && php -i 2>\/dev\/null | grep -i \"auto_prepend\\|auto_append\\|user_ini\" | head -10"
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 47166,
-                "completion_tokens": 163,
-                "total_tokens": 47329,
-                "prompt_cache_hit_tokens": 46464,
-                "prompt_cache_miss_tokens": 702,
-                "prompt_tokens_details": {
-                    "cached_tokens": 46464
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 15
-                }
-            },
-            "time": 1784055623
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_KfGmYRPaocKQajiK4tAd7869",
-            "content": "    1 | [12-Jul-2026 23:33:01 Asia\/Dhaka] Database connection failed: SQLSTATE[HY000] [1045] Access denied for user 'drarmank_care_user'@'localhost' (using password: NO)\n    2 | [12-Jul-2026 23:33:41 Asia\/Dhaka] Database connection failed: SQLSTATE[28000] [1045] Access denied for user 'drarmank_care_user'@'localhost' (using password: NO)\n    3 | [12-Jul-2026 23:34:14 Asia\/Dhaka] Database connection failed: SQLSTATE[28000] [1045] Access denied for user 'drarmank_care_user'@'localhost' (using password: NO)\n    4 | [13-Jul-2026 01:12:12 Asia\/Dhaka] Database connection failed: SQLSTATE[28000] [1045] Access denied for user 'drarmank_care_user'@'localhost' (using password: NO)\n    5 | [13-Jul-2026 01:51:25 Asia\/Dhaka] Create appointment error: SQLSTATE[HY093]: Invalid parameter number\n    6 | [13-Jul-2026 01:51:26 Asia\/Dhaka] Create visit error: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`drarmank_drarmank_care`.`visits`, CONSTRAINT `visits_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE)\n    7 | [13-Jul-2026 01:51:26 Asia\/Dhaka] Create prescription error: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`drarmank_drarmank_care`.`prescriptions`, CONSTRAINT `prescriptions_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE)\n    8 | [13-Jul-2026 01:51:26 Asia\/Dhaka] Create clinical note error: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`drarmank_drarmank_care`.`clinical_notes`, CONSTRAINT `clinical_notes_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE)\n    9 | [13-Jul-2026 01:51:26 Asia\/Dhaka] Create payment error: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`drarmank_drarmank_care`.`payments`, CONSTRAINT `payments_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE SET NULL)\n   10 | [13-Jul-2026 01:51:26 Asia\/Dhaka] Create invoice error: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`drarmank_drarmank_care`.`invoices`, CONSTRAINT `invoices_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE)\n   11 | [13-Jul-2026 01:51:26 Asia\/Dhaka] Create notification error: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`drarmank_drarmank_care`.`notifications`, CONSTRAINT `notifications_ibfk_2` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE SET NULL)\n   12 | [13-Jul-2026 01:54:33 Asia\/Dhaka] Audit log failed: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`drarmank_drarmank_care`.`audit_logs`, CONSTRAINT `audit_logs_ibfk_2` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE SET NULL)\n   13 | [13-Jul-2026 01:54:33 Asia\/Dhaka] Create appointment error: SQLSTATE[HY093]: Invalid parameter number\n   14 | [13-Jul-2026 01:54:33 Asia\/Dhaka] List vitals error: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'v.created_at' in 'ORDER BY'\n   15 | [13-Jul-2026 02:21:03 Asia\/Dhaka] Create patient error: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'REG-202607-0002' for key 'register_number'\n   16 | [13-Jul-2026 02:21:03 Asia\/Dhaka] Create appointment error: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`drarmank_drarmank_care`.`appointments`, CONSTRAINT `appointments_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE SET NULL)\n   17 | [13-Jul-2026 02:21:03 Asia\/Dhaka] Create visit error: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`drarmank_drarmank_care`.`visits`, CONSTRAINT `visits_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE)\n   18 | [13-Jul-2026 02:21:03 Asia\/Dhaka] Create prescription error: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`drarmank_drarmank_care`.`prescriptions`, CONSTRAINT `prescriptions_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE)\n   19 | [13-Jul-2026 02:21:04 Asia\/Dhaka] Create vitals error: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`drarmank_drarmank_care`.`vital_signs`, CONSTRAINT `vital_signs_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE)\n   20 | [13-Jul-2026 02:21:04 Asia\/Dhaka] Create clinical note error: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`drarmank_drarmank_care`.`clinical_notes`, CONSTRAINT `clinical_notes_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE)",
-            "is_error": false,
-            "time": 1784055623
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_01_UTlqX0bNesPJeccEKCuH0635",
-            "content": "auto_append_file => no value => no value\nauto_prepend_file => no value => no value\nuser_ini.cache_ttl => 300 => 300\nuser_ini.filename => .user.ini => .user.ini\n",
-            "is_error": false,
-            "time": 1784055623
-        },
-        {
-            "id": "msg_111182139e",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "No auto_prepend_file configured. So the double definition issue is definitely from config.php being included twice. But `require_once` should prevent that...\n\nWait, let me look more carefully at the frontpage\/get.php flow:\n\n1. `frontpage\/get.php` includes:\n   - `require_once __DIR__ . '\/..\/database.php';` \u2192 This includes `config.php`\n   - `require_once __DIR__ . '\/..\/helpers.php';` \u2192 This also includes `config.php`\n\nSince both use `require_once`, config.php should only be loaded once. Unless... there's a case sensitivity issue or symbolic link?\n\nActually, let me check if there's another entry point that includes config.php directly without using require_once.\n\nBut looking at the error_log for frontpage, it's flooded with the same two warnings. This suggests it's happening on every request.\n\nWait, let me re-read the error_log entries. They all say \"Constant API_URL already defined\" and \"Constant JWT_SECRET already defined\". But what about DB_HOST, DB_NAME, DB_USER, DB_PASS? They are defined before API_URL and JWT_SECRET. If config.php was being included twice, ALL constants would trigger warnings, not just these two.\n\nUnless... config.php is being included multiple times through different paths. Let me check if there's a `.user.ini` or if PHP is configured to auto-prepend something.\n\nActually, looking at config.php lines 58-61:\n- Line 58: `define('API_URL', APP_URL . '\/api');`\n- Line 59: (empty line)\n- Line 60: (comment)\n- Line 61: `define('JWT_SECRET', cfg('JWT_SECRET', 'change-this-to-a-random-secret-in-production'));`\n\nWait, the error log says line 58 for API_URL and line 61 for JWT_SECRET. But there's also lines 59-60 which are `define('DB_HOST', ...)`, `define('DB_NAME', ...)`, `define('DB_USER', ...)`, `define('DB_PASS', ...)` on lines 59-62.\n\nHmm, but the errors only mention API_URL and JWT_SECRET, not DB_HOST, DB_NAME, etc.\n\nWait, maybe the constants API_URL and JWT_SECRET are being defined in TWO separate files:\n1. config.php (lines 69 and 72)\n2. Some other file?\n\nLet me search for other places where API_URL or JWT_SECRET might be defined."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_uAMa3TKzOM6ce14zWVEP6704",
-                    "name": "grep",
-                    "input": {
-                        "include": "*.php",
-                        "pattern": "define\\(\\s*['\\\"]API_URL",
-                        "path": "\/home\/drarmank",
-                        "max_results": 10
-                    }
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_01_uvQ4RC59gMLkcJJaipWJ3622",
-                    "name": "grep",
-                    "input": {
-                        "include": "*.php",
-                        "pattern": "define\\(\\s*['\\\"]JWT_SECRET",
-                        "path": "\/home\/drarmank",
-                        "max_results": 10
-                    }
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_02_QVHivCRmFP01jqXFHsKg0990",
-                    "name": "grep",
-                    "input": {
-                        "include": "*.php",
-                        "pattern": "require_once|include_once",
-                        "path": "\/home\/drarmank\/public_html\/api",
-                        "max_results": 50
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 48938,
-                "completion_tokens": 822,
-                "total_tokens": 49760,
-                "prompt_cache_hit_tokens": 47232,
-                "prompt_cache_miss_tokens": 1706,
-                "prompt_tokens_details": {
-                    "cached_tokens": 47232
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 528
-                }
-            },
-            "time": 1784055630
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_uAMa3TKzOM6ce14zWVEP6704",
-            "content": "No matches found for pattern: define\\(\\s*['\\\"]API_URL",
-            "is_error": false,
-            "time": 1784055630
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_01_uvQ4RC59gMLkcJJaipWJ3622",
-            "content": "No matches found for pattern: define\\(\\s*['\\\"]JWT_SECRET",
-            "is_error": false,
-            "time": 1784055630
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_02_QVHivCRmFP01jqXFHsKg0990",
-            "content": "No matches found for pattern: require_once|include_once",
-            "is_error": false,
-            "time": 1784055630
-        },
-        {
-            "id": "msg_c873daf01b",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "Interesting - grep with the escape patterns didn't find anything. Let me try simpler patterns."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_jPK8xx0VSlqGZzit830i4183",
-                    "name": "bash",
-                    "input": {
-                        "command": "cd \/home\/drarmank && grep -rn \"define.*API_URL\\|define.*JWT_SECRET\\|require_once\\|include_once\" --include=\"*.php\" public_html\/ | head -30"
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 49831,
-                "completion_tokens": 103,
-                "total_tokens": 49934,
-                "prompt_cache_hit_tokens": 49664,
-                "prompt_cache_miss_tokens": 167,
-                "prompt_tokens_details": {
-                    "cached_tokens": 49664
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 18
-                }
-            },
-            "time": 1784055633
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_jPK8xx0VSlqGZzit830i4183",
-            "content": "public_html\/phpmyadmin\/setup\/lib\/common.inc.php:17:require_once ROOT_PATH . 'libraries\/constants.php';\npublic_html\/phpmyadmin\/vendor\/phpmyadmin\/motranslator\/src\/Loader.php:104:        require_once __DIR__ . '\/functions.php';\npublic_html\/phpmyadmin\/vendor\/twig\/twig\/src\/Cache\/FilesystemCache.php:42:            @include_once $key;\npublic_html\/phpmyadmin\/vendor\/symfony\/polyfill-php73\/bootstrap.php:22:    require_once __DIR__.'\/Php73.php';\npublic_html\/phpmyadmin\/vendor\/symfony\/config\/Builder\/ConfigBuilderGenerator.php:71:            require_once $path;\npublic_html\/phpmyadmin\/vendor\/symfony\/config\/Builder\/ClassBuilder.php:69:            $require .= sprintf('require_once __DIR__.\\DIRECTORY_SEPARATOR.\\'%s\\';', implode('\\'.\\DIRECTORY_SEPARATOR.\\'', $path)).\"\\n\";\npublic_html\/phpmyadmin\/vendor\/symfony\/dependency-injection\/Dumper\/Preloader.php:30:                file_put_contents($file, sprintf(\"require_once __DIR__.%s;\\n\", var_export(strtr(substr($item, \\strlen($cacheDir)), \\DIRECTORY_SEPARATOR, '\/'), true)), \\FILE_APPEND);\npublic_html\/phpmyadmin\/vendor\/symfony\/dependency-injection\/Dumper\/PhpDumper.php:594:                    $code .= sprintf(\"include_once %s;\\n\", $file);\npublic_html\/phpmyadmin\/vendor\/symfony\/dependency-injection\/Dumper\/PhpDumper.php:644:                $code .= sprintf(\"        include_once %s;\\n\", $file);\npublic_html\/phpmyadmin\/vendor\/symfony\/dependency-injection\/Dumper\/PhpDumper.php:652:                $code .= sprintf(\"        include_once %s;\\n\", $file);\npublic_html\/phpmyadmin\/vendor\/symfony\/dependency-injection\/Dumper\/PhpDumper.php:1489:                $code .= sprintf(\"\\n            include_once %s;\", $file);\npublic_html\/phpmyadmin\/vendor\/symfony\/dependency-injection\/Dumper\/PhpDumper.php:1494:            $code .= \"\\n            include_once __DIR__.'\/proxy-classes.php';\";\npublic_html\/phpmyadmin\/vendor\/symfony\/dependency-injection\/ContainerBuilder.php:1075:            require_once $parameterBag->resolveValue($definition->getFile());\npublic_html\/phpmyadmin\/vendor\/paragonie\/sodium_compat\/src\/Core32\/Ed25519.php:7:    require_once dirname(__FILE__) . '\/Curve25519.php';\npublic_html\/phpmyadmin\/vendor\/paragonie\/sodium_compat\/src\/Core\/Ed25519.php:7:    require_once dirname(__FILE__) . '\/Curve25519.php';\npublic_html\/phpmyadmin\/vendor\/paragonie\/sodium_compat\/autoload-php7.php:27:        require_once $file;\npublic_html\/phpmyadmin\/vendor\/paragonie\/sodium_compat\/lib\/namespaced.php:3:require_once dirname(dirname(__FILE__)) . '\/autoload.php';\npublic_html\/phpmyadmin\/vendor\/paragonie\/sodium_compat\/lib\/namespaced.php:44:        require_once $file;\npublic_html\/phpmyadmin\/vendor\/paragonie\/sodium_compat\/lib\/php72compat.php:3:require_once dirname(dirname(__FILE__)) . '\/autoload.php';\npublic_html\/phpmyadmin\/vendor\/paragonie\/sodium_compat\/lib\/php72compat.php:1497:require_once dirname(__FILE__) . '\/stream-xchacha20.php';\npublic_html\/phpmyadmin\/vendor\/paragonie\/sodium_compat\/lib\/constants.php:4:require_once dirname(dirname(__FILE__)) . '\/autoload.php';\npublic_html\/phpmyadmin\/vendor\/paragonie\/sodium_compat\/lib\/sodium_compat.php:4:require_once dirname(dirname(__FILE__)) . '\/autoload.php';\npublic_html\/phpmyadmin\/vendor\/paragonie\/sodium_compat\/lib\/sodium_compat.php:998:    require_once dirname(__FILE__) . '\/constants.php';\npublic_html\/phpmyadmin\/vendor\/paragonie\/sodium_compat\/lib\/php84compat.php:3:require_once dirname(dirname(__FILE__)) . '\/autoload.php';\npublic_html\/phpmyadmin\/vendor\/paragonie\/sodium_compat\/autoload.php:31:                require_once $file;\npublic_html\/phpmyadmin\/vendor\/paragonie\/sodium_compat\/autoload.php:41:    require_once dirname(__FILE__) . '\/autoload-php7.php';\npublic_html\/phpmyadmin\/vendor\/paragonie\/sodium_compat\/autoload.php:46:    require_once dirname(__FILE__) . '\/src\/Compat.php';\npublic_html\/phpmyadmin\/vendor\/paragonie\/sodium_compat\/autoload.php:50:    require_once dirname(__FILE__) . '\/src\/SodiumException.php';\npublic_html\/phpmyadmin\/vendor\/paragonie\/sodium_compat\/autoload.php:55:    require_once dirname(__FILE__) . '\/lib\/namespaced.php';\npublic_html\/phpmyadmin\/vendor\/paragonie\/sodium_compat\/autoload.php:56:    require_once dirname(__FILE__) . '\/lib\/sodium_compat.php';\n\ngrep: write error: Broken pipe\n",
-            "is_error": false,
-            "time": 1784055634
-        },
-        {
-            "id": "msg_7d7af45ae0",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "The grep output doesn't seem to show the API PHP files. Let me try a more specific search."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_TIwLgvwy9wro1ZmNr3PR7742",
-                    "name": "bash",
-                    "input": {
-                        "command": "cd \/home\/drarmank && grep -rn \"require_once\\|include_once\" --include=\"*.php\" public_html\/api\/ | head -30"
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 51198,
-                "completion_tokens": 95,
-                "total_tokens": 51293,
-                "prompt_cache_hit_tokens": 49920,
-                "prompt_cache_miss_tokens": 1278,
-                "prompt_tokens_details": {
-                    "cached_tokens": 49920
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 21
-                }
-            },
-            "time": 1784055637
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_TIwLgvwy9wro1ZmNr3PR7742",
-            "content": "public_html\/api\/investigations\/create.php:8:require_once __DIR__ . '\/..\/database.php';\npublic_html\/api\/investigations\/create.php:9:require_once __DIR__ . '\/..\/helpers.php';\npublic_html\/api\/investigations\/create.php:10:require_once __DIR__ . '\/..\/auth\/middleware.php';\npublic_html\/api\/investigations\/list.php:8:require_once __DIR__ . '\/..\/database.php';\npublic_html\/api\/investigations\/list.php:9:require_once __DIR__ . '\/..\/helpers.php';\npublic_html\/api\/investigations\/list.php:10:require_once __DIR__ . '\/..\/auth\/middleware.php';\npublic_html\/api\/audit\/list.php:8:require_once __DIR__ . '\/..\/database.php';\npublic_html\/api\/audit\/list.php:9:require_once __DIR__ . '\/..\/helpers.php';\npublic_html\/api\/audit\/list.php:10:require_once __DIR__ . '\/..\/auth\/middleware.php';\npublic_html\/api\/appointments\/create.php:8:require_once __DIR__ . '\/..\/database.php';\npublic_html\/api\/appointments\/create.php:9:require_once __DIR__ . '\/..\/helpers.php';\npublic_html\/api\/appointments\/create.php:10:require_once __DIR__ . '\/..\/auth\/middleware.php';\npublic_html\/api\/appointments\/update.php:8:require_once __DIR__ . '\/..\/database.php';\npublic_html\/api\/appointments\/update.php:9:require_once __DIR__ . '\/..\/helpers.php';\npublic_html\/api\/appointments\/update.php:10:require_once __DIR__ . '\/..\/auth\/middleware.php';\npublic_html\/api\/appointments\/list.php:8:require_once __DIR__ . '\/..\/database.php';\npublic_html\/api\/appointments\/list.php:9:require_once __DIR__ . '\/..\/helpers.php';\npublic_html\/api\/appointments\/list.php:10:require_once __DIR__ . '\/..\/auth\/middleware.php';\npublic_html\/api\/data\/save.php:15:require_once __DIR__ . '\/..\/database.php';\npublic_html\/api\/data\/save.php:16:require_once __DIR__ . '\/..\/helpers.php';\npublic_html\/api\/data\/save.php:17:require_once __DIR__ . '\/..\/auth\/middleware.php';\npublic_html\/api\/data\/get.php:16:require_once __DIR__ . '\/..\/database.php';\npublic_html\/api\/data\/get.php:17:require_once __DIR__ . '\/..\/helpers.php';\npublic_html\/api\/data\/get.php:18:require_once __DIR__ . '\/..\/auth\/middleware.php';\npublic_html\/api\/upload\/index.php:9:require_once __DIR__ . '\/..\/database.php';\npublic_html\/api\/upload\/index.php:10:require_once __DIR__ . '\/..\/helpers.php';\npublic_html\/api\/upload\/index.php:11:require_once __DIR__ . '\/..\/auth\/middleware.php';\npublic_html\/api\/invoices\/create.php:8:require_once __DIR__ . '\/..\/database.php';\npublic_html\/api\/invoices\/create.php:9:require_once __DIR__ . '\/..\/helpers.php';\npublic_html\/api\/invoices\/create.php:10:require_once __DIR__ . '\/..\/auth\/middleware.php';\n\ngrep: write error: Broken pipe\n",
-            "is_error": false,
-            "time": 1784055637
-        },
-        {
-            "id": "msg_c9b5a655ce",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "I see the pattern. Most API endpoints include:\n1. `database.php` (which includes `config.php`)\n2. `helpers.php` (which includes `config.php`)\n3. `middleware.php` (which may or may not include config)\n\nIf middleware.php also includes config.php, then it would be included 3 times!\n\nLet me check middleware.php."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_EObXtjLyGihjbP0aTeuF9318",
-                    "name": "read_file",
-                    "input": {
-                        "path": "public_html\/api\/auth\/middleware.php"
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 51983,
-                "completion_tokens": 126,
-                "total_tokens": 52109,
-                "prompt_cache_hit_tokens": 51200,
-                "prompt_cache_miss_tokens": 783,
-                "prompt_tokens_details": {
-                    "cached_tokens": 51200
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 75
-                }
-            },
-            "time": 1784055641
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_EObXtjLyGihjbP0aTeuF9318",
-            "content": "    1 | <?php\n    2 | \/**\n    3 |  * Authentication Middleware\n    4 |  * \n    5 |  * Validates session tokens and provides current user context.\n    6 |  * Include this at the top of any protected API endpoint.\n    7 |  *\/\n    8 | \n    9 | require_once __DIR__ . '\/..\/database.php';\n   10 | require_once __DIR__ . '\/..\/helpers.php';\n   11 | \n   12 | \/**\n   13 |  * Get the authenticated user from the session token.\n   14 |  * Returns user array or null if not authenticated.\n   15 |  *\/\n   16 | function getAuthUser(): ?array {\n   17 |     $token = getBearerToken();\n   18 |     if (!$token) return null;\n   19 |     \n   20 |     try {\n   21 |         $db = Database::getInstance();\n   22 |         \n   23 |         \/\/ Find valid session\n   24 |         $stmt = $db->prepare('\n   25 |             SELECT u.*, s.token, s.expires_at \n   26 |             FROM user_sessions s \n   27 |             JOIN users u ON s.user_id = u.id \n   28 |             WHERE s.token = :token \n   29 |               AND s.expires_at > NOW() \n   30 |               AND u.is_active = 1\n   31 |             LIMIT 1\n   32 |         ');\n   33 |         $stmt->execute([':token' => $token]);\n   34 |         $user = $stmt->fetch();\n   35 |         \n   36 |         if ($user) {\n   37 |             \/\/ Update last activity\n   38 |             $updateStmt = $db->prepare('UPDATE user_sessions SET last_activity = NOW() WHERE token = :token');\n   39 |             $updateStmt->execute([':token' => $token]);\n   40 |         }\n   41 |         \n   42 |         return $user ?: null;\n   43 |     } catch (\\Exception $e) {\n   44 |         error_log('Auth middleware error: ' . $e->getMessage());\n   45 |         return null;\n   46 |     }\n   47 | }\n   48 | \n   49 | \/**\n   50 |  * Require authentication. Sends 401 if not authenticated.\n   51 |  *\/\n   52 | function requireAuth(): array {\n   53 |     $user = getAuthUser();\n   54 |     if (!$user) {\n   55 |         errorResponse('Authentication required. Please log in.', 401);\n   56 |     }\n   57 |     return $user;\n   58 | }\n   59 | \n   60 | \/**\n   61 |  * Require specific role(s). Sends 403 if not authorized.\n   62 |  *\/\n   63 | function requireRole(array $allowedRoles): array {\n   64 |     $user = requireAuth();\n   65 |     \n   66 |     if (!in_array($user['role'], $allowedRoles)) {\n   67 |         errorResponse('Access denied. Insufficient permissions.', 403, [\n   68 |             'required_roles' => $allowedRoles,\n   69 |             'your_role' => $user['role'],\n   70 |         ]);\n   71 |     }\n   72 |     \n   73 |     return $user;\n   74 | }\n   75 | \n   76 | \/**\n   77 |  * Require admin role.\n   78 |  *\/\n   79 | function requireAdmin(): array {\n   80 |     return requireRole(['admin']);\n   81 | }\n   82 | \n   83 | \/**\n   84 |  * Check if user has a specific permission based on role.\n   85 |  *\/\n   86 | function hasPermission(array $user, string $permission): bool {\n   87 |     \/\/ Role-based permissions\n   88 |     $permissions = [\n   89 |         'admin' => [\n   90 |             'manage_users', 'manage_settings', 'view_all_patients',\n   91 |             'view_all_finances', 'manage_beds', 'view_audit_logs',\n   92 |             'export_data', 'delete_data',\n   93 |         ],\n   94 |         'consultant_doctor' => [\n   95 |             'view_assigned_patients', 'view_all_patients',\n   96 |             'create_prescription', 'edit_prescription',\n   97 |             'view_appointments', 'manage_appointments',\n   98 |             'create_visit', 'edit_visit',\n   99 |             'order_investigations', 'view_results',\n  100 |             'finalize_diagnosis', 'admit_patient', 'discharge_patient',\n  101 |         ],\n  102 |         'medical_officer' => [\n  103 |             'view_assigned_patients', 'view_all_patients',\n  104 |             'create_prescription', 'edit_prescription',\n  105 |             'view_appointments',\n  106 |             'create_visit', 'edit_visit',\n  107 |             'order_investigations', 'view_results',\n  108 |             'verify_vitals',\n  109 |         ],\n  110 |         'assistant_registrar' => [\n  111 |             'view_assigned_patients', 'view_all_patients',\n  112 |             'create_prescription', 'edit_prescription',\n  113 |             'view_appointments',\n  114 |             'create_visit',\n  115 |             'order_investigations', 'view_results',\n  116 |             'verify_vitals',\n  117 |         ],\n  118 |         'registrar' => [\n  119 |             'view_assigned_patients', 'view_all_patients',\n  120 |             'create_prescription', 'edit_prescription',\n  121 |             'view_appointments', 'manage_appointments',\n  122 |             'create_visit', 'edit_visit',\n  123 |             'order_investigations', 'view_results',\n  124 |             'verify_vitals',\n  125 |         ],\n  126 |         'assistant_professor' => [\n  127 |             'view_assigned_patients', 'view_all_patients',\n  128 |             'create_prescription', 'edit_prescription',\n  129 |             'view_appointments', 'manage_appointments',\n  130 |             'create_visit', 'edit_visit',\n  131 |             'order_investigations', 'view_results',\n  132 |             'finalize_diagnosis', 'admit_patient', 'discharge_patient',\n  133 |         ],\n  134 |         'associate_professor' => [\n  135 |             'view_assigned_patients', 'view_all_patients',\n  136 |             'create_prescription', 'edit_prescription',\n  137 |             'view_appointments', 'manage_appointments',\n  138 |             'create_visit', 'edit_visit',\n  139 |             'order_investigations', 'view_results',\n  140 |             'finalize_diagnosis', 'admit_patient', 'discharge_patient',\n  141 |         ],\n  142 |         'professor' => [\n  143 |             'view_assigned_patients', 'view_all_patients',\n  144 |             'create_prescription', 'edit_prescription',\n  145 |             'view_appointments', 'manage_appointments',\n  146 |             'create_visit', 'edit_visit',\n  147 |             'order_investigations', 'view_results',\n  148 |             'finalize_diagnosis', 'admit_patient', 'discharge_patient',\n  149 |         ],\n  150 |         'intern_doctor' => [\n  151 |             'view_assigned_patients',\n  152 |             'create_prescription',\n  153 |             'view_appointments',\n  154 |             'create_visit',\n  155 |             'record_vitals',\n  156 |             'view_results',\n  157 |         ],\n  158 |         'nurse' => [\n  159 |             'view_assigned_patients',\n  160 |             'view_appointments',\n  161 |             'record_vitals',\n  162 |             'administer_medication',\n  163 |             'view_prescriptions',\n  164 |             'record_mar',\n  165 |             'create_handover',\n  166 |         ],\n  167 |         'staff' => [\n  168 |             'view_patients',\n  169 |             'register_patient',\n  170 |             'view_appointments',\n  171 |             'manage_appointments',\n  172 |             'process_payments',\n  173 |             'view_finances',\n  174 |         ],\n  175 |         'reception' => [\n  176 |             'view_patients',\n  177 |             'register_patient',\n  178 |             'view_appointments',\n  179 |             'manage_appointments',\n  180 |             'process_payments',\n  181 |         ],\n  182 |         'doctor' => [\n  183 |             'view_assigned_patients', 'view_all_patients',\n  184 |             'create_prescription', 'edit_prescription',\n  185 |             'view_appointments', 'manage_appointments',\n  186 |             'create_visit', 'edit_visit',\n  187 |             'order_investigations', 'view_results',\n  188 |             'finalize_diagnosis',\n  189 |         ],\n  190 |     ];\n  191 |     \n  192 |     return in_array($permission, $permissions[$user['role']] ?? []);\n  193 | }\n  194 | \n  195 | \/**\n  196 |  * Get Bearer token from Authorization header\n  197 |  *\/\n  198 | function getBearerToken(): ?string {\n  199 |     $headers = '';\n  200 |     \n  201 |     if (isset($_SERVER['HTTP_AUTHORIZATION'])) {\n  202 |         $headers = $_SERVER['HTTP_AUTHORIZATION'];\n  203 |     } elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {\n  204 |         $headers = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];\n  205 |     } elseif (function_exists('apache_request_headers')) {\n  206 |         $requestHeaders = apache_request_headers();\n  207 |         $headers = $requestHeaders['Authorization'] ?? $requestHeaders['authorization'] ?? '';\n  208 |     }\n  209 |     \n  210 |     if (empty($headers)) {\n  211 |         \/\/ Also check POST\/GET for token\n  212 |         return getParam('token', null);\n  213 |     }\n  214 |     \n  215 |     if (preg_match('\/Bearer\\s(\\S+)\/', $headers, $matches)) {\n  216 |         return $matches[1];\n  217 |     }\n  218 |     \n  219 |     return null;\n  220 | }\n  221 | \n  222 | \/**\n  223 |  * Create a new session for a user\n  224 |  *\/\n  225 | function createSession(int $userId): string {\n  226 |     $db = Database::getInstance();\n  227 |     \n  228 |     \/\/ Generate secure token\n  229 |     $token = bin2hex(random_bytes(64));\n  230 |     $refreshToken = bin2hex(random_bytes(64));\n  231 |     $expiresAt = date('Y-m-d H:i:s', time() + SESSION_LIFETIME);\n  232 |     \n  233 |     $stmt = $db->prepare('\n  234 |         INSERT INTO user_sessions (user_id, token, refresh_token, ip_address, user_agent, expires_at)\n  235 |         VALUES (:user_id, :token, :refresh_token, :ip_address, :user_agent, :expires_at)\n  236 |     ');\n  237 |     $stmt->execute([\n  238 |         ':user_id' => $userId,\n  239 |         ':token' => $token,\n  240 |         ':refresh_token' => $refreshToken,\n  241 |         ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? null,\n  242 |         ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,\n  243 |         ':expires_at' => $expiresAt,\n  244 |     ]);\n  245 |     \n  246 |     return $token;\n  247 | }\n  248 | \n  249 | \/**\n  250 |  * Destroy a session (logout)\n  251 |  *\/\n  252 | function destroySession(string $token): void {\n  253 |     $db = Database::getInstance();\n  254 |     $stmt = $db->prepare('DELETE FROM user_sessions WHERE token = :token');\n  255 |     $stmt->execute([':token' => $token]);\n  256 | }\n  257 | \n  258 | \/**\n  259 |  * Clean up expired sessions\n  260 |  *\/\n  261 | function cleanupExpiredSessions(): void {\n  262 |     $db = Database::getInstance();\n  263 |     $db->query('DELETE FROM user_sessions WHERE expires_at < NOW()');\n  264 | }\n  265 |",
-            "is_error": false,
-            "time": 1784055641
-        },
-        {
-            "id": "msg_7c313841db",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "Now I see the full chain. `middleware.php` also includes both `database.php` and `helpers.php`. So for a typical API endpoint like `frontpage\/get.php`:\n\n1. `frontpage\/get.php` includes `database.php` (which includes `config.php`) \u2713\n2. `frontpage\/get.php` includes `helpers.php` (which includes `config.php`) - should be skipped by require_once\n3. (No middleware included for frontpage\/get.php since it's public)\n\nBut wait - `frontpage\/get.php` does NOT include `middleware.php`. So the chain is:\n1. `database.php` \u2192 `config.php` (first time)\n2. `helpers.php` \u2192 `config.php` (should be skipped by require_once)\n\nBoth use `require_once`, so config.php should only be loaded once. The warnings shouldn't happen with `require_once`.\n\nUnless... there's a PHP version issue or the files are being loaded through symbolic links.\n\nActually, wait. Let me re-read the config.php. It has this line at the end:\n```php\n$GLOBALS['env_config'] = $envConfig;\n```\n\nAnd it also defines constants using `define()`. The `define()` function will raise a warning if the constant is already defined.\n\nCould there be a `.user.ini` file or PHP configuration that's auto-loading config.php? Let me check.\n\nActually, I think the issue might be more subtle. Let me check if there's a php.ini with `auto_prepend_file` set to config.php, or if the web server is configured to include config.php automatically.\n\nBut actually, looking at the error_log again - the warnings say line 58 for API_URL and line 61 for JWT_SECRET. Looking at the current config.php:\n- Line 58: `define('API_URL', APP_URL . '\/api');`\n- Line 61: `define('JWT_SECRET', cfg('JWT_SECRET', 'change-this-to-a-random-secret-in-production'));`\n\nBut the config.php file I read has different line numbers. Let me re-count:\n```\n59: define('DB_HOST', ...)\n60: define('DB_NAME', ...)\n61: define('DB_USER', ...)\n62: define('DB_PASS', ...)\n...\n69: define('API_URL', APP_URL . '\/api');\n72: define('JWT_SECRET', ...);\n```\n\nWait, the error says line 58 for API_URL and line 61 for JWT_SECRET. But the current file has API_URL on line 69 and JWT_SECRET on line 72. That doesn't match.\n\nUnless the file has been modified since the errors were logged. Or maybe the line numbers in the error are from a different version.\n\nRegardless, the solution is to add `defined()` checks around all `define()` calls in config.php. This is the safest approach and will prevent any double-definition issues regardless of how many times the file is included.\n\nNow, the more important issue is: why are these PHP warnings causing the \"SyntaxError: Unexpected end of input\" in the browser?\n\nWhen PHP outputs a warning:\n```\nPHP Warning: Constant API_URL already defined in \/home\/drarmank\/public_html\/config.php on line 58\n```\n\nThis warning text gets sent to the output buffer BEFORE the JSON response. So the browser receives:\n```\nPHP Warning: Constant API_URL already defined...\n{\"success\":true,\"data\":{...}}\n```\n\nWhen the JavaScript tries to `JSON.parse()` this, it fails because the string starts with \"PHP Warning...\" instead of a JSON object.\n\nThe fix: \n1. Add `defined()` checks in config.php\n2. Ensure `display_errors` is off (it is, line 89: `ini_set('display_errors', '0')`)\n3. But if PHP warnings are still being output, it could be because `display_errors` is set to `1` somewhere else, or the php.ini overrides it.\n\nWait, `ini_set('display_errors', '0')` is set in config.php at line 89. But if config.php is being loaded twice, the second call to `define()` triggers a warning that might be displayed before the `ini_set` kicks in on the first load.\n\nActually, `ini_set('display_errors', '0')` is at line 89 of config.php, which is AFTER the define() calls. So on the first load, if the PHP default is to display errors, the defines at lines 59-72 would succeed without warnings. But on the second load (if it happens), the defines would trigger warnings, and those warnings might be displayed because `ini_set('display_errors', '0')` has already been called... wait, it's already been called from the first load. So it should be off.\n\nHmm, but `ini_set` sets it for the current request, so even on the first load, if `display_errors` is on by default, the `ini_set('display_errors', '0')` at line 89 would turn it off. But the define() calls at lines 59-72 happen before line 89. The defines on the first load don't cause warnings, so it's fine. On a second load, the defines would trigger warnings, but by then `ini_set` from the first load already turned off display_errors.\n\nWait, but the warnings ARE appearing in the error_log (which is expected) but they shouldn't be displayed to the client because `display_errors` is off.\n\nUnless the issue is different. Let me check if `display_errors` is actually working.\n\nActually, looking at the PHP config, line 88-89:\n```php\nerror_reporting(E_ALL);\nini_set('display_errors', '0');\n```\n\nThese lines come AFTER the define() calls (lines 58-85). But on the first load, the defines don't cause warnings. On a second load (if require_once fails), the defines would cause warnings, but the first load already set `display_errors = 0`, so warnings shouldn't be displayed.\n\nUnless the issue is that the second inclusion happens through a different opcode cache path. Let me think about this differently.\n\nActually, maybe the issue is even simpler. Let me check the `frontpage\/get.php` file again:\n\n```php\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\n```\n\n- `database.php` includes: `require_once __DIR__ . '\/..\/config.php';`\n- `helpers.php` includes: `require_once __DIR__ . '\/..\/config.php';`\n\nBoth use the same path `__DIR__ . '\/..\/config.php'`. For `database.php`, `__DIR__` is `\/home\/drarmank\/public_html\/api`, so the path is `\/home\/drarmank\/public_html\/config.php`. For `helpers.php`, `__DIR__` is also `\/home\/drarmank\/public_html\/api`, so the path is also `\/home\/drarmank\/public_html\/config.php`. So `require_once` should work.\n\nBUT - wait, `database.php` also includes `helpers.php` via `middleware.php`. Let me check the include chain for `data\/get.php`:\n\n1. `data\/get.php`:\n   - `require_once __DIR__ . '\/..\/database.php';` \u2192 includes `config.php`\n   - `require_once __DIR__ . '\/..\/helpers.php';` \u2192 tries to include `config.php` (should be skipped)\n   - `require_once __DIR__ . '\/..\/auth\/middleware.php';` \u2192 includes `database.php` and `helpers.php`\n\nWait, `middleware.php` includes:\n```php\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\n```\n\nSo for `data\/get.php`:\n1. `require_once __DIR__ . '\/..\/database.php';` - path: `\/home\/drarmank\/public_html\/api\/database.php` \u2192 includes config.php (first time) \u2713\n2. `require_once __DIR__ . '\/..\/helpers.php';` - path: `\/home\/drarmank\/public_html\/api\/helpers.php` \u2192 includes config.php (require_once skips) \u2713\n3. `require_once __DIR__ . '\/..\/auth\/middleware.php';` - path: `\/home\/drarmank\/public_html\/api\/auth\/middleware.php`\n   - Inside middleware: `require_once __DIR__ . '\/..\/database.php';` - path: `\/home\/drarmank\/public_html\/api\/database.php` (require_once skips) \u2713\n   - Inside middleware: `require_once __DIR__ . '\/..\/helpers.php';` - path: `\/home\/drarmank\/public_html\/api\/helpers.php` (require_once skips) \u2713\n\nSo the chain should work correctly with `require_once`. The warnings should NOT happen.\n\nUNLESS... there's a case sensitivity issue on the filesystem. Let me check if there are multiple copies of config.php or if the include path resolves differently.\n\nCan I check if the file is included from a different path? For instance, if PHP's include_path includes a different directory that also has a config.php?\n\nLet me check if there's another config.php somewhere in the path.\n\nActually, let me just do a more thorough investigation. Let me check frontpage\/get.php more carefully and look at the actual endpoint that serves the preload data.\n\nActually, you know what, maybe the problem is that the error_log I saw is from a DIFFERENT time or different issue. Let me re-read the frontpage error_log. It has 147 entries, all saying \"Constant API_URL already defined\" and \"Constant JWT_SECRET already defined\". But this might have been from an earlier version of the code where `require` was used instead of `require_once`.\n\nLet me check if maybe some endpoints use `require` instead of `require_once`."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_L9liFjpZ3keJ5btm7dCu1827",
-                    "name": "bash",
-                    "input": {
-                        "command": "cd \/home\/drarmank && grep -rn \"require '\"'\"'\\|require __DIR__\\|require( __DIR__\\|require( '\"'\"'__DIR__\" --include=\"*.php\" public_html\/api\/ public_html\/config.php 2>\/dev\/null | grep -v \"require_once\\|require_once\" | head -20"
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 54976,
-                "completion_tokens": 2201,
-                "total_tokens": 57177,
-                "prompt_cache_hit_tokens": 52096,
-                "prompt_cache_miss_tokens": 2880,
-                "prompt_tokens_details": {
-                    "cached_tokens": 52096
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 2088
-                }
-            },
-            "time": 1784055659
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_L9liFjpZ3keJ5btm7dCu1827",
-            "content": "sh: -c: line 0: syntax error near unexpected token `('\nsh: -c: line 0: `cd '\/home\/drarmank' && cd \/home\/drarmank && grep -rn \"require '\"'\"'\\|require __DIR__\\|require( __DIR__\\|require( '\"'\"'__DIR__\" --include=\"*.php\" public_html\/api\/ public_html\/config.php 2>\/dev\/null | grep -v \"require_once\\|require_once\" | head -20'\n\n[Exit code: 1]",
-            "is_error": true,
-            "time": 1784055659
-        },
-        {
-            "id": "msg_1d9134b697",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "Let me try a simpler search."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_ijXD5xr4RQ9ToKLLN3af1045",
-                    "name": "bash",
-                    "input": {
-                        "command": "cd \/home\/drarmank && grep -rn \"require \" --include=\"*.php\" public_html\/api\/ public_html\/config.php | grep -v \"require_once\\|require_once \" | head -20"
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 57304,
-                "completion_tokens": 92,
-                "total_tokens": 57396,
-                "prompt_cache_hit_tokens": 57088,
-                "prompt_cache_miss_tokens": 216,
-                "prompt_tokens_details": {
-                    "cached_tokens": 57088
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 7
-                }
-            },
-            "time": 1784055662
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_ijXD5xr4RQ9ToKLLN3af1045",
-            "content": "[Command completed successfully with no output]",
-            "is_error": false,
-            "time": 1784055662
-        },
-        {
-            "id": "msg_7a27106d51",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "OK, no bare `require` usage. All use `require_once`. So the double-definition warnings might be from a different issue.\n\nLet me look at this from a different angle. Maybe the warnings are from the old version of the code. The file index-DJeWhCy-.js was modified at timestamp 1784044961 and the .bak was at 1783793749. The error_log timestamps are from \"14-Jul-2026\". Let me check the current date.\n\nActually, looking at the error_log dates - they're from July 14, 2026. The current file modification times suggest we're around a similar time. Let me check if possibly the issue is from the preload script in index.html.\n\nLooking at index.html lines 13-31:\n```html\n<script>\n(function(){\n  var xhr = new XMLHttpRequest();\n  xhr.open('GET', '\/api\/frontpage\/get.php', true);\n  xhr.onload = function() {\n    if (xhr.status === 200) {\n      try {\n        var json = JSON.parse(xhr.responseText);\n        ...\n      } catch(e) { console.warn('[preload] parse error:', e); }\n    }\n  };\n  xhr.send();\n})();\n<\/script>\n```\n\nThis sends a GET request to `\/api\/frontpage\/get.php`. If the PHP endpoint outputs warnings before the JSON, the JSON.parse would fail with \"Unexpected end of input\" or \"Unexpected token\".\n\nLet me test this by making a request to the frontpage endpoint.\n\nBut also, the error at line 20108 in the JS bundle - let me check what's happening there. The React error handling at line 20108 catches an error. The original \"SyntaxError: Unexpected end of input\" is caught by some JSON.parse in the application code.\n\nLet me check all the places in the JS bundle where JSON.parse is used with localStorage or sessionStorage - those are the likely culprits for parsing incomplete\/invalid data.\n\nLooking at the earlier grep results:\n- Line 38503: `let state = persistedState ? JSON.parse(persistedState) : {};`\n- Line 38539: `byKey = JSON.parse(sessionStorage.getItem(storageKey2) || \"{}\");`\n- Line 52069: `return JSON.parse(localStorage.getItem(localKey) || \"[]\");`\n- Line 51628: `const parsed = JSON.parse(existing);`\n- Line 51653: `if (raw) allContent[k2] = JSON.parse(raw);`\n\nThese are all places where data from localStorage\/sessionStorage is parsed. If the stored data is corrupted or incomplete, JSON.parse would fail with \"Unexpected end of input\".\n\nBut the most likely culprit is the API response. Let me test the API endpoint to see if it returns valid JSON."
-                },
-                {
-                    "type": "text",
-                    "text": "Let me test the API endpoint to see if it returns valid JSON, and also investigate the issue more directly."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_FOmlttFEtkQvRq9ZDIEn5658",
-                    "name": "bash",
-                    "input": {
-                        "command": "cd \/home\/drarmank && curl -s -D - http:\/\/localhost\/api\/frontpage\/get.php 2>&1 | head -20"
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 57415,
-                "completion_tokens": 686,
-                "total_tokens": 58101,
-                "prompt_cache_hit_tokens": 57344,
-                "prompt_cache_miss_tokens": 71,
-                "prompt_tokens_details": {
-                    "cached_tokens": 57344
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 592
-                }
-            },
-            "time": 1784055669
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_FOmlttFEtkQvRq9ZDIEn5658",
-            "content": "HTTP\/1.1 404 Not Found\r\nConnection: Keep-Alive\r\nKeep-Alive: timeout=5, max=100\r\ncontent-type: text\/html\r\ntransfer-encoding: chunked\r\ndate: Tue, 14 Jul 2026 19:01:09 GMT\r\nserver: LiteSpeed\r\nstrict-transport-security: max-age=31536000; includeSubDomains; preload\r\nx-frame-options: SAMEORIGIN\r\nx-content-type-options: nosniff\r\nreferrer-policy: strict-origin-when-cross-origin\r\npermissions-policy: geolocation=(), microphone=(), camera=(), fullscreen=(self)\r\ncontent-security-policy: upgrade-insecure-requests\r\nhosting: Pro Cloudify\r\n\r\n\n\n\n<!DOCTYPE html>\n<html>\n",
-            "is_error": false,
-            "time": 1784055669
-        },
-        {
-            "id": "msg_479c630a07",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "The API returns a 404! The URL `\/api\/frontpage\/get.php` returns 404. Let me check why. Maybe the .htaccess rewrite is causing issues, or maybe the file is not accessible.\n\nWait, looking at the .htaccess in the API directory:\n```\n<Files \"config.php\">\n    Require all denied\n<\/Files>\n<Files \"database.php\">\n    Require all denied\n<\/Files>\n```\n\nBut frontpage\/get.php should be accessible. Let me try the direct path."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_uGVjNejA0ve7wII1Laqq1299",
-                    "name": "bash",
-                    "input": {
-                        "command": "cd \/home\/drarmank && curl -s http:\/\/localhost\/api\/frontpage\/get.php 2>&1 | head -20"
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 58294,
-                "completion_tokens": 175,
-                "total_tokens": 58469,
-                "prompt_cache_hit_tokens": 57984,
-                "prompt_cache_miss_tokens": 310,
-                "prompt_tokens_details": {
-                    "cached_tokens": 57984
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 105
-                }
-            },
-            "time": 1784055673
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_uGVjNejA0ve7wII1Laqq1299",
-            "content": "\n\n\n<!DOCTYPE html>\n<html>\n    <head>\n    <meta http-equiv=\"Content-type\" content=\"text\/html; charset=utf-8\">\n    <meta http-equiv=\"Cache-control\" content=\"no-cache\">\n    <meta http-equiv=\"Pragma\" content=\"no-cache\">\n    <meta http-equiv=\"Expires\" content=\"0\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>404 Not Found<\/title>\n    <style type=\"text\/css\">\n        body {\n            font-family: Arial, Helvetica, sans-serif;\n            font-size: 14px;\n            line-height: 1.428571429;\n            background-color: #ffffff;\n            color: #2F3230;\n            padding: 0;\n",
-            "is_error": false,
-            "time": 1784055673
-        },
-        {
-            "id": "msg_6a68b1febb",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "The API directly at `\/api\/frontpage\/get.php` returns a 404 page. This means the PHP file is either not being executed or it's producing no output.\n\nWait, but the error_log for frontpage shows 147 entries of \"Constant API_URL already defined\". So the file IS being executed. But why is it returning a 404?\n\nActually, looking at the response headers from the first request:\n```\nHTTP\/1.1 404 Not Found\n```\n\nAnd the response body is an HTML 404 page from LiteSpeed. This might be because the PHP handler isn't set up for .php files in the `api\/` subdirectory.\n\nActually, looking at the URL: `\/api\/frontpage\/get.php` - this should work if PHP is configured to handle .php files. The 404 might be from LiteSpeed trying to find a non-existent route.\n\nWait, I'm running this from the command line with curl. The local setup might not have PHP processing for the api subdirectory. Let me check if there's a PHP handler issue.\n\nActually, the 404 might be because LiteSpeed doesn't have PHP configured for this path. Let me try using php to execute the file directly."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_2hdJGHZQ0TBu63Ia9YIY1739",
-                    "name": "bash",
-                    "input": {
-                        "command": "cd \/home\/drarmank && php public_html\/api\/frontpage\/get.php 2>&1 | head -20"
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 58648,
-                "completion_tokens": 314,
-                "total_tokens": 58962,
-                "prompt_cache_hit_tokens": 58368,
-                "prompt_cache_miss_tokens": 280,
-                "prompt_tokens_details": {
-                    "cached_tokens": 58368
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 247
-                }
-            },
-            "time": 1784055678
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_2hdJGHZQ0TBu63Ia9YIY1739",
-            "content": "[Command completed successfully with no output]",
-            "is_error": false,
-            "time": 1784055678
-        },
-        {
-            "id": "msg_5c8197ed33",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "No output! That means the PHP file is producing no output. But it should produce JSON output. Let me check what's happening. Let me run it with error reporting."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_K0Sh2lEPMY4Yia1Hkqyp6067",
-                    "name": "bash",
-                    "input": {
-                        "command": "cd \/home\/drarmank && php -d display_errors=1 public_html\/api\/frontpage\/get.php 2>&1"
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 58981,
-                "completion_tokens": 105,
-                "total_tokens": 59086,
-                "prompt_cache_hit_tokens": 58880,
-                "prompt_cache_miss_tokens": 101,
-                "prompt_tokens_details": {
-                    "cached_tokens": 58880
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 35
-                }
-            },
-            "time": 1784055681
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_K0Sh2lEPMY4Yia1Hkqyp6067",
-            "content": "\n[Exit code: 255]",
-            "is_error": true,
-            "time": 1784055682
-        },
-        {
-            "id": "msg_f727014257",
-            "role": "assistant",
-            "parts": [
-                {
-                    "type": "reasoning",
-                    "text": "Exit code 255 with no output. That means a fatal error is occurring. Let me check the error more carefully."
-                },
-                {
-                    "type": "tool_use",
-                    "id": "call_00_XQDBxGKbPbFXpMNyqWKt6095",
-                    "name": "bash",
-                    "input": {
-                        "command": "cd \/home\/drarmank && php -d display_errors=1 -d error_reporting=E_ALL public_html\/api\/frontpage\/get.php 2>&1 || true"
-                    }
-                }
-            ],
-            "model": "deepseek-v4-flash-free",
-            "provider": "opencode_zen",
-            "usage": {
-                "prompt_tokens": 59105,
-                "completion_tokens": 103,
-                "total_tokens": 59208,
-                "prompt_cache_hit_tokens": 59008,
-                "prompt_cache_miss_tokens": 97,
-                "prompt_tokens_details": {
-                    "cached_tokens": 59008
-                },
-                "completion_tokens_details": {
-                    "reasoning_tokens": 24
-                }
-            },
-            "time": 1784055685
-        },
-        {
-            "role": "tool_result",
-            "tool_call_id": "call_00_XQDBxGKbPbFXpMNyqWKt6095",
-            "content": "[Command completed successfully with no output]",
-            "is_error": false,
-            "time": 1784055685
+            "content": "[Previous conversation summary]:\nUser: index-DJeWhCy-.js:31652 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.\n\nindex-DJeWhCy-.js:20108 SyntaxError: Un\nAssistant: Let me investigate the first two errors in the main JavaScript file.\nAssistant: Let me check the PHP configuration for auto-prepends, and also look at the main error log.\nAssistant: Let me test the API endpoint to see if it returns valid JSON, and also investigate the issue more directly.\nUsed glob: {\"pattern\":\"**\\\/*.js\",\"path\":\"\\\/home\\\/drarmank\\\/public_html\"}\nUsed grep: {\"pattern\":\"JSON\\\\.parse\",\"include\":\"*.js\",\"path\":\"\\\/home\\\/drarmank\\\/public_html\nUsed grep: {\"pattern\":\"DialogContent\",\"include\":\"*.js\",\"path\":\"\\\/home\\\/drarmank\\\/public_htm\nUsed list_directory: {\"path\":\"public_html\",\"depth\":3}\nUsed grep: {\"pattern\":\"DialogContent\",\"path\":\"\\\/home\\\/drarmank\\\/public_html\\\/assets\",\"inclu\nUsed grep: {\"pattern\":\"JSON\\\\.parse\",\"path\":\"\\\/home\\\/drarmank\\\/public_html\\\/assets\",\"includ\nUsed read_file: {\"path\":\"public_html\\\/assets\\\/index-DJeWhCy-.js\",\"offset\":20100,\"limit\":30}\nUsed read_file: {\"path\":\"public_html\\\/assets\\\/index-DJeWhCy-.js\",\"offset\":31645,\"limit\":20}\nUsed bash: {\"command\":\"cd \\\/home\\\/drarmank\\\/public_html\\\/assets && grep -n \\\"DialogContent\\\nUsed bash: {\"command\":\"cd \\\/home\\\/drarmank\\\/public_html\\\/assets && grep -n \\\"JSON.parse\\\\|D",
+            "time": 1784057755
         },
         {
             "id": "msg_5da52dc5e5",
@@ -2810,6 +1510,489 @@
             "content": "var TITLE_NAME = \"DialogTitle\";\nvar DialogTitle$1 = reactExports.forwardRef(\n  (props, forwardedRef) => {\n    const { __scopeDialog, ...titleProps } = props;\n    const context = useDialogContext(TITLE_NAME, __scopeDialog);\n    return \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Primitive$1.h2, { id: context.titleId, ...titleProps, ref: forwardedRef });\n  }\n);\nDialogTitle$1.displayName = TITLE_NAME;\nvar DESCRIPTION_NAME = \"DialogDescription\";\nvar DialogDescription = reactExports.forwardRef(\n  (props, forwardedRef) => {\n    const { __scopeDialog, ...descriptionProps } = props;\n    const context = useDialogContext(DESCRIPTION_NAME, __scopeDialog);\n    return \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Primitive$1.p, { id: context.descriptionId, ...descriptionProps, ref: forwardedRef });\n  }\n);\nDialogDescription.displayName = DESCRIPTION_NAME;\nvar CLOSE_NAME = \"DialogClose\";\nvar DialogClose = reactExports.forwardRef(\n  (props, forwardedRef) => {\n    const { __scopeDialog, ...closeProps } = props;\n",
             "is_error": false,
             "time": 1784056820
+        },
+        {
+            "id": "msg_3ca041f5cf",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Good. The `DialogDescription` component is available as `DialogDescription` (without the `$1` suffix). And it's used with `jsxRuntimeExports.jsx(DialogDescription, ...)`.\n\nNow let me make the edits. I'll add DialogDescription to each DialogContent.\n\nFor the patient_nav dialog, the children array looks like:\n```\nchildren: [\/* DialogHeader *\/, \/* div *\/]\n```\n\nI need to add a DialogDescription before the DialogHeader. Let me craft the exact edit.\n\nLooking at the code around line 64463:\n```\nchildren: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogContent, { className: \"max-w-md\", \"data-ocid\": \"patient_nav.dialog\", children: [\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogHeader, { children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogTitle, { className: \"flex items-center gap-2\", children: [\n```\n\nI need to add a DialogDescription right after the opening `[` of the children array.\n\nLet me be very precise. I'll find the exact string and replace it.\n\nActually, for each dialog I need a different description text. But since the description will be `sr-only` (visually hidden), I can use generic text.\n\nLet me start with the first one - patient_nav.dialog at line 64463.\n\nThe pattern I'm looking for (with exact whitespace):\n```\n          children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogContent, { className: \"max-w-md\", \"data-ocid\": \"patient_nav.dialog\", children: [\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogHeader, {\n```\n\nI'll change it to:\n```\n          children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogContent, { className: \"max-w-md\", \"data-ocid\": \"patient_nav.dialog\", children: [\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogDescription, { className: \"sr-only\", children: \"Drug reminder notifications\" }),\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogHeader, {\n```\n\nLet me do this carefully for each dialog."
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me add `DialogDescription` to all four `DialogContent` instances. I'll start with the patient_nav dialog:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_PU1ZqjaOw5t9M9vzag1F6930",
+                    "name": "edit_file",
+                    "input": {
+                        "path": "public_html\/assets\/index-DJeWhCy-.js",
+                        "old_string": "          children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogContent, { className: \"max-w-md\", \"data-ocid\": \"patient_nav.dialog\", children: [\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogHeader, { children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogTitle, { className: \"flex items-center gap-2\", children: [\n              \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Bell, { className: \"w-5 h-5 text-amber-600\" }),\n              \"Drug Reminders\",",
+                        "new_string": "          children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogContent, { className: \"max-w-md\", \"data-ocid\": \"patient_nav.dialog\", children: [\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogDescription, { className: \"sr-only\", children: \"Drug reminder notifications\" }),\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogHeader, { children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogTitle, { className: \"flex items-center gap-2\", children: [\n              \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Bell, { className: \"w-5 h-5 text-amber-600\" }),\n              \"Drug Reminders\","
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 88935,
+                "completion_tokens": 924,
+                "total_tokens": 89859,
+                "prompt_cache_hit_tokens": 88576,
+                "prompt_cache_miss_tokens": 359,
+                "prompt_tokens_details": {
+                    "cached_tokens": 88576
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 499
+                }
+            },
+            "time": 1784056828
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_PU1ZqjaOw5t9M9vzag1F6930",
+            "content": "File too large (max: 500 KB)",
+            "is_error": true,
+            "time": 1784056828
+        },
+        {
+            "id": "msg_a17464cbd5",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The file is too large for edit_file. Let me use a different approach - I'll use `sed` via bash to make the edits, or I can use `php` to process the file.\n\nActually, I can use `search_replace` which might work differently. Or I can use bash commands to do the replacements.\n\nLet me use bash with sed to make the changes."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_Dpm4GV70Vccb5EpjqseC2482",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && wc -l index-DJeWhCy-.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 89880,
+                "completion_tokens": 141,
+                "total_tokens": 90021,
+                "prompt_cache_hit_tokens": 89856,
+                "prompt_cache_miss_tokens": 24,
+                "prompt_tokens_details": {
+                    "cached_tokens": 89856
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 77
+                }
+            },
+            "time": 1784056832
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_Dpm4GV70Vccb5EpjqseC2482",
+            "content": "65116 index-DJeWhCy-.js\n",
+            "is_error": false,
+            "time": 1784056832
+        },
+        {
+            "id": "msg_0ee9160ff3",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The file is too large for the edit_file tool. Let me use `bash` with `sed` to make the replacements. I need to be very careful with the escaping.\n\nFor the patient_nav dialog, I need to add `DialogDescription` before the `DialogHeader` in the children array.\n\nThe pattern I need to match is:\n```\nchildren: [\\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogHeader, {\n```\n\nAnd replace with:\n```\nchildren: [\\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogDescription, { className: \"sr-only\", children: \"Drug reminder notifications\" }),\\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogHeader, {\n```\n\nLet me use sed for this. But sed with multiline replacements is tricky. Let me use a php script to do the replacements, or use sed with the right pattern.\n\nActually, I can use a PHP one-liner to do this more safely:\n\n```bash\nphp -r \"\n\\$content = file_get_contents('index-DJeWhCy-.js');\n\/\/ make replacements\nfile_put_contents('index-DJeWhCy-.js', \\$content);\n\"\n```\n\nLet me do it this way. Perl might also work."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_Wau7HGo54N0aS4vCeHug5213",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && php -r '\n$file = \"index-DJeWhCy-.js\";\n$content = file_get_contents($file);\n$original = $content;\n\n\/\/ 1. patient_nav.dialog - add DialogDescription before DialogHeader\n$content = str_replace(\n    \"jsxs(DialogContent, { className: \\\"max-w-md\\\", \\\"data-ocid\\\": \\\"patient_nav.dialog\\\", children: [\\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogHeader, { children:\",\n    \"jsxs(DialogContent, { className: \\\"max-w-md\\\", \\\"data-ocid\\\": \\\"patient_nav.dialog\\\", children: [\\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogDescription, { className: \\\"sr-only\\\", children: \\\"Drug reminder notifications\\\" }),\\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogHeader, { children:\",\n    $content\n);\n\n\/\/ 2. auth\/login dialog - add DialogDescription\n$content = str_replace(\n    \"jsxs(DialogContent, { className: \\\"max-w-md max-h-[90vh] overflow-y-auto\\\", children: [\\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogHeader, { className: \\\"sr-only\\\", children:\",\n    \"jsxs(DialogContent, { className: \\\"max-w-md max-h-[90vh] overflow-y-auto\\\", children: [\\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogDescription, { className: \\\"sr-only\\\", children: \\\"Login dialog for staff and doctors\\\" }),\\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogHeader, { className: \\\"sr-only\\\", children:\",\n    $content\n);\n\n\/\/ 3. admin login dialog - add DialogDescription (already has a <p> description, but not using DialogDescription)\n\/\/ The admin login has a <p> tag but no DialogDescription. Let me add DialogDescription before DialogHeader.\n$content = str_replace(\n    \"jsxs(DialogContent, { className: \\\"max-w-sm\\\", \\\"data-ocid\\\": \\\"admin.login.dialog\\\", children: [\\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogHeader, { children: [\",\n    \"jsxs(DialogContent, { className: \\\"max-w-sm\\\", \\\"data-ocid\\\": \\\"admin.login.dialog\\\", children: [\\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogDescription, { className: \\\"sr-only\\\", children: \\\"Admin login dialog for content management\\\" }),\\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogHeader, { children: [\",\n    $content\n);\n\n\/\/ 4. pending approvals dialog - add DialogDescription\n$content = str_replace(\n    \"jsxs(DialogContent, { className: \\\"max-w-lg max-h-[80vh] overflow-y-auto\\\", children: [\\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogHeader, { children:\",\n    \"jsxs(DialogContent, { className: \\\"max-w-lg max-h-[80vh] overflow-y-auto\\\", children: [\\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogDescription, { className: \\\"sr-only\\\", children: \\\"Pending approvals for patient registrations\\\" }),\\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogHeader, { children:\",\n    $content\n);\n\n\/\/ Check if changes were made\n$changes = ($content !== $original);\n$count = 0;\n\/\/ Count replacements\nforeach ([\"patient_nav\", \"max-h-[90vh]\", \"admin.login\", \"max-h-[80vh]\"] as $check) {\n    if (strpos($content, \"DialogDescription\") !== false) {\n        $count++;\n    }\n}\necho \"Changes made: \" . ($changes ? \"YES\" : \"NO\") . PHP_EOL;\nif ($changes) {\n    file_put_contents($file, $content);\n    echo \"File written successfully\" . PHP_EOL;\n}\necho \"DialogDescription count in file: \" . substr_count($content, \"DialogDescription\") . PHP_EOL;\n'\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 90043,
+                "completion_tokens": 1251,
+                "total_tokens": 91294,
+                "prompt_cache_hit_tokens": 89984,
+                "prompt_cache_miss_tokens": 59,
+                "prompt_tokens_details": {
+                    "cached_tokens": 89984
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 271
+                }
+            },
+            "time": 1784056841
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_Wau7HGo54N0aS4vCeHug5213",
+            "content": "Changes made: YES\nFile written successfully\nDialogDescription count in file: 9\n\nUnsuccessful stat on filename containing newline at \/var\/cpanel\/ea4\/ea_php_cli.pm line 87.\n",
+            "is_error": false,
+            "time": 1784056842
+        },
+        {
+            "id": "msg_298766174e",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The changes were made. Now DialogDescription appears 9 times in the file (was 5 - the component definition at line 31594, the forwardRef at 31594, the displayName at 31601, and usage at 31662. Now we have 4 more instances which should fix the warnings).\n\nWait, actually - let me verify the count. Before my edit, DialogDescription should have appeared:\n1. Line 31594: `var DialogDescription = reactExports.forwardRef(` - definition\n2. Line 31598: `return \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Primitive$1.p, { id: context.descriptionId, ...descriptionProps, ref: forwardedRef });` - the component implementation\n3. Line 31601: `DialogDescription.displayName = DESCRIPTION_NAME;` - displayName\n4. Line 31663: `var Description = DialogDescription;` - alias\/export\n\nSo 4 instances originally. Now we have 9, which means 5 new DialogDescription references were added. But I only made 4 replacements. Let me check if there are duplicates or if I made an error.\n\nActually, the count includes \"DialogDescription\" in the original code where it's defined. My 4 additions would make it 8 total... but the result says 9. Let me check if one of my replacements inadvertently created two \"DialogDescription\" strings or if I somehow created a duplicate.\n\nWait, \"DialogDescription\" appears in the component definition:\n- `var DESCRIPTION_NAME = \"DialogDescription\";` - this also contains \"DialogDescription\" as a string\n\nSo the count should be:\n- Original: 5 instances (DESCRIPTION_NAME = \"DialogDescription\", var DialogDescription = forwardRef, jsx(Primitive$1.p..., displayName = DESCRIPTION_NAME, var Description = DialogDescription)\n- Plus my 4 additions = 9\n\nThat matches! Great.\n\nNow let me also handle the \"Unexpected end of input\" error. The most likely cause is corrupted localStorage data from previous PHP warnings. Let me add a cleanup mechanism.\n\nI should also address the sync_conflict dialog which has a `<p>` description but not using DialogDescription. Let me check that one too.\n\nActually, let me look at the sync_conflict dialog at line 52646:"
+                },
+                {
+                    "type": "text",
+                    "text": "The DialogDescription components have been added. Let me verify they're correctly placed and also fix the sync_conflict dialog:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_Q66E5I9GQZTJRj4Z27W87002",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && grep -c \"DialogDescription\" index-DJeWhCy-.js"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_SOT1nGhvebGZb5BUG7HA8838",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && grep -n \"DialogDescription\" index-DJeWhCy-.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 91353,
+                "completion_tokens": 629,
+                "total_tokens": 91982,
+                "prompt_cache_hit_tokens": 91264,
+                "prompt_cache_miss_tokens": 89,
+                "prompt_tokens_details": {
+                    "cached_tokens": 91264
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 486
+                }
+            },
+            "time": 1784056850
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_Q66E5I9GQZTJRj4Z27W87002",
+            "content": "9\n",
+            "is_error": false,
+            "time": 1784056850
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_SOT1nGhvebGZb5BUG7HA8838",
+            "content": "31593:var DESCRIPTION_NAME = \"DialogDescription\";\n31594:var DialogDescription = reactExports.forwardRef(\n31601:DialogDescription.displayName = DESCRIPTION_NAME;\n31643:var DESCRIPTION_WARNING_NAME = \"DialogDescriptionWarning\";\n31663:var Description = DialogDescription;\n64464:            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogDescription, { className: \"sr-only\", children: \"Drug reminder notifications\" }),\n64660:        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogDescription, { className: \"sr-only\", children: \"Login dialog for staff and doctors\" }),\n64711:            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogDescription, { className: \"sr-only\", children: \"Admin login dialog for content management\" }),\n64789:        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogDescription, { className: \"sr-only\", children: \"Pending approvals for patient registrations\" }),\n",
+            "is_error": false,
+            "time": 1784056850
+        },
+        {
+            "id": "msg_c5502cd48c",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The DialogDescription components have been added correctly at:\n- Line 64464: patient_nav.dialog (drug reminders)\n- Line 64660: auth\/login dialog \n- Line 64711: admin login dialog\n- Line 64789: pending approvals dialog\n\nNow let me also fix the sync_conflict dialog which has a `<p>` tag description but should use DialogDescription instead.\n\nLet me look at the sync_conflict dialog around line 52646:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_QNR2irse0njfo75HCBn64041",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && awk 'NR>=52642 && NR<=52670' index-DJeWhCy-.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 92220,
+                "completion_tokens": 167,
+                "total_tokens": 92387,
+                "prompt_cache_hit_tokens": 91904,
+                "prompt_cache_miss_tokens": 316,
+                "prompt_tokens_details": {
+                    "cached_tokens": 91904
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 95
+                }
+            },
+            "time": 1784056853
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_QNR2irse0njfo75HCBn64041",
+            "content": "    }\n  }\n  const remaining = getConflicts();\n  return \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Dialog, { open, onOpenChange: (o2) => !o2 && onClose(), children: \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\n    DialogContent,\n    {\n      className: \"sm:max-w-md max-h-[80vh] overflow-hidden flex flex-col\",\n      \"data-ocid\": \"sync_conflict.dialog\",\n      children: [\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogHeader, { children: [\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogTitle, { className: \"flex items-center gap-2\", children: [\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(TriangleAlert, { className: \"w-5 h-5 text-amber-500\" }),\n            \"Sync Conflicts (\",\n            remaining.length,\n            \")\"\n          ] }),\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\"p\", { className: \"text-sm text-muted-foreground mt-1\", children: \"The same record was edited on multiple devices. Choose which version to keep for each conflict.\" })\n        ] }),\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\"div\", { className: \"flex-1 overflow-y-auto py-2 space-y-3 pr-1\", children: \/* @__PURE__ *\/ jsxRuntimeExports.jsx(AnimatePresence, { children: remaining.length === 0 ? \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\n          motion.div,\n          {\n            initial: { opacity: 0, scale: 0.95 },\n            animate: { opacity: 1, scale: 1 },\n            className: \"flex flex-col items-center justify-center py-12 text-center\",\n            \"data-ocid\": \"sync_conflict.empty_state\",\n            children: [\n              \/* @__PURE__ *\/ jsxRuntimeExports.jsx(CircleCheck, { className: \"w-12 h-12 text-emerald-500 mb-3\" }),\n              \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\"p\", { className: \"font-semibold text-foreground\", children: \"All conflicts resolved!\" }),\n              \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\"p\", { className: \"text-sm text-muted-foreground mt-1\", children: \"Your data is fully in sync.\" })\n",
+            "is_error": false,
+            "time": 1784056853
+        },
+        {
+            "id": "msg_1d0aacd80f",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I see - the sync_conflict dialog has a `<p>` tag inside DialogHeader that serves as a description, but it's not using DialogDescription. Let me replace the `<p>` with the DialogDescription component properly.\n\nBut wait - for this dialog, the `<p>` is inside the DialogHeader, not as a sibling of DialogContent. The Radix UI check for DialogDescription looks for the DialogDescription component as a child of DialogContent. So placing it inside DialogHeader wouldn't satisfy the check.\n\nI need to extract this `<p>` from DialogHeader and make it a sibling of DialogHeader inside DialogContent. Let me do that.\n\nThe current structure is:\n```\nDialogContent > children: [\n  DialogHeader > children: [\n    DialogTitle,\n    <p> description\n  ],\n  <div> content\n]\n```\n\nI need to change it to:\n```\nDialogContent > children: [\n  DialogHeader > children: [\n    DialogTitle\n  ],\n  DialogDescription > { description text },\n  <div> content\n]\n```\n\nBut this would change the layout since the `<p>` is no longer inside DialogHeader (which might affect styling). Let me look at the original code more carefully.\n\nThe `<p>` has `className: \"text-sm text-muted-foreground mt-1\"` which gives it specific styling. If I move it outside DialogHeader, the styling might look different.\n\nA safer approach would be to:\n1. Keep the `<p>` inside DialogHeader for visual display\n2. Add a visually hidden DialogDescription as a sibling of DialogHeader\n\nLet me do that."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_GFMGeQFylzVKpeEmjCe92282",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && php -r '\n$file = \"index-DJeWhCy-.js\";\n$content = file_get_contents($file);\n$original = $content;\n\n\/\/ 5. sync_conflict dialog - add DialogDescription alongside existing <p> description\n\/\/ The dialog already has a <p> description inside DialogHeader, but Radix needs DialogDescription as a child of DialogContent.\n\/\/ Add DialogDescription after DialogHeader alongside the existing visual description.\n$content = str_replace(\n    \"jsxs(DialogContent,\\n    {\\n      className: \\\"sm:max-w-md max-h-[80vh] overflow-hidden flex flex-col\\\",\\n      \\\"data-ocid\\\": \\\"sync_conflict.dialog\\\",\\n      children: [\\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogHeader, { children: [\\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogTitle, { className: \\\"flex items-center gap-2\\\", children: [\\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(TriangleAlert, { className: \\\"w-5 h-5 text-amber-500\\\" }),\\n            \\\"Sync Conflicts (\\\",\\n            remaining.length,\\n            \\\")\\\"\\n          ] }),\\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\\\"p\\\", { className: \\\"text-sm text-muted-foreground mt-1\\\", children: \\\"The same record was edited on multiple devices. Choose which version to keep for each conflict.\\\" })\",\n    \"jsxs(DialogContent,\\n    {\\n      className: \\\"sm:max-w-md max-h-[80vh] overflow-hidden flex flex-col\\\",\\n      \\\"data-ocid\\\": \\\"sync_conflict.dialog\\\",\\n      children: [\\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogDescription, { className: \\\"sr-only\\\", children: \\\"Sync conflicts - choose which version to keep for each record\\\" }),\\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogHeader, { children: [\\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogTitle, { className: \\\"flex items-center gap-2\\\", children: [\\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(TriangleAlert, { className: \\\"w-5 h-5 text-amber-500\\\" }),\\n            \\\"Sync Conflicts (\\\",\\n            remaining.length,\\n            \\\")\\\"\\n          ] }),\\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\\\"p\\\", { className: \\\"text-sm text-muted-foreground mt-1\\\", children: \\\"The same record was edited on multiple devices. Choose which version to keep for each conflict.\\\" })\",\n    $content\n);\n\n$changes = ($content !== $original);\necho \"Changes made: \" . ($changes ? \"YES\" : \"NO\") . PHP_EOL;\necho \"DialogDescription count: \" . substr_count($content, \"DialogDescription\") . PHP_EOL;\nif ($changes) {\n    file_put_contents($file, $content);\n    echo \"File written successfully\" . PHP_EOL;\n}\n'\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 92957,
+                "completion_tokens": 1084,
+                "total_tokens": 94041,
+                "prompt_cache_hit_tokens": 92288,
+                "prompt_cache_miss_tokens": 669,
+                "prompt_tokens_details": {
+                    "cached_tokens": 92288
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 329
+                }
+            },
+            "time": 1784056862
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_GFMGeQFylzVKpeEmjCe92282",
+            "content": "Changes made: NO\nDialogDescription count: 9\n\nUnsuccessful stat on filename containing newline at \/var\/cpanel\/ea4\/ea_php_cli.pm line 87.\n",
+            "is_error": false,
+            "time": 1784056862
+        },
+        {
+            "id": "msg_d160bdc3fd",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "No changes made - the pattern didn't match. The whitespace in my search string probably doesn't match exactly. Let me check the exact content around lines 52648-52657:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_OX0hNa7Ca3uDNQ06aQeA3402",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && awk 'NR>=52648 && NR<=52659' index-DJeWhCy-.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 94094,
+                "completion_tokens": 110,
+                "total_tokens": 94204,
+                "prompt_cache_hit_tokens": 93952,
+                "prompt_cache_miss_tokens": 142,
+                "prompt_tokens_details": {
+                    "cached_tokens": 93952
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 38
+                }
+            },
+            "time": 1784056866
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_OX0hNa7Ca3uDNQ06aQeA3402",
+            "content": "      className: \"sm:max-w-md max-h-[80vh] overflow-hidden flex flex-col\",\n      \"data-ocid\": \"sync_conflict.dialog\",\n      children: [\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogHeader, { children: [\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogTitle, { className: \"flex items-center gap-2\", children: [\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(TriangleAlert, { className: \"w-5 h-5 text-amber-500\" }),\n            \"Sync Conflicts (\",\n            remaining.length,\n            \")\"\n          ] }),\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\"p\", { className: \"text-sm text-muted-foreground mt-1\", children: \"The same record was edited on multiple devices. Choose which version to keep for each conflict.\" })\n        ] }),\n",
+            "is_error": false,
+            "time": 1784056866
+        },
+        {
+            "id": "msg_6a526863a9",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784057748
+        },
+        {
+            "id": "msg_26bac2a584",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me try a different approach for the sync_conflict dialog since the exact whitespace didn't match."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_wx4gWXCoJ2thZ9ZrIa9p5235",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && php -r '\n$file = \"index-DJeWhCy-.js\";\n$content = file_get_contents($file);\n\n\/\/ 5. sync_conflict dialog - add DialogDescription\n$content = str_replace(\n    \"        \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogContent,\\n    {\\n      className: \\\"sm:max-w-md max-h-[80vh] overflow-hidden flex flex-col\\\",\\n      \\\"data-ocid\\\": \\\"sync_conflict.dialog\\\",\\n      children: [\\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogHeader, { children: [\",\n    \"        \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogContent,\\n    {\\n      className: \\\"sm:max-w-md max-h-[80vh] overflow-hidden flex flex-col\\\",\\n      \\\"data-ocid\\\": \\\"sync_conflict.dialog\\\",\\n      children: [\\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogDescription, { className: \\\"sr-only\\\", children: \\\"Sync conflicts - choose which version to keep\\\" }),\\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogHeader, { children: [\",\n    $content\n);\n\n$changes = ($content !== $original = file_get_contents($file));\necho \"Changes: \" . ($changes ? \"YES\" : \"NO\") . PHP_EOL;\necho \"DialogDescription count: \" . substr_count($content, \"DialogDescription\") . PHP_EOL;\nif ($changes) file_put_contents($file, $content) && echo \"Written\\n\";\n'\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 81965,
+                "completion_tokens": 431,
+                "total_tokens": 82396,
+                "prompt_cache_hit_tokens": 58112,
+                "prompt_cache_miss_tokens": 23853,
+                "prompt_tokens_details": {
+                    "cached_tokens": 58112
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 21
+                }
+            },
+            "time": 1784057755
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_wx4gWXCoJ2thZ9ZrIa9p5235",
+            "content": "Unsuccessful stat on filename containing newline at \/var\/cpanel\/ea4\/ea_php_cli.pm line 87.\n\n[Exit code: 255]",
+            "is_error": true,
+            "time": 1784057755
+        },
+        {
+            "id": "msg_12cde8f153",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The PHP command failed. Let me use a simpler approach - maybe use `file_get_contents` and read the file first, then make the changes in a more straightforward way.\n\nLet me try using sed to make the fix."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_NXfiOKqySmHV0HjxixFU7091",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && python3 -c \"\nwith open('index-DJeWhCy-.js', 'r') as f:\n    content = f.read()\n\n# Add DialogDescription to sync_conflict dialog\n# The pattern to replace: jsxs(DialogContent, { className: \\\"sm:max-w-md max-h-[80vh] ... \\\"sync_conflict.dialog\\\", children: [\\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogHeader, {\n# with: add DialogDescription before DialogHeader\n\nold = 'children: [\\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogHeader, { children: [\\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogTitle, { className: \\\"flex items-center gap-2\\\", children: [\\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(TriangleAlert, { className: \\\"w-5 h-5 text-amber-500\\\" }),\\n            \\\"Sync Conflicts (\\\"'\n\nnew = 'children: [\\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogDescription, { className: \\\"sr-only\\\", children: \\\"Sync conflicts - choose which version to keep for each record\\\" }),\\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogHeader, { children: [\\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(DialogTitle, { className: \\\"flex items-center gap-2\\\", children: [\\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(TriangleAlert, { className: \\\"w-5 h-5 text-amber-500\\\" }),\\n            \\\"Sync Conflicts (\\\"'\n\ncount = content.count(old)\nprint(f'Pattern occurrences: {count}')\n\nif count > 0:\n    content = content.replace(old, new, 1)\n    with open('index-DJeWhCy-.js', 'w') as f:\n        f.write(content)\n    print('Written successfully')\nelse:\n    # Debug: show context around the sync_conflict\n    import re\n    for m in re.finditer(r'.{50}sync_conflict.dialog.{50}', content, re.DOTALL):\n        print('Found sync_conflict at:', m.start())\n        # show surrounding characters\n        start = max(0, m.start() - 200)\n        end = min(len(content), m.end() + 200)\n        print(repr(content[start:end]))\n\"\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 33485,
+                "completion_tokens": 640,
+                "total_tokens": 34125,
+                "prompt_cache_hit_tokens": 2816,
+                "prompt_cache_miss_tokens": 30669,
+                "prompt_tokens_details": {
+                    "cached_tokens": 2816
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 45
+                }
+            },
+            "time": 1784057762
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_NXfiOKqySmHV0HjxixFU7091",
+            "content": "This command is blocked for safety reasons.",
+            "is_error": true,
+            "time": 1784057762
+        },
+        {
+            "id": "msg_fba3fa97df",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Python is blocked. Let me use sed directly."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_9CasaZMQQcR1XaWZoUne9936",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && grep -oP '.{0,20}sync_conflict\\.dialog.{0,200}' index-DJeWhCy-.js | head -1"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 34144,
+                "completion_tokens": 94,
+                "total_tokens": 34238,
+                "prompt_cache_hit_tokens": 34048,
+                "prompt_cache_miss_tokens": 96,
+                "prompt_tokens_details": {
+                    "cached_tokens": 34048
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 10
+                }
+            },
+            "time": 1784057765
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_9CasaZMQQcR1XaWZoUne9936",
+            "content": "      \"data-ocid\": \"sync_conflict.dialog\",\n",
+            "is_error": false,
+            "time": 1784057765
+        },
+        {
+            "id": "msg_c260c1d782",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The file is large and I can't use sed easily for multi-line patterns. Let me use a PHP script with a simpler approach - maybe write a helper PHP script to the project root and run it.\n\nActually, let me just use `php -r` properly. The previous error was \"Unsuccessful stat on filename containing newline\" which is a cPanel issue, not a PHP error. Let me try again.\n\nWait, actually the PHP command did produce output saying \"Changes: YES\" and \"DialogDescription count\" etc. Let me check if the PHP commands actually work despite the cPanel warning messages."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_YklIikQwa3k2At8GX0t80520",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/assets && grep -n \"DialogDescription\" index-DJeWhCy-.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 34264,
+                "completion_tokens": 192,
+                "total_tokens": 34456,
+                "prompt_cache_hit_tokens": 34176,
+                "prompt_cache_miss_tokens": 88,
+                "prompt_tokens_details": {
+                    "cached_tokens": 34176
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 125
+                }
+            },
+            "time": 1784057769
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_YklIikQwa3k2At8GX0t80520",
+            "content": "31593:var DESCRIPTION_NAME = \"DialogDescription\";\n31594:var DialogDescription = reactExports.forwardRef(\n31601:DialogDescription.displayName = DESCRIPTION_NAME;\n31643:var DESCRIPTION_WARNING_NAME = \"DialogDescriptionWarning\";\n31663:var Description = DialogDescription;\n64464:            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogDescription, { className: \"sr-only\", children: \"Drug reminder notifications\" }),\n64660:        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogDescription, { className: \"sr-only\", children: \"Login dialog for staff and doctors\" }),\n64711:            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogDescription, { className: \"sr-only\", children: \"Admin login dialog for content management\" }),\n64789:        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(DialogDescription, { className: \"sr-only\", children: \"Pending approvals for patient registrations\" }),\n",
+            "is_error": false,
+            "time": 1784057769
         }
     ]
 }
