@@ -22,7 +22,7 @@
         }
     ],
     "created_at": 1784045378,
-    "updated_at": 1784049275,
+    "updated_at": 1784049292,
     "messages": [
         {
             "id": "msg_db434d3362",
@@ -823,6 +823,184 @@
             "content": "1:\/\/ Note: EmergencyConsultationModal is defined later in this fileconst __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=[\"assets\/index-DJeWhCy-.js\",\"assets\/index-JEdqxkTH.css\"])))=>i.map(i=>d[i]);\n5901:                                }, true ? __vite__mapDeps([0,1]) : void 0).then(",
             "is_error": false,
             "time": 1784049275
+        },
+        {
+            "id": "msg_a542d79ca4",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "So `__vite__mapDeps` IS used at line 5901. I need to keep it, but it must be placed after the import statements. Let me restructure the file properly.\n\nI'll:\n1. Keep the import statements at the top\n2. Place the `const __vite__mapDeps` after the imports\n3. Remove my placeholder comment\n\nLet me do this properly by editing the file."
+                },
+                {
+                    "type": "text",
+                    "text": "The `__vite__mapDeps` is used at line 5901, so it needs to stay but must come **after** the imports. Let me fix this properly:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_DwfPNfZ6dqOIU1bRjNUK7931",
+                    "name": "edit_file",
+                    "input": {
+                        "path": "public_html\/assets\/LandingPage-Dv8SefYP.js",
+                        "old_string": "\/\/ Note: EmergencyConsultationModal is defined later in this fileconst __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=[\"assets\/index-DJeWhCy-.js\",\"assets\/index-JEdqxkTH.css\"])))=>i.map(i=>d[i]);\nimport { i as createLucideIcon, j as jsxRuntimeExports, ar as Root, as as Content, at as Close, X, ac as cn, au as Title, av as Portal, aw as Overlay, r as reactExports, T as Tabs, l as TabsList, n as TabsTrigger, p as TabsContent, B as Button, u as ue, L as Label, I as Input, ah as CirclePlus, ax as saveFrontPageContentWithSync, D as Dialog, s as DialogContent, t as DialogHeader, ab as TriangleAlert, v as DialogTitle, S as Select, d as SelectTrigger, e as SelectValue, f as SelectContent, g as SelectItem, m as motion, o as Stethoscope, h as Badge, ay as ShieldCheck, az as Menu, A as AnimatePresence, k as CalendarDays, _ as __vitePreload, z as LoaderCircle, c as Clock, b as CircleCheck, ao as ChevronRight, a3 as Users } from \".\/index-DJeWhCy-.js\";",
+                        "new_string": "import { i as createLucideIcon, j as jsxRuntimeExports, ar as Root, as as Content, at as Close, X, ac as cn, au as Title, av as Portal, aw as Overlay, r as reactExports, T as Tabs, l as TabsList, n as TabsTrigger, p as TabsContent, B as Button, u as ue, L as Label, I as Input, ah as CirclePlus, ax as saveFrontPageContentWithSync, D as Dialog, s as DialogContent, t as DialogHeader, ab as TriangleAlert, v as DialogTitle, S as Select, d as SelectTrigger, e as SelectValue, f as SelectContent, g as SelectItem, m as motion, o as Stethoscope, h as Badge, ay as ShieldCheck, az as Menu, A as AnimatePresence, k as CalendarDays, _ as __vitePreload, z as LoaderCircle, c as Clock, b as CircleCheck, ao as ChevronRight, a3 as Users } from \".\/index-DJeWhCy-.js\";"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 47427,
+                "completion_tokens": 755,
+                "total_tokens": 48182,
+                "prompt_cache_hit_tokens": 47232,
+                "prompt_cache_miss_tokens": 195,
+                "prompt_tokens_details": {
+                    "cached_tokens": 47232
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 90
+                }
+            },
+            "time": 1784049282
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_DwfPNfZ6dqOIU1bRjNUK7931",
+            "content": "Edited public_html\/assets\/LandingPage-Dv8SefYP.js (1 replacement)\n- \/\/ Note: EmergencyConsultationModal is defined later in this fileconst __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=[\"assets\/index-DJeWhCy-.js\",\"assets\/index-JEdqxkTH.css\"])))=>i.map(i=>d[i]);\n- import { i as createLucideIcon, j as jsxRuntimeExports, ar as Root, as as Content, at as Close, X, ac as cn, au as Title, av as Portal, aw as Overlay, r as reactExports, T as Tabs, l as TabsList, n as TabsTrigger, p as TabsContent, B as Button, u as ue, L as Label, I as Input, ah as CirclePlus, ax as saveFrontPageContentWithSync, D as Dialog, s as DialogContent, t as DialogHeader, ab as TriangleAlert, v as DialogTitle, S as Select, d as SelectTrigger, e as SelectValue, f as SelectContent, g as SelectItem, m as motion, o as Stethoscope, h as Badge, ay as ShieldCheck, az as Menu, A as AnimatePresence, k as CalendarDays, _ as __vitePreload, z as LoaderCircle, c as Clock, b as CircleCheck, ao as ChevronRight, a3 as Users } from \".\/index-DJeWhCy-.js\";\n+ import { i as createLucideIcon, j as jsxRuntimeExports, ar as Root, as as Content, at as Close, X, ac as cn, au as Title, av as Portal, aw as Overlay, r as reactExports, T as Tabs, l as TabsList, n as TabsTrigger, p as TabsContent, B as Button, u as ue, L as Label, I as Input, ah as CirclePlus, ax as saveFrontPageContentWithSync, D as Dialog, s as DialogContent, t as DialogHeader, ab as TriangleAlert, v as DialogTitle, S as Select, d as SelectTrigger, e as SelectValue, f as SelectContent, g as SelectItem, m as motion, o as Stethoscope, h as Badge, ay as ShieldCheck, az as Menu, A as AnimatePresence, k as CalendarDays, _ as __vitePreload, z as LoaderCircle, c as Clock, b as CircleCheck, ao as ChevronRight, a3 as Users } from \".\/index-DJeWhCy-.js\";",
+            "is_error": false,
+            "time": 1784049282
+        },
+        {
+            "id": "msg_507174b14a",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Good, now the `const __vite__mapDeps` has been removed from before the imports. But I need to add it back AFTER the imports since it's used at line 5901. Let me add it right after the last import statement.\n\nLet me check what the last import line looks like."
+                },
+                {
+                    "type": "text",
+                    "text": "Now I need to add the `__vite__mapDeps` declaration right after all the imports. Let me find the last import line:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_sqXC7eZ2tJf5pqYCfvxO6045",
+                    "name": "grep",
+                    "input": {
+                        "max_results": 5,
+                        "path": "public_html\/assets\/LandingPage-Dv8SefYP.js",
+                        "pattern": "^import "
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 48755,
+                "completion_tokens": 183,
+                "total_tokens": 48938,
+                "prompt_cache_hit_tokens": 48128,
+                "prompt_cache_miss_tokens": 627,
+                "prompt_tokens_details": {
+                    "cached_tokens": 48128
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 64
+                }
+            },
+            "time": 1784049286
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_sqXC7eZ2tJf5pqYCfvxO6045",
+            "content": "1:import { i as createLucideIcon, j as jsxRuntimeExports, ar as Root, as as Content, at as Close, X, ac as cn, au as Title, av as Portal, aw as Overlay, r as reactExports, T as Tabs, l as TabsList, n as TabsTrigger, p as TabsContent, B as Button, u as ue, L as Label, I as Input, ah as CirclePlus, ax as saveFrontPageContentWithSync, D as Dialog, s as DialogContent, t as DialogHeader, ab as TriangleAlert, v as DialogTitle, S as Select, d as SelectTrigger, e as SelectValue, f as SelectContent, g as SelectItem, m as motion, o as Stethoscope, h as Badge, ay as ShieldCheck, az as Menu, A as AnimatePresence, k as CalendarDays, _ as __vitePreload, z as LoaderCircle, c as Clock, b as CircleCheck, ao as ChevronRight, a3 as Users } from \".\/index-DJeWhCy-.js\";\n2:import { T as Textarea } from \".\/textarea-BQiWEu5n.js\";\n3:import { P as Pencil } from \".\/pencil-BZAaPpo6.js\";\n4:import { R as RotateCcw } from \".\/rotate-ccw-DEYXgLqp.js\";\n5:import { S as Search } from \".\/search-BLymxia-.js\";",
+            "is_error": false,
+            "time": 1784049286
+        },
+        {
+            "id": "msg_d98869cd68",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me find the last import statement to know where to place the `__vite__mapDeps`."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_HDh3jXzC7Gbsc6kruHPR4675",
+                    "name": "bash",
+                    "input": {
+                        "command": "grep -n \"^import \" public_html\/assets\/LandingPage-Dv8SefYP.js | tail -10"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 49272,
+                "completion_tokens": 88,
+                "total_tokens": 49360,
+                "prompt_cache_hit_tokens": 48896,
+                "prompt_cache_miss_tokens": 376,
+                "prompt_tokens_details": {
+                    "cached_tokens": 48896
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 22
+                }
+            },
+            "time": 1784049289
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_HDh3jXzC7Gbsc6kruHPR4675",
+            "content": "13:import { E as Eye } from \".\/eye-DZPhoU57.js\";\n14:import { P as Plus } from \".\/plus-CHPIrJ6M.js\";\n15:import { T as Table, a as TableHeader, b as TableRow, c as TableHead, d as TableBody, e as TableCell } from \".\/table-CnbMZ7S8.js\";\n16:import { H as Heart, C as ChevronLeft } from \".\/heart-CnN_F_j3.js\";\n17:import { B as Building2 } from \".\/building-2-CMX9_teL.js\";\n18:import { M as Mail } from \".\/mail-yvZvzeI4.js\";\n19:import { B as BookOpen } from \".\/book-open-Bi6sJ5u3.js\";\n20:import { M as MapPin } from \".\/map-pin-BVGvB4pd.js\";\n21:import { E as ExternalLink } from \".\/external-link-YRWS9f1T.js\";\n22:import { D as Download } from \".\/download-qc_8yQ5r.js\";\n",
+            "is_error": false,
+            "time": 1784049289
+        },
+        {
+            "id": "msg_2612da37b1",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "So the last import is on line 22. I need to find what's on line 23 to know where to insert the `__vite__mapDeps`."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_58QEZxPgYnFYKcDUVzfe3340",
+                    "name": "read_file",
+                    "input": {
+                        "limit": 5,
+                        "offset": 21,
+                        "path": "public_html\/assets\/LandingPage-Dv8SefYP.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 49609,
+                "completion_tokens": 123,
+                "total_tokens": 49732,
+                "prompt_cache_hit_tokens": 49280,
+                "prompt_cache_miss_tokens": 329,
+                "prompt_tokens_details": {
+                    "cached_tokens": 49280
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 35
+                }
+            },
+            "time": 1784049292
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_58QEZxPgYnFYKcDUVzfe3340",
+            "content": "   21 | import { E as ExternalLink } from \".\/external-link-YRWS9f1T.js\";\n   22 | import { D as Download } from \".\/download-qc_8yQ5r.js\";\n   23 | \/**\n   24 |  * @license lucide-react v0.511.0 - ISC\n   25 |  *",
+            "is_error": false,
+            "time": 1784049292
         }
     ]
 }
