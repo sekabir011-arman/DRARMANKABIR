@@ -57,7 +57,7 @@
         }
     ],
     "created_at": 1784039657,
-    "updated_at": 1784041538,
+    "updated_at": 1784041547,
     "messages": [
         {
             "id": "msg_6247891d0d",
@@ -2062,6 +2062,48 @@
             "content": "Could not open input file: \/tmp\/replace_sync.php\n\n[Exit code: 1]",
             "is_error": true,
             "time": 1784041538
+        },
+        {
+            "id": "msg_b8a278216d",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The PHP can't access \/tmp because it's restricted? Let me try writing the PHP script inside the project directory."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ybXM2ega3MjyQdV1wE858241",
+                    "name": "write_file",
+                    "input": {
+                        "path": "\/home\/drarmank\/server-data\/_replace_sync.php",
+                        "content": "<?php\n$content = file_get_contents(\"\/home\/drarmank\/public_html\/assets\/index-DJeWhCy-.js\");\n\n$old = 'function saveFrontPageContentWithSync(actor) {\n  const allContent = {};\n  const fpKeys = [\"siteConfig\", \"doctorContentOverrides\"];\n  for (const k2 of fpKeys) {\n    try {\n      const raw = localStorage.getItem(k2);\n      if (raw) allContent[k2] = JSON.parse(raw);\n    } catch {\n    }\n  }\n  if (navigator.onLine) {\n    fetch(\"\/api\/frontpage\/save.php\", {\n      method: \"POST\",\n      headers: { \"Content-Type\": \"application\/json\" },\n      body: JSON.stringify(allContent)\n    }).then(r => {\n      if (r.ok) {\n        localStorage.setItem(LAST_SYNC_KEY, (\/* @__PURE__ *\/ new Date()).toISOString());\n      } else {\n        console.warn(\"[sync] saveFrontPageContent PHP returned\", r.status);\n      }\n    }).catch(err => {\n      console.warn(\"[sync] saveFrontPageContent PHP failed:\", err);\n    });\n  }\n  localStorage.setItem(LAST_SYNC_KEY, (\/* @__PURE__ *\/ new Date()).toISOString());\n}';\n\n$new = 'const CONTENT_OFFLINE_QUEUE_KEY = \"medicare_content_offline_queue\";\nfunction getContentOfflineQueue() {\n  try {\n    const raw = localStorage.getItem(CONTENT_OFFLINE_QUEUE_KEY);\n    if (!raw) return [];\n    return JSON.parse(raw);\n  } catch {\n    return [];\n  }\n}\nfunction setContentOfflineQueue(queue) {\n  try {\n    localStorage.setItem(CONTENT_OFFLINE_QUEUE_KEY, JSON.stringify(queue));\n  } catch {\n  }\n}\nfunction addToContentOfflineQueue(payload, updatedAt) {\n  const queue = getContentOfflineQueue();\n  queue.push({\n    id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,\n    payload,\n    updatedAt: updatedAt || new Date().toISOString(),\n    retryCount: 0,\n    queuedAt: new Date().toISOString()\n  });\n  setContentOfflineQueue(queue);\n}\nasync function processContentOfflineQueue() {\n  let queue = getContentOfflineQueue();\n  if (queue.length === 0) return;\n  const remaining = [];\n  for (const entry of queue) {\n    try {\n      const response = await fetch(\"\/api\/frontpage\/save.php\", {\n        method: \"POST\",\n        headers: { \"Content-Type\": \"application\/json\" },\n        body: JSON.stringify(entry.payload)\n      });\n      if (!response.ok) {\n        entry.retryCount++;\n        if (entry.retryCount < 5) {\n          remaining.push(entry);\n        }\n        continue;\n      }\n      const json = await response.json();\n      if (json && json.success && json.data && json.data.updated_at) {\n        localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());\n        for (const [k2, v2] of Object.entries(entry.payload)) {\n          const existing = localStorage.getItem(k2);\n          if (existing) {\n            try {\n              const parsed = JSON.parse(existing);\n              if (parsed._updatedAt && parsed._updatedAt > entry.updatedAt) {\n                remaining.push(entry);\n                continue;\n              }\n            } catch {}\n          }\n          localStorage.setItem(k2, JSON.stringify(v2));\n        }\n      }\n    } catch {\n      entry.retryCount++;\n      if (entry.retryCount < 5) {\n        remaining.push(entry);\n      }\n    }\n  }\n  setContentOfflineQueue(remaining);\n}\nasync function saveFrontPageContentWithSync(actor) {\n  const allContent = {};\n  const fpKeys = [\"siteConfig\", \"doctorContentOverrides\"];\n  for (const k2 of fpKeys) {\n    try {\n      const raw = localStorage.getItem(k2);\n      if (raw) allContent[k2] = JSON.parse(raw);\n    } catch {\n    }\n  }\n  if (!navigator.onLine) {\n    addToContentOfflineQueue(allContent);\n    return;\n  }\n  try {\n    const response = await fetch(\"\/api\/frontpage\/save.php\", {\n      method: \"POST\",\n      headers: { \"Content-Type\": \"application\/json\" },\n      body: JSON.stringify(allContent)\n    });\n    if (response.ok) {\n      const json = await response.json();\n      if (json && json.success && json.data && json.data.updated_at) {\n        localStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());\n      }\n    } else {\n      console.warn(\"[sync] saveFrontPageContent PHP returned\", response.status);\n      addToContentOfflineQueue(allContent);\n    }\n  } catch (err) {\n    console.warn(\"[sync] saveFrontPageContent PHP failed:\", err);\n    addToContentOfflineQueue(allContent);\n  }\n}';\n\nif (strpos($content, $old) !== false) {\n    $content = str_replace($old, $new, $content);\n    file_put_contents(\"\/home\/drarmank\/public_html\/assets\/index-DJeWhCy-.js\", $content);\n    echo \"Replacement successful\\n\";\n} else {\n    echo \"Old string not found\\n\";\n    $pos = strpos($content, \"function saveFrontPageContentWithSync\");\n    echo \"Position: $pos\\n\";\n    $excerpt = substr($content, $pos, 500);\n    echo $excerpt . \"\\n\";\n    echo \"---END---\\n\";\n}\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 90206,
+                "completion_tokens": 1311,
+                "total_tokens": 91517,
+                "prompt_cache_hit_tokens": 90112,
+                "prompt_cache_miss_tokens": 94,
+                "prompt_tokens_details": {
+                    "cached_tokens": 90112
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 24
+                }
+            },
+            "time": 1784041547
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ybXM2ega3MjyQdV1wE858241",
+            "content": "Path outside project directory",
+            "is_error": true,
+            "time": 1784041547
         }
     ]
 }
