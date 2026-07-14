@@ -69,9 +69,14 @@ try {
         
         if ($value === false) {
             // Return empty object for missing key
-            successResponse([]);
+            successResponse(new stdClass());
         } else {
-            successResponse(json_decode($value, true));
+            $decoded = json_decode($value, true);
+            // PHP quirk: json_decode('{}', true) returns [] — fix it
+            if (is_array($decoded) && empty($decoded)) {
+                $decoded = new stdClass();
+            }
+            successResponse($decoded);
         }
     }
 } catch (\Exception $e) {
