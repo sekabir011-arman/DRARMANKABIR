@@ -47,7 +47,7 @@
         }
     ],
     "created_at": 1783959707,
-    "updated_at": 1784009329,
+    "updated_at": 1784038348,
     "messages": [
         {
             "id": "msg_compact",
@@ -6543,6 +6543,140 @@
             "content": "continue",
             "attachments": [],
             "time": 1784009329
+        },
+        {
+            "id": "msg_e338590998",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784038306
+        },
+        {
+            "id": "msg_3579d0b41d",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me think about the architecture carefully before making changes.\n\nThe user wants MySQL to be the single source of truth. Here's the proposed architecture:\n\n**Save flow (admin edit):**\n1. React Form \u2192 user clicks \"Save\"\n2. `fetch()` POST to PHP API with the data\n3. PHP writes to MySQL `site_settings` table\n4. PHP returns the saved record (with updated_at timestamp)\n5. React updates its state\/React Query cache with the response data\n6. UI renders with the confirmed data\n7. Success toast shown only after MySQL confirms\n\n**Load flow (page load):**\n1. React component mounts\n2. `fetch()` GET from PHP API to load from MySQL\n3. Set React state from the response\n4. Optionally cache in localStorage as fallback\n5. Render UI from state\n\n**Key changes needed:**\n\n**PHP side:**\n- `frontpage\/save.php` \u2192 Save to MySQL, return the saved value\n- `frontpage\/get.php` \u2192 Return data from MySQL (already does this)\n- Need dedicated registry endpoints: `POST \/api\/registry\/save.php`, `GET \/api\/registry\/get.php`\n- `content\/save.php` \u2192 Save to MySQL, return the saved value\n- `content\/get.php` \u2192 Return from MySQL (already does this)\n\n**JS side (compiled assets):**\n- Remove localStorage as primary source for editable content\n- Make all save functions async\/await with proper error handling\n- Update state only after MySQL confirms\n- Add offline queue as a separate concern\n\nLet me think about the exact approach for modifying the compiled JS files. These are Vite-built bundles, so they're minified\/compiled. I need to be very surgical with my replacements.\n\nLet me structure the approach:\n\n1. **PHP first** - rewrite all endpoints to return saved data\n2. **JS modifications** - replace the save\/load functions systematically\n\nLet me start with the PHP endpoints.\n\nFor the frontpage save, I need to:\n1. Accept the full content\n2. Save to MySQL\n3. Return the saved content with a `saved_at` timestamp\n4. Include `version` or `updated_at` for conflict resolution\n\nFor the JS, I need to completely rethink the data flow. The key files to modify are:\n- `index-DJeWhCy-.js` - contains `saveFrontPageContentWithSync`, `saveRegistry`, `savePatientRegistry`, `loadRegistry`, `loadPatientRegistry`, `bootstrapFromCanister`\n- `LandingPage-Dv8SefYP.js` - contains `useSiteConfig`, `saveConfig`, `loadConfig`\n- `useDoctorContent-Cx8T-OwA.js` - contains `saveOverrides`, `loadOverrides`, `useDoctorContent`\n- `Settings-DPkJ1nB8.js` - contains `AdminPublicContent` with `saveSection`\n\nLet me plan the JS modifications:\n\nFor **saveFrontPageContentWithSync** in index-DJeWhCy-.js:\n- Change to async function\n- POST to PHP\n- On success: update React state (but this function doesn't have direct access to setState in the compiled code)\n- On failure: show error, keep button enabled\n\nWait, I need to think about this more carefully. The compiled JS is a bundled output where functions don't have direct references to React setState from the calling component. The `saveFrontPageContentWithSync` function is called from various places.\n\nLet me check the callers of `saveFrontPageContentWithSync`:\n\nFrom `LandingPage-Dv8SefYP.js`:\n- `saveConfig(cfg, actor)` calls `saveFrontPageContentWithSync(actor ?? null)`\n- `saveConfig` is called from `updateHero`, `updateAbout`, `updateFooter`, `updateEmergencyContacts`, `resetSection`\n\nFrom `useDoctorContent-Cx8T-OwA.js`:\n- `saveOverrides(overrides)` calls `saveFrontPageContentWithSync(...)` \n\nSo the flow is:\n1. User edits hero section\n2. `updateHero()` is called with new hero data\n3. It calls `setConfig(prev => {...saveConfig(next, actor); return next})`\n4. `saveConfig()` saves to localStorage AND calls `saveFrontPageContentWithSync()` to sync to backend\n5. `saveFrontPageContentWithSync()` was calling ICP canister, now calls PHP\n\nThe problem is that in the current compiled code, the state update and backend save are tied together in the same `setConfig` callback. The state updates immediately (optimistically) and the backend save happens asynchronously.\n\nFor the new architecture (MySQL first), I need to:\n\n1. **For `useSiteConfig`**: On mount, fetch from MySQL first. On save, POST to MySQL, then update state from the response.\n\nLet me look at the exact compiled code more carefully to understand how to modify it.\n\nFor `LandingPage-Dv8SefYP.js`, the `useSiteConfig` hook:\n```js\nfunction useSiteConfig() {\n  const [config, setConfig] = reactExports.useState(loadConfig);\n  \/\/ useEffect to fetch from server on mount (already added by me)\n  reactExports.useEffect(() => { ... fetch(\"\/api\/frontpage\/get.php?...\") ... }, []);\n  const updateHero = reactExports.useCallback((hero) => {\n    setConfig((prev) => {\n      const next = { ...prev, heroSection: { ...prev.heroSection, ...hero } };\n      saveConfig(next, resolveActor());\n      return next;\n    });\n  }, []);\n```\n\nI need to change this so that `updateHero` (and similar functions) do an async POST to the server and only update state on success.\n\nBut wait - in the compiled code, these are `useCallback` hooks that need to stay synchronous. I can't make a `useCallback` async directly.\n\nActually, I can. I can restructure the flow:\n\n```js\nconst updateHero = reactExports.useCallback(async (hero) => {\n  try {\n    const resp = await fetch(\"\/api\/frontpage\/save.php\", {\n      method: \"POST\",\n      headers: { \"Content-Type\": \"application\/json\" },\n      body: JSON.stringify({ heroSection: hero })\n    });\n    const json = await resp.json();\n    if (json.success && json.data) {\n      setConfig(json.data); \/\/ set the ENTIRE config from server response\n      \/\/ show success\n    } else {\n      \/\/ show error\n    }\n  } catch (err) {\n    \/\/ show error\n  }\n}, []);\n```\n\nBut this is a compiled bundle, so I need to be surgical. Let me think about the best approach.\n\nActually, looking at the compiled code more carefully, the `saveConfig` function is separate and receives the config to save. The `updateHero` callback calls `saveConfig`. So I can modify `saveConfig` to be async and return the saved data.\n\nThe problem is that `saveConfig` is in `LandingPage-Dv8SefYP.js` and is called synchronously from within `setConfig`.\n\nHere's my plan:\n\n**In `LandingPage-Dv8SefYP.js`:**\n\n1. Modify `loadConfig()` to prefer server data but fall back to localStorage\n   - Actually, on mount, `useEffect` already fetches from server and sets state\n   - So `loadConfig()` can return `DEFAULT_SITE_CONFIG` as initial state, then the useEffect will update it\n\n2. Modify `saveConfig()` to:\n   - Be async\n   - POST to PHP first\n   - On success: save to localStorage as cache, return the saved data\n   - On failure: throw error\n\nBut wait, `saveConfig` is called from inside `setConfig` callback which must be synchronous:\n\n```js\nsetConfig((prev) => {\n  const next = { ...prev, heroSection: { ...prev.heroSection, ...hero } };\n  saveConfig(next, resolveActor()); \/\/ This is sync in current code\n  return next;\n});\n```\n\nI need to change this pattern. Let me make `saveConfig` return a promise, and have the callers handle it differently.\n\nActually, looking at this more carefully, the simplest approach that maintains the existing code structure is:\n\nFor `useSiteConfig`:\n1. Initial state: `loadConfig()` which returns `DEFAULT_SITE_CONFIG` (don't use localStorage)\n2. On mount: `useEffect` fetches from server and sets state\n3. For update functions: make them async, POST to server, on success update state\n\nBut `reactExports.useCallback` can be async:\n\n```js\nconst updateHero = reactExports.useCallback(async (hero) => {\n  \/\/ POST to server\n  \/\/ On success: setConfig with server response\n  \/\/ On failure: show error\n}, []);\n```\n\nHowever, the calling code (the UI) expects these to be called as event handlers. Let me check how they're called.\n\nLooking at the LandingPage code, `updateHero` is called from form submit handlers. So making them async should work fine - the event handler just needs to `await` the update.\n\nBut the current code doesn't await - it calls `updateHero(data)` directly. Let me look at the caller.\n\nLet me check the LandingPage code more carefully."
+                },
+                {
+                    "type": "text",
+                    "text": "Now I have a complete understanding of the architecture. Let me refactor everything systematically."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_6sICCn5etEMArx9qYzXz5637",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && awk 'NR>=5000 && NR<=5100' public_html\/assets\/LandingPage-Dv8SefYP.js | cat -A | head -60"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 81680,
+                "completion_tokens": 2089,
+                "total_tokens": 83769,
+                "prompt_cache_hit_tokens": 81664,
+                "prompt_cache_miss_tokens": 16,
+                "prompt_tokens_details": {
+                    "cached_tokens": 81664
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 1990
+                }
+            },
+            "time": 1784038330
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_6sICCn5etEMArx9qYzXz5637",
+            "content": "            value: editVideoForm.description,$\n            onChange: (e) => setEditVideoForm({$\n              ...editVideoForm,$\n              description: e.target.value$\n            }),$\n            placeholder: \"Description (2-3 lines)...\",$\n            rows: 2,$\n            className: \"text-xs\"$\n          }$\n        ),$\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"flex items-center gap-2\", children: [$\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsx($\n            \"input\",$\n            {$\n              type: \"checkbox\",$\n              id: `vid-feat-${idx}`,$\n              checked: editVideoForm.isFeatured,$\n              onChange: (e) => setEditVideoForm({$\n                ...editVideoForm,$\n                isFeatured: e.target.checked$\n              }),$\n              className: \"accent-amber-500\"$\n            }$\n          ),$\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsx($\n            \"label\",$\n            {$\n              htmlFor: `vid-feat-${idx}`,$\n              className: \"text-xs cursor-pointer\",$\n              children: \"Featured\"$\n            }$\n          )$\n        ] }),$\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"flex gap-1\", children: [$\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsx($\n            Button,$\n            {$\n              size: \"sm\",$\n              className: \"h-6 text-xs\",$\n              onClick: onSaveEdit,$\n              \"data-ocid\": \"classroom.videos.save_button\",$\n              children: \"Save\"$\n            }$\n          ),$\n          \/* @__PURE__ *\/ jsxRuntimeExports.jsx($\n            Button,$\n            {$\n              size: \"sm\",$\n              variant: \"outline\",$\n              className: \"h-6 text-xs\",$\n              onClick: () => setEditVideoIdx(null),$\n              \"data-ocid\": \"classroom.videos.cancel_button\",$\n              children: \"Cancel\"$\n            }$\n          )$\n        ] })$\n      ] }) : \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [$\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsxs($\n          \"a\",$\n          {$\n\ncat: write error: Broken pipe\n",
+            "is_error": false,
+            "time": 1784038330
+        },
+        {
+            "id": "msg_994d74c0fa",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me look at how the update functions are called in the LandingPage. I need to see the component that renders the edit form and calls updateHero."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_mnWDQRXcd8HunR3v9zWc2298",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && grep -n \"updateHero\\|updateAbout\\|updateFooter\\|updateEmergencyContacts\" public_html\/assets\/LandingPage-Dv8SefYP.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 84333,
+                "completion_tokens": 111,
+                "total_tokens": 84444,
+                "prompt_cache_hit_tokens": 83712,
+                "prompt_cache_miss_tokens": 621,
+                "prompt_tokens_details": {
+                    "cached_tokens": 83712
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 31
+                }
+            },
+            "time": 1784038334
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_mnWDQRXcd8HunR3v9zWc2298",
+            "content": "328:  updateHero,\n360:          onChange: (e) => updateHero({ taglineEn: e.target.value }),\n372:          onChange: (e) => updateHero({ taglineBn: e.target.value }),\n384:          onChange: (e) => updateHero({ subheadingEn: e.target.value }),\n395:          onChange: (e) => updateHero({ subheadingBn: e.target.value }),\n408:            onChange: (e) => updateHero({ cta1Label: e.target.value }),\n419:            onChange: (e) => updateHero({ cta2Label: e.target.value }),\n429:  updateAbout,\n437:    updateAbout({ specialties: [...a.specialties, newSpec.trim()] });\n441:    updateAbout({ specialties: a.specialties.filter((_, idx) => idx !== i) });\n445:    updateAbout({ affiliations: [...a.affiliations, newAffil.trim()] });\n449:    updateAbout({ affiliations: a.affiliations.filter((_, idx) => idx !== i) });\n461:              onChange: (e) => updateAbout({ visible: e.target.checked }),\n494:            onChange: (e) => updateAbout({ clinicNameEn: e.target.value }),\n505:            onChange: (e) => updateAbout({ clinicNameBn: e.target.value }),\n519:          onChange: (e) => updateAbout({ descriptionEn: e.target.value }),\n531:          onChange: (e) => updateAbout({ descriptionBn: e.target.value }),\n546:            onChange: (e) => updateAbout({ yearsExperience: Number(e.target.value) }),\n557:            onChange: (e) => updateAbout({ patientCount: e.target.value }),\n570:            onChange: (e) => updateAbout({ doctorCount: Number(e.target.value) }),\n675:  updateEmergencyContacts,\n683:    updateEmergencyContacts(updated);\n686:    updateEmergencyContacts([\n692:    updateEmergencyContacts(contacts.filter((_, i) => i !== idx));\n795:  updateFooter,\n806:    updateFooter({ socialLinks: [...f.socialLinks, { ...newLink }] });\n810:    updateFooter({ socialLinks: f.socialLinks.filter((_, idx) => idx !== i) });\n840:            onChange: (e) => updateFooter({ addressEn: e.target.value }),\n851:            onChange: (e) => updateFooter({ addressBn: e.target.value }),\n865:            onChange: (e) => updateFooter({ phone: e.target.value }),\n877:            onChange: (e) => updateFooter({ email: e.target.value }),\n889:          onChange: (e) => updateFooter({ openingHours: e.target.value }),\n901:          onChange: (e) => updateFooter({ copyrightText: e.target.value }),\n1031:                updateHero: props.updateHero,\n1039:                updateAbout: props.updateAbout,\n1047:                updateEmergencyContacts: props.updateEmergencyContacts,\n1055:                updateFooter: props.updateFooter,\n1221:  const updateHero = reactExports.useCallback((hero) => {\n1228:  const updateAbout = reactExports.useCallback((about) => {\n1238:  const updateFooter = reactExports.useCallback((footer) => {\n1248:  const updateEmergencyContacts = reactExports.useCallback(\n1270:    updateHero,\n1271:    updateAbout,\n1272:    updateFooter,\n1273:    updateEmergencyContacts,\n5147:    updateHero,\n5148:    updateAbout,\n5149:    updateFooter,\n5150:    updateEmergencyContacts,\n7273:        updateHero,\n7274:        updateAbout,\n7275:        updateFooter,\n7276:        updateEmergencyContacts,\n",
+            "is_error": false,
+            "time": 1784038334
+        },
+        {
+            "id": "msg_89d30844e4",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I see - the `updateHero`, `updateAbout`, etc. are called directly from `onChange` handlers (for text inputs) and from button `onClick` handlers. These are synchronous calls.\n\nLooking at lines 360-461, the `updateHero` is called from `onChange` which fires on every keystroke! And `updateAbout` is called from `onChange` on fields.\n\nWait, no - looking more carefully at the code, these `updateHero` calls are from `onChange` event handlers, meaning they fire on every keystroke. This is the pattern:\n\n```js\nonChange: (e) => updateHero({ taglineEn: e.target.value }),\n```\n\nSo on every single keystroke, it's calling `updateHero` which calls `saveConfig` which saves to localStorage AND now tries to save to PHP. This is TERRIBLE for performance - it'll send a fetch request on every keystroke.\n\nBut wait - looking at the current code for `updateHero`:\n```js\nconst updateHero = reactExports.useCallback((hero) => {\n    setConfig((prev) => {\n      const next = { ...prev, heroSection: { ...prev.heroSection, ...hero } };\n      saveConfig(next, resolveActor());\n      return next;\n    });\n  }, []);\n```\n\n`savesConfig` currently does:\n```js\nfunction saveConfig(cfg, actor) {\n  localStorage.setItem(STORAGE_KEY$2, JSON.stringify(cfg));\n  saveFrontPageContentWithSync(actor ?? null);\n}\n```\n\nAnd `saveFrontPageContentWithSync` currently sends a POST request. This means every keystroke already sends a POST request! But since the fetch is fire-and-forget (no await), it's somewhat non-blocking.\n\nWith MySQL as source of truth, we can't fire a request on every keystroke. We should either:\n1. Debounce the saves\n2. Only save on blur or on explicit \"Save\" button press\n3. OR - batch the updates and send them periodically\n\nActually, looking more carefully at the code, the `onChange` handlers for fields like `taglineEn`, `taglineBn`, etc. update on every keystroke. But there's also a pattern where `updateAbout` is called on button clicks (like `addSpecialty`, `removeSpecialty`).\n\nFor the text inputs, saving on every keystroke is unnecessary even with localStorage. With MySQL, it's even more problematic. \n\nBut the user's requirement says:\n> Only show a success message after MySQL confirms the save.\n\nThis implies there should be an explicit save action. But the current UI uses `onChange` to auto-save. Looking at the code:\n\nLines 360, 372, 384, 395 - these are `onChange` handlers for text inputs that call `updateHero`.\nLines 461, 494, 505, 519, 531, 546, 557, 570 - these are `onChange` for about section fields.\n\nWait, but let me look again at what these components look like. Are these inline edit fields or form fields? Let me check the actual UI context.\n\nLooking at line 328: `updateHero,` - this is being destructured from props. Let me look at where it's passed:\n\nLine 1031: `updateHero: props.updateHero,`\nLine 1221: `const updateHero = reactExports.useCallback((hero) => {`\n\nSo the `useSiteConfig` hook defines `updateHero` and passes it down to child components. The child components use it in `onChange` handlers, meaning every keystroke triggers a save.\n\nWith the MySQL-first approach, we need to change this behavior. The best approach would be:\n\n1. Keep the state management local (using React state)\n2. Add a \"Save\" button that saves all changes at once to MySQL\n3. OR implement debouncing\n\nBut completely redesigning the UI is beyond scope. Let me take a practical approach:\n\n**For the LandingPage (siteConfig), I'll:**\n1. On mount: fetch from MySQL\n2. On each update: keep the optimistic update for UI responsiveness, but debounce the MySQL save\n3. Show success\/error feedback\n\nActually wait, let me re-read the user's requirements:\n\n> React Form \u2192 POST PHP API \u2192 MySQL UPDATE \u2192 Return updated record \u2192 Update React Query cache (or application state) \u2192 Render UI\n\n> Only show a success message after MySQL confirms the save.\n\n> If the API request fails: Do not update the UI permanently. Display a clear error message. Keep the Save button enabled for retry.\n\nThis clearly says: wait for MySQL to confirm before updating UI. And don't update UI permanently on failure.\n\nThis means the current auto-save-on-every-keystroke pattern must change. But looking at the compiled code, the text inputs call `updateHero` on every `onChange`, which means they're auto-saving on every keystroke.\n\nHmm, but looking at the DOM structure, maybe these are not simple text inputs. Let me check if there are \"Save\" buttons in the edit forms.\n\nLet me look at lines 337-410 to see the HeroSectionEditor component:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_KnV8m7vqLMrUsvoRsdgk4544",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && awk 'NR>=325 && NR<=430' public_html\/assets\/LandingPage-Dv8SefYP.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 85242,
+                "completion_tokens": 1176,
+                "total_tokens": 86418,
+                "prompt_cache_hit_tokens": 84352,
+                "prompt_cache_miss_tokens": 890,
+                "prompt_tokens_details": {
+                    "cached_tokens": 84352
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 1103
+                }
+            },
+            "time": 1784038348
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_KnV8m7vqLMrUsvoRsdgk4544",
+            "content": "}\nfunction HeroTab({\n  config,\n  updateHero,\n  resetSection\n}) {\n  const h = config.heroSection;\n  return \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"space-y-4\", children: [\n    \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"flex items-center justify-between\", children: [\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\"p\", { className: \"text-xs text-muted-foreground\", children: \"Hero section text and CTAs\" }),\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\n        Button,\n        {\n          size: \"sm\",\n          variant: \"ghost\",\n          className: \"gap-1 text-xs\",\n          onClick: () => {\n            resetSection(\"heroSection\");\n            ue.success(\"Hero reset to default.\");\n          },\n          \"data-ocid\": \"admin_panel.hero.reset_button\",\n          children: [\n            \/* @__PURE__ *\/ jsxRuntimeExports.jsx(RotateCcw, { className: \"w-3 h-3\" }),\n            \" Reset\"\n          ]\n        }\n      )\n    ] }),\n    \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"space-y-1.5\", children: [\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Label, { className: \"text-xs\", children: \"Tagline (English)\" }),\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\n        Textarea,\n        {\n          rows: 2,\n          value: h.taglineEn,\n          onChange: (e) => updateHero({ taglineEn: e.target.value }),\n          \"data-ocid\": \"admin_panel.hero.tagline_en.textarea\"\n        }\n      )\n    ] }),\n    \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"space-y-1.5\", children: [\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Label, { className: \"text-xs\", children: \"Tagline (Bangla)\" }),\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\n        Textarea,\n        {\n          rows: 2,\n          value: h.taglineBn,\n          onChange: (e) => updateHero({ taglineBn: e.target.value }),\n          style: { fontFamily: \"'Noto Sans Bengali', Arial, sans-serif\" },\n          \"data-ocid\": \"admin_panel.hero.tagline_bn.textarea\"\n        }\n      )\n    ] }),\n    \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"space-y-1.5\", children: [\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Label, { className: \"text-xs\", children: \"Subheading (English)\" }),\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\n        Input,\n        {\n          value: h.subheadingEn,\n          onChange: (e) => updateHero({ subheadingEn: e.target.value }),\n          \"data-ocid\": \"admin_panel.hero.subheading_en.input\"\n        }\n      )\n    ] }),\n    \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"space-y-1.5\", children: [\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Label, { className: \"text-xs\", children: \"Subheading (Bangla)\" }),\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\n        Input,\n        {\n          value: h.subheadingBn,\n          onChange: (e) => updateHero({ subheadingBn: e.target.value }),\n          style: { fontFamily: \"'Noto Sans Bengali', Arial, sans-serif\" },\n          \"data-ocid\": \"admin_panel.hero.subheading_bn.input\"\n        }\n      )\n    ] }),\n    \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"grid grid-cols-2 gap-3\", children: [\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"space-y-1.5\", children: [\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Label, { className: \"text-xs\", children: \"CTA 1 Label\" }),\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\n          Input,\n          {\n            value: h.cta1Label,\n            onChange: (e) => updateHero({ cta1Label: e.target.value }),\n            \"data-ocid\": \"admin_panel.hero.cta1.input\"\n          }\n        )\n      ] }),\n      \/* @__PURE__ *\/ jsxRuntimeExports.jsxs(\"div\", { className: \"space-y-1.5\", children: [\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(Label, { className: \"text-xs\", children: \"CTA 2 Label\" }),\n        \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\n          Input,\n          {\n            value: h.cta2Label,\n            onChange: (e) => updateHero({ cta2Label: e.target.value }),\n            \"data-ocid\": \"admin_panel.hero.cta2.input\"\n          }\n        )\n      ] })\n    ] })\n  ] });\n}\nfunction AboutTab({\n  config,\n  updateAbout,\n  resetSection\n",
+            "is_error": false,
+            "time": 1784038348
         }
     ]
 }
