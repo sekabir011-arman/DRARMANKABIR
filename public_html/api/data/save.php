@@ -21,7 +21,7 @@ requireMethod('POST');
 
 // Try to authenticate, but allow save even without auth for admin content operations
 $user = getAuthUser();
-$userId = $user ? $user['id'] : 0;
+$userId = $user ? $user['id'] : null;
 
 $input = getJsonInput();
 

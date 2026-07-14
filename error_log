@@ -37,3 +37,6 @@ Stack trace:
 #1 /tmp/ai_php_5umgsu5nmm2vcj692vU(4): require_once('/home/drarmank/...')
 #2 {main}
   thrown in /home/drarmank/public_html/config.php on line 24
+[14-Jul-2026 17:49:14 UTC] PHP Warning:  file_exists(): open_basedir restriction in effect. File(/tmp/../.env) is not within the allowed path(s): (/home/drarmank:/tmp) in /tmp/ai_php_i31qr9fs6j4q9M81oBc on line 6
+[14-Jul-2026 17:49:14 UTC] PHP Warning:  file_exists(): open_basedir restriction in effect. File(/tmp/../.env) is not within the allowed path(s): (/home/drarmank:/tmp) in /tmp/ai_php_i31qr9fs6j4q9M81oBc on line 7
+[14-Jul-2026 17:49:23 UTC] PHP Warning:  file_exists(): open_basedir restriction in effect. File(/tmp/../.env) is not within the allowed path(s): (/home/drarmank:/tmp) in /tmp/ai_php_uso8g50vakkd4GaEr6e on line 7
