@@ -67,7 +67,10 @@ function getMethod(): string {
 }
 
 function requireMethod(string ...$methods): void {
-    if (!in_array(getMethod(), $methods)) {
+    $method = getMethod();
+    // Allow CLI mode to pass through for cron jobs / maintenance scripts
+    if ($method === 'CLI') return;
+    if (!in_array($method, $methods)) {
         errorResponse('Method not allowed. Allowed: ' . implode(', ', $methods), 405);
     }
 }
