@@ -33,8 +33,6 @@ $input = getJsonInput();
 $allContent = [];
 if (isset($input['siteConfig']) || isset($input['doctorContentOverrides'])) {
     $allContent = $input;
-} elseif (isset($input['siteConfig']) || isset($input['doctorContentOverrides'])) {
-    $allContent = $input;
 } else {
     $allContent = $input;
 }
