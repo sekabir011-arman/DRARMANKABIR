@@ -82,7 +82,16 @@ try {
         ':user_id' => $userId,
     ]);
     
-    successResponse(null, 'Content saved successfully');
+    // Fetch the saved record to return as confirmation
+    $fetchStmt = $db->prepare('SELECT setting_key, setting_value, setting_group, updated_at FROM site_settings WHERE setting_key = :key');
+    $fetchStmt->execute([':key' => $key]);
+    $saved = $fetchStmt->fetch();
+    
+    if ($saved) {
+        $saved['setting_value'] = json_decode($saved['setting_value'], true);
+    }
+    
+    successResponse($saved, 'Content saved successfully');
 } catch (\Exception $e) {
     error_log('Content save error: ' . $e->getMessage());
     errorResponse('Failed to save content', 500);

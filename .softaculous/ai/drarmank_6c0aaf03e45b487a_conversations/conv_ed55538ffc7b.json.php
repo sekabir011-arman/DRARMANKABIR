@@ -57,7 +57,7 @@
         }
     ],
     "created_at": 1784039657,
-    "updated_at": 1784041460,
+    "updated_at": 1784041475,
     "messages": [
         {
             "id": "msg_6247891d0d",
@@ -1588,6 +1588,98 @@
             "content": "export {\n  saveClinicalEntitiesWithSync as $,\n  AnimatePresence as A,\n  Button as B,\n  ChevronUp as C,\n  Dialog as D,\n  enqueueSync as E,\n  _canisterActorRef as F,\n  clsx as G,\n  Hospital as H,\n  Input as I,\n  getDefaultExportFromCjs as J,\n  useAdminAuth as K,\n  Label as L,\n  Monitor as M,\n  useRolePermissions as N,\n  getAuditLog as O,\n  ShieldAlert as P,\n  ChartColumn as Q,\n  React$4 as R,\n  Select as S,\n  Tabs as T,\n  useGetAllBeds as U,\n  useAssignBed as V,\n  useCreateBedRecord as W,\n  X,\n  loadFromAllDoctorKeys as Y,\n  Bed as Z,\n  __vitePreload as _,\n  ChevronDown as a,\n  saveSubmissions as a$,\n  getCanisterActor as a0,\n  loadRegistry as a1,\n  loadPatientRegistry as a2,\n  Users as a3,\n  UserCheck as a4,\n  STAFF_ROLE_LABELS as a5,\n  CircleX as a6,\n  RefreshCw as a7,\n  saveRegistry as a8,\n  savePatientRegistry as a9,\n  useAdmitPatient as aA,\n  getVisitFormData as aB,\n  loadDailyProgress as aC,\n  saveDailyProgress as aD,\n  loadProblemList as aE,\n  saveProblemList as aF,\n  STAFF_ROLE_COLORS as aG,\n  loadVaccinationRecords as aH,\n  saveVaccinationRecords as aI,\n  Trigger$2 as aJ,\n  useComposedRefs$1 as aK,\n  WarningProvider as aL,\n  composeEventHandlers as aM,\n  Description as aN,\n  createDialogScope as aO,\n  createSlottable as aP,\n  createContextScope as aQ,\n  buttonVariants as aR,\n  loadComplaints as aS,\n  loadAdviceEntries as aT,\n  loadSubmissions as aU,\n  useGetEncountersByPatient as aV,\n  useGetClinicalNotesByPatient as aW,\n  loadFamilyHistoryRisk as aX,\n  saveComplaints as aY,\n  saveAdviceEntries as aZ,\n  getPermissionsForRole as a_,\n  Bell as aa,\n  TriangleAlert as ab,\n  cn as ac,\n  useNavigate as ad,\n  ClipboardList as ae,\n  Pill as af,\n  FlaskConical as ag,\n  CirclePlus as ah,\n  DollarSign as ai,\n  useCreateVisit as aj,\n  useCreatePrescription as ak,\n  Siren as al,\n  User as am,\n  appendAuditLog as an,\n  ChevronRight as ao,\n  getDoctorEmail as ap,\n  addEmergencyNotification as aq,\n  Root$4 as ar,\n  Content$2 as as,\n  Close as at,\n  Title as au,\n  Portal$1 as av,\n  Overlay as aw,\n  saveFrontPageContentWithSync as ax,\n  ShieldCheck as ay,\n  Menu as az,\n  CircleCheck as b,\n  isSignUpEnabled as b0,\n  Switch as b1,\n  setSignUpEnabled as b2,\n  getPrescriptionHeaderImage as b3,\n  useGetPatient as b4,\n  useGetVisitsByPatient as b5,\n  useGetPrescriptionsByPatient as b6,\n  useUpdatePatient as b7,\n  useDeletePatient as b8,\n  useDischargePatient as b9,\n  useLayoutEffect2 as bA,\n  clamp$2 as bB,\n  loadFromStorage as bC,\n  saveToStorage as bD,\n  Wifi as bE,\n  WifiOff as bF,\n  usePrevious$1 as bG,\n  useSize as bH,\n  saveFamilyHistoryRisk as bI,\n  useOnlineStatus as bJ,\n  useCreateOrder as bK,\n  useCreateObservation as bL,\n  useCreateClinicalNote as bM,\n  isConsultantType as bN,\n  commonjsGlobal as bO,\n  invariant$1 as bP,\n  index as bQ,\n  Primitive as ba,\n  setPrescriptionHeaderImage as bb,\n  useControllableState as bc,\n  Root2$2 as bd,\n  useId as be,\n  Primitive$1 as bf,\n  Anchor as bg,\n  Presence as bh,\n  Portal$2 as bi,\n  createPopperScope as bj,\n  hideOthers as bk,\n  ReactRemoveScroll as bl,\n  createSlot as bm,\n  useFocusGuards as bn,\n  FocusScope as bo,\n  DismissableLayer as bp,\n  Content$1 as bq,\n  Arrow as br,\n  Check as bs,\n  loadAllergyOverrides as bt,\n  saveAllergyOverrides as bu,\n",
             "is_error": false,
             "time": 1784041460
+        },
+        {
+            "id": "msg_f294ac9f74",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I can see that `saveFrontPageContentWithSync` is exported as `ax` from `index-DJeWhCy-.js`. Let me also check what other exports are relevant. I need to understand how the import in `useDoctorContent` works.\n\nThe import currently is:\n```js\nimport { i as createLucideIcon, r as reactExports, ax as saveFrontPageContentWithSync } from \".\/index-DJeWhCy-.js\";\n```\n\nSince I'm removing the dependency on `saveFrontPageContentWithSync` from `useDoctorContent.js`, I need to update this import. Let me check what's still needed.\n\nActually, `createLucideIcon` and `reactExports` are still needed for the SVG icons and React. So I just need to remove the `ax as saveFrontPageContentWithSync` part.\n\nNow let me plan the changes comprehensively:\n\n### Changes needed:\n\n#### 1. `public_html\/assets\/useDoctorContent-Cx8T-OwA.js` (DONE)\n- MySQL is primary source on page load\n- Save operations POST to API first, only update React state + localStorage cache after server confirms\n- Added `syncOverridesToServer` async function\n- `updateField` and `updateChambers` are now async\n- Removed dependency on `saveFrontPageContentWithSync`\n- Add offline queue support\n\n#### 2. `public_html\/assets\/index-DJeWhCy-.js` - Update `saveFrontPageContentWithSync`\n- Make it async, wait for server response\n- Add offline queue mechanism for content saves\n- Add conflict resolution with timestamps\n\n#### 3. `public_html\/assets\/LandingPage-Dv8SefYP.js` - Update `useSiteConfig`\n- MySQL as primary source on load\n- Save operations wait for MySQL confirmation\n- Return success status from update functions\n\n#### 4. `public_html\/assets\/Settings-DPkJ1nB8.js` - Update `AdminPublicContent`\n- Load content from MySQL on mount\n- Save via POST to API, wait for confirmation\n- Show proper success\/error messages\n- Keep save button enabled on error for retry\n\nLet me also check what the `frontpage\/save.php` endpoint returns to understand the full response format. I already read it:\n\n```php\nsuccessResponse([\n    'siteConfig' => $allContent['siteConfig'] ?? null,\n    'doctorContentOverrides' => $allContent['doctorContentOverrides'] ?? null,\n    'updated_at' => $now,\n], 'Front page content saved successfully');\n```\n\nThis returns `{ success: true, data: { siteConfig: ..., doctorContentOverrides: ..., updated_at: \"...\" }, message: \"...\" }`.\n\nGood, the PHP API already returns the saved data with a server-side timestamp. This is exactly what we need for the MySQL-as-SOT pattern.\n\nNow for the PHP `content\/save.php`, it only returns:\n```php\nsuccessResponse(null, 'Content saved successfully');\n```\n\nI should update it to return the saved record as well for consistency. Let me update the PHP side too.\n\nLet me now proceed with the changes systematically.\n\nActually, let me also check if `content\/save.php` is used from the Settings page. Looking at the code:\n\n```js\nfetch(\"\/api\/content\/save.php\", {\n    method: \"POST\",\n    headers: { \"Content-Type\": \"application\/json\" },\n    body: JSON.stringify({ key: key, value: value })\n}).then(r => {\n    if (r.ok) ue.success(` saved to server`);\n    else console.warn(\"Content save failed:\", r.status);\n}).catch(e => console.warn(\"Content save error:\", e));\n```\n\nThis saves individual keys like `classroom_arman`, `chamber_samia`, etc.\n\nNow I have a full picture. Let me proceed with all changes.\n\nLet me also add an `addToOfflineQueue` function for content operations in `index-DJeWhCy-.js` and update `saveFrontPageContentWithSync`."
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me update the `content\/save.php` to return the saved record (for the Settings page to use):"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_275cL6zBK5ZmiTFK0xrW0519",
+                    "name": "edit_file",
+                    "input": {
+                        "path": "public_html\/api\/content\/save.php",
+                        "old_string": "    $stmt->execute([\n        ':key' => $key,\n        ':value' => $valueJson,\n        ':group' => $group,\n        ':user_id' => $userId,\n    ]);\n    \n    successResponse(null, 'Content saved successfully');",
+                        "new_string": "    $stmt->execute([\n        ':key' => $key,\n        ':value' => $valueJson,\n        ':group' => $group,\n        ':user_id' => $userId,\n    ]);\n    \n    \/\/ Fetch the saved record to return as confirmation\n    $fetchStmt = $db->prepare('SELECT setting_key, setting_value, setting_group, updated_at FROM site_settings WHERE setting_key = :key');\n    $fetchStmt->execute([':key' => $key]);\n    $saved = $fetchStmt->fetch();\n    \n    if ($saved) {\n        $saved['setting_value'] = json_decode($saved['setting_value'], true);\n    }\n    \n    successResponse($saved, 'Content saved successfully');"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 80357,
+                "completion_tokens": 1165,
+                "total_tokens": 81522,
+                "prompt_cache_hit_tokens": 79104,
+                "prompt_cache_miss_tokens": 1253,
+                "prompt_tokens_details": {
+                    "cached_tokens": 79104
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 850
+                }
+            },
+            "time": 1784041470
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_275cL6zBK5ZmiTFK0xrW0519",
+            "content": "Edited public_html\/api\/content\/save.php (1 replacement)\n-     $stmt->execute([\n-         ':key' => $key,\n-         ':value' => $valueJson,\n-         ':group' => $group,\n-         ':user_id' => $userId,\n-     ]);\n-     \n-     successResponse(null, 'Content saved successfully');\n+     $stmt->execute([\n+         ':key' => $key,\n+         ':value' => $valueJson,\n+         ':group' => $group,\n+         ':user_id' => $userId,\n+     ]);\n+     \n+     \/\/ Fetch the saved record to return as confirmation\n+     $fetchStmt = $db->prepare('SELECT setting_key, setting_value, setting_group, updated_at FROM site_settings WHERE setting_key = :key');\n+     $fetchStmt->execute([':key' => $key]);\n+     $saved = $fetchStmt->fetch();\n+     \n+     if ($saved) {\n+         $saved['setting_value'] = json_decode($saved['setting_value'], true);\n+     }\n+     \n+     successResponse($saved, 'Content saved successfully');",
+            "is_error": false,
+            "time": 1784041470
+        },
+        {
+            "id": "msg_58b3f69ca1",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Good. Now let me update the `content\/get.php` to also accept multiple keys at once, which will be useful for the Settings page loading all content at once.\n\nActually, looking at the code more carefully, the `content\/get.php` already accepts `?group=` parameter which returns all settings in a group. That's perfect for the Settings page.\n\nNow let me update the `index-DJeWhCy-.js` file to:\n1. Add a new `addToOfflineContentQueue` function for frontpage content offline queue\n2. Update `saveFrontPageContentWithSync` to be async and wait for server confirmation\n\nLet me look at the full function to update it properly."
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me update the `saveFrontPageContentWithSync` function in `index-DJeWhCy-.js`:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_64j9HsgMq1EXGNRsqkxm2582",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && sed -n '51568,51610p' public_html\/assets\/index-DJeWhCy-.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 81781,
+                "completion_tokens": 237,
+                "total_tokens": 82018,
+                "prompt_cache_hit_tokens": 81408,
+                "prompt_cache_miss_tokens": 373,
+                "prompt_tokens_details": {
+                    "cached_tokens": 81408
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 142
+                }
+            },
+            "time": 1784041475
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_64j9HsgMq1EXGNRsqkxm2582",
+            "content": "function saveFrontPageContentWithSync(actor) {\n  const allContent = {};\n  const fpKeys = [\"siteConfig\", \"doctorContentOverrides\"];\n  for (const k2 of fpKeys) {\n    try {\n      const raw = localStorage.getItem(k2);\n      if (raw) allContent[k2] = JSON.parse(raw);\n    } catch {\n    }\n  }\n  if (navigator.onLine) {\n    fetch(\"\/api\/frontpage\/save.php\", {\n      method: \"POST\",\n      headers: { \"Content-Type\": \"application\/json\" },\n      body: JSON.stringify(allContent)\n    }).then(r => {\n      if (r.ok) {\n        localStorage.setItem(LAST_SYNC_KEY, (\/* @__PURE__ *\/ new Date()).toISOString());\n      } else {\n        console.warn(\"[sync] saveFrontPageContent PHP returned\", r.status);\n      }\n    }).catch(err => {\n      console.warn(\"[sync] saveFrontPageContent PHP failed:\", err);\n    });\n  }\n  localStorage.setItem(LAST_SYNC_KEY, (\/* @__PURE__ *\/ new Date()).toISOString());\n}\nasync function bootstrapFromCanister(actor) {\n  if (!isNetworkOnline() || !actor) {\n    return { success: false, recordsLoaded: 0 };\n  }\n  let recordsLoaded = 0;\n  try {\n    const [remotePatients, remoteVisits, remotePrescriptions, syncDataResult] = await Promise.all([\n      actor.getAllPatients(),\n      actor.getAllVisits(),\n      actor.getAllPrescriptions(),\n      actor.getFullSyncData(getDoctorEmail())\n    ]);\n    if (Array.isArray(remotePatients) && remotePatients.length > 0) {\n      const key = storageKey(\"patients\");\n      const local = loadFromStorage(key);\n      const merged = mergeByIdLastWriterWins(\n",
+            "is_error": false,
+            "time": 1784041475
         }
     ]
 }
