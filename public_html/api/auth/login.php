@@ -1,4 +1,23 @@
-<?php
+    // Check if user is active
+    if (!$user['is_active']) {
+        errorResponse('Account is deactivated. Contact administrator.', 403);
+    }
+    
+    // Check registration status (for pending/rejected accounts)
+    if ($user['registration_status'] === 'pending') {
+        errorResponse('Your account is pending admin approval. Please wait.', 403);
+    }
+    if ($user['registration_status'] === 'rejected') {
+        errorResponse('Your account has been rejected. Please contact the admin or re-register.', 403);
+    }
+    
+    // Verify password
+    if (!password_verify($password, $user['password_hash'])) {
+        errorResponse('Invalid email or password', 401);
+    }
+    
+    // Create session
+    $token = createSession($user['id']);<?php
 /**
  * Login API
  * 
