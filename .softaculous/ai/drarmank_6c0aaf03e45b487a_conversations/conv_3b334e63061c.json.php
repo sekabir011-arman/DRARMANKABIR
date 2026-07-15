@@ -57,7 +57,7 @@
         }
     ],
     "created_at": 1784059445,
-    "updated_at": 1784102387,
+    "updated_at": 1784102410,
     "messages": [
         {
             "id": "msg_7a86f65ed1",
@@ -2717,6 +2717,213 @@
             "content": "Successfully wrote 3431 bytes (106 lines) to public_html\/api\/auth\/patients\/login.php",
             "is_error": false,
             "time": 1784102387
+        },
+        {
+            "id": "msg_573536414d",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now let me create the patient approve, reject, pending endpoints, and the registry endpoints."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_cT36aHBUNuxlrp9Ifktm4210",
+                    "name": "write_file",
+                    "input": {
+                        "path": "public_html\/api\/auth\/patients\/approve.php",
+                        "content": "<?php\n\/**\n * Approve Patient Login API\n * \n * POST \/api\/auth\/patients\/approve.php\n * Headers: Authorization: Bearer <staff-token>\n * Body: { \"patient_login_id\": 123 }\n * \n * Staff\/doctors can approve pending patient registrations.\n *\/\n\nrequire_once __DIR__ . '\/..\/..\/database.php';\nrequire_once __DIR__ . '\/..\/..\/helpers.php';\nrequire_once __DIR__ . '\/..\/middleware.php';\n\nhandleCors();\nrequireMethod('POST');\n\n$user = requireAuth();\n\n$input = getJsonInput();\n$missing = validateRequired($input, ['patient_login_id']);\nif ($missing) {\n    errorResponse('Missing required fields', 400, ['missing_fields' => $missing]);\n}\n\n$patientLoginId = (int)$input['patient_login_id'];\n\ntry {\n    $db = Database::getInstance();\n    \n    $stmt = $db->prepare('\n        SELECT pl.*, p.full_name, p.register_number \n        FROM patient_login pl\n        JOIN patients p ON pl.patient_id = p.id\n        WHERE pl.id = :id\n        LIMIT 1\n    ');\n    $stmt->execute([':id' => $patientLoginId]);\n    $patientLogin = $stmt->fetch();\n    \n    if (!$patientLogin) {\n        errorResponse('Patient login record not found', 404);\n    }\n    \n    if ($patientLogin['status'] !== 'pending') {\n        errorResponse('Patient is not in pending status. Current status: ' . $patientLogin['status'], 400);\n    }\n    \n    \/\/ Approve\n    $stmt = $db->prepare('UPDATE patient_login SET status = \"approved\", approved_by = :approved_by, approved_at = NOW() WHERE id = :id');\n    $stmt->execute([\n        ':approved_by' => $user['id'],\n        ':id' => $patientLoginId,\n    ]);\n    \n    successResponse([\n        'patient_login_id' => $patientLoginId,\n        'patient_name' => $patientLogin['full_name'],\n        'register_number' => $patientLogin['register_number'],\n        'status' => 'approved',\n    ], 'Patient approved successfully');\n    \n} catch (\\Exception $e) {\n    error_log('Patient approval error: ' . $e->getMessage());\n    errorResponse('Failed to approve patient', 500);\n}\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 101088,
+                "completion_tokens": 585,
+                "total_tokens": 101673,
+                "prompt_cache_hit_tokens": 100992,
+                "prompt_cache_miss_tokens": 96,
+                "prompt_tokens_details": {
+                    "cached_tokens": 100992
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 18
+                }
+            },
+            "time": 1784102392
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_cT36aHBUNuxlrp9Ifktm4210",
+            "content": "Successfully wrote 1950 bytes (68 lines) to public_html\/api\/auth\/patients\/approve.php",
+            "is_error": false,
+            "time": 1784102393
+        },
+        {
+            "id": "msg_36dd33e197",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now let me create patient reject, patient pending list, and then modify the main login\/logout\/verify\/middleware to handle both staff and patient tokens.\n\nActually, I realize I need to step back and think about the approach more carefully.\n\nThe current frontend bundle has the EmailAuthProvider context that manages:\n1. Doctor signIn\/signUp\/signOut - localStorage based\n2. Patient signIn\/signUp\/signOut - localStorage based\n3. Admin approve\/reject\/reassign - localStorage based\n4. Admin login (hardcoded) - localStorage based\n\nFor the conversion to work, the frontend bundle needs to call these new PHP endpoints instead of doing everything in localStorage. This means I MUST modify the JS bundle.\n\nThe key functions to modify in the bundle:\n\n**signUp()** \u2192 Currently reads\/writes localStorage. Needs to call `POST \/api\/auth\/register.php`\n**signIn()** \u2192 Currently reads localStorage. Needs to call `POST \/api\/auth\/login.php` (already exists for staff)\n**signOut()** \u2192 Currently removes localStorage items. Needs to call `POST \/api\/auth\/logout.php`\n**patientSignUp()** \u2192 Currently reads\/writes localStorage. Needs to call `POST \/api\/auth\/patients\/register.php`\n**patientSignIn()** \u2192 Currently reads localStorage. Needs to call `POST \/api\/auth\/patients\/login.php`\n**patientSignOut()** \u2192 Currently removes localStorage items. Needs to call `POST \/api\/auth\/logout.php`\n**approveAccount()** \u2192 Currently modifies localStorage. Needs to call `POST \/api\/auth\/approve.php`\n**approveAccountWithRole()** \u2192 Currently modifies localStorage. Needs to call `POST \/api\/auth\/approve.php`\n**rejectAccount()** \u2192 Currently modifies localStorage. Needs to call `POST \/api\/auth\/reject.php`\n**reassignRole()** \u2192 Currently modifies localStorage. Needs to call `POST \/api\/auth\/reassign_role.php`\n**getPendingAccounts()** \u2192 Currently reads localStorage. Needs to call `GET \/api\/auth\/pending.php`\n**getPendingPatients()** \u2192 Currently reads localStorage. Needs to call `GET \/api\/auth\/patients\/pending.php`\n**approvePatient()** \u2192 Currently modifies localStorage. Needs to call `POST \/api\/auth\/patients\/approve.php`\n**rejectPatient()** \u2192 Currently modifies localStorage. Needs to call `POST \/api\/auth\/patients\/reject.php`\n**adminLogin()** \u2192 Currently checks hardcoded Array. Needs to call `POST \/api\/auth\/admin_login.php`\n**adminLogout()** \u2192 Currently removes localStorage item. Needs to call and clean up\n**loadRegistry()** \u2192 Reads localStorage. Needs to call `GET \/api\/auth\/registry.php`\n**loadPatientRegistry()** \u2192 Reads localStorage. Needs to call `GET \/api\/auth\/patients\/registry.php`\n\nThis is a lot of changes to the bundle. Let me write these as find-and-replace operations on the bundle.\n\nThe bundle is minified, so I need to find the exact code sections and replace them. Let me look at the actual function signatures and patterns used.\n\nActually, I realize I need to be very careful here. The bundle is a compiled, minified file with all the React components and logic bundled together. Modifying it could easily break things. \n\nLet me take a different approach. Instead of modifying the minified bundle directly (which is fragile and error-prone), I'll create a \"preload\" script that overrides the critical functions before the bundle loads.\n\nWait, but the functions are defined inside the bundle's closures. You can't override them from outside. \n\nOK, let me think about this differently. The bundle defines functions like signUp, signIn, etc. as React callbacks. These are passed down via context (EmailAuthContext). The UI components use `useEmailAuth()` to get these functions.\n\nOne approach: After the bundle loads, we could override the EmailAuthContext's provider methods by monkey-patching. But that's extremely hacky.\n\nAnother approach: Actually modify the bundle text directly, since we control the deployment. Let me do careful find-and-replace operations.\n\nLet me look at the bundle structure more carefully to identify the exact text I need to replace.\n\nFrom the analysis, the key functions are in the following approximate locations:\n\n- signUp (around line 53099-53133)\n- signIn (around line 53135-53162) \n- signOut (around line 53163-53176)\n- patientSignUp (around line 53222-53317)\n- patientSignIn (around line 53318-53347)\n- patientSignOut (around line 53348-53361)\n- approveAccountWithRole (around line 53203-53218)\n- rejectAccount (around line 53240-53266)\n- getPendingAccounts (around line 53189-53191)\n- getPendingPatients\n- approvePatient\n- rejectPatient\n- adminLogin (around line 52873-52898)\n- adminLogout (around line 52899-52902)\n- ADMIN_ACCOUNTS (around 52861-52865)\n\nLet me read these sections more carefully to design the replacements."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me read the exact code sections I need to modify in the bundle."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_eceg2pLYUMqSJRmBjbN40596",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && sed -n '52850,52905p' public_html\/assets\/index-DJeWhCy-.js"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_hVzhOP1ClpqCTxg4x9Eo1158",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && sed -n '53090,53200p' public_html\/assets\/index-DJeWhCy-.js"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_02_4NWebnWsimBXMUDNiMOe7225",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && sed -n '53200,53400p' public_html\/assets\/index-DJeWhCy-.js"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_03_fUiIb3uEVIbJOqJCCW0v5087",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && sed -n '53400,53470p' public_html\/assets\/index-DJeWhCy-.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 101707,
+                "completion_tokens": 1343,
+                "total_tokens": 103050,
+                "prompt_cache_hit_tokens": 101632,
+                "prompt_cache_miss_tokens": 75,
+                "prompt_tokens_details": {
+                    "cached_tokens": 101632
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 1087
+                }
+            },
+            "time": 1784102405
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_eceg2pLYUMqSJRmBjbN40596",
+            "content": "      ...n,\n      acknowledged: true,\n      acknowledgedBy,\n      acknowledgedAt: (\/* @__PURE__ *\/ new Date()).toISOString()\n    } : n\n  );\n  saveEmergencyNotifications(updated);\n}\nfunction getUnacknowledgedEmergencyNotifications() {\n  return loadEmergencyNotifications().filter((n) => !n.acknowledged);\n}\nconst ADMIN_ACCOUNTS = [\n  { username: \"dr.armankabir011@gmail.com\", password: \"01197247219\" },\n  { username: \"admin2\", password: \"admin2\" }\n];\nconst STORAGE_KEY = \"adminSession\";\nfunction loadSession() {\n  try {\n    return localStorage.getItem(STORAGE_KEY) === \"true\";\n  } catch {\n    return false;\n  }\n}\nfunction useAdminAuth() {\n  const [isAdmin, setIsAdmin] = reactExports.useState(loadSession);\n  const adminLogin = reactExports.useCallback(\n    (username, password) => {\n      const match = ADMIN_ACCOUNTS.find(\n        (a2) => a2.username === username && a2.password === password\n      );\n      if (match) {\n        localStorage.setItem(STORAGE_KEY, \"true\");\n        setIsAdmin(true);\n        \/\/ Also try to authenticate with PHP server\n        fetch(\"\/api\/auth\/login.php\", {\n          method: \"POST\",\n          headers: { \"Content-Type\": \"application\/json\" },\n          body: JSON.stringify({ email: username, password: password })\n        }).then(r => r.json()).then(json => {\n          if (json.success && json.data && json.data.token) {\n            localStorage.setItem(\"phpAuthToken\", json.data.token);\n          }\n        }).catch(() => {});\n        return true;\n      }\n      return false;\n    },\n    []\n  );\n  const adminLogout = reactExports.useCallback(() => {\n    localStorage.removeItem(STORAGE_KEY);\n    setIsAdmin(false);\n  }, []);\n  return { isAdmin, adminLogin, adminLogout };\n}\nconst REGISTRY_KEY = \"medicare_doctors_registry\";\n",
+            "is_error": false,
+            "time": 1784102405
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_hVzhOP1ClpqCTxg4x9Eo1158",
+            "content": "            return ((_a3 = p2.email) == null ? void 0 : _a3.toLowerCase()) === data.email.toLowerCase();\n          }\n        );\n        if (existingInPatients) {\n          throw new Error(\"This email is already registered in the system.\");\n        }\n        const existing = registry.find(\n          (d2) => d2.email.toLowerCase() === data.email.toLowerCase()\n        );\n        if (existing) {\n          if (existing.status === \"rejected\") {\n            const idx = registry.findIndex((d2) => d2.id === existing.id);\n            const { password: password2, ...rest2 } = data;\n            registry[idx] = {\n              ...rest2,\n              id: existing.id,\n              passwordHash: hashPassword(data.email, password2),\n              createdAt: (\/* @__PURE__ *\/ new Date()).toISOString(),\n              status: \"pending\"\n            };\n            saveRegistry(registry);\n            throw new Error(\n              \"Your account has been re-submitted for approval. Please wait for admin approval.\"\n            );\n          }\n          throw new Error(\"This email is already registered in the system.\");\n        }\n        const { password, ...rest } = data;\n        const newDoctor = {\n          ...rest,\n          id: Date.now().toString(36) + Math.random().toString(36).slice(2),\n          passwordHash: hashPassword(data.email, password),\n          createdAt: (\/* @__PURE__ *\/ new Date()).toISOString(),\n          status: \"pending\"\n        };\n        registry.push(newDoctor);\n        saveRegistry(registry);\n        throw new Error(\n          \"Account created! Please wait for admin approval before logging in.\"\n        );\n      } catch (e) {\n        const msg = e instanceof Error ? e.message : \"Sign up failed.\";\n        setAuthError(msg);\n        throw e;\n      } finally {\n        setIsLoggingIn(false);\n      }\n    },\n    []\n  );\n  const signIn = reactExports.useCallback(async (email, password) => {\n    setIsLoggingIn(true);\n    setAuthError(null);\n    try {\n      const registry = loadRegistry();\n      const doctor = registry.find(\n        (d2) => d2.email.toLowerCase() === email.toLowerCase()\n      );\n      if (!doctor) throw new Error(\"No account found with this email.\");\n      if (doctor.passwordHash !== hashPassword(email, password))\n        throw new Error(\"Incorrect password.\");\n      if (doctor.status === \"pending\")\n        throw new Error(\"Your account is pending admin approval. Please wait.\");\n      if (doctor.status === \"rejected\")\n        throw new Error(\n          \"Your account has been rejected. Please contact the admin or re-register.\"\n        );\n      localStorage.setItem(SESSION_KEY, doctor.id);\n      localStorage.setItem(CANONICAL_EMAIL_KEY, doctor.email);\n      setCurrentDoctor(doctor);\n      appendAuditLog({\n        timestamp: (\/* @__PURE__ *\/ new Date()).toISOString(),\n        userRole: doctor.role,\n        userName: doctor.name,\n        action: \"Logged in\",\n        target: \"System\"\n      });\n    } catch (e) {\n      const msg = e instanceof Error ? e.message : \"Sign in failed.\";\n      setAuthError(msg);\n      throw e;\n    } finally {\n      setIsLoggingIn(false);\n    }\n  }, []);\n  const signOut = reactExports.useCallback(() => {\n    if (currentDoctor) {\n      appendAuditLog({\n        timestamp: (\/* @__PURE__ *\/ new Date()).toISOString(),\n        userRole: currentDoctor.role,\n        userName: currentDoctor.name,\n        action: \"Logged out\",\n        target: \"System\"\n      });\n    }\n    localStorage.removeItem(SESSION_KEY);\n    localStorage.removeItem(CANONICAL_EMAIL_KEY);\n    setCurrentDoctor(null);\n    setAuthError(null);\n  }, [currentDoctor]);\n  const updateProfile = reactExports.useCallback(\n    (data) => {\n      if (!currentDoctor) return;\n      const registry = loadRegistry();\n      const idx = registry.findIndex((d2) => d2.id === currentDoctor.id);\n      if (idx < 0) return;\n      const updated = { ...registry[idx], ...data };\n      registry[idx] = updated;\n      saveRegistry(registry);\n      setCurrentDoctor(updated);\n    },\n",
+            "is_error": false,
+            "time": 1784102405
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_02_4NWebnWsimBXMUDNiMOe7225",
+            "content": "    },\n    [currentDoctor]\n  );\n  const getPendingAccounts = reactExports.useCallback(() => {\n    return loadRegistry().filter((d2) => d2.status === \"pending\");\n  }, []);\n  const approveAccount = reactExports.useCallback((id2) => {\n    const registry = loadRegistry();\n    const idx = registry.findIndex((d2) => d2.id === id2);\n    if (idx >= 0) {\n      registry[idx] = { ...registry[idx], status: \"approved\" };\n      saveRegistry(registry);\n    }\n  }, []);\n  const approveAccountWithRole = reactExports.useCallback((id2, role) => {\n    const registry = loadRegistry();\n    const idx = registry.findIndex((d2) => d2.id === id2);\n    if (idx >= 0) {\n      registry[idx] = { ...registry[idx], status: \"approved\", role };\n      saveRegistry(registry);\n      appendAuditLog({\n        timestamp: (\/* @__PURE__ *\/ new Date()).toISOString(),\n        userRole: \"admin\",\n        userName: \"Admin\",\n        action: `Approved account with role: ${role}`,\n        target: registry[idx].name\n      });\n    }\n  }, []);\n  const reassignRole = reactExports.useCallback((id2, role) => {\n    const registry = loadRegistry();\n    const idx = registry.findIndex((d2) => d2.id === id2);\n    if (idx >= 0) {\n      registry[idx] = { ...registry[idx], role };\n      saveRegistry(registry);\n      appendAuditLog({\n        timestamp: (\/* @__PURE__ *\/ new Date()).toISOString(),\n        userRole: \"admin\",\n        userName: \"Admin\",\n        action: `Reassigned role to: ${role}`,\n        target: registry[idx].name\n      });\n    }\n  }, []);\n  const rejectAccount = reactExports.useCallback((id2) => {\n    const registry = loadRegistry();\n    const idx = registry.findIndex((d2) => d2.id === id2);\n    if (idx >= 0) {\n      const before = JSON.stringify(registry[idx]);\n      registry[idx] = { ...registry[idx], status: \"rejected\" };\n      saveRegistry(registry);\n      appendAuditLog({\n        timestamp: (\/* @__PURE__ *\/ new Date()).toISOString(),\n        userRole: \"admin\",\n        userName: \"Admin\",\n        action: \"SOFT_DELETE \u2014 Account rejected\",\n        target: registry[idx].name\n      });\n      const detailed = {\n        timestamp: (\/* @__PURE__ *\/ new Date()).toISOString(),\n        userRole: \"admin\",\n        userName: \"Admin\",\n        action: \"Account status changed to rejected (SOFT_DELETE)\",\n        target: `before: ${before} | after: status=rejected`\n      };\n      appendAuditLog(detailed);\n    }\n  }, []);\n  const patientSignUp = reactExports.useCallback(\n    async (data) => {\n      setIsLoggingIn(true);\n      setAuthError(null);\n      try {\n        const { registerNumber, phone, password } = data;\n        if (!(registerNumber == null ? void 0 : registerNumber.trim())) {\n          throw new Error(\n            \"Register number is required. Please contact the clinic to get your register number.\"\n          );\n        }\n        const allPatients = [];\n        for (let i = 0; i < localStorage.length; i++) {\n          const k2 = localStorage.key(i);\n          if (k2 && (k2.startsWith(\"patients_\") || k2.startsWith(\"medicare_patients_data\") || k2 === \"medicare_patients\")) {\n            try {\n              const raw = localStorage.getItem(k2);\n              if (!raw) continue;\n              const arr = JSON.parse(raw);\n              if (Array.isArray(arr)) allPatients.push(...arr);\n            } catch {\n            }\n          }\n        }\n        const matchedPatient = allPatients.find(\n          (p2) => typeof p2.registerNumber === \"string\" && normalizeRegNo(p2.registerNumber) === normalizeRegNo(registerNumber)\n        );\n        if (!matchedPatient) {\n          throw new Error(\n            \"Register number not found. Please make sure you enter the exact register number given by the clinic (e.g. 0001\/26). Contact the clinic if you need help.\"\n          );\n        }\n        const patientName = matchedPatient.fullName || matchedPatient.name || \"Patient\";\n        const patientAge = matchedPatient.dateOfBirth ? String(\n          Math.floor(\n            (Date.now() - new Date(\n              Number(\n                typeof matchedPatient.dateOfBirth === \"bigint\" ? matchedPatient.dateOfBirth \/ 1000000n : matchedPatient.dateOfBirth\n              )\n            ).getTime()) \/ (365.25 * 24 * 3600 * 1e3)\n          )\n        ) : matchedPatient.age ?? \"\";\n        const patientGender = matchedPatient.gender ?? \"\";\n        const rawId = matchedPatient.id;\n        const patientId = typeof rawId === \"string\" && rawId.startsWith(\"__bigint__\") ? rawId.slice(10) : String(rawId);\n        const registry = loadPatientRegistry();\n        const existingByPhone = registry.find((p2) => p2.phone === phone);\n        if (existingByPhone) {\n          if (existingByPhone.status === \"rejected\") {\n            const idx = registry.findIndex((p2) => p2.id === existingByPhone.id);\n            registry[idx] = {\n              ...existingByPhone,\n              name: patientName,\n              age: patientAge,\n              gender: patientGender,\n              registerNumber: registerNumber.trim(),\n              patientId,\n              passwordHash: hashPassword(phone, password),\n              createdAt: (\/* @__PURE__ *\/ new Date()).toISOString(),\n              status: \"pending\"\n            };\n            savePatientRegistry(registry);\n            throw new Error(\n              \"Your account has been re-submitted for approval. Please wait for doctor approval.\"\n            );\n          }\n          throw new Error(\"An account with this phone number already exists.\");\n        }\n        const existingByRegNo = registry.find(\n          (p2) => p2.registerNumber && normalizeRegNo(p2.registerNumber) === normalizeRegNo(registerNumber)\n        );\n        if (existingByRegNo) {\n          if (existingByRegNo.status === \"rejected\") {\n            const idx = registry.findIndex((p2) => p2.id === existingByRegNo.id);\n            registry[idx] = {\n              ...existingByRegNo,\n              phone,\n              name: patientName,\n              age: patientAge,\n              gender: patientGender,\n              patientId,\n              passwordHash: hashPassword(phone, password),\n              createdAt: (\/* @__PURE__ *\/ new Date()).toISOString(),\n              status: \"pending\"\n            };\n            savePatientRegistry(registry);\n            throw new Error(\n              \"Your account has been re-submitted for approval. Please wait for doctor approval.\"\n            );\n          }\n          throw new Error(\n            \"An account for this register number already exists. Please log in instead.\"\n          );\n        }\n        const newPatient = {\n          id: Date.now().toString(36) + Math.random().toString(36).slice(2),\n          phone,\n          passwordHash: hashPassword(phone, password),\n          name: patientName,\n          age: patientAge,\n          gender: patientGender,\n          registerNumber: registerNumber.trim(),\n          patientId,\n          status: \"pending\",\n          createdAt: (\/* @__PURE__ *\/ new Date()).toISOString()\n        };\n        registry.push(newPatient);\n        savePatientRegistry(registry);\n        throw new Error(\n          \"Account created! Please wait for doctor approval before logging in.\"\n        );\n      } catch (e) {\n        const msg = e instanceof Error ? e.message : \"Sign up failed.\";\n        setAuthError(msg);\n        throw e;\n      } finally {\n        setIsLoggingIn(false);\n      }\n    },\n    []\n  );\n  const patientSignIn = reactExports.useCallback(async (phone, password) => {\n    setIsLoggingIn(true);\n    setAuthError(null);\n    try {\n      const registry = loadPatientRegistry();\n      const patient = registry.find((p2) => p2.phone === phone);\n      if (!patient) throw new Error(\"No account found with this phone number.\");\n      if (patient.passwordHash !== hashPassword(phone, password))\n        throw new Error(\"Incorrect password.\");\n      if (patient.status === \"pending\")\n        throw new Error(\n          \"Your account is pending doctor approval. Please wait.\"\n",
+            "is_error": false,
+            "time": 1784102405
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_03_fUiIb3uEVIbJOqJCCW0v5087",
+            "content": "          \"Your account is pending doctor approval. Please wait.\"\n        );\n      if (patient.status === \"rejected\")\n        throw new Error(\n          \"Your account has been rejected. Please contact your doctor.\"\n        );\n      localStorage.setItem(PATIENT_SESSION_KEY, patient.id);\n      setCurrentPatient(patient);\n      appendAuditLog({\n        timestamp: (\/* @__PURE__ *\/ new Date()).toISOString(),\n        userRole: \"patient\",\n        userName: patient.name,\n        action: \"Logged in\",\n        target: \"Patient Portal\"\n      });\n    } catch (e) {\n      const msg = e instanceof Error ? e.message : \"Sign in failed.\";\n      setAuthError(msg);\n      throw e;\n    } finally {\n      setIsLoggingIn(false);\n    }\n  }, []);\n  const patientSignOut = reactExports.useCallback(() => {\n    if (currentPatient) {\n      appendAuditLog({\n        timestamp: (\/* @__PURE__ *\/ new Date()).toISOString(),\n        userRole: \"patient\",\n        userName: currentPatient.name,\n        action: \"Logged out\",\n        target: \"Patient Portal\"\n      });\n    }\n    localStorage.removeItem(PATIENT_SESSION_KEY);\n    setCurrentPatient(null);\n    setAuthError(null);\n  }, [currentPatient]);\n  const getPendingPatients = reactExports.useCallback(() => {\n    return loadPatientRegistry().filter((p2) => p2.status === \"pending\");\n  }, []);\n  const approvePatient = reactExports.useCallback((id2) => {\n    const registry = loadPatientRegistry();\n    const idx = registry.findIndex((p2) => p2.id === id2);\n    if (idx >= 0) {\n      registry[idx] = { ...registry[idx], status: \"approved\" };\n      savePatientRegistry(registry);\n    }\n  }, []);\n  const rejectPatient = reactExports.useCallback((id2) => {\n    const registry = loadPatientRegistry();\n    const idx = registry.findIndex((p2) => p2.id === id2);\n    if (idx >= 0) {\n      const before = JSON.stringify(registry[idx]);\n      registry[idx] = { ...registry[idx], status: \"rejected\" };\n      savePatientRegistry(registry);\n      appendAuditLog({\n        timestamp: (\/* @__PURE__ *\/ new Date()).toISOString(),\n        userRole: \"admin\",\n        userName: \"Admin\",\n        action: \"SOFT_DELETE \u2014 Patient account rejected\",\n        target: `Patient: ${registry[idx].name} | before: ${before} | after: status=rejected`\n      });\n    }\n  }, []);\n  const updatePatientCredentials = reactExports.useCallback(\n    (registerNumber, newPhone, newPassword) => {\n      const registry = loadPatientRegistry();\n      const idx = registry.findIndex(\n        (p2) => p2.registerNumber && normalizeRegNo(p2.registerNumber) === normalizeRegNo(registerNumber)\n      );\n      if (idx < 0) return;\n",
+            "is_error": false,
+            "time": 1784102405
+        },
+        {
+            "id": "msg_69cfd3fa7b",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I have all the code I need to modify. Let me also check the `loadRegistryFromServer` and `saveRegistry` functions to see how they sync."
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me see the remaining sections."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_d3cvPJyGN6XJAt1tGXtd9178",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && sed -n '53470,53520p' public_html\/assets\/index-DJeWhCy-.js"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_HCYMeMbN7qieDNpjUd1z8379",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && sed -n '52905,52945p' public_html\/assets\/index-DJeWhCy-.js"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_02_kZiyQTs6JF86YXIwkORf5460",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && sed -n '52945,52985p' public_html\/assets\/index-DJeWhCy-.js"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 106926,
+                "completion_tokens": 226,
+                "total_tokens": 107152,
+                "prompt_cache_hit_tokens": 103040,
+                "prompt_cache_miss_tokens": 3886,
+                "prompt_tokens_details": {
+                    "cached_tokens": 103040
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 34
+                }
+            },
+            "time": 1784102410
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_d3cvPJyGN6XJAt1tGXtd9178",
+            "content": "      if (idx < 0) return;\n      const patient = registry[idx];\n      const updatedPhone = (newPhone == null ? void 0 : newPhone.trim()) || patient.phone;\n      const updatedHash = (newPassword == null ? void 0 : newPassword.trim()) ? hashPassword(updatedPhone, newPassword.trim()) : patient.passwordHash;\n      registry[idx] = {\n        ...patient,\n        phone: updatedPhone,\n        passwordHash: updatedHash\n      };\n      savePatientRegistry(registry);\n      setCurrentPatient((prev) => {\n        if ((prev == null ? void 0 : prev.registerNumber) && normalizeRegNo(prev.registerNumber) === normalizeRegNo(registerNumber)) {\n          return { ...prev, phone: updatedPhone, passwordHash: updatedHash };\n        }\n        return prev;\n      });\n    },\n    []\n  );\n  return \/* @__PURE__ *\/ jsxRuntimeExports.jsx(\n    EmailAuthContext.Provider,\n    {\n      value: {\n        currentDoctor,\n        currentPatient,\n        isInitializing,\n        isLoggingIn,\n        authError,\n        signUp,\n        signIn,\n        signOut,\n        updateProfile,\n        getPendingAccounts,\n        approveAccount,\n        approveAccountWithRole,\n        rejectAccount,\n        reassignRole,\n        patientSignUp,\n        patientSignIn,\n        patientSignOut,\n        getPendingPatients,\n        approvePatient,\n        rejectPatient,\n        updatePatientCredentials\n      },\n      children\n    }\n  );\n}\nfunction useEmailAuth() {\n  const ctx = reactExports.useContext(EmailAuthContext);\n",
+            "is_error": false,
+            "time": 1784102410
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_HCYMeMbN7qieDNpjUd1z8379",
+            "content": "const REGISTRY_KEY = \"medicare_doctors_registry\";\nconst SESSION_KEY = \"medicare_current_doctor\";\nconst PATIENT_REGISTRY_KEY = \"medicare_patients_auth_registry\";\nconst PATIENT_SESSION_KEY = \"medicare_patient_session\";\nconst AUDIT_LOG_KEY = \"medicare_audit_log\";\nconst CANONICAL_EMAIL_KEY = \"app_current_user_email\";\nconst PATIENT_SIGNUP_MAP_KEY = \"medicare_patient_signup_map\";\nfunction hashPassword(key, password) {\n  return btoa(`${key.toLowerCase()}::${password}`);\n}\nconst VALID_ROLES = [\n  \"admin\",\n  \"consultant_doctor\",\n  \"assistant_professor\",\n  \"associate_professor\",\n  \"professor\",\n  \"medical_officer\",\n  \"assistant_registrar\",\n  \"registrar\",\n  \"intern_doctor\",\n  \"nurse\",\n  \"reception\",\n  \"staff\",\n  \"patient\",\n  \"doctor\"\n];\nfunction loadRegistry() {\n  try {\n    const raw = localStorage.getItem(REGISTRY_KEY);\n    if (raw) {\n      const parsed = JSON.parse(raw);\n      return parsed.map((d2) => ({\n        ...d2,\n        role: VALID_ROLES.includes(d2.role) ? d2.role : \"doctor\",\n        status: d2.status ?? \"approved\"\n      }));\n    }\n  } catch {\n  }\n  return [];\n}\n",
+            "is_error": false,
+            "time": 1784102410
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_02_kZiyQTs6JF86YXIwkORf5460",
+            "content": "}\nasync function loadRegistryFromServer() {\n  try {\n    const resp = await fetch(\"\/api\/data\/get.php?key=medicare_doctors_registry\");\n    if (resp.ok) {\n      const json = await resp.json();\n      if (json.success && json.data && json.data.setting_value) {\n        const val = json.data.setting_value;\n        localStorage.setItem(REGISTRY_KEY, JSON.stringify(val));\n        return val;\n      }\n    }\n  } catch(e){console.warn(\"[sync] loadRegistryFromServer failed:\",e)}\n  return [];\n}\nfunction saveRegistry(registry) {\n  localStorage.setItem(REGISTRY_KEY, JSON.stringify(registry));\n  if (navigator.onLine) {\n    fetch(\"\/api\/data\/save.php\", {\n      method: \"POST\",\n      headers: { \"Content-Type\": \"application\/json\" },\n      body: JSON.stringify({ key: \"medicare_doctors_registry\", value: registry })\n    }).catch(function(e){console.warn(\"[sync] saveRegistry failed:\",e)});\n  }\n}\nfunction loadPatientRegistry() {\n  try {\n    const raw = localStorage.getItem(PATIENT_REGISTRY_KEY);\n    if (raw) return JSON.parse(raw);\n  } catch {\n  }\n  return [];\n}\nasync function loadPatientRegistryFromServer() {\n  try {\n    const resp = await fetch(\"\/api\/data\/get.php?key=medicare_patients_auth_registry\");\n    if (resp.ok) {\n      const json = await resp.json();\n      if (json.success && json.data && json.data.setting_value) {\n        const val = json.data.setting_value;\n        localStorage.setItem(PATIENT_REGISTRY_KEY, JSON.stringify(val));\n",
+            "is_error": false,
+            "time": 1784102410
         }
     ]
 }
