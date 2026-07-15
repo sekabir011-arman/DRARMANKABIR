@@ -57,7 +57,7 @@
         }
     ],
     "created_at": 1784059445,
-    "updated_at": 1784102329,
+    "updated_at": 1784102340,
     "messages": [
         {
             "id": "msg_7a86f65ed1",
@@ -2390,6 +2390,48 @@
             "content": "Successfully wrote 1980 bytes (69 lines) to public_html\/api\/auth\/admin_login.php",
             "is_error": false,
             "time": 1784102329
+        },
+        {
+            "id": "msg_49300dd34b",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now let me create the doctor\/staff registration endpoint and the approval flow endpoints."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_yk3QVPHEH4c5OteGRNgM3534",
+                    "name": "write_file",
+                    "input": {
+                        "path": "public_html\/api\/auth\/register.php",
+                        "content": "<?php\n\/**\n * Doctor\/Staff Registration API\n * \n * POST \/api\/auth\/register.php\n * Body: {\n *   \"email\": \"...\",\n *   \"password\": \"...\",\n *   \"full_name\": \"...\",\n *   \"name_bn\": \"...\",\n *   \"role\": \"doctor|nurse|reception|...\",\n *   \"specialization\": \"...\",\n *   \"phone\": \"...\",\n *   \"bmdc_registration\": \"...\"\n * }\n * \n * Creates a user account with registration_status='pending'.\n * Admin must approve before the account can log in.\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\n\nhandleCors();\nrequireMethod('POST');\ncheckRateLimit('register_' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));\n\n$input = getJsonInput();\n\n\/\/ Validate required fields\n$missing = validateRequired($input, ['email', 'password', 'full_name']);\nif ($missing) {\n    errorResponse('Missing required fields', 400, [\n        'missing_fields' => $missing,\n    ]);\n}\n\n$email = sanitizeEmail($input['email']);\n$password = $input['password'];\n$fullName = trim($input['full_name']);\n$nameBn = trim($input['name_bn'] ?? '');\n$role = trim($input['role'] ?? 'doctor');\n$specialization = trim($input['specialization'] ?? '');\n$phone = sanitizePhone($input['phone'] ?? '');\n$bmdcRegistration = trim($input['bmdc_registration'] ?? '');\n\n\/\/ Validate email\nif (empty($email)) {\n    errorResponse('Invalid email address', 400);\n}\n\n\/\/ Validate password strength\nif (strlen($password) < 6) {\n    errorResponse('Password must be at least 6 characters', 400);\n}\n\n\/\/ Validate role\n$allowedRoles = [\n    'admin', 'consultant_doctor', 'medical_officer', 'intern_doctor',\n    'nurse', 'staff', 'reception', 'doctor',\n    'assistant_registrar', 'registrar',\n    'assistant_professor', 'associate_professor', 'professor'\n];\nif (!in_array($role, $allowedRoles)) {\n    errorResponse('Invalid role specified', 400);\n}\n\ntry {\n    $db = Database::getInstance();\n    \n    \/\/ Check if email already exists\n    $stmt = $db->prepare('SELECT id, email, registration_status FROM users WHERE email = :email LIMIT 1');\n    $stmt->execute([':email' => $email]);\n    $existing = $stmt->fetch();\n    \n    if ($existing) {\n        if ($existing['registration_status'] === 'rejected') {\n            \/\/ Re-registration after rejection - update the record\n            $passwordHash = password_hash($password, PASSWORD_BCRYPT);\n            $updateStmt = $db->prepare('\n                UPDATE users SET \n                    password_hash = :password_hash,\n                    full_name = :full_name,\n                    name_bn = :name_bn,\n                    role = :role,\n                    specialization = :specialization,\n                    phone = :phone,\n                    bmdc_registration = :bmdc_registration,\n                    registration_status = \"pending\",\n                    approved_by = NULL,\n                    approved_at = NULL,\n                    updated_at = NOW()\n                WHERE id = :id\n            ');\n            $updateStmt->execute([\n                ':password_hash' => $passwordHash,\n                ':full_name' => $fullName,\n                ':name_bn' => $nameBn,\n                ':role' => $role,\n                ':specialization' => $specialization,\n                ':phone' => $phone,\n                ':bmdc_registration' => $bmdcRegistration,\n                ':id' => $existing['id'],\n            ]);\n            \n            \/\/ Log audit\n            logAudit(null, null, 'update', 'user', $existing['id'], \n                ['action' => 're-registration'], \n                ['email' => $email, 'role' => $role]\n            );\n            \n            successResponse([\n                'message' => 'Your account has been re-submitted for approval. Please wait for admin approval.',\n                'status' => 'pending',\n            ], 'Registration updated');\n        }\n        \n        errorResponse('This email is already registered in the system.', 409);\n    }\n    \n    \/\/ Hash password\n    $passwordHash = password_hash($password, PASSWORD_BCRYPT);\n    \n    \/\/ Insert new user with pending status\n    $stmt = $db->prepare('\n        INSERT INTO users (email, password_hash, full_name, name_bn, role, specialization, phone, bmdc_registration, is_active, registration_status, email_verified_at)\n        VALUES (:email, :password_hash, :full_name, :name_bn, :role, :specialization, :phone, :bmdc_registration, 1, \"pending\", NULL)\n    ');\n    $stmt->execute([\n        ':email' => $email,\n        ':password_hash' => $passwordHash,\n        ':full_name' => $fullName,\n        ':name_bn' => $nameBn,\n        ':role' => $role,\n        ':specialization' => $specialization,\n        ':phone' => $phone,\n        ':bmdc_registration' => $bmdcRegistration,\n    ]);\n    \n    $userId = (int)$db->lastInsertId();\n    \n    \/\/ Log audit\n    logAudit($userId, null, 'create', 'user', $userId, null, \n        ['email' => $email, 'role' => $role, 'registration_status' => 'pending']\n    );\n    \n    successResponse([\n        'user_id' => $userId,\n        'email' => $email,\n        'full_name' => $fullName,\n        'role' => $role,\n        'status' => 'pending',\n        'message' => 'Account created! Please wait for admin approval before logging in.',\n    ], 'Registration successful');\n    \n} catch (\\Exception $e) {\n    error_log('Registration error: ' . $e->getMessage());\n    errorResponse('Registration failed. Please try again.', 500);\n}\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 94501,
+                "completion_tokens": 1403,
+                "total_tokens": 95904,
+                "prompt_cache_hit_tokens": 94464,
+                "prompt_cache_miss_tokens": 37,
+                "prompt_tokens_details": {
+                    "cached_tokens": 94464
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 16
+                }
+            },
+            "time": 1784102340
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_yk3QVPHEH4c5OteGRNgM3534",
+            "content": "Successfully wrote 5344 bytes (160 lines) to public_html\/api\/auth\/register.php",
+            "is_error": false,
+            "time": 1784102340
         }
     ]
 }
