@@ -57,7 +57,7 @@
         }
     ],
     "created_at": 1784059445,
-    "updated_at": 1784102379,
+    "updated_at": 1784102387,
     "messages": [
         {
             "id": "msg_7a86f65ed1",
@@ -2675,6 +2675,48 @@
             "content": "Successfully wrote 5800 bytes (157 lines) to public_html\/api\/auth\/patients\/register.php",
             "is_error": false,
             "time": 1784102379
+        },
+        {
+            "id": "msg_246183db78",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now let me create patient login endpoint and the approve\/reject\/pending endpoints for patients."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_4OkJPDWA1Dkn0Ds9tokp0068",
+                    "name": "write_file",
+                    "input": {
+                        "path": "public_html\/api\/auth\/patients\/login.php",
+                        "content": "<?php\n\/**\n * Patient Login API\n * \n * POST \/api\/auth\/patients\/login.php\n * Body: { \"phone\": \"...\", \"password\": \"...\" }\n * \n * Authenticates a patient and creates a session.\n * Patient must have status='approved' to log in.\n *\/\n\nrequire_once __DIR__ . '\/..\/..\/database.php';\nrequire_once __DIR__ . '\/..\/..\/helpers.php';\n\nhandleCors();\nrequireMethod('POST');\ncheckRateLimit('patient_login_' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));\n\n$input = getJsonInput();\n\n$missing = validateRequired($input, ['phone', 'password']);\nif ($missing) {\n    errorResponse('Missing required fields', 400, ['missing_fields' => $missing]);\n}\n\n$phone = sanitizePhone($input['phone']);\n$password = $input['password'];\n\nif (empty($phone)) {\n    errorResponse('Invalid phone number', 400);\n}\n\ntry {\n    $db = Database::getInstance();\n    \n    \/\/ Find patient login by phone\n    $stmt = $db->prepare('\n        SELECT pl.*, p.full_name, p.name_bn, p.gender, p.date_of_birth, p.register_number, p.photo_url\n        FROM patient_login pl\n        JOIN patients p ON pl.patient_id = p.id\n        WHERE pl.phone = :phone\n        LIMIT 1\n    ');\n    $stmt->execute([':phone' => $phone]);\n    $patientLogin = $stmt->fetch();\n    \n    if (!$patientLogin) {\n        errorResponse('No account found with this phone number.', 401);\n    }\n    \n    \/\/ Verify password\n    if (!password_verify($password, $patientLogin['password_hash'])) {\n        errorResponse('Incorrect password.', 401);\n    }\n    \n    \/\/ Check status\n    if ($patientLogin['status'] === 'pending') {\n        errorResponse('Your account is pending doctor approval. Please wait.', 403);\n    }\n    \n    if ($patientLogin['status'] === 'rejected') {\n        errorResponse('Your account has been rejected. Please contact your doctor.', 403);\n    }\n    \n    \/\/ Create session\n    $token = bin2hex(random_bytes(64));\n    $expiresAt = date('Y-m-d H:i:s', time() + SESSION_LIFETIME);\n    \n    $sessionStmt = $db->prepare('\n        INSERT INTO patient_sessions (patient_login_id, token, ip_address, user_agent, expires_at)\n        VALUES (:patient_login_id, :token, :ip_address, :user_agent, :expires_at)\n    ');\n    $sessionStmt->execute([\n        ':patient_login_id' => $patientLogin['id'],\n        ':token' => $token,\n        ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? null,\n        ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,\n        ':expires_at' => $expiresAt,\n    ]);\n    \n    \/\/ Update last login\n    $updateStmt = $db->prepare('UPDATE patient_login SET last_login_at = NOW() WHERE id = :id');\n    $updateStmt->execute([':id' => $patientLogin['id']]);\n    \n    \/\/ Return patient info\n    successResponse([\n        'token' => $token,\n        'patient' => [\n            'id' => (string)$patientLogin['id'],\n            'patient_id' => (int)$patientLogin['patient_id'],\n            'phone' => $patientLogin['phone'],\n            'full_name' => $patientLogin['full_name'],\n            'name_bn' => $patientLogin['name_bn'],\n            'gender' => $patientLogin['gender'],\n            'date_of_birth' => $patientLogin['date_of_birth'],\n            'register_number' => $patientLogin['register_number'],\n            'photo_url' => $patientLogin['photo_url'],\n            'status' => $patientLogin['status'],\n        ],\n    ], 'Login successful');\n    \n} catch (\\Exception $e) {\n    error_log('Patient login error: ' . $e->getMessage());\n    errorResponse('Login failed. Please try again.', 500);\n}\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 100076,
+                "completion_tokens": 980,
+                "total_tokens": 101056,
+                "prompt_cache_hit_tokens": 98560,
+                "prompt_cache_miss_tokens": 1516,
+                "prompt_tokens_details": {
+                    "cached_tokens": 98560
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 18
+                }
+            },
+            "time": 1784102386
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_4OkJPDWA1Dkn0Ds9tokp0068",
+            "content": "Successfully wrote 3431 bytes (106 lines) to public_html\/api\/auth\/patients\/login.php",
+            "is_error": false,
+            "time": 1784102387
         }
     ]
 }
