@@ -57,7 +57,7 @@
         }
     ],
     "created_at": 1784059445,
-    "updated_at": 1784102354,
+    "updated_at": 1784102361,
     "messages": [
         {
             "id": "msg_7a86f65ed1",
@@ -2512,6 +2512,48 @@
             "content": "Successfully wrote 2056 bytes (73 lines) to public_html\/api\/auth\/reject.php",
             "is_error": false,
             "time": 1784102354
+        },
+        {
+            "id": "msg_c7c84daaf3",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now let me create the reassign-role, pending list, and other endpoints."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_2HWQOZmWn8fyHGYOoMHb2326",
+                    "name": "write_file",
+                    "input": {
+                        "path": "public_html\/api\/auth\/reassign_role.php",
+                        "content": "<?php\n\/**\n * Reassign User Role API\n * \n * POST \/api\/auth\/reassign_role.php\n * Headers: Authorization: Bearer <admin-token>\n * Body: { \"user_id\": 123, \"role\": \"consultant_doctor\" }\n * \n * Only admins can reassign roles.\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\nrequire_once __DIR__ . '\/middleware.php';\n\nhandleCors();\nrequireMethod('POST');\n\n$user = requireAdmin();\n\n$input = getJsonInput();\n$missing = validateRequired($input, ['user_id', 'role']);\nif ($missing) {\n    errorResponse('Missing required fields', 400, ['missing_fields' => $missing]);\n}\n\n$targetUserId = (int)$input['user_id'];\n$newRole = trim($input['role']);\n\n$allowedRoles = [\n    'admin', 'consultant_doctor', 'medical_officer', 'intern_doctor',\n    'nurse', 'staff', 'reception', 'doctor',\n    'assistant_registrar', 'registrar',\n    'assistant_professor', 'associate_professor', 'professor'\n];\nif (!in_array($newRole, $allowedRoles)) {\n    errorResponse('Invalid role', 400);\n}\n\ntry {\n    $db = Database::getInstance();\n    \n    \/\/ Find the user\n    $stmt = $db->prepare('SELECT id, email, full_name, role FROM users WHERE id = :id LIMIT 1');\n    $stmt->execute([':id' => $targetUserId]);\n    $targetUser = $stmt->fetch();\n    \n    if (!$targetUser) {\n        errorResponse('User not found', 404);\n    }\n    \n    $oldRole = $targetUser['role'];\n    \n    \/\/ Update role\n    $stmt = $db->prepare('UPDATE users SET role = :role, updated_at = NOW() WHERE id = :id');\n    $stmt->execute([\n        ':role' => $newRole,\n        ':id' => $targetUserId,\n    ]);\n    \n    \/\/ Log audit\n    logAudit($user['id'], null, 'update', 'user', $targetUserId,\n        ['role' => $oldRole],\n        ['role' => $newRole]\n    );\n    \n    successResponse([\n        'user_id' => $targetUserId,\n        'email' => $targetUser['email'],\n        'full_name' => $targetUser['full_name'],\n        'old_role' => $oldRole,\n        'new_role' => $newRole,\n    ], 'Role reassigned successfully');\n    \n} catch (\\Exception $e) {\n    error_log('Reassign role error: ' . $e->getMessage());\n    errorResponse('Failed to reassign role', 500);\n}\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 97469,
+                "completion_tokens": 686,
+                "total_tokens": 98155,
+                "prompt_cache_hit_tokens": 96768,
+                "prompt_cache_miss_tokens": 701,
+                "prompt_tokens_details": {
+                    "cached_tokens": 96768
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 17
+                }
+            },
+            "time": 1784102360
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_2HWQOZmWn8fyHGYOoMHb2326",
+            "content": "Successfully wrote 2125 bytes (79 lines) to public_html\/api\/auth\/reassign_role.php",
+            "is_error": false,
+            "time": 1784102361
         }
     ]
 }
