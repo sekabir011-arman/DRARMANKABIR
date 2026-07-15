@@ -57,7 +57,7 @@
         }
     ],
     "created_at": 1784059445,
-    "updated_at": 1784102340,
+    "updated_at": 1784102348,
     "messages": [
         {
             "id": "msg_7a86f65ed1",
@@ -2432,6 +2432,48 @@
             "content": "Successfully wrote 5344 bytes (160 lines) to public_html\/api\/auth\/register.php",
             "is_error": false,
             "time": 1784102340
+        },
+        {
+            "id": "msg_77bc7801fc",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now the approval\/rejection\/reassign endpoints, and pending list."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_QE4c7ap0A5td5YlHaqiE8282",
+                    "name": "write_file",
+                    "input": {
+                        "path": "public_html\/api\/auth\/approve.php",
+                        "content": "<?php\n\/**\n * Approve Pending Registration API\n * \n * POST \/api\/auth\/approve.php\n * Headers: Authorization: Bearer <admin-token>\n * Body: { \"user_id\": 123, \"role\": \"consultant_doctor\" }\n * \n * Only admins can approve pending registrations.\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\nrequire_once __DIR__ . '\/middleware.php';\n\nhandleCors();\nrequireMethod('POST');\n\n$user = requireAdmin();\n\n$input = getJsonInput();\n$missing = validateRequired($input, ['user_id']);\nif ($missing) {\n    errorResponse('Missing required fields', 400, ['missing_fields' => $missing]);\n}\n\n$targetUserId = (int)$input['user_id'];\n$newRole = trim($input['role'] ?? '');\n\ntry {\n    $db = Database::getInstance();\n    \n    \/\/ Find the pending user\n    $stmt = $db->prepare('SELECT id, email, full_name, role, registration_status FROM users WHERE id = :id LIMIT 1');\n    $stmt->execute([':id' => $targetUserId]);\n    $targetUser = $stmt->fetch();\n    \n    if (!$targetUser) {\n        errorResponse('User not found', 404);\n    }\n    \n    if ($targetUser['registration_status'] !== 'pending') {\n        errorResponse('User is not in pending status. Current status: ' . $targetUser['registration_status'], 400);\n    }\n    \n    \/\/ Update role if provided\n    if (!empty($newRole)) {\n        $allowedRoles = [\n            'admin', 'consultant_doctor', 'medical_officer', 'intern_doctor',\n            'nurse', 'staff', 'reception', 'doctor',\n            'assistant_registrar', 'registrar',\n            'assistant_professor', 'associate_professor', 'professor'\n        ];\n        if (!in_array($newRole, $allowedRoles)) {\n            errorResponse('Invalid role', 400);\n        }\n        $roleUpdate = ', role = :new_role';\n    } else {\n        $roleUpdate = '';\n        $newRole = $targetUser['role'];\n    }\n    \n    \/\/ Approve the user\n    $sql = \"UPDATE users SET \n                registration_status = 'approved',\n                approved_by = :approved_by,\n                approved_at = NOW()\n                $roleUpdate\n            WHERE id = :id\";\n    \n    $params = [\n        ':approved_by' => $user['id'],\n        ':id' => $targetUserId,\n    ];\n    if (!empty($input['role'] ?? '')) {\n        $params[':new_role'] = $newRole;\n    }\n    \n    $stmt = $db->prepare($sql);\n    $stmt->execute($params);\n    \n    \/\/ Log audit\n    logAudit($user['id'], null, 'update', 'user', $targetUserId,\n        ['registration_status' => $targetUser['registration_status'], 'role' => $targetUser['role']],\n        ['registration_status' => 'approved', 'role' => $newRole, 'approved_by' => $user['id']]\n    );\n    \n    successResponse([\n        'user_id' => $targetUserId,\n        'email' => $targetUser['email'],\n        'full_name' => $targetUser['full_name'],\n        'role' => $newRole,\n        'status' => 'approved',\n    ], 'Account approved successfully');\n    \n} catch (\\Exception $e) {\n    error_log('Approval error: ' . $e->getMessage());\n    errorResponse('Failed to approve account', 500);\n}\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 95935,
+                "completion_tokens": 868,
+                "total_tokens": 96803,
+                "prompt_cache_hit_tokens": 95872,
+                "prompt_cache_miss_tokens": 63,
+                "prompt_tokens_details": {
+                    "cached_tokens": 95872
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 13
+                }
+            },
+            "time": 1784102348
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_QE4c7ap0A5td5YlHaqiE8282",
+            "content": "Successfully wrote 3004 bytes (100 lines) to public_html\/api\/auth\/approve.php",
+            "is_error": false,
+            "time": 1784102348
         }
     ]
 }
