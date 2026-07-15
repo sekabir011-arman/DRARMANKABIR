@@ -57,7 +57,7 @@
         }
     ],
     "created_at": 1784059445,
-    "updated_at": 1784102348,
+    "updated_at": 1784102354,
     "messages": [
         {
             "id": "msg_7a86f65ed1",
@@ -2474,6 +2474,44 @@
             "content": "Successfully wrote 3004 bytes (100 lines) to public_html\/api\/auth\/approve.php",
             "is_error": false,
             "time": 1784102348
+        },
+        {
+            "id": "msg_f7aede7cab",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ET_7cAzRd83g0mwHw3LVLsq6377",
+                    "name": "write_file",
+                    "input": {
+                        "path": "public_html\/api\/auth\/reject.php",
+                        "content": "<?php\n\/**\n * Reject Pending Registration API\n * \n * POST \/api\/auth\/reject.php\n * Headers: Authorization: Bearer <admin-token>\n * Body: { \"user_id\": 123 }\n * \n * Only admins can reject pending registrations.\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\nrequire_once __DIR__ . '\/middleware.php';\n\nhandleCors();\nrequireMethod('POST');\n\n$user = requireAdmin();\n\n$input = getJsonInput();\n$missing = validateRequired($input, ['user_id']);\nif ($missing) {\n    errorResponse('Missing required fields', 400, ['missing_fields' => $missing]);\n}\n\n$targetUserId = (int)$input['user_id'];\n\ntry {\n    $db = Database::getInstance();\n    \n    \/\/ Find the pending user\n    $stmt = $db->prepare('SELECT id, email, full_name, role, registration_status FROM users WHERE id = :id LIMIT 1');\n    $stmt->execute([':id' => $targetUserId]);\n    $targetUser = $stmt->fetch();\n    \n    if (!$targetUser) {\n        errorResponse('User not found', 404);\n    }\n    \n    if ($targetUser['registration_status'] !== 'pending') {\n        errorResponse('User is not in pending status. Current status: ' . $targetUser['registration_status'], 400);\n    }\n    \n    \/\/ Reject the user\n    $stmt = $db->prepare('UPDATE users SET \n        registration_status = \"rejected\",\n        approved_by = :approved_by,\n        approved_at = NOW()\n    WHERE id = :id');\n    $stmt->execute([\n        ':approved_by' => $user['id'],\n        ':id' => $targetUserId,\n    ]);\n    \n    \/\/ Log audit\n    logAudit($user['id'], null, 'update', 'user', $targetUserId,\n        ['registration_status' => $targetUser['registration_status']],\n        ['registration_status' => 'rejected', 'rejected_by' => $user['id']]\n    );\n    \n    successResponse([\n        'user_id' => $targetUserId,\n        'email' => $targetUser['email'],\n        'full_name' => $targetUser['full_name'],\n        'status' => 'rejected',\n    ], 'Account rejected');\n    \n} catch (\\Exception $e) {\n    error_log('Rejection error: ' . $e->getMessage());\n    errorResponse('Failed to reject account', 500);\n}\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 96835,
+                "completion_tokens": 604,
+                "total_tokens": 97439,
+                "prompt_cache_hit_tokens": 96768,
+                "prompt_cache_miss_tokens": 67,
+                "prompt_tokens_details": {
+                    "cached_tokens": 96768
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 0
+                }
+            },
+            "time": 1784102354
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ET_7cAzRd83g0mwHw3LVLsq6377",
+            "content": "Successfully wrote 2056 bytes (73 lines) to public_html\/api\/auth\/reject.php",
+            "is_error": false,
+            "time": 1784102354
         }
     ]
 }
