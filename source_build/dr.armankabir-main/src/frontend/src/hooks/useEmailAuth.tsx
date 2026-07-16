@@ -1,32 +1,20 @@
-/**
- * Email Auth Hook — PHP/MySQL Backend
- *
- * All authentication is now handled server-side via PHP API.
- * localStorage registries, audit logs, and session management removed.
- * The PHP backend manages sessions via encrypted tokens.
- *
- * For backward compatibility, we keep the same context interface but
- * delegate all operations to the PHP API.
- */
-
-import type React from 'react';
+import type React from "react";
 import {
   createContext,
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
-} from 'react';
-import type { StaffRole } from '../types';
-import { post, get, setAuthToken, clearAuthToken } from '../lib/api';
-import { setCanonicalUserEmail, clearCanonicalUserEmail } from './useQueries';
+} from "react";
+import type { StaffRole } from "../types";
+import { post, get, setAuthToken, clearAuthToken } from "../lib/api";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export interface DoctorAccount {
   id: string;
   email: string;
-  passwordHash: string;
   name: string;
   designation: string;
   degree: string;
@@ -35,48 +23,84 @@ export interface DoctorAccount {
   phone: string;
   createdAt: string;
   role: StaffRole;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
 }
 
 export interface PatientAccount {
   id: string;
   phone: string;
-  passwordHash: string;
   name: string;
   age?: string;
   gender?: string;
   registerNumber?: string;
   patientId?: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
   createdAt: string;
 }
 
 export interface AuditLogEntry {
   id: string;
   timestamp: string;
-  userRole: StaffRole | 'admin' | 'patient';
+  userRole: StaffRole | "admin" | "patient";
   userName: string;
   action: string;
   target: string;
 }
 
+const VALID_ROLES: StaffRole[] = [
+  "admin",
+  "consultant_doctor",
+  "assistant_professor",
+  "associate_professor",
+  "professor",
+  "medical_officer",
+  "assistant_registrar",
+  "registrar",
+  "intern_doctor",
+  "nurse",
+  "reception",
+  "staff",
+  "patient",
+  "doctor",
+];
+
 export function isConsultantLevel(role: StaffRole): boolean {
   return [
-    'consultant_doctor',
-    'assistant_professor',
-    'associate_professor',
-    'professor',
+    "consultant_doctor",
+    "assistant_professor",
+    "associate_professor",
+    "professor",
   ].includes(role);
 }
 
-// ─── Legacy stubs (replaced by PHP API) ─────────────────────────────────────
+// ─── Auth helpers (minimal localStorage for session persistence) ────────────
+
+const CANONICAL_EMAIL_KEY = "app_current_user_email";
+
+export function setCanonicalUserEmail(email: string): void {
+  try {
+    localStorage.setItem(CANONICAL_EMAIL_KEY, email);
+  } catch {
+    // ignore
+  }
+}
+
+export function clearCanonicalUserEmail(): void {
+  try {
+    localStorage.removeItem(CANONICAL_EMAIL_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+// ─── Local storage helpers (kept for backward compatibility) ────────────────
 
 export function loadRegistry(): DoctorAccount[] {
   return [];
 }
 
 export function saveRegistry(_registry: DoctorAccount[]): void {
-  // Registry is in MySQL — no-op
+  // No-op — registry is server-side
 }
 
 export function loadPatientRegistry(): PatientAccount[] {
@@ -84,35 +108,21 @@ export function loadPatientRegistry(): PatientAccount[] {
 }
 
 export function savePatientRegistry(_registry: PatientAccount[]): void {
-  // Registry is in MySQL — no-op
+  // No-op — registry is server-side
 }
 
-export function appendAuditLog(_entry: Omit<AuditLogEntry, 'id'>): void {
-  // Audit logging is done server-side
+export function appendAuditLog(_entry: Omit<AuditLogEntry, "id">): void {
+  // Audit logs are handled server-side
 }
 
 export function getAuditLog(): AuditLogEntry[] {
   return [];
 }
 
-export function loadSignUpMap(): Record<string, boolean> {
-  return {};
-}
-
-export function saveSignUpMap(_map: Record<string, boolean>): void {
-  // No-op
-}
-
-export function setSignUpEnabled(_registerNumber: string, _enabled: boolean): void {
-  // No-op
-}
-
-export function isSignUpEnabled(_registerNumber: string): boolean {
-  return false;
-}
+// ─── Normalize register number ─────────────────────────────────────────────
 
 function normalizeRegNo(rn: string): string {
-  const parts = rn.trim().split('/');
+  const parts = rn.trim().split("/");
   if (parts.length === 2) {
     const num = Number.parseInt(parts[0].trim(), 10);
     return `${Number.isNaN(num) ? parts[0].trim() : num}/${parts[1].trim()}`;
@@ -120,7 +130,7 @@ function normalizeRegNo(rn: string): string {
   return rn.trim().toLowerCase();
 }
 
-// ─── Context ────────────────────────────────────────────────────────────────
+// ─── Context Types ──────────────────────────────────────────────────────────
 
 interface EmailAuthContextValue {
   currentDoctor: DoctorAccount | null;
@@ -129,11 +139,11 @@ interface EmailAuthContextValue {
   isLoggingIn: boolean;
   authError: string | null;
   signUp: (
-    data: Omit<DoctorAccount, 'id' | 'passwordHash' | 'createdAt' | 'status'> & { password: string },
+    data: Omit<DoctorAccount, "id" | "passwordHash" | "createdAt" | "status"> & { password: string },
   ) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => void;
-  updateProfile: (data: Partial<Omit<DoctorAccount, 'id' | 'passwordHash' | 'createdAt'>>) => void;
+  updateProfile: (data: Partial<Omit<DoctorAccount, "id" | "passwordHash" | "createdAt">>) => void;
   getPendingAccounts: () => DoctorAccount[];
   approveAccount: (id: string) => void;
   approveAccountWithRole: (id: string, role: StaffRole) => void;
@@ -159,63 +169,75 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
-  // On mount, verify session with backend
+  // Restore session on mount
   useEffect(() => {
     const restoreSession = async () => {
       try {
-        const token = localStorage.getItem('phpAuthToken');
-        if (token) {
-          const result = await get<{ user: Record<string, any> }>('/auth/verify.php');
-          if (result?.user) {
-            const u = result.user;
-            setCurrentDoctor({
-              id: String(u.id),
-              email: u.email,
-              passwordHash: '',
-              name: u.full_name || u.email,
-              designation: u.specialization || '',
-              degree: '',
-              specialization: u.specialization || '',
-              hospital: '',
-              phone: u.phone || '',
-              createdAt: '',
-              role: u.role as StaffRole,
-              status: 'approved',
-            });
-            setCanonicalUserEmail(u.email);
+        const data = await get<{ user: Record<string, any> }>("/auth/verify.php");
+        if (data?.user) {
+          const u = data.user;
+          const doctor: DoctorAccount = {
+            id: String(u.id),
+            email: u.email || "",
+            name: u.full_name || "",
+            designation: u.specialization || "",
+            degree: "",
+            specialization: u.specialization || "",
+            hospital: "",
+            phone: u.phone || "",
+            createdAt: u.last_login_at || "",
+            role: (u.role as StaffRole) || "doctor",
+            status: "approved",
+          };
+          setCurrentDoctor(doctor);
+          setCanonicalUserEmail(u.email || "");
+        }
+      } catch {
+        // Not authenticated or session expired
+      }
+
+      // Try to restore patient session
+      try {
+        const stored = localStorage.getItem("patient_session_data");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed.token) {
+            localStorage.setItem("patientAuthToken", parsed.token);
+            setCurrentPatient(parsed.patient || null);
           }
         }
       } catch {
-        // Token invalid or expired
-        clearAuthToken();
-        clearCanonicalUserEmail();
-      } finally {
-        setIsInitializing(false);
+        // ignore
       }
+
+      setIsInitializing(false);
     };
     restoreSession();
   }, []);
 
+  // ─── Doctor/Staff Sign Up ──────────────────────────────────────────────────
+
   const signUp = useCallback(
-    async (
-      data: Omit<DoctorAccount, 'id' | 'passwordHash' | 'createdAt' | 'status'> & { password: string },
-    ) => {
+    async (data: Omit<DoctorAccount, "id" | "passwordHash" | "createdAt" | "status"> & { password: string }) => {
       setIsLoggingIn(true);
       setAuthError(null);
       try {
-        await post('/auth/register.php', {
+        await post("/auth/register.php", {
           email: data.email,
           password: data.password,
           full_name: data.name,
-          name_bn: '',
-          role: data.role,
-          specialization: data.specialization,
-          phone: data.phone,
+          name_bn: "",
+          role: data.role || "doctor",
+          specialization: data.specialization || "",
+          phone: data.phone || "",
+          bmdc_registration: "",
         });
-        // Registration always throws with the success message (PHP API returns success)
-        // The caller will see the resolved promise
-      } catch (e: any) {
-        setAuthError(e.message || 'Sign up failed.');
+        // The registration endpoint throws on failure or returns success
+        // If we get here, the account was created but needs approval
+        throw new Error("Account created! Please wait for admin approval before logging in.");
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : "Sign up failed.";
+        setAuthError(msg);
         throw e;
       } finally {
         setIsLoggingIn(false);
@@ -224,97 +246,89 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
+  // ─── Doctor/Staff Sign In ──────────────────────────────────────────────────
+
   const signIn = useCallback(async (email: string, password: string) => {
     setIsLoggingIn(true);
     setAuthError(null);
     try {
-      const result = await post<{ token: string; user: Record<string, any> }>('/auth/login.php', {
+      const data = await post<{ token: string; user: Record<string, any> }>("/auth/login.php", {
         email,
         password,
       });
-      setAuthToken(result.token);
-      setCanonicalUserEmail(result.user.email);
-      setCurrentDoctor({
-        id: String(result.user.id),
-        email: result.user.email,
-        passwordHash: '',
-        name: result.user.full_name || result.user.email,
-        designation: result.user.specialization || '',
-        degree: '',
-        specialization: result.user.specialization || '',
-        hospital: '',
-        phone: result.user.phone || '',
-        createdAt: '',
-        role: result.user.role as StaffRole,
-        status: 'approved',
-      });
-    } catch (e: any) {
-      setAuthError(e.message || 'Sign in failed.');
+
+      // Store token
+      setAuthToken(data.token);
+      setCanonicalUserEmail(data.user.email || email);
+
+      const doctor: DoctorAccount = {
+        id: String(data.user.id),
+        email: data.user.email || email,
+        name: data.user.full_name || "",
+        designation: data.user.specialization || "",
+        degree: "",
+        specialization: data.user.specialization || "",
+        hospital: "",
+        phone: data.user.phone || "",
+        createdAt: "",
+        role: (data.user.role as StaffRole) || "doctor",
+        status: "approved",
+      };
+
+      setCurrentDoctor(doctor);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Sign in failed.";
+      setAuthError(msg);
       throw e;
     } finally {
       setIsLoggingIn(false);
     }
   }, []);
 
-  const signOut = useCallback(async () => {
-    try {
-      await post('/auth/logout.php');
-    } catch {
-      // ignore
-    }
+  // ─── Doctor/Staff Sign Out ─────────────────────────────────────────────────
+
+  const signOut = useCallback(() => {
+    // Attempt server-side logout
+    post("/auth/logout.php", {}).catch(() => {});
     clearAuthToken();
     clearCanonicalUserEmail();
     setCurrentDoctor(null);
     setAuthError(null);
   }, []);
 
+  // ─── Update Profile ────────────────────────────────────────────────────────
+
   const updateProfile = useCallback(
-    async (
-      _data: Partial<Omit<DoctorAccount, 'id' | 'passwordHash' | 'createdAt'>>,
-    ) => {
-      // Profile update handled by PHP backend
-      if (currentDoctor) {
-        setCurrentDoctor({ ...currentDoctor, ..._data } as DoctorAccount);
-      }
+    (data: Partial<Omit<DoctorAccount, "id" | "passwordHash" | "createdAt">>) => {
+      // Profile updates go through PHP API
+      if (!currentDoctor) return;
+      post("/auth/update_profile.php", data).catch(() => {});
+      setCurrentDoctor((prev) => (prev ? { ...prev, ...data } : prev));
     },
     [currentDoctor],
   );
 
+  // ─── Account Management ────────────────────────────────────────────────────
+
   const getPendingAccounts = useCallback((): DoctorAccount[] => {
-    // Never called with actual data — PHP API handles this
+    // Handled via PHP API — this is a sync function kept for interface compat
     return [];
   }, []);
 
-  const approveAccount = useCallback(async (_id: string) => {
-    try {
-      await post('/auth/approve.php', { user_id: Number(_id) });
-    } catch {
-      // ignore
-    }
+  const approveAccount = useCallback((id: string) => {
+    post("/auth/approve.php", { user_id: parseInt(id, 10) }).catch(() => {});
   }, []);
 
-  const approveAccountWithRole = useCallback(async (_id: string, _role: StaffRole) => {
-    try {
-      await post('/auth/approve.php', { user_id: Number(_id), role: _role });
-    } catch {
-      // ignore
-    }
+  const approveAccountWithRole = useCallback((id: string, role: StaffRole) => {
+    post("/auth/approve.php", { user_id: parseInt(id, 10), role }).catch(() => {});
   }, []);
 
-  const rejectAccount = useCallback(async (_id: string) => {
-    try {
-      await post('/auth/reject.php', { user_id: Number(_id) });
-    } catch {
-      // ignore
-    }
+  const rejectAccount = useCallback((id: string) => {
+    post("/auth/reject.php", { user_id: parseInt(id, 10) }).catch(() => {});
   }, []);
 
-  const reassignRole = useCallback(async (_id: string, _role: StaffRole) => {
-    try {
-      await post('/auth/reassign_role.php', { user_id: Number(_id), role: _role });
-    } catch {
-      // ignore
-    }
+  const reassignRole = useCallback((id: string, role: StaffRole) => {
+    post("/auth/reassign_role.php", { user_id: parseInt(id, 10), role }).catch(() => {});
   }, []);
 
   // ── Patient auth ──────────────────────────────────────────────────────────
@@ -324,13 +338,15 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoggingIn(true);
       setAuthError(null);
       try {
-        await post('/auth/patients/register.php', {
+        await post("/auth/patients/register.php", {
           register_number: data.registerNumber,
           phone: data.phone,
           password: data.password,
         });
-      } catch (e: any) {
-        setAuthError(e.message || 'Sign up failed.');
+        throw new Error("Account created! Please wait for doctor approval before logging in.");
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : "Sign up failed.";
+        setAuthError(msg);
         throw e;
       } finally {
         setIsLoggingIn(false);
@@ -343,32 +359,31 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoggingIn(true);
     setAuthError(null);
     try {
-      const result = await post<{ token: string; patient: Record<string, any> }>(
-        '/auth/patients/login.php',
-        { phone, password },
-      );
-      setAuthToken(result.token);
-      setCurrentPatient({
-        id: String(result.patient.id),
-        phone: result.patient.phone,
-        passwordHash: '',
-        name: result.patient.full_name || 'Patient',
-        age: result.patient.date_of_birth
-          ? String(
-              Math.floor(
-                (Date.now() - new Date(result.patient.date_of_birth).getTime()) /
-                  (365.25 * 24 * 3600 * 1000),
-              ),
-            )
-          : '',
-        gender: result.patient.gender || '',
-        registerNumber: result.patient.register_number || '',
-        patientId: String(result.patient.patient_id || ''),
-        status: result.patient.status,
-        createdAt: '',
+      const data = await post<{ token: string; patient: Record<string, any> }>("/auth/patients/login.php", {
+        phone,
+        password,
       });
-    } catch (e: any) {
-      setAuthError(e.message || 'Sign in failed.');
+
+      // Store token and patient data
+      localStorage.setItem("patientAuthToken", data.token);
+      localStorage.setItem("patient_session_data", JSON.stringify(data));
+
+      const p = data.patient;
+      const patient: PatientAccount = {
+        id: String(p.id),
+        phone: p.phone || phone,
+        name: p.full_name || "",
+        age: p.age || "",
+        gender: p.gender || "",
+        registerNumber: p.register_number || "",
+        patientId: String(p.patient_id || ""),
+        status: (p.status as "pending" | "approved" | "rejected") || "approved",
+        createdAt: "",
+      };
+      setCurrentPatient(patient);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Sign in failed.";
+      setAuthError(msg);
       throw e;
     } finally {
       setIsLoggingIn(false);
@@ -376,7 +391,8 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const patientSignOut = useCallback(() => {
-    clearAuthToken();
+    localStorage.removeItem("patientAuthToken");
+    localStorage.removeItem("patient_session_data");
     setCurrentPatient(null);
     setAuthError(null);
   }, []);
@@ -385,25 +401,17 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
     return [];
   }, []);
 
-  const approvePatient = useCallback(async (_id: string) => {
-    try {
-      await post('/auth/patients/approve.php', { patient_login_id: Number(_id) });
-    } catch {
-      // ignore
-    }
+  const approvePatient = useCallback((id: string) => {
+    post("/auth/patients/approve.php", { patient_login_id: parseInt(id, 10) }).catch(() => {});
   }, []);
 
-  const rejectPatient = useCallback(
-    async (_id: string) => {
-      // PHP API doesn't have a reject endpoint for patients yet
-      // Just update locally for now
-    },
-    [],
-  );
+  const rejectPatient = useCallback((id: string) => {
+    post("/auth/patients/reject.php", { patient_login_id: parseInt(id, 10) }).catch(() => {});
+  }, []);
 
   const updatePatientCredentials = useCallback(
-    async (_registerNumber: string, _newPhone?: string, _newPassword?: string) => {
-      // Handled by PHP API
+    (_registerNumber: string, _newPhone?: string, _newPassword?: string) => {
+      // Handled via PHP API
     },
     [],
   );
@@ -441,6 +449,86 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useEmailAuth(): EmailAuthContextValue {
   const ctx = useContext(EmailAuthContext);
-  if (!ctx) throw new Error('useEmailAuth must be used inside EmailAuthProvider');
+  if (!ctx) throw new Error("useEmailAuth must be used inside EmailAuthProvider");
   return ctx;
+}
+
+// ── Inactivity Timer ──────────────────────────────────────────────────────────
+
+const INACTIVITY_TIMEOUT_MS = 15 * 60 * 1000;
+const INACTIVITY_WARNING_MS = 13 * 60 * 1000;
+const ACTIVITY_EVENTS = ["mousemove", "keydown", "click", "touchstart", "scroll"] as const;
+
+export interface InactivityTimerState {
+  showWarning: boolean;
+  secondsRemaining: number;
+  resetTimer: () => void;
+}
+
+export function useInactivityTimer(onLogout: () => void): InactivityTimerState {
+  const [showWarning, setShowWarning] = useState(false);
+  const [secondsRemaining, setSecondsRemaining] = useState(120);
+  const logoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const warningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastActivityRef = useRef<number>(Date.now());
+
+  const clearAllTimers = useCallback(() => {
+    if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
+    if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+    if (countdownRef.current) clearInterval(countdownRef.current);
+    logoutTimerRef.current = null;
+    warningTimerRef.current = null;
+    countdownRef.current = null;
+  }, []);
+
+  const startTimers = useCallback(() => {
+    clearAllTimers();
+    setShowWarning(false);
+    setSecondsRemaining(120);
+
+    warningTimerRef.current = setTimeout(() => {
+      setShowWarning(true);
+      setSecondsRemaining(120);
+      countdownRef.current = setInterval(() => {
+        setSecondsRemaining((s) => {
+          if (s <= 1) {
+            if (countdownRef.current) clearInterval(countdownRef.current);
+            return 0;
+          }
+          return s - 1;
+        });
+      }, 1000);
+    }, INACTIVITY_WARNING_MS);
+
+    logoutTimerRef.current = setTimeout(() => {
+      clearAllTimers();
+      setShowWarning(false);
+      onLogout();
+    }, INACTIVITY_TIMEOUT_MS);
+  }, [clearAllTimers, onLogout]);
+
+  const resetTimer = useCallback(() => {
+    lastActivityRef.current = Date.now();
+    startTimers();
+  }, [startTimers]);
+
+  useEffect(() => {
+    startTimers();
+    return clearAllTimers;
+  }, [startTimers, clearAllTimers]);
+
+  useEffect(() => {
+    const handler = () => resetTimer();
+    for (const ev of ACTIVITY_EVENTS) {
+      window.addEventListener(ev, handler, { passive: true });
+    }
+    return () => {
+      for (const ev of ACTIVITY_EVENTS) {
+        window.removeEventListener(ev, handler);
+      }
+    };
+  }, [resetTimer]);
+
+  return { showWarning, secondsRemaining, resetTimer };
 }
