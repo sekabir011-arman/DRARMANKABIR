@@ -77,7 +77,7 @@
         }
     ],
     "created_at": 1784125529,
-    "updated_at": 1784197998,
+    "updated_at": 1784205404,
     "messages": [
         {
             "id": "msg_compact",
@@ -2646,6 +2646,20 @@
             "content": "<?php\n\/**\n * Settings API - Get\n * \n * GET \/api\/settings\/get.php?key=clinic_name\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\nrequire_once __DIR__ . '\/..\/auth\/middleware.php';\n\nhandleCors();\nrequireMethod('GET');\n\n$user = requireAuth();\n\n$key = getParam('key', '');\n\ntry {\n    $db = Database::getInstance();\n    \n    if ($key) {\n        $stmt = $db->prepare('SELECT setting_key, setting_value, setting_group FROM site_settings WHERE setting_key = :key');\n        $stmt->execute([':key' => $key]);\n        $setting = $stmt->fetch();\n        \n        if (!$setting) {\n            errorResponse('Setting not found', 404);\n        }\n        \n        $setting['setting_value'] = json_decode($setting['setting_value'], true);\n        successResponse($setting);\n    } else {\n        $stmt = $db->query('SELECT setting_key, setting_value, setting_group FROM site_settings ORDER BY setting_group, setting_key');\n        $settings = $stmt->fetchAll();\n        \n        foreach ($settings as &$s) {\n            $s['setting_value'] = json_decode($s['setting_value'], true);\n        }\n        \n        successResponse($settings);\n    }\n} catch (\\Exception $e) {\n    error_log('Get settings error: ' . $e->getMessage());\n    errorResponse('Failed to fetch settings', 500);\n}\n",
             "is_error": false,
             "time": 1784197998
+        },
+        {
+            "id": "msg_5aa8831a9d",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784198282
+        },
+        {
+            "id": "msg_e69d6d7548",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784205404
         }
     ]
 }
