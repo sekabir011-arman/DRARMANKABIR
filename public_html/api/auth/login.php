@@ -3,9 +3,17 @@
         errorResponse('Account is deactivated. Contact administrator.', 403);
     }
     
-    // Check registration status (for self-registered accounts awaiting approval)
-    if (isset($user['registration_status']) && $user['registration_status'] === 'pending') {
+    // Check registration status (pending/rejected)
+    if ($user['registration_status'] === 'pending') {
         errorResponse('Your account is pending admin approval. Please wait.', 403);
+    }
+    if ($user['registration_status'] === 'rejected') {
+        errorResponse('Your account has been rejected. Please contact the admin or re-register.', 403);
+    }
+    
+    // Verify password
+    if (!password_verify($password, $user['password_hash'])) {
+        errorResponse('Invalid email or password', 401);
     }
     if (isset($user['registration_status']) && $user['registration_status'] === 'rejected') {
         errorResponse('Your account has been rejected. Please contact the admin or re-register.', 403);
