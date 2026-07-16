@@ -17,18 +17,18 @@
         },
         {
             "priority": "high",
-            "content": "Create api.ts - centralized PHP API client",
+            "content": "Create api.ts - centralized PHP API client (already done)",
             "status": "completed"
         },
         {
             "priority": "high",
-            "content": "Rewrite useQueries.ts - use PHP API instead of localStorage\/canister",
-            "status": "in_progress"
+            "content": "Rewrite useQueries.ts - use PHP API instead of localStorage\/canister (already done)",
+            "status": "completed"
         },
         {
             "priority": "high",
             "content": "Rewrite useEmailAuth.tsx - use PHP session auth exclusively",
-            "status": "pending"
+            "status": "in_progress"
         },
         {
             "priority": "high",
@@ -62,6 +62,11 @@
         },
         {
             "priority": "high",
+            "content": "Fix vite.config.js - remove canister plugin, simplify",
+            "status": "pending"
+        },
+        {
+            "priority": "high",
             "content": "Fix index.html - remove localStorage health check and preload scripts",
             "status": "pending"
         },
@@ -72,7 +77,7 @@
         }
     ],
     "created_at": 1784125529,
-    "updated_at": 1784187667,
+    "updated_at": 1784189423,
     "messages": [
         {
             "id": "msg_compact",
@@ -1925,6 +1930,311 @@
             "content": "  600 |   });\n  601 | }\n  602 | \n  603 | export function useCreateVisit() {\n  604 |   const qc = useQueryClient();\n  605 |   return useMutation({\n  606 |     mutationFn: async (data: {\n  607 |       patientId: bigint;\n  608 |       visitDate: bigint;\n  609 |       chiefComplaint: string;\n  610 |       historyOfPresentIllness: string | null;\n  611 |       vitalSigns: VitalSigns;\n  612 |       physicalExamination: string | null;\n  613 |       diagnosis: string | null;\n  614 |       notes: string | null;\n  615 |       visitType: string;\n  616 |     }) => {\n  617 |       const key = storageKey(\"visits\");\n  618 |       const visits = loadFromStorage<Visit>(key);\n  619 |       const now = BigInt(Date.now()) * 1_000_000n;\n  620 |       const newVisit: Visit = {\n  621 |         id: nextId(visits),\n  622 |         patientId: data.patientId,\n  623 |         visitDate: data.visitDate,\n  624 |         chiefComplaint: data.chiefComplaint,\n  625 |         historyOfPresentIllness: data.historyOfPresentIllness ?? undefined,\n  626 |         vitalSigns: data.vitalSigns,\n  627 |         physicalExamination: data.physicalExamination ?? undefined,\n  628 |         diagnosis: data.diagnosis ?? undefined,\n  629 |         notes: data.notes ?? undefined,\n  630 |         visitType: data.visitType as Visit[\"visitType\"],\n  631 |         createdAt: now,\n  632 |         updatedAt: now,\n  633 |       };\n  634 |       \/\/ 1. Always write to localStorage first (offline-first)\n  635 |       saveToStorage(key, [...visits, newVisit]);\n  636 | \n  637 |       const visitId = String(newVisit.id);\n  638 | \n  639 |       \/\/ 2. Push to canister if online (using upsertVisit \u2014 idempotent)\n  640 |       if (canUseCanister()) {\n  641 |         try {\n  642 |           await _canisterActor.upsertVisit(newVisit);\n  643 |           const { removeFromQueue } = await import(\"..\/lib\/hybridStorage\");\n  644 |           removeFromQueue(\"upsertVisit\", new Set([visitId]));\n  645 |         } catch (e) {\n  646 |           console.warn(\"Canister upsertVisit failed, queuing for retry:\", e);\n  647 |           const { enqueueSync } = await import(\"..\/lib\/hybridStorage\");\n  648 |           enqueueSync({\n  649 |             timestamp: Date.now(),\n  650 |             type: \"upsertVisit\",\n  651 |             entityId: visitId,\n  652 |             data: newVisit,\n  653 |           });\n  654 |         }\n  655 |       } else {\n  656 |         const { enqueueSync } = await import(\"..\/lib\/hybridStorage\");\n  657 |         enqueueSync({\n  658 |           timestamp: Date.now(),\n  659 |           type: \"upsertVisit\",\n  660 |           entityId: visitId,\n  661 |           data: newVisit,\n  662 |         });\n  663 |       }\n  664 | \n  665 |       return newVisit;\n  666 |     },\n  667 |     onSuccess: (_, vars) =>\n  668 |       qc.invalidateQueries({ queryKey: [\"visits\", vars.patientId.toString()] }),\n  669 |   });\n  670 | }\n  671 | \n  672 | export function useDeleteVisit() {\n  673 |   const qc = useQueryClient();\n  674 |   return useMutation({\n  675 |     mutationFn: async ({\n  676 |       id,\n  677 |       patientId: _patientId,\n  678 |     }: { id: bigint; patientId: bigint }) => {\n  679 |       const key = storageKey(\"visits\");\n  680 |       const visits = loadFromStorage<Visit>(key);\n  681 |       saveToStorage(\n  682 |         key,\n  683 |         visits.filter((v) => v.id !== id),\n  684 |       );\n  685 |     },\n  686 |     onSuccess: (_, vars) =>\n  687 |       qc.invalidateQueries({ queryKey: [\"visits\", vars.patientId.toString()] }),\n  688 |   });\n  689 | }\n  690 | \n  691 | export function useUpdateVisit() {\n  692 |   const qc = useQueryClient();\n  693 |   return useMutation({\n  694 |     mutationFn: async (data: {\n  695 |       id: bigint;\n  696 |       patientId: bigint;\n  697 |       visitDate: bigint;\n  698 |       chiefComplaint: string;\n  699 |       historyOfPresentIllness: string | null;\n  700 |       vitalSigns: VitalSigns;\n  701 |       physicalExamination: string | null;\n  702 |       diagnosis: string | null;\n  703 |       notes: string | null;\n  704 |       visitType: string;\n  705 |     }) => {\n  706 |       const key = storageKey(\"visits\");\n  707 |       const visits = loadFromStorage<Visit>(key);\n  708 |       const now = BigInt(Date.now()) * 1_000_000n;\n  709 |       const updatedVisit = {\n  710 |         ...visits.find((v) => v.id === data.id),\n  711 |         patientId: data.patientId,\n  712 |         visitDate: data.visitDate,\n  713 |         chiefComplaint: data.chiefComplaint,\n  714 |         historyOfPresentIllness: data.historyOfPresentIllness ?? undefined,\n  715 |         vitalSigns: data.vitalSigns,\n  716 |         physicalExamination: data.physicalExamination ?? undefined,\n  717 |         diagnosis: data.diagnosis ?? undefined,\n  718 |         notes: data.notes ?? undefined,\n  719 |         visitType: data.visitType as Visit[\"visitType\"],\n  720 |         updatedAt: now,\n  721 |       } as Visit;\n  722 |       const updated = visits.map((v) => (v.id === data.id ? updatedVisit : v));\n  723 |       \/\/ 1. Always write to localStorage first (offline-first)\n  724 |       saveToStorage(key, updated);\n  725 | \n  726 |       const visitId = String(data.id);\n  727 | \n  728 |       \/\/ 2. Push to canister if online (using upsertVisit \u2014 idempotent)\n  729 |       if (canUseCanister()) {\n  730 |         try {\n  731 |           await _canisterActor.upsertVisit(updatedVisit);\n  732 |           const { removeFromQueue } = await import(\"..\/lib\/hybridStorage\");\n  733 |           removeFromQueue(\"upsertVisit\", new Set([visitId]));\n  734 |         } catch (e) {\n  735 |           console.warn(\"Canister upsertVisit failed, queuing for retry:\", e);\n  736 |           const { enqueueSync } = await import(\"..\/lib\/hybridStorage\");\n  737 |           enqueueSync({\n  738 |             timestamp: Date.now(),\n  739 |             type: \"upsertVisit\",\n  740 |             entityId: visitId,\n  741 |             data: updatedVisit,\n  742 |           });\n  743 |         }\n  744 |       } else {\n  745 |         const { enqueueSync } = await import(\"..\/lib\/hybridStorage\");\n  746 |         enqueueSync({\n  747 |           timestamp: Date.now(),\n  748 |           type: \"upsertVisit\",\n  749 |           entityId: visitId,\n  750 |           data: updatedVisit,\n  751 |         });\n  752 |       }\n  753 | \n  754 |       return updatedVisit;\n  755 |     },\n  756 |     onSuccess: (_, vars) =>\n  757 |       qc.invalidateQueries({ queryKey: [\"visits\", vars.patientId.toString()] }),\n  758 |   });\n  759 | }\n  760 | \n  761 | \/\/ \u2500\u2500\u2500 Prescriptions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  762 | \n  763 | export function useGetPrescriptionsByPatient(patientId: bigint | null) {\n  764 |   return useQuery<Prescription[]>({\n  765 |     queryKey: [\"prescriptions\", patientId?.toString()],\n  766 |     queryFn: async () => {\n  767 |       if (!patientId) return [];\n  768 |       \/\/ When online: fetch from canister\n  769 |       if (canUseCanister()) {\n  770 |         try {\n  771 |           const remote = (await _canisterActor.getPrescriptionsByPatientId(\n  772 |             patientId,\n  773 |           )) as Prescription[];\n  774 |           if (Array.isArray(remote)) {\n  775 |             const key = storageKey(\"prescriptions\");\n  776 |             const local = loadFromStorage<Prescription>(key);\n  777 |             const merged = mergeArraysById(local, remote);\n  778 |             saveToStorage(key, merged);\n  779 |             return merged.filter((p) => p.patientId === patientId);\n  780 |           }\n  781 |         } catch {\n  782 |           \/\/ Fall through to localStorage\n  783 |         }\n  784 |       }\n  785 |       const primary = loadFromStorage<Prescription>(\n  786 |         storageKey(\"prescriptions\"),\n  787 |       );\n  788 |       const found = primary.filter((p) => p.patientId === patientId);\n  789 |       if (found.length > 0) return found;\n  790 |       const all = loadFromAllDoctorKeys<Prescription>(\"prescriptions\");\n  791 |       return all.filter((p) => p.patientId === patientId);\n  792 |     },\n  793 |     enabled: !!patientId,\n  794 |     refetchInterval: 15_000,\n  795 |   });\n  796 | }\n  797 | \n  798 | export function useCreatePrescription() {\n  799 |   const qc = useQueryClient();\n  800 |   return useMutation({\n  801 |     mutationFn: async (data: {\n  802 |       patientId: bigint;\n  803 |       visitId: bigint | null;\n  804 |       prescriptionDate: bigint;\n  805 |       diagnosis: string | null;\n  806 |       medications: Medication[];\n  807 |       notes: string | null;\n  808 |     }) => {\n  809 |       const key = storageKey(\"prescriptions\");\n  810 |       const prescriptions = loadFromStorage<Prescription>(key);\n  811 |       const now = BigInt(Date.now()) * 1_000_000n;\n  812 |       const newPrescription: Prescription = {\n  813 |         id: nextId(prescriptions),\n  814 |         patientId: data.patientId,\n  815 |         visitId: data.visitId ?? undefined,\n  816 |         prescriptionDate: data.prescriptionDate,\n  817 |         diagnosis: data.diagnosis ?? undefined,\n  818 |         medications: data.medications,\n  819 |         notes: data.notes ?? undefined,\n  820 |         createdAt: now,\n  821 |         updatedAt: now,\n  822 |       };\n  823 |       \/\/ 1. Always write to localStorage first (offline-first)\n  824 |       saveToStorage(key, [...prescriptions, newPrescription]);\n  825 | \n  826 |       const prescriptionId = String(newPrescription.id);\n  827 | \n  828 |       \/\/ 2. Push to canister if online (using upsertPrescription \u2014 idempotent)\n  829 |       if (canUseCanister()) {\n  830 |         try {\n  831 |           await _canisterActor.upsertPrescription(newPrescription);\n  832 |           const { removeFromQueue } = await import(\"..\/lib\/hybridStorage\");\n  833 |           removeFromQueue(\"upsertPrescription\", new Set([prescriptionId]));\n  834 |         } catch (e) {\n  835 |           console.warn(\n  836 |             \"Canister upsertPrescription failed, queuing for retry:\",\n  837 |             e,\n  838 |           );\n  839 |           const { enqueueSync } = await import(\"..\/lib\/hybridStorage\");\n  840 |           enqueueSync({\n  841 |             timestamp: Date.now(),\n  842 |             type: \"upsertPrescription\",\n  843 |             entityId: prescriptionId,\n  844 |             data: newPrescription,\n  845 |           });\n  846 |         }\n  847 |       } else {\n  848 |         const { enqueueSync } = await import(\"..\/lib\/hybridStorage\");\n  849 |         enqueueSync({\n  850 |           timestamp: Date.now(),\n  851 |           type: \"upsertPrescription\",\n  852 |           entityId: prescriptionId,\n  853 |           data: newPrescription,\n  854 |         });\n  855 |       }\n  856 | \n  857 |       return newPrescription;\n  858 |     },\n  859 |     onSuccess: (_, vars) =>\n  860 |       qc.invalidateQueries({\n  861 |         queryKey: [\"prescriptions\", vars.patientId.toString()],\n  862 |       }),\n  863 |   });\n  864 | }\n  865 | \n  866 | export function useDeletePrescription() {\n  867 |   const qc = useQueryClient();\n  868 |   return useMutation({\n  869 |     mutationFn: async ({\n  870 |       id,\n  871 |       patientId: _patientId,\n  872 |     }: {\n  873 |       id: bigint;\n  874 |       patientId: bigint;\n  875 |     }) => {\n  876 |       const key = storageKey(\"prescriptions\");\n  877 |       const prescriptions = loadFromStorage<Prescription>(key);\n  878 |       saveToStorage(\n  879 |         key,\n  880 |         prescriptions.filter((p) => p.id !== id),\n  881 |       );\n  882 |     },\n  883 |     onSuccess: (_, vars) =>\n  884 |       qc.invalidateQueries({\n  885 |         queryKey: [\"prescriptions\", vars.patientId.toString()],\n  886 |       }),\n  887 |   });\n  888 | }\n  889 | \n  890 | export function useUpdatePrescription() {\n  891 |   const qc = useQueryClient();\n  892 |   return useMutation({\n  893 |     mutationFn: async (data: {\n  894 |       id: bigint;\n  895 |       patientId: bigint;\n  896 |       visitId: bigint | null;\n  897 |       prescriptionDate: bigint;\n  898 |       diagnosis: string | null;\n  899 |       medications: Medication[];\n  900 |       notes: string | null;\n  901 |     }) => {\n  902 |       const key = storageKey(\"prescriptions\");\n  903 |       const prescriptions = loadFromStorage<Prescription>(key);\n  904 |       const now = BigInt(Date.now()) * 1_000_000n;\n  905 |       const updatedPrescription = {\n  906 |         ...prescriptions.find((p) => p.id === data.id),\n  907 |         visitId: data.visitId ?? undefined,\n  908 |         prescriptionDate: data.prescriptionDate,\n  909 |         diagnosis: data.diagnosis ?? undefined,\n  910 |         medications: data.medications,\n  911 |         notes: data.notes ?? undefined,\n  912 |         updatedAt: now,\n  913 |       } as Prescription;\n  914 |       const updated = prescriptions.map((p) =>\n  915 |         p.id === data.id ? updatedPrescription : p,\n  916 |       );\n  917 |       \/\/ 1. Always write to localStorage first (offline-first)\n  918 |       saveToStorage(key, updated);\n  919 | \n  920 |       const prescriptionId = String(data.id);\n  921 | \n  922 |       \/\/ 2. Push to canister if online (using upsertPrescription \u2014 idempotent)\n  923 |       if (canUseCanister()) {\n  924 |         try {\n  925 |           await _canisterActor.upsertPrescription(updatedPrescription);\n  926 |           const { removeFromQueue } = await import(\"..\/lib\/hybridStorage\");\n  927 |           removeFromQueue(\"upsertPrescription\", new Set([prescriptionId]));\n  928 |         } catch (e) {\n  929 |           console.warn(\n  930 |             \"Canister upsertPrescription failed, queuing for retry:\",\n  931 |             e,\n  932 |           );\n  933 |           const { enqueueSync } = await import(\"..\/lib\/hybridStorage\");\n  934 |           enqueueSync({\n  935 |             timestamp: Date.now(),\n  936 |             type: \"upsertPrescription\",\n  937 |             entityId: prescriptionId,\n  938 |             data: updatedPrescription,\n  939 |           });\n  940 |         }\n  941 |       } else {\n  942 |         const { enqueueSync } = await import(\"..\/lib\/hybridStorage\");\n  943 |         enqueueSync({\n  944 |           timestamp: Date.now(),\n  945 |           type: \"upsertPrescription\",\n  946 |           entityId: prescriptionId,\n  947 |           data: updatedPrescription,\n  948 |         });\n  949 |       }\n  950 | \n  951 |       return updatedPrescription;\n  952 |     },\n  953 |     onSuccess: (_, vars) =>\n  954 |       qc.invalidateQueries({\n  955 |         queryKey: [\"prescriptions\", vars.patientId.toString()],\n  956 |       }),\n  957 |   });\n  958 | }\n  959 | \n  960 | \/\/ \u2500\u2500\u2500 User profile \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  961 | \n  962 | export function useGetCallerUserProfile() {\n  963 |   return useQuery<UserProfile | null>({\n  964 |     queryKey: [\"userProfile\"],\n  965 |     queryFn: async () => {\n  966 |       const email = getDoctorEmail();\n  967 |       const raw = localStorage.getItem(`doctor_profile_${email}`);\n  968 |       if (!raw) return { name: \"\" };\n  969 |       try {\n  970 |         return JSON.parse(raw) as UserProfile;\n  971 |       } catch {\n  972 |         return { name: \"\" };\n  973 |       }\n  974 |     },\n  975 |   });\n  976 | }\n  977 | \n  978 | export function useGetCallerUserRole() {\n  979 |   return useQuery<string>({\n  980 |     queryKey: [\"userRole\"],\n  981 |     queryFn: async () => {\n  982 |       return \"user\";\n  983 |     },\n  984 |   });\n  985 | }\n  986 | \n  987 | export function useSaveCallerUserProfile() {\n  988 |   const qc = useQueryClient();\n  989 |   return useMutation({\n  990 |     mutationFn: async (profile: UserProfile) => {\n  991 |       const email = getDoctorEmail();\n  992 |       localStorage.setItem(`doctor_profile_${email}`, JSON.stringify(profile));\n  993 |     },\n  994 |     onSuccess: () => qc.invalidateQueries({ queryKey: [\"userProfile\"] }),\n  995 |   });\n  996 | }\n  997 | \n  998 | \/\/ \u2500\u2500\u2500 Clinical Data Engine Hooks (localStorage-backed, canister-ready) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  999 | \/\/ These hooks store data in localStorage with unique keys per entity type.",
             "is_error": false,
             "time": 1784187667
+        },
+        {
+            "id": "msg_96061e60ad",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784189390
+        },
+        {
+            "id": "msg_3275a1de0e",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me continue reading the rest of useQueries.ts to see all the hooks I need to rewrite."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_9IMAzKxPqec28nyvJOxx8305",
+                    "name": "read_file",
+                    "input": {
+                        "offset": 999,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts",
+                        "limit": 400
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 79207,
+                "completion_tokens": 119,
+                "total_tokens": 79326,
+                "prompt_cache_hit_tokens": 61824,
+                "prompt_cache_miss_tokens": 17383,
+                "prompt_tokens_details": {
+                    "cached_tokens": 61824
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 21
+                }
+            },
+            "time": 1784189395
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_9IMAzKxPqec28nyvJOxx8305",
+            "content": "",
+            "is_error": false,
+            "time": 1784189395
+        },
+        {
+            "id": "msg_c634476041",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The file ends around line 999. Let me read the rest."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_gfPyHm3IJuEEb49lig6A0322",
+                    "name": "read_file",
+                    "input": {
+                        "offset": 999,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 79337,
+                "completion_tokens": 96,
+                "total_tokens": 79433,
+                "prompt_cache_hit_tokens": 61824,
+                "prompt_cache_miss_tokens": 17513,
+                "prompt_tokens_details": {
+                    "cached_tokens": 61824
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 14
+                }
+            },
+            "time": 1784189399
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_gfPyHm3IJuEEb49lig6A0322",
+            "content": "",
+            "is_error": false,
+            "time": 1784189399
+        },
+        {
+            "id": "msg_8ec0f2a9b3",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The file seems to be cut off around line 1000. Let me check the exact line count."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_kGkB4Xykc6car5WeCMCn1649",
+                    "name": "bash",
+                    "input": {
+                        "command": "wc -l \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_ZvXcUWbrTMjamyKXTC2N0962",
+                    "name": "bash",
+                    "input": {
+                        "command": "tail -5 \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 79444,
+                "completion_tokens": 157,
+                "total_tokens": 79601,
+                "prompt_cache_hit_tokens": 61824,
+                "prompt_cache_miss_tokens": 17620,
+                "prompt_tokens_details": {
+                    "cached_tokens": 61824
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 21
+                }
+            },
+            "time": 1784189404
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_kGkB4Xykc6car5WeCMCn1649",
+            "content": "681 \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts\n",
+            "is_error": false,
+            "time": 1784189404
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_ZvXcUWbrTMjamyKXTC2N0962",
+            "content": "\/\/ \u2500\u2500\u2500 Legacy helper kept for backward compatibility \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nexport function isNetworkOnline(): boolean {\n  return navigator.onLine;\n}\n",
+            "is_error": false,
+            "time": 1784189404
+        },
+        {
+            "id": "msg_640ac14280",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The file is actually 681 lines, not 2209 as I initially counted. The earlier `wc -l` gave 2209 for a different path. Let me re-read the full file."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_pJbGvKD3xGqaxgyeQYz63452",
+                    "name": "read_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 79684,
+                "completion_tokens": 107,
+                "total_tokens": 79791,
+                "prompt_cache_hit_tokens": 79360,
+                "prompt_cache_miss_tokens": 324,
+                "prompt_tokens_details": {
+                    "cached_tokens": 79360
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 41
+                }
+            },
+            "time": 1784189409
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_pJbGvKD3xGqaxgyeQYz63452",
+            "content": "    1 | \/**\n    2 |  * React Query hooks \u2014 PHP\/MySQL Backend\n    3 |  *\n    4 |  * All CRUD operations now target the PHP\/MySQL API.\n    5 |  * localStorage is no longer used as the primary data store.\n    6 |  * Canister actor and sync queue code have been removed.\n    7 |  * IDs are now `number` (MySQL INT\/BIGINT) instead of `bigint`.\n    8 |  *\/\n    9 | \n   10 | import { get, post, del as apiDelete } from '..\/lib\/api';\n   11 | import type { ApiError } from '..\/lib\/api';\n   12 | import { useMutation, useQuery, useQueryClient } from '@tanstack\/react-query';\n   13 | import type {\n   14 |   AdmissionHistory,\n   15 |   BedRecord,\n   16 |   ClinicalAlert,\n   17 |   ClinicalNote,\n   18 |   ClinicalOrder,\n   19 |   DrugReminder,\n   20 |   Encounter,\n   21 |   Medication,\n   22 |   Observation,\n   23 |   Patient,\n   24 |   Prescription,\n   25 |   PrescriptionRecord,\n   26 |   StaffRole,\n   27 |   UserProfile,\n   28 |   Visit,\n   29 |   VitalSigns,\n   30 | } from '..\/types';\n   31 | \n   32 | \/\/ \u2500\u2500\u2500 Canister actor references removed \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   33 | \n   34 | export function setCanisterActor(_actor: unknown): void {\n   35 |   \/\/ No-op \u2014 canister actor removed\n   36 | }\n   37 | \n   38 | export function getCanisterActor(): unknown | null {\n   39 |   return null;\n   40 | }\n   41 | \n   42 | \/\/ \u2500\u2500\u2500 Legacy localStorage helpers (kept for type compatibility) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   43 | \n   44 | export function saveToStorage<T>(_key: string, _data: T[]): void {\n   45 |   \/\/ No-op \u2014 storage is server-side\n   46 | }\n   47 | \n   48 | export function loadFromStorage<T>(_key: string): T[] {\n   49 |   return [];\n   50 | }\n   51 | \n   52 | export function loadFromAllDoctorKeys<T>(_prefix: string): T[] {\n   53 |   return [];\n   54 | }\n   55 | \n   56 | export function getDoctorEmail(): string {\n   57 |   try {\n   58 |     return localStorage.getItem('app_current_user_email') || '';\n   59 |   } catch {\n   60 |     return '';\n   61 |   }\n   62 | }\n   63 | \n   64 | export function setCanonicalUserEmail(email: string): void {\n   65 |   try {\n   66 |     localStorage.setItem('app_current_user_email', email);\n   67 |   } catch {\n   68 |     \/\/ ignore\n   69 |   }\n   70 | }\n   71 | \n   72 | export function clearCanonicalUserEmail(): void {\n   73 |   try {\n   74 |     localStorage.removeItem('app_current_user_email');\n   75 |   } catch {\n   76 |     \/\/ ignore\n   77 |   }\n   78 | }\n   79 | \n   80 | export function storageKey(prefix: string): string {\n   81 |   return `${prefix}_${getDoctorEmail()}`;\n   82 | }\n   83 | \n   84 | export function getVisitFormData(_visitId: string | number | null): Record<string, any> | null {\n   85 |   return null;\n   86 | }\n   87 | \n   88 | \/\/ \u2500\u2500\u2500 Register number \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   89 | \n   90 | export function generateRegisterNumber(): string {\n   91 |   \/\/ PHP backend generates register numbers\n   92 |   return '';\n   93 | }\n   94 | \n   95 | export function createPatientInStorage(_data: Record<string, unknown>): Patient {\n   96 |   throw new Error('createPatientInStorage is deprecated. Use useCreatePatient hook instead.');\n   97 | }\n   98 | \n   99 | \/\/ \u2500\u2500\u2500 Patients \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  100 | \n  101 | export function useGetAllPatients() {\n  102 |   return useQuery<Patient[]>({\n  103 |     queryKey: ['patients'],\n  104 |     queryFn: async () => {\n  105 |       const result = await get<{ items: Patient[] }>('\/patients\/list.php', { limit: 1000 });\n  106 |       return result.items ?? [];\n  107 |     },\n  108 |   });\n  109 | }\n  110 | \n  111 | export function useGetPatient(id: number | null) {\n  112 |   return useQuery<Patient | null>({\n  113 |     queryKey: ['patient', id?.toString()],\n  114 |     queryFn: async () => {\n  115 |       if (!id) return null;\n  116 |       return await get<Patient>('\/patients\/get.php', { id: String(id) });\n  117 |     },\n  118 |     enabled: !!id,\n  119 |   });\n  120 | }\n  121 | \n  122 | export function useCreatePatient() {\n  123 |   const qc = useQueryClient();\n  124 |   return useMutation({\n  125 |     mutationFn: async (data: {\n  126 |       fullName: string;\n  127 |       nameBn?: string | null;\n  128 |       dateOfBirth?: string | null;\n  129 |       gender?: string;\n  130 |       phone?: string | null;\n  131 |       email?: string | null;\n  132 |       address?: string | null;\n  133 |       bloodGroup?: string | null;\n  134 |       weight?: number | null;\n  135 |       height?: number | null;\n  136 |       allergies?: string[];\n  137 |       chronicConditions?: string[];\n  138 |       pastSurgicalHistory?: string | null;\n  139 |       patientType?: string;\n  140 |       photo?: string | null;\n  141 |     }) => {\n  142 |       const patient = await post<Patient>('\/patients\/create.php', {\n  143 |         full_name: data.fullName,\n  144 |         name_bn: data.nameBn,\n  145 |         date_of_birth: data.dateOfBirth,\n  146 |         gender: data.gender ?? 'male',\n  147 |         phone: data.phone,\n  148 |         email: data.email,\n  149 |         address: data.address,\n  150 |         blood_group: data.bloodGroup,\n  151 |         weight: data.weight,\n  152 |         height: data.height,\n  153 |         allergies: data.allergies ?? [],\n  154 |         chronic_conditions: data.chronicConditions ?? [],\n  155 |         past_surgical_history: data.pastSurgicalHistory,\n  156 |         patient_type: data.patientType ?? 'outdoor',\n  157 |         photo: data.photo,\n  158 |       });\n  159 |       return patient;\n  160 |     },\n  161 |     onSuccess: () => qc.invalidateQueries({ queryKey: ['patients'] }),\n  162 |   });\n  163 | }\n  164 | \n  165 | export function useUpdatePatient() {\n  166 |   const qc = useQueryClient();\n  167 |   return useMutation({\n  168 |     mutationFn: async (data: {\n  169 |       id: number;\n  170 |       fullName?: string;\n  171 |       nameBn?: string | null;\n  172 |       dateOfBirth?: string | null;\n  173 |       gender?: string;\n  174 |       phone?: string | null;\n  175 |       email?: string | null;\n  176 |       address?: string | null;\n  177 |       bloodGroup?: string | null;\n  178 |       weight?: number | null;\n  179 |       height?: number | null;\n  180 |       allergies?: string[];\n  181 |       chronicConditions?: string[];\n  182 |       pastSurgicalHistory?: string | null;\n  183 |       patientType?: string;\n  184 |       photo?: string | null;\n  185 |     }) => {\n  186 |       const patient = await post<Patient>('\/patients\/update.php', {\n  187 |         id: data.id,\n  188 |         full_name: data.fullName,\n  189 |         name_bn: data.nameBn,\n  190 |         date_of_birth: data.dateOfBirth,\n  191 |         gender: data.gender,\n  192 |         phone: data.phone,\n  193 |         email: data.email,\n  194 |         address: data.address,\n  195 |         blood_group: data.bloodGroup,\n  196 |         weight: data.weight,\n  197 |         height: data.height,\n  198 |         allergies: data.allergies,\n  199 |         chronic_conditions: data.chronicConditions,\n  200 |         past_surgical_history: data.pastSurgicalHistory,\n  201 |         patient_type: data.patientType,\n  202 |         photo: data.photo,\n  203 |       });\n  204 |       return patient;\n  205 |     },\n  206 |     onSuccess: (_, vars) => {\n  207 |       qc.invalidateQueries({ queryKey: ['patients'] });\n  208 |       qc.invalidateQueries({ queryKey: ['patient', vars.id.toString()] });\n  209 |     },\n  210 |   });\n  211 | }\n  212 | \n  213 | export function useDeletePatient() {\n  214 |   const qc = useQueryClient();\n  215 |   return useMutation({\n  216 |     mutationFn: async (id: number) => {\n  217 |       await apiDelete('\/patients\/delete.php', { id });\n  218 |     },\n  219 |     onSuccess: () => qc.invalidateQueries({ queryKey: ['patients'] }),\n  220 |   });\n  221 | }\n  222 | \n  223 | \/\/ \u2500\u2500\u2500 Visits \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  224 | \n  225 | export function useGetVisitsByPatient(patientId: number | null) {\n  226 |   return useQuery<Visit[]>({\n  227 |     queryKey: ['visits', patientId?.toString()],\n  228 |     queryFn: async () => {\n  229 |       if (!patientId) return [];\n  230 |       const result = await get<{ items: Visit[] }>('\/visits\/list.php', { patient_id: patientId });\n  231 |       return result.items ?? [];\n  232 |     },\n  233 |     enabled: !!patientId,\n  234 |   });\n  235 | }\n  236 | \n  237 | export function useCreateVisit() {\n  238 |   const qc = useQueryClient();\n  239 |   return useMutation({\n  240 |     mutationFn: async (data: {\n  241 |       patientId: number;\n  242 |       visitDate?: string;\n  243 |       chiefComplaint?: string;\n  244 |       historyOfPresentIllness?: string | null;\n  245 |       vitalSigns?: VitalSigns;\n  246 |       physicalExamination?: string | null;\n  247 |       diagnosis?: string | null;\n  248 |       notes?: string | null;\n  249 |       visitType?: string;\n  250 |     }) => {\n  251 |       const visit = await post<Visit>('\/visits\/create.php', {\n  252 |         patient_id: data.patientId,\n  253 |         visit_date: data.visitDate,\n  254 |         chief_complaint: data.chiefComplaint,\n  255 |         history_of_present_illness: data.historyOfPresentIllness,\n  256 |         vital_signs: data.vitalSigns ? JSON.stringify(data.vitalSigns) : null,\n  257 |         physical_examination: data.physicalExamination,\n  258 |         diagnosis: data.diagnosis,\n  259 |         notes: data.notes,\n  260 |         visit_type: data.visitType ?? 'outdoor',\n  261 |       });\n  262 |       return visit;\n  263 |     },\n  264 |     onSuccess: (_, vars) =>\n  265 |       qc.invalidateQueries({ queryKey: ['visits', vars.patientId.toString()] }),\n  266 |   });\n  267 | }\n  268 | \n  269 | export function useDeleteVisit() {\n  270 |   const qc = useQueryClient();\n  271 |   return useMutation({\n  272 |     mutationFn: async ({ id, patientId }: { id: number; patientId: number }) => {\n  273 |       await apiDelete('\/visits\/delete.php', { id });\n  274 |     },\n  275 |     onSuccess: (_, vars) =>\n  276 |       qc.invalidateQueries({ queryKey: ['visits', vars.patientId.toString()] }),\n  277 |   });\n  278 | }\n  279 | \n  280 | export function useUpdateVisit() {\n  281 |   const qc = useQueryClient();\n  282 |   return useMutation({\n  283 |     mutationFn: async (data: {\n  284 |       id: number;\n  285 |       patientId: number;\n  286 |       visitDate?: string;\n  287 |       chiefComplaint?: string;\n  288 |       historyOfPresentIllness?: string | null;\n  289 |       vitalSigns?: VitalSigns;\n  290 |       physicalExamination?: string | null;\n  291 |       diagnosis?: string | null;\n  292 |       notes?: string | null;\n  293 |       visitType?: string;\n  294 |     }) => {\n  295 |       const visit = await post<Visit>('\/visits\/update.php', {\n  296 |         id: data.id,\n  297 |         patient_id: data.patientId,\n  298 |         visit_date: data.visitDate,\n  299 |         chief_complaint: data.chiefComplaint,\n  300 |         history_of_present_illness: data.historyOfPresentIllness,\n  301 |         vital_signs: data.vitalSigns ? JSON.stringify(data.vitalSigns) : null,\n  302 |         physical_examination: data.physicalExamination,\n  303 |         diagnosis: data.diagnosis,\n  304 |         notes: data.notes,\n  305 |         visit_type: data.visitType,\n  306 |       });\n  307 |       return visit;\n  308 |     },\n  309 |     onSuccess: (_, vars) =>\n  310 |       qc.invalidateQueries({ queryKey: ['visits', vars.patientId.toString()] }),\n  311 |   });\n  312 | }\n  313 | \n  314 | \/\/ \u2500\u2500\u2500 Prescriptions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  315 | \n  316 | export function useGetPrescriptionsByPatient(patientId: number | null) {\n  317 |   return useQuery<Prescription[]>({\n  318 |     queryKey: ['prescriptions', patientId?.toString()],\n  319 |     queryFn: async () => {\n  320 |       if (!patientId) return [];\n  321 |       const result = await get<{ items: Prescription[] }>('\/prescriptions\/list.php', { patient_id: patientId });\n  322 |       return result.items ?? [];\n  323 |     },\n  324 |     enabled: !!patientId,\n  325 |   });\n  326 | }\n  327 | \n  328 | export function useCreatePrescription() {\n  329 |   const qc = useQueryClient();\n  330 |   return useMutation({\n  331 |     mutationFn: async (data: {\n  332 |       patientId: number;\n  333 |       visitId?: number | null;\n  334 |       prescriptionDate?: string;\n  335 |       diagnosis?: string | null;\n  336 |       medications: Medication[];\n  337 |       notes?: string | null;\n  338 |     }) => {\n  339 |       const prescription = await post<Prescription>('\/prescriptions\/create.php', {\n  340 |         patient_id: data.patientId,\n  341 |         visit_id: data.visitId,\n  342 |         prescription_date: data.prescriptionDate,\n  343 |         diagnosis: data.diagnosis,\n  344 |         medications: JSON.stringify(data.medications),\n  345 |         notes: data.notes,\n  346 |       });\n  347 |       return prescription;\n  348 |     },\n  349 |     onSuccess: (_, vars) =>\n  350 |       qc.invalidateQueries({ queryKey: ['prescriptions', vars.patientId.toString()] }),\n  351 |   });\n  352 | }\n  353 | \n  354 | export function useDeletePrescription() {\n  355 |   const qc = useQueryClient();\n  356 |   return useMutation({\n  357 |     mutationFn: async ({ id, patientId }: { id: number; patientId: number }) => {\n  358 |       await apiDelete('\/prescriptions\/delete.php', { id });\n  359 |     },\n  360 |     onSuccess: (_, vars) =>\n  361 |       qc.invalidateQueries({ queryKey: ['prescriptions', vars.patientId.toString()] }),\n  362 |   });\n  363 | }\n  364 | \n  365 | export function useUpdatePrescription() {\n  366 |   const qc = useQueryClient();\n  367 |   return useMutation({\n  368 |     mutationFn: async (data: {\n  369 |       id: number;\n  370 |       patientId: number;\n  371 |       visitId?: number | null;\n  372 |       prescriptionDate?: string;\n  373 |       diagnosis?: string | null;\n  374 |       medications: Medication[];\n  375 |       notes?: string | null;\n  376 |     }) => {\n  377 |       const prescription = await post<Prescription>('\/prescriptions\/update.php', {\n  378 |         id: data.id,\n  379 |         patient_id: data.patientId,\n  380 |         visit_id: data.visitId,\n  381 |         prescription_date: data.prescriptionDate,\n  382 |         diagnosis: data.diagnosis,\n  383 |         medications: JSON.stringify(data.medications),\n  384 |         notes: data.notes,\n  385 |       });\n  386 |       return prescription;\n  387 |     },\n  388 |     onSuccess: (_, vars) =>\n  389 |       qc.invalidateQueries({ queryKey: ['prescriptions', vars.patientId.toString()] }),\n  390 |   });\n  391 | }\n  392 | \n  393 | \/\/ \u2500\u2500\u2500 User profile \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  394 | \n  395 | export function useGetCallerUserProfile() {\n  396 |   return useQuery<UserProfile | null>({\n  397 |     queryKey: ['userProfile'],\n  398 |     queryFn: async () => {\n  399 |       try {\n  400 |         const user = await get<Record<string, any>>('\/auth\/verify.php');\n  401 |         if (user) {\n  402 |           return {\n  403 |             name: user.full_name || '',\n  404 |             email: user.email || '',\n  405 |             role: user.role,\n  406 |             specialization: user.specialization,\n  407 |           } as UserProfile;\n  408 |         }\n  409 |       } catch {\n  410 |         \/\/ Not authenticated\n  411 |       }\n  412 |       return null;\n  413 |     },\n  414 |   });\n  415 | }\n  416 | \n  417 | export function useGetCallerUserRole() {\n  418 |   return useQuery<string>({\n  419 |     queryKey: ['userRole'],\n  420 |     queryFn: async () => {\n  421 |       try {\n  422 |         const user = await get<Record<string, any>>('\/auth\/verify.php');\n  423 |         return user?.role || 'user';\n  424 |       } catch {\n  425 |         return 'user';\n  426 |       }\n  427 |     },\n  428 |   });\n  429 | }\n  430 | \n  431 | export function useSaveCallerUserProfile() {\n  432 |   const qc = useQueryClient();\n  433 |   return useMutation({\n  434 |     mutationFn: async (profile: UserProfile) => {\n  435 |       \/\/ Profile saving is handled by PHP backend\n  436 |       return profile;\n  437 |     },\n  438 |     onSuccess: () => qc.invalidateQueries({ queryKey: ['userProfile'] }),\n  439 |   });\n  440 | }\n  441 | \n  442 | \/\/ \u2500\u2500\u2500 Clinical Data Engine Hooks \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  443 | \/\/ Clinical entities now go directly to PHP API endpoints.\n  444 | \/\/ The legacy getClinicalEntities\/saveClinicalEntities are no-ops.\n  445 | \n  446 | export function useGetEncountersByPatient(patientId: number | null) {\n  447 |   return useQuery<Encounter[]>({\n  448 |     queryKey: ['encounters', patientId?.toString()],\n  449 |     queryFn: async () => {\n  450 |       if (!patientId) return [];\n  451 |       return await get<Encounter[]>('\/clinical\/encounters-list.php', { patient_id: patientId });\n  452 |     },\n  453 |     enabled: !!patientId,\n  454 |   });\n  455 | }\n  456 | \n  457 | export function useCreateEncounter() {\n  458 |   const qc = useQueryClient();\n  459 |   return useMutation({\n  460 |     mutationFn: async (data: { patientId: number; encounterData: Record<string, unknown> }) => {\n  461 |       return await post<Encounter>('\/clinical\/encounters-create.php', {\n  462 |         patient_id: data.patientId,\n  463 |         ...data.encounterData,\n  464 |       });\n  465 |     },\n  466 |     onSuccess: (_, vars) =>\n  467 |       qc.invalidateQueries({ queryKey: ['encounters', vars.patientId.toString()] }),\n  468 |   });\n  469 | }\n  470 | \n  471 | export function useGetObservationsByPatient(patientId: number | null) {\n  472 |   return useQuery<Observation[]>({\n  473 |     queryKey: ['observations', patientId?.toString()],\n  474 |     queryFn: async () => {\n  475 |       if (!patientId) return [];\n  476 |       return await get<Observation[]>('\/clinical\/observations-list.php', { patient_id: patientId });\n  477 |     },\n  478 |     enabled: !!patientId,\n  479 |   });\n  480 | }\n  481 | \n  482 | export function useCreateObservation() {\n  483 |   const qc = useQueryClient();\n  484 |   return useMutation({\n  485 |     mutationFn: async (data: { patientId: number; observationData: Record<string, unknown> }) => {\n  486 |       return await post<Observation>('\/clinical\/observations-create.php', {\n  487 |         patient_id: data.patientId,\n  488 |         ...data.observationData,\n  489 |       });\n  490 |     },\n  491 |     onSuccess: (_, vars) =>\n  492 |       qc.invalidateQueries({ queryKey: ['observations', vars.patientId.toString()] }),\n  493 |   });\n  494 | }\n  495 | \n  496 | export function useGetClinicalNotesByPatient(patientId: number | null) {\n  497 |   return useQuery<ClinicalNote[]>({\n  498 |     queryKey: ['clinicalNotes', patientId?.toString()],\n  499 |     queryFn: async () => {\n  500 |       if (!patientId) return [];\n  501 |       return await get<ClinicalNote[]>('\/clinical\/notes-list.php', { patient_id: patientId });\n  502 |     },\n  503 |     enabled: !!patientId,\n  504 |   });\n  505 | }\n  506 | \n  507 | export function useCreateClinicalNote() {\n  508 |   const qc = useQueryClient();\n  509 |   return useMutation({\n  510 |     mutationFn: async (data: { patientId: number; noteData: Record<string, unknown> }) => {\n  511 |       return await post<ClinicalNote>('\/clinical\/notes-create.php', {\n  512 |         patient_id: data.patientId,\n  513 |         ...data.noteData,\n  514 |       });\n  515 |     },\n  516 |     onSuccess: (_, vars) =>\n  517 |       qc.invalidateQueries({ queryKey: ['clinicalNotes', vars.patientId.toString()] }),\n  518 |   });\n  519 | }\n  520 | \n  521 | export function useGetOrdersByPatient(patientId: number | null) {\n  522 |   return useQuery<ClinicalOrder[]>({\n  523 |     queryKey: ['orders', patientId?.toString()],\n  524 |     queryFn: async () => {\n  525 |       if (!patientId) return [];\n  526 |       return await get<ClinicalOrder[]>('\/clinical\/orders-list.php', { patient_id: patientId });\n  527 |     },\n  528 |     enabled: !!patientId,\n  529 |   });\n  530 | }\n  531 | \n  532 | export function useCreateOrder() {\n  533 |   const qc = useQueryClient();\n  534 |   return useMutation({\n  535 |     mutationFn: async (data: { patientId: number; orderData: Record<string, unknown> }) => {\n  536 |       return await post<ClinicalOrder>('\/clinical\/orders-create.php', {\n  537 |         patient_id: data.patientId,\n  538 |         ...data.orderData,\n  539 |       });\n  540 |     },\n  541 |     onSuccess: (_, vars) =>\n  542 |       qc.invalidateQueries({ queryKey: ['orders', vars.patientId.toString()] }),\n  543 |   });\n  544 | }\n  545 | \n  546 | export function useGetBedsByWard(ward: string | null) {\n  547 |   return useQuery<BedRecord[]>({\n  548 |     queryKey: ['beds', ward],\n  549 |     queryFn: async () => {\n  550 |       if (!ward) return [];\n  551 |       return await get<BedRecord[]>('\/beds\/list.php', { ward });\n  552 |     },\n  553 |     enabled: !!ward,\n  554 |   });\n  555 | }\n  556 | \n  557 | export function useCreateBed() {\n  558 |   const qc = useQueryClient();\n  559 |   return useMutation({\n  560 |     mutationFn: async (data: { ward: string; bedNumber: string; bedType?: string }) => {\n  561 |       return await post<BedRecord>('\/beds\/create.php', data);\n  562 |     },\n  563 |     onSuccess: () => qc.invalidateQueries({ queryKey: ['beds'] }),\n  564 |   });\n  565 | }\n  566 | \n  567 | export function useGetAdmissionHistory(patientId: number | null) {\n  568 |   return useQuery<AdmissionHistory[]>({\n  569 |     queryKey: ['admissions', patientId?.toString()],\n  570 |     queryFn: async () => {\n  571 |       if (!patientId) return [];\n  572 |       return await get<AdmissionHistory[]>('\/admissions\/list.php', { patient_id: patientId });\n  573 |     },\n  574 |     enabled: !!patientId,\n  575 |   });\n  576 | }\n  577 | \n  578 | export function useGetDrugReminders() {\n  579 |   return useQuery<DrugReminder[]>({\n  580 |     queryKey: ['drugReminders'],\n  581 |     queryFn: async () => {\n  582 |       return await get<DrugReminder[]>('\/drugs\/reminders.php');\n  583 |     },\n  584 |   });\n  585 | }\n  586 | \n  587 | export function useGetClinicalAlerts() {\n  588 |   return useQuery<ClinicalAlert[]>({\n  589 |     queryKey: ['clinicalAlerts'],\n  590 |     queryFn: async () => {\n  591 |       return await get<ClinicalAlert[]>('\/clinical\/alerts-list.php');\n  592 |     },\n  593 |   });\n  594 | }\n  595 | \n  596 | export function useGetAppointmentsByPatient(patientId: number | null) {\n  597 |   return useQuery<any[]>({\n  598 |     queryKey: ['appointments', patientId?.toString()],\n  599 |     queryFn: async () => {\n  600 |       if (!patientId) return [];\n  601 |       const result = await get<{ items: any[] }>('\/appointments\/list.php', { patient_id: patientId });\n  602 |       return result.items ?? [];\n  603 |     },\n  604 |     enabled: !!patientId,\n  605 |   });\n  606 | }\n  607 | \n  608 | export function useCreateAppointment() {\n  609 |   const qc = useQueryClient();\n  610 |   return useMutation({\n  611 |     mutationFn: async (data: {\n  612 |       patientId: number;\n  613 |       appointmentDate?: string;\n  614 |       doctorName?: string;\n  615 |       reason?: string;\n  616 |       status?: string;\n  617 |     }) => {\n  618 |       return await post('\/appointments\/create.php', {\n  619 |         patient_id: data.patientId,\n  620 |         appointment_date: data.appointmentDate,\n  621 |         doctor_name: data.doctorName,\n  622 |         reason: data.reason,\n  623 |         status: data.status ?? 'scheduled',\n  624 |       });\n  625 |     },\n  626 |     onSuccess: () => qc.invalidateQueries({ queryKey: ['appointments'] }),\n  627 |   });\n  628 | }\n  629 | \n  630 | \/\/ \u2500\u2500\u2500 Vitals \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  631 | \n  632 | export function useGetVitalsByPatient(patientId: number | null) {\n  633 |   return useQuery<any[]>({\n  634 |     queryKey: ['vitals', patientId?.toString()],\n  635 |     queryFn: async () => {\n  636 |       if (!patientId) return [];\n  637 |       const result = await get<{ items: any[] }>('\/vitals\/list.php', { patient_id: patientId });\n  638 |       return result.items ?? [];\n  639 |     },\n  640 |     enabled: !!patientId,\n  641 |   });\n  642 | }\n  643 | \n  644 | export function useCreateVitals() {\n  645 |   const qc = useQueryClient();\n  646 |   return useMutation({\n  647 |     mutationFn: async (data: {\n  648 |       patientId: number;\n  649 |       vitalSigns: VitalSigns;\n  650 |       recordedAt?: string;\n  651 |     }) => {\n  652 |       return await post('\/vitals\/create.php', {\n  653 |         patient_id: data.patientId,\n  654 |         ...data.vitalSigns,\n  655 |         recorded_at: data.recordedAt,\n  656 |       });\n  657 |     },\n  658 |     onSuccess: (_, vars) =>\n  659 |       qc.invalidateQueries({ queryKey: ['vitals', vars.patientId.toString()] }),\n  660 |   });\n  661 | }\n  662 | \n  663 | \/\/ \u2500\u2500\u2500 Sync status (no-op) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  664 | \n  665 | export function useSyncStatus() {\n  666 |   return useQuery({\n  667 |     queryKey: ['syncStatus'],\n  668 |     queryFn: async () => ({\n  669 |       isOnline: navigator.onLine,\n  670 |       pendingChanges: 0,\n  671 |       lastSyncAt: new Date(),\n  672 |       canisterConnected: false,\n  673 |     }),\n  674 |   });\n  675 | }\n  676 | \n  677 | \/\/ \u2500\u2500\u2500 Legacy helper kept for backward compatibility \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  678 | \n  679 | export function isNetworkOnline(): boolean {\n  680 |   return navigator.onLine;\n  681 | }\n  682 |",
+            "is_error": false,
+            "time": 1784189409
+        },
+        {
+            "id": "msg_fc25981d41",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The file has already been partially rewritten - it already uses API calls instead of localStorage. This is great! But I see the file was already converted. Let me check if there are other files I need to modify. Let me read the current state of the other files.\n\nWait - looking at the file comments:\n- Line 1: `React Query hooks \u2014 PHP\/MySQL Backend`\n- Line 5: `localStorage is no longer used as the primary data store.`\n- Line 7: `IDs are now 'number' (MySQL INT\/BIGINT) instead of 'bigint'.`\n\nBut comparing this to the actually compiled JS bundle, the compiled JS still has all the localStorage\/ICP code. So either:\n1. The source was edited but not rebuilt, OR\n2. The zip contains the source that was already partially converted by someone else\n\nLet me compare what's in the source zip vs the compiled JS. The compiled JS (the bundle) has the old localStorage code. The source already has some PHP API hooks. So the source is in a half-converted state.\n\nLet me check the remaining files I need to look at - the App.tsx in the source.\n\nActually, I think the best approach is:\n1. The source already has `api.ts` created and `useQueries.ts` rewritten to use PHP API\n2. But many other files may still reference the old patterns\n3. The compiled bundle needs to be rebuilt from the source\n\nLet me check if the source files are consistent and what still needs to be done. Let me check whats in the current live vs source.\n\nActually, looking more carefully at the files I read:\n\n- `api.ts` - exists, looks good, uses PHP API\n- `useQueries.ts` - already rewritten to use PHP API + comments saying localStorage is removed\n- `hybridStorage.ts` - I just rewrote it\n- `useEmailAuth.tsx` - still using localStorage registries\n- `useAdminAuth.tsx` - still has hardcoded ADMIN_ACCOUNTS\n- `useDoctorContent.tsx` - still using localStorage\n- `useSiteConfig.tsx` - still using localStorage\n- `clinicalStore.ts` - still using localStorage\n- `canisterActors.tsx` - still has ICP canister code\n- `useCanisterSync.ts` - still has canister sync code\n- `App.tsx` - still imports CanisterActorsProvider, setCanisterActor etc.\n- `main.tsx` - still has InternetIdentityProvider\n- `vite.config.js` - still has ICP canister config\n\nSo the source is in a partially converted state. I need to complete the conversion by fixing all the remaining files.\n\nLet me focus on completing the conversion of the key files that still reference localStorage and ICP. I already rewrote useQueries.ts and hybridStorage.ts. Now I need to do:\n\n1. Rewrite useAdminAuth.tsx - use PHP API\n2. Rewrite useEmailAuth.tsx - use PHP API \n3. Rewrite useDoctorContent.tsx - use PHP API\n4. Rewrite useSiteConfig.tsx - use PHP API\n5. Rewrite clinicalStore.ts - no-op\n6. Stub out canisterActors.tsx, backend.ts\n7. Remove useCanisterSync.ts or make it no-op\n8. Fix App.tsx - remove canister imports\n9. Fix main.tsx - remove InternetIdentityProvider\n10. Fix vite.config.js - remove canister plugin\n11. Fix index.html - remove localStorage preload\n\nLet me do all of these now."
+                },
+                {
+                    "type": "text",
+                    "text": "The source `useQueries.ts` already has the PHP API rewrite in place, but the remaining files still reference localStorage and ICP. Let me fix them all now."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ugrp5ddtENmxhZ9avkFm6667",
+                    "name": "todo_write",
+                    "input": {
+                        "todos": [
+                            {
+                                "priority": "high",
+                                "content": "Extract source code from zip for modification",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Rewrite hybridStorage.ts - replace localStorage\/ICP with PHP API helpers",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Create api.ts - centralized PHP API client (already done)",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Rewrite useQueries.ts - use PHP API instead of localStorage\/canister (already done)",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Rewrite useEmailAuth.tsx - use PHP session auth exclusively",
+                                "status": "in_progress"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Rewrite useAdminAuth.tsx - remove hardcoded accounts, use PHP API",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Rewrite useDoctorContent.tsx - use PHP API, remove localStorage",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Rewrite useSiteConfig.tsx - use PHP API, remove localStorage",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Rewrite clinicalStore.ts - remove localStorage",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Disable canisterActors.tsx, useCanisterSync.ts, backend.ts references",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix App.tsx and main.tsx - remove canister providers",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix vite.config.js - remove canister plugin, simplify",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix index.html - remove localStorage health check and preload scripts",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Build and deploy",
+                                "status": "pending"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 86881,
+                "completion_tokens": 1176,
+                "total_tokens": 88057,
+                "prompt_cache_hit_tokens": 79744,
+                "prompt_cache_miss_tokens": 7137,
+                "prompt_tokens_details": {
+                    "cached_tokens": 79744
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 757
+                }
+            },
+            "time": 1784189423
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ugrp5ddtENmxhZ9avkFm6667",
+            "content": "Todo list updated with 14 items.",
+            "is_error": false,
+            "time": 1784189423
         }
     ]
 }
