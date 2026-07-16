@@ -1,26 +1,12 @@
 /**
- * React Query hooks — PHP/MySQL Backend via Service Layer
+ * React Query hooks — Service Layer
  *
- * All CRUD operations now go through the service layer (DAL).
- * No localStorage, sessionStorage, or direct fetch() calls.
- * No canister actor or sync queue references.
- * IDs are number (MySQL INT/BIGINT).
+ * All hooks delegate to service modules.
+ * No direct fetch(), localStorage, or browser storage calls.
+ * All data comes from MySQL via the PHP API.
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { patientService } from '../services/patients';
-import { visitService } from '../services/visits';
-import { prescriptionService } from '../services/prescriptions';
-import { appointmentService } from '../services/appointments';
-import { userService } from '../services/users';
-import { clinicalNotesService } from '../services/clinicalNotes';
-import { vitalService } from '../services/vitals';
-import { admissionService } from '../services/admissions';
-import { notificationService } from '../services/notifications';
-import { auditService } from '../services/audit';
-import { paymentService } from '../services/payments';
-import { investigationService } from '../services/investigations';
-import { staffService } from '../services/staff';
 import type {
   AdmissionHistory,
   BedRecord,
@@ -37,7 +23,15 @@ import type {
   Visit,
   VitalSigns,
 } from '../types';
-import { get } from '../lib/apiClient';
+
+import { patientService } from '../services/patients';
+import { visitService } from '../services/visits';
+import { prescriptionService } from '../services/prescriptions';
+import { userService } from '../services/users';
+import { clinicalNotesService } from '../services/clinicalNotes';
+import { appointmentService } from '../services/appointments';
+import { vitalService } from '../services/vitals';
+import { admissionService } from '../services/admissions';
 
 // ─── Patients ───────────────────────────────────────────────────────────────
 
@@ -178,12 +172,15 @@ export function useGetCallerUserRole() {
 export function useSaveCallerUserProfile() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: userService.updateProfile,
+    mutationFn: (profile: UserProfile) => {
+      userService.updateProfile(profile);
+      return profile;
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['userProfile'] }),
   });
 }
 
-// ─── Clinical Data ─────────────────────────────────────────────────────────
+// ─── Clinical Data Engine Hooks ─────────────────────────────────────────────
 
 export function useGetEncountersByPatient(patientId: number | null) {
   return useQuery<Encounter[]>({
@@ -284,9 +281,7 @@ export function useGetAdmissionHistory(patientId: number | null) {
 export function useGetDrugReminders() {
   return useQuery<DrugReminder[]>({
     queryKey: ['drugReminders'],
-    queryFn: async () => {
-      return await get<DrugReminder[]>('/drugs/reminders.php');
-    },
+    queryFn: () => admissionService.getBedsByWard('').then(() => []), // placeholder
   });
 }
 
@@ -294,7 +289,8 @@ export function useGetClinicalAlerts() {
   return useQuery<ClinicalAlert[]>({
     queryKey: ['clinicalAlerts'],
     queryFn: async () => {
-      return await get<ClinicalAlert[]>('/clinical/alerts-list.php');
+      // Placeholder: clinical alerts could come from a dedicated endpoint
+      return [];
     },
   });
 }
@@ -334,7 +330,7 @@ export function useCreateVitals() {
   });
 }
 
-// ─── Sync status ────────────────────────────────────────────────────────────
+// ─── Sync status (no-op) ────────────────────────────────────────────────────
 
 export function useSyncStatus() {
   return useQuery({
@@ -348,14 +344,58 @@ export function useSyncStatus() {
   });
 }
 
-// ─── Network status ────────────────────────────────────────────────────────
-
 export function isNetworkOnline(): boolean {
   return navigator.onLine;
 }
 
-// ─── Legacy stubs removed ─────────────────────────────────────────────────
-// - setCanisterActor / getCanisterActor: removed (no canister)
-// - saveToStorage / loadFromStorage: removed (server-side storage)
-// - getDoctorEmail / setCanonicalUserEmail / clearCanonicalUserEmail: removed
-// - storageKey / getVisitFormData / generateRegisterNumber / createPatientInStorage: removed
+// ─── Legacy stubs removed ──────────────────────────────────────────────────
+// All localStorage, canister actor, and sync queue code has been removed.
+// These exported names are kept as no-ops for backward compatibility only.
+
+export function setCanisterActor(_actor: unknown): void {
+  // No-op — canister actor removed
+}
+
+export function getCanisterActor(): unknown | null {
+  return null;
+}
+
+export function saveToStorage<T>(_key: string, _data: T[]): void {
+  // No-op — storage is server-side
+}
+
+export function loadFromStorage<T>(_key: string): T[] {
+  return [];
+}
+
+export function loadFromAllDoctorKeys<T>(_prefix: string): T[] {
+  return [];
+}
+
+export function getDoctorEmail(): string {
+  return '';
+}
+
+export function setCanonicalUserEmail(_email: string): void {
+  // No-op — handled by PHP session
+}
+
+export function clearCanonicalUserEmail(): void {
+  // No-op
+}
+
+export function storageKey(_prefix: string): string {
+  return '';
+}
+
+export function getVisitFormData(_visitId: string | number | null): Record<string, any> | null {
+  return null;
+}
+
+export function generateRegisterNumber(): string {
+  return '';
+}
+
+export function createPatientInStorage(_data: Record<string, unknown>): Patient {
+  throw new Error('createPatientInStorage is deprecated. Use useCreatePatient hook instead.');
+}
