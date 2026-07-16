@@ -72,7 +72,7 @@
         }
     ],
     "created_at": 1784125529,
-    "updated_at": 1784185538,
+    "updated_at": 1784187627,
     "messages": [
         {
             "id": "msg_compact",
@@ -1399,6 +1399,286 @@
             "content": "Todo list updated with 13 items.",
             "is_error": false,
             "time": 1784185538
+        },
+        {
+            "id": "msg_845659be81",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784187606
+        },
+        {
+            "id": "msg_76509a1188",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I need to implement the conversion. Let me start systematically:\n\n1. First, rewrite `hybridStorage.ts` - strip out all localStorage, ICP canister, sync queue code and replace with PHP API helpers\n2. Rewrite `useQueries.ts` - all CRUD operations go through PHP API\n3. Rewrite `useEmailAuth.tsx` - PHP session-based auth\n4. Rewrite `useAdminAuth.tsx` - PHP API auth\n5. Rewrite `useDoctorContent.tsx` - PHP API \n6. Rewrite `useSiteConfig.tsx` - PHP API\n7. Rewrite `clinicalStore.ts` - remove localStorage\n8. Fix main.tsx and App.tsx - remove canister providers\n9. Fix index.html\n10. Build and deploy\n\nLet me start with the core files. The biggest files are useQueries.ts (2209 lines) and hybridStorage.ts (1658 lines). I need to completely rewrite these.\n\nFor the PHP API, I already know from my earlier analysis that the endpoints exist at:\n- `\/api\/auth\/login.php` - authentication\n- `\/api\/patients\/` - patient CRUD\n- `\/api\/visits\/` - visit CRUD\n- `\/api\/prescriptions\/` - prescription CRUD  \n- `\/api\/appointments\/` - appointment CRUD\n- `\/api\/clinical\/` - clinical data\n- `\/api\/frontpage\/` - site config\/content\n- `\/api\/sync.php` - sync endpoint\n\nLet me create a proper API client helper and then rewrite the hooks.\n\nLet me start writing all the files. I'll do this in a systematic order.\n\nFirst, let me check what the actual PHP API looks like to make sure I use the right endpoints."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me check the existing PHP API structure to ensure I use the correct endpoints in the rewrite."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_0xT98ZBEQlL4LmnkhDB45479",
+                    "name": "bash",
+                    "input": {
+                        "command": "find \/home\/drarmank\/public_html\/api -type f -name \"*.php\" | sort"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_E0e7R2dKOU3K4cwWYApX0275",
+                    "name": "bash",
+                    "input": {
+                        "command": "find \/home\/drarmank\/server-data\/migrations -type f -name \"*.sql\" | sort"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 61934,
+                "completion_tokens": 501,
+                "total_tokens": 62435,
+                "prompt_cache_hit_tokens": 37632,
+                "prompt_cache_miss_tokens": 24302,
+                "prompt_tokens_details": {
+                    "cached_tokens": 37632
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 370
+                }
+            },
+            "time": 1784187615
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_0xT98ZBEQlL4LmnkhDB45479",
+            "content": "\/home\/drarmank\/public_html\/api\/appointments\/create.php\n\/home\/drarmank\/public_html\/api\/appointments\/list.php\n\/home\/drarmank\/public_html\/api\/appointments\/update.php\n\/home\/drarmank\/public_html\/api\/audit\/list.php\n\/home\/drarmank\/public_html\/api\/auth\/admin_login.php\n\/home\/drarmank\/public_html\/api\/auth\/approve.php\n\/home\/drarmank\/public_html\/api\/auth\/login.php\n\/home\/drarmank\/public_html\/api\/auth\/logout.php\n\/home\/drarmank\/public_html\/api\/auth\/middleware.php\n\/home\/drarmank\/public_html\/api\/auth\/patients\/approve.php\n\/home\/drarmank\/public_html\/api\/auth\/patients\/login.php\n\/home\/drarmank\/public_html\/api\/auth\/patients\/register.php\n\/home\/drarmank\/public_html\/api\/auth\/pending.php\n\/home\/drarmank\/public_html\/api\/auth\/reassign_role.php\n\/home\/drarmank\/public_html\/api\/auth\/register.php\n\/home\/drarmank\/public_html\/api\/auth\/reject.php\n\/home\/drarmank\/public_html\/api\/auth\/verify.php\n\/home\/drarmank\/public_html\/api\/clinical\/notes-create.php\n\/home\/drarmank\/public_html\/api\/clinical\/notes-list.php\n\/home\/drarmank\/public_html\/api\/content\/get.php\n\/home\/drarmank\/public_html\/api\/content\/save.php\n\/home\/drarmank\/public_html\/api\/data\/get.php\n\/home\/drarmank\/public_html\/api\/data\/save.php\n\/home\/drarmank\/public_html\/api\/database.php\n\/home\/drarmank\/public_html\/api\/frontpage\/get.php\n\/home\/drarmank\/public_html\/api\/frontpage\/save.php\n\/home\/drarmank\/public_html\/api\/helpers.php\n\/home\/drarmank\/public_html\/api\/info.php\n\/home\/drarmank\/public_html\/api\/investigations\/create.php\n\/home\/drarmank\/public_html\/api\/investigations\/list.php\n\/home\/drarmank\/public_html\/api\/invoices\/create.php\n\/home\/drarmank\/public_html\/api\/invoices\/list.php\n\/home\/drarmank\/public_html\/api\/migrate\/import.php\n\/home\/drarmank\/public_html\/api\/notifications\/create.php\n\/home\/drarmank\/public_html\/api\/notifications\/list.php\n\/home\/drarmank\/public_html\/api\/patients\/create.php\n\/home\/drarmank\/public_html\/api\/patients\/delete.php\n\/home\/drarmank\/public_html\/api\/patients\/get.php\n\/home\/drarmank\/public_html\/api\/patients\/list.php\n\/home\/drarmank\/public_html\/api\/patients\/update.php\n\/home\/drarmank\/public_html\/api\/payments\/create.php\n\/home\/drarmank\/public_html\/api\/payments\/list.php\n\/home\/drarmank\/public_html\/api\/prescriptions\/create.php\n\/home\/drarmank\/public_html\/api\/prescriptions\/list.php\n\/home\/drarmank\/public_html\/api\/settings\/get.php\n\/home\/drarmank\/public_html\/api\/setup-test.php\n\/home\/drarmank\/public_html\/api\/staff\/list.php\n\/home\/drarmank\/public_html\/api\/sync.php\n\/home\/drarmank\/public_html\/api\/upload\/index.php\n\/home\/drarmank\/public_html\/api\/visits\/create.php\n\/home\/drarmank\/public_html\/api\/visits\/list.php\n\/home\/drarmank\/public_html\/api\/vitals\/create.php\n\/home\/drarmank\/public_html\/api\/vitals\/list.php\n",
+            "is_error": false,
+            "time": 1784187615
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_E0e7R2dKOU3K4cwWYApX0275",
+            "content": "\/home\/drarmank\/server-data\/migrations\/001_schema.sql\n\/home\/drarmank\/server-data\/migrations\/002_seed.sql\n\/home\/drarmank\/server-data\/migrations\/003_auth_conversion.sql\n\/home\/drarmank\/server-data\/migrations\/008_create_site_settings_table.sql\n",
+            "is_error": false,
+            "time": 1784187615
+        },
+        {
+            "id": "msg_f73733717e",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Good, now I have a clear picture of all the PHP API endpoints. Let me read a few of these to understand the API patterns (request\/response format)."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_qyywpBLwkCC1jnH9sS3X7616",
+                    "name": "read_file",
+                    "input": {
+                        "path": "\/home\/drarmank\/public_html\/api\/database.php"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_ASxWHwlVyyN5MMTPRT956511",
+                    "name": "read_file",
+                    "input": {
+                        "path": "\/home\/drarmank\/public_html\/api\/auth\/middleware.php"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_02_ezbsgx23yxWrH4iJbPQP1794",
+                    "name": "read_file",
+                    "input": {
+                        "path": "\/home\/drarmank\/public_html\/api\/auth\/login.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 63233,
+                "completion_tokens": 172,
+                "total_tokens": 63405,
+                "prompt_cache_hit_tokens": 62336,
+                "prompt_cache_miss_tokens": 897,
+                "prompt_tokens_details": {
+                    "cached_tokens": 62336
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 33
+                }
+            },
+            "time": 1784187618
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_qyywpBLwkCC1jnH9sS3X7616",
+            "content": "Path outside project directory",
+            "is_error": true,
+            "time": 1784187618
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_ASxWHwlVyyN5MMTPRT956511",
+            "content": "Path outside project directory",
+            "is_error": true,
+            "time": 1784187618
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_02_ezbsgx23yxWrH4iJbPQP1794",
+            "content": "Path outside project directory",
+            "is_error": true,
+            "time": 1784187618
+        },
+        {
+            "id": "msg_22e3ec998e",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The API files are in public_html which is inside the project root (\/home\/drarmank). Let me try reading them directly."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_FRNZxfSglsIMzh539tAI7388",
+                    "name": "bash",
+                    "input": {
+                        "command": "cat \/home\/drarmank\/public_html\/api\/database.php"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_7RZ4cWjAhq3UsbSlpOvT8066",
+                    "name": "bash",
+                    "input": {
+                        "command": "cat \/home\/drarmank\/public_html\/api\/auth\/login.php"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_02_f5uMmG8Qf5S7TB4aqwkn6057",
+                    "name": "bash",
+                    "input": {
+                        "command": "cat \/home\/drarmank\/public_html\/api\/auth\/middleware.php"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_03_jeutOpPjGjXCJaGPVFdd4735",
+                    "name": "bash",
+                    "input": {
+                        "command": "cat \/home\/drarmank\/public_html\/api\/patients\/list.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 63445,
+                "completion_tokens": 208,
+                "total_tokens": 63653,
+                "prompt_cache_hit_tokens": 63360,
+                "prompt_cache_miss_tokens": 85,
+                "prompt_tokens_details": {
+                    "cached_tokens": 63360
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 27
+                }
+            },
+            "time": 1784187622
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_FRNZxfSglsIMzh539tAI7388",
+            "content": "<?php\n\/**\n * Database Connection Singleton\n * \n * Provides a single PDO connection instance per request.\n * Uses prepared statements to prevent SQL injection.\n *\/\n\nrequire_once __DIR__ . '\/..\/config.php';\n\nclass Database {\n    private static ?PDO $instance = null;\n    private static array $config = [];\n\n    \/**\n     * Load database configuration from environment or config file\n     *\/\n    private static function loadConfig(): void {\n        if (!empty(self::$config)) return;\n\n        \/\/ Try environment variables first (more secure)\n        $host = getenv('DB_HOST') ?: DB_HOST;\n        $name = getenv('DB_NAME') ?: DB_NAME;\n        $user = getenv('DB_USER') ?: DB_USER;\n        $pass = getenv('DB_PASS') ?: DB_PASS;\n\n        \/\/ Fall back to config file\n        self::$config = [\n            'host' => $host,\n            'name' => $name,\n            'user' => $user,\n            'pass' => $pass,\n            'charset' => DB_CHARSET,\n        ];\n    }\n\n    \/**\n     * Get PDO connection instance\n     *\/\n    public static function getInstance(): PDO {\n        if (self::$instance === null) {\n            self::loadConfig();\n            \n            $dsn = sprintf(\n                'mysql:host=%s;dbname=%s;charset=%s',\n                self::$config['host'],\n                self::$config['name'],\n                self::$config['charset']\n            );\n\n            $options = [\n                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,\n                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,\n                PDO::ATTR_EMULATE_PREPARES   => false,\n                PDO::MYSQL_ATTR_INIT_COMMAND => \"SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci\",\n            ];\n\n            try {\n                self::$instance = new PDO(\n                    $dsn,\n                    self::$config['user'],\n                    self::$config['pass'],\n                    $options\n                );\n            } catch (PDOException $e) {\n                \/\/ Log error but don't expose details to client\n                error_log('Database connection failed: ' . $e->getMessage());\n                http_response_code(500);\n                echo json_encode(['error' => 'Database connection failed']);\n                exit;\n            }\n        }\n\n        return self::$instance;\n    }\n\n    \/**\n     * Test database connection\n     *\/\n    public static function testConnection(): array {\n        try {\n            $db = self::getInstance();\n            $db->query('SELECT 1');\n            return ['connected' => true, 'message' => 'Database connection successful'];\n        } catch (\\Exception $e) {\n            return ['connected' => false, 'message' => $e->getMessage()];\n        }\n    }\n\n    \/**\n     * Begin transaction\n     *\/\n    public static function beginTransaction(): void {\n        self::getInstance()->beginTransaction();\n    }\n\n    \/**\n     * Commit transaction\n     *\/\n    public static function commit(): void {\n        self::getInstance()->commit();\n    }\n\n    \/**\n     * Rollback transaction\n     *\/\n    public static function rollback(): void {\n        if (self::getInstance()->inTransaction()) {\n            self::getInstance()->rollBack();\n        }\n    }\n\n    \/**\n     * Close the connection\n     *\/\n    public static function close(): void {\n        self::$instance = null;\n    }\n}\n",
+            "is_error": false,
+            "time": 1784187622
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_7RZ4cWjAhq3UsbSlpOvT8066",
+            "content": "    \/\/ Check if user is active\n    if (!$user['is_active']) {\n        errorResponse('Account is deactivated. Contact administrator.', 403);\n    }\n    \n    \/\/ Check registration status (pending\/rejected)\n    if ($user['registration_status'] === 'pending') {\n        errorResponse('Your account is pending admin approval. Please wait.', 403);\n    }\n    if ($user['registration_status'] === 'rejected') {\n        errorResponse('Your account has been rejected. Please contact the admin or re-register.', 403);\n    }\n    \n    \/\/ Verify password\n    if (!password_verify($password, $user['password_hash'])) {\n        errorResponse('Invalid email or password', 401);\n    }\n    if (isset($user['registration_status']) && $user['registration_status'] === 'rejected') {\n        errorResponse('Your account has been rejected. Please contact the admin or re-register.', 403);\n    }\n    \n    \/\/ Verify password\n    if (!password_verify($password, $user['password_hash'])) {\n        errorResponse('Invalid email or password', 401);\n    }\n    if ($user['registration_status'] === 'rejected') {\n        errorResponse('Your account has been rejected. Please contact the admin or re-register.', 403);\n    }\n    \n    \/\/ Verify password\n    if (!password_verify($password, $user['password_hash'])) {\n        errorResponse('Invalid email or password', 401);\n    }\n    \n    \/\/ Create session\n    $token = createSession($user['id']);<?php\n\/**\n * Login API\n * \n * POST \/api\/auth\/login.php\n * Body: { \"email\": \"...\", \"password\": \"...\" }\n * \n * Returns session token on success.\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\nrequire_once __DIR__ . '\/middleware.php';\n\nhandleCors();\nrequireMethod('POST');\ncheckRateLimit('login_' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));\n\n$input = getJsonInput();\n\n\/\/ Validate required fields\n$missing = validateRequired($input, ['email', 'password']);\nif ($missing) {\n    errorResponse('Missing required fields', 400, [\n        'missing_fields' => $missing,\n    ]);\n}\n\n$email = sanitizeEmail($input['email']);\n$password = $input['password'];\n\nif (empty($email)) {\n    errorResponse('Invalid email address', 400);\n}\n\ntry {\n    $db = Database::getInstance();\n    \n    \/\/ Find user by email\n    $stmt = $db->prepare('SELECT * FROM users WHERE email = :email LIMIT 1');\n    $stmt->execute([':email' => $email]);\n    $user = $stmt->fetch();\n    \n    if (!$user) {\n        errorResponse('Invalid email or password', 401);\n    }\n    \n    \/\/ Check if user is active\n    if (!$user['is_active']) {\n        errorResponse('Account is deactivated. Contact administrator.', 403);\n    }\n    \n    \/\/ Check registration status (for new registrations awaiting approval)\n    if (isset($user['registration_status']) && $user['registration_status'] === 'pending') {\n        errorResponse('Your account is pending admin approval. Please wait.', 403);\n    }\n    if (isset($user['registration_status']) && $user['registration_status'] === 'rejected') {\n        errorResponse('Your account has been rejected. Please contact the admin or re-register.', 403);\n    }\n    \n    \/\/ Verify password\n    if (!password_verify($password, $user['password_hash'])) {\n        errorResponse('Invalid email or password', 401);\n    }\n    if (isset($user['registration_status']) && $user['registration_status'] === 'rejected') {\n        errorResponse('Your account has been rejected. Please contact the admin or re-register.', 403);\n    }\n    \n    \/\/ Verify password\n    if (!password_verify($password, $user['password_hash'])) {\n        errorResponse('Invalid email or password', 401);\n    }\n    \n    \/\/ Create session\n    $token = createSession($user['id']);\n    \n    \/\/ Update last login\n    $updateStmt = $db->prepare('UPDATE users SET last_login_at = NOW() WHERE id = :id');\n    $updateStmt->execute([':id' => $user['id']]);\n    \n    \/\/ Log the login\n    logAudit($user['id'], null, 'login', 'user', $user['id']);\n    \n    \/\/ Return user info (excluding password hash)\n    unset($user['password_hash']);\n    \n    successResponse([\n        'token' => $token,\n        'user' => [\n            'id' => (int)$user['id'],\n            'email' => $user['email'],\n            'full_name' => $user['full_name'],\n            'name_bn' => $user['name_bn'],\n            'role' => $user['role'],\n            'specialization' => $user['specialization'],\n            'phone' => $user['phone'],\n            'photo_url' => $user['photo_url'],\n            'signature_url' => $user['signature_url'],\n            'bmdc_registration' => $user['bmdc_registration'],\n        ],\n    ], 'Login successful');\n    \n} catch (\\Exception $e) {\n    error_log('Login error: ' . $e->getMessage());\n    errorResponse('Login failed. Please try again.', 500);\n}\n",
+            "is_error": false,
+            "time": 1784187622
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_02_f5uMmG8Qf5S7TB4aqwkn6057",
+            "content": "<?php\n\/**\n * Authentication Middleware\n * \n * Validates session tokens and provides current user context.\n * Include this at the top of any protected API endpoint.\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\n\n\/**\n * Get the authenticated user from the session token.\n * Returns user array or null if not authenticated.\n *\/\nfunction getAuthUser(): ?array {\n    $token = getBearerToken();\n    if (!$token) return null;\n    \n    try {\n        $db = Database::getInstance();\n        \n        \/\/ Find valid session\n        $stmt = $db->prepare('\n            SELECT u.*, s.token, s.expires_at \n            FROM user_sessions s \n            JOIN users u ON s.user_id = u.id \n            WHERE s.token = :token \n              AND s.expires_at > NOW() \n              AND u.is_active = 1\n            LIMIT 1\n        ');\n        $stmt->execute([':token' => $token]);\n        $user = $stmt->fetch();\n        \n        if ($user) {\n            \/\/ Update last activity\n            $updateStmt = $db->prepare('UPDATE user_sessions SET last_activity = NOW() WHERE token = :token');\n            $updateStmt->execute([':token' => $token]);\n        }\n        \n        return $user ?: null;\n    } catch (\\Exception $e) {\n        error_log('Auth middleware error: ' . $e->getMessage());\n        return null;\n    }\n}\n\n\/**\n * Require authentication. Sends 401 if not authenticated.\n *\/\nfunction requireAuth(): array {\n    $user = getAuthUser();\n    if (!$user) {\n        errorResponse('Authentication required. Please log in.', 401);\n    }\n    return $user;\n}\n\n\/**\n * Require specific role(s). Sends 403 if not authorized.\n *\/\nfunction requireRole(array $allowedRoles): array {\n    $user = requireAuth();\n    \n    if (!in_array($user['role'], $allowedRoles)) {\n        errorResponse('Access denied. Insufficient permissions.', 403, [\n            'required_roles' => $allowedRoles,\n            'your_role' => $user['role'],\n        ]);\n    }\n    \n    return $user;\n}\n\n\/**\n * Require admin role.\n *\/\nfunction requireAdmin(): array {\n    return requireRole(['admin']);\n}\n\n\/**\n * Check if user has a specific permission based on role.\n *\/\nfunction hasPermission(array $user, string $permission): bool {\n    \/\/ Role-based permissions\n    $permissions = [\n        'admin' => [\n            'manage_users', 'manage_settings', 'view_all_patients',\n            'view_all_finances', 'manage_beds', 'view_audit_logs',\n            'export_data', 'delete_data',\n        ],\n        'consultant_doctor' => [\n            'view_assigned_patients', 'view_all_patients',\n            'create_prescription', 'edit_prescription',\n            'view_appointments', 'manage_appointments',\n            'create_visit', 'edit_visit',\n            'order_investigations', 'view_results',\n            'finalize_diagnosis', 'admit_patient', 'discharge_patient',\n        ],\n        'medical_officer' => [\n            'view_assigned_patients', 'view_all_patients',\n            'create_prescription', 'edit_prescription',\n            'view_appointments',\n            'create_visit', 'edit_visit',\n            'order_investigations', 'view_results',\n            'verify_vitals',\n        ],\n        'assistant_registrar' => [\n            'view_assigned_patients', 'view_all_patients',\n            'create_prescription', 'edit_prescription',\n            'view_appointments',\n            'create_visit',\n            'order_investigations', 'view_results',\n            'verify_vitals',\n        ],\n        'registrar' => [\n            'view_assigned_patients', 'view_all_patients',\n            'create_prescription', 'edit_prescription',\n            'view_appointments', 'manage_appointments',\n            'create_visit', 'edit_visit',\n            'order_investigations', 'view_results',\n            'verify_vitals',\n        ],\n        'assistant_professor' => [\n            'view_assigned_patients', 'view_all_patients',\n            'create_prescription', 'edit_prescription',\n            'view_appointments', 'manage_appointments',\n            'create_visit', 'edit_visit',\n            'order_investigations', 'view_results',\n            'finalize_diagnosis', 'admit_patient', 'discharge_patient',\n        ],\n        'associate_professor' => [\n            'view_assigned_patients', 'view_all_patients',\n            'create_prescription', 'edit_prescription',\n            'view_appointments', 'manage_appointments',\n            'create_visit', 'edit_visit',\n            'order_investigations', 'view_results',\n            'finalize_diagnosis', 'admit_patient', 'discharge_patient',\n        ],\n        'professor' => [\n            'view_assigned_patients', 'view_all_patients',\n            'create_prescription', 'edit_prescription',\n            'view_appointments', 'manage_appointments',\n            'create_visit', 'edit_visit',\n            'order_investigations', 'view_results',\n            'finalize_diagnosis', 'admit_patient', 'discharge_patient',\n        ],\n        'intern_doctor' => [\n            'view_assigned_patients',\n            'create_prescription',\n            'view_appointments',\n            'create_visit',\n            'record_vitals',\n            'view_results',\n        ],\n        'nurse' => [\n            'view_assigned_patients',\n            'view_appointments',\n            'record_vitals',\n            'administer_medication',\n            'view_prescriptions',\n            'record_mar',\n            'create_handover',\n        ],\n        'staff' => [\n            'view_patients',\n            'register_patient',\n            'view_appointments',\n            'manage_appointments',\n            'process_payments',\n            'view_finances',\n        ],\n        'reception' => [\n            'view_patients',\n            'register_patient',\n            'view_appointments',\n            'manage_appointments',\n            'process_payments',\n        ],\n        'doctor' => [\n            'view_assigned_patients', 'view_all_patients',\n            'create_prescription', 'edit_prescription',\n            'view_appointments', 'manage_appointments',\n            'create_visit', 'edit_visit',\n            'order_investigations', 'view_results',\n            'finalize_diagnosis',\n        ],\n    ];\n    \n    return in_array($permission, $permissions[$user['role']] ?? []);\n}\n\n\/**\n * Get Bearer token from Authorization header\n *\/\nfunction getBearerToken(): ?string {\n    $headers = '';\n    \n    if (isset($_SERVER['HTTP_AUTHORIZATION'])) {\n        $headers = $_SERVER['HTTP_AUTHORIZATION'];\n    } elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {\n        $headers = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];\n    } elseif (function_exists('apache_request_headers')) {\n        $requestHeaders = apache_request_headers();\n        $headers = $requestHeaders['Authorization'] ?? $requestHeaders['authorization'] ?? '';\n    }\n    \n    if (empty($headers)) {\n        \/\/ Also check POST\/GET for token\n        return getParam('token', null);\n    }\n    \n    if (preg_match('\/Bearer\\s(\\S+)\/', $headers, $matches)) {\n        return $matches[1];\n    }\n    \n    return null;\n}\n\n\/**\n * Create a new session for a user\n *\/\nfunction createSession(int $userId): string {\n    $db = Database::getInstance();\n    \n    \/\/ Generate secure token\n    $token = bin2hex(random_bytes(64));\n    $refreshToken = bin2hex(random_bytes(64));\n    $expiresAt = date('Y-m-d H:i:s', time() + SESSION_LIFETIME);\n    \n    $stmt = $db->prepare('\n        INSERT INTO user_sessions (user_id, token, refresh_token, ip_address, user_agent, expires_at)\n        VALUES (:user_id, :token, :refresh_token, :ip_address, :user_agent, :expires_at)\n    ');\n    $stmt->execute([\n        ':user_id' => $userId,\n        ':token' => $token,\n        ':refresh_token' => $refreshToken,\n        ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? null,\n        ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,\n        ':expires_at' => $expiresAt,\n    ]);\n    \n    return $token;\n}\n\n\/**\n * Destroy a session (logout)\n *\/\nfunction destroySession(string $token): void {\n    $db = Database::getInstance();\n    $stmt = $db->prepare('DELETE FROM user_sessions WHERE token = :token');\n    $stmt->execute([':token' => $token]);\n}\n\n\/**\n * Clean up expired sessions\n *\/\nfunction cleanupExpiredSessions(): void {\n    $db = Database::getInstance();\n    $db->query('DELETE FROM user_sessions WHERE expires_at < NOW()');\n}\n",
+            "is_error": false,
+            "time": 1784187622
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_03_jeutOpPjGjXCJaGPVFdd4735",
+            "content": "<?php\n\/**\n * List Patients API\n * \n * GET \/api\/patients\/list.php\n * Query: ?page=1&limit=20&search=text&type=outdoor&status=Active\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\nrequire_once __DIR__ . '\/..\/auth\/middleware.php';\n\nhandleCors();\nrequireMethod('GET');\n\n$user = requireAuth();\n$pagination = getPaginationParams();\n\ntry {\n    $db = Database::getInstance();\n    \n    $where = [];\n    $params = [];\n    \n    \/\/ Search filter\n    $search = trim(getParam('search', ''));\n    if ($search) {\n        $where[] = '(p.full_name LIKE :search OR p.name_bn LIKE :search2 OR p.phone LIKE :search3 OR p.email LIKE :search4 OR p.register_number LIKE :search5)';\n        $params[':search'] = \"%$search%\";\n        $params[':search2'] = \"%$search%\";\n        $params[':search3'] = \"%$search%\";\n        $params[':search4'] = \"%$search%\";\n        $params[':search5'] = \"%$search%\";\n    }\n    \n    \/\/ Patient type filter\n    $type = getParam('type', '');\n    if ($type && in_array($type, ['outdoor', 'indoor', 'emergency', 'admitted'])) {\n        $where[] = 'p.patient_type = :type';\n        $params[':type'] = $type;\n    }\n    \n    \/\/ Status filter\n    $status = getParam('status', '');\n    if ($status && in_array($status, ['Active', 'Inactive', 'Deceased'])) {\n        $where[] = 'p.status = :status';\n        $params[':status'] = $status;\n    }\n    \n    \/\/ Consultant filter (for doctors)\n    $consultantId = getParam('consultant_id', '');\n    if ($consultantId) {\n        $where[] = 'EXISTS (SELECT 1 FROM patient_consultants pc WHERE pc.patient_id = p.id AND pc.consultant_id = :consultant_id AND pc.is_active = 1)';\n        $params[':consultant_id'] = $consultantId;\n    }\n    \n    $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';\n    \n    \/\/ Get total count\n    $countStmt = $db->prepare(\"SELECT COUNT(*) as total FROM patients p $whereClause\");\n    $countStmt->execute($params);\n    $total = (int)$countStmt->fetch()['total'];\n    \n    \/\/ Get patients\n    $stmt = $db->prepare(\"\n        SELECT p.*, \n               (SELECT JSON_ARRAYAGG(JSON_OBJECT('consultant_id', pc.consultant_id, 'assigned_at', pc.assigned_at))\n                FROM patient_consultants pc WHERE pc.patient_id = p.id AND pc.is_active = 1) as consultants\n        FROM patients p\n        $whereClause\n        ORDER BY p.created_at DESC\n        LIMIT :limit OFFSET :offset\n    \");\n    \n    foreach ($params as $key => $val) {\n        $stmt->bindValue($key, $val);\n    }\n    $stmt->bindValue(':limit', $pagination['limit'], PDO::PARAM_INT);\n    $stmt->bindValue(':offset', $pagination['offset'], PDO::PARAM_INT);\n    $stmt->execute();\n    \n    $patients = $stmt->fetchAll();\n    \n    \/\/ Decode JSON fields\n    foreach ($patients as &$patient) {\n        $patient['allergies'] = json_decode($patient['allergies'] ?? '[]', true) ?: [];\n        $patient['chronic_conditions'] = json_decode($patient['chronic_conditions'] ?? '[]', true) ?: [];\n        $patient['consultants'] = json_decode($patient['consultants'] ?? '[]', true) ?: [];\n        $patient['id'] = (int)$patient['id'];\n        $patient['weight'] = $patient['weight'] ? (float)$patient['weight'] : null;\n        $patient['height'] = $patient['height'] ? (float)$patient['height'] : null;\n    }\n    \n    paginatedResponse($patients, $total, $pagination['page'], $pagination['limit']);\n    \n} catch (\\Exception $e) {\n    error_log('List patients error: ' . $e->getMessage());\n    errorResponse('Failed to fetch patients', 500);\n}\n",
+            "is_error": false,
+            "time": 1784187622
+        },
+        {
+            "id": "msg_6db177a9c1",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I have a great understanding of the PHP API pattern. Let me look at a few more:\n- The response format uses `successResponse($data)`, `errorResponse($msg, $code)` \n- Session tokens are returned and used with Bearer auth\n- Patients API follows REST patterns\n- The helpers.php file has these helper functions\n\nLet me check the helpers.php to understand successResponse:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_6h1qdAY7OnXsSEVEBcJj7826",
+                    "name": "bash",
+                    "input": {
+                        "command": "cat \/home\/drarmank\/public_html\/api\/helpers.php"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_UXnTJG0K94OHgHmcMjNj5044",
+                    "name": "bash",
+                    "input": {
+                        "command": "cat \/home\/drarmank\/public_html\/api\/auth\/register.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 68635,
+                "completion_tokens": 179,
+                "total_tokens": 68814,
+                "prompt_cache_hit_tokens": 63616,
+                "prompt_cache_miss_tokens": 5019,
+                "prompt_tokens_details": {
+                    "cached_tokens": 63616
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 82
+                }
+            },
+            "time": 1784187626
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_6h1qdAY7OnXsSEVEBcJj7826",
+            "content": "<?php\n\/**\n * API Helper Functions\n * \n * Common utilities for all API endpoints.\n *\/\n\nrequire_once __DIR__ . '\/..\/config.php';\n\n\/\/ \u2500\u2500\u2500 Response Helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nfunction jsonResponse(mixed $data, int $statusCode = 200): void {\n    http_response_code($statusCode);\n    header('Content-Type: application\/json; charset=utf-8');\n    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);\n    exit;\n}\n\nfunction successResponse(mixed $data = null, string $message = 'Success'): void {\n    jsonResponse([\n        'success' => true,\n        'message' => $message,\n        'data' => $data,\n        'timestamp' => date('c'),\n    ]);\n}\n\nfunction errorResponse(string $message, int $statusCode = 400, mixed $errors = null): void {\n    $response = [\n        'success' => false,\n        'message' => $message,\n        'timestamp' => date('c'),\n    ];\n    if ($errors !== null) {\n        $response['errors'] = $errors;\n    }\n    jsonResponse($response, $statusCode);\n}\n\n\/\/ \u2500\u2500\u2500 Request Helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nfunction getJsonInput(): array {\n    $raw = file_get_contents('php:\/\/input');\n    if (empty($raw)) return [];\n    $data = json_decode($raw, true);\n    if (json_last_error() !== JSON_ERROR_NONE) {\n        errorResponse('Invalid JSON input', 400);\n    }\n    return $data ?? [];\n}\n\nfunction getParam(string $key, mixed $default = null): mixed {\n    \/\/ Check GET, POST, then JSON body\n    if (isset($_GET[$key])) return $_GET[$key];\n    if (isset($_POST[$key])) return $_POST[$key];\n    \n    static $jsonInput = null;\n    if ($jsonInput === null) {\n        $jsonInput = getJsonInput();\n    }\n    return $jsonInput[$key] ?? $default;\n}\n\nfunction getMethod(): string {\n    \/\/ For CLI (php -r, cron jobs), return 'CLI' so requireMethod() passes through\n    return $_SERVER['REQUEST_METHOD'] ?? 'CLI';\n}\n\nfunction requireMethod(string ...$methods): void {\n    $method = getMethod();\n    \/\/ Allow CLI mode to pass through for cron jobs \/ maintenance scripts\n    if ($method === 'CLI') return;\n    if (!in_array($method, $methods)) {\n        errorResponse('Method not allowed. Allowed: ' . implode(', ', $methods), 405);\n    }\n}\n\n\/\/ \u2500\u2500\u2500 Rate Limiting \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nfunction checkRateLimit(string $identifier = ''): void {\n    if (empty($identifier)) {\n        $identifier = $_SERVER['REMOTE_ADDR'] ?? 'unknown';\n    }\n    \n    $rateLimitDir = __DIR__ . '\/..\/..\/server-data\/ratelimit';\n    if (!is_dir($rateLimitDir)) {\n        mkdir($rateLimitDir, 0755, true);\n    }\n    \n    $file = $rateLimitDir . '\/' . md5($identifier) . '.json';\n    $max = RATE_LIMIT_MAX;\n    $window = RATE_LIMIT_WINDOW;\n    \n    $data = ['count' => 0, 'reset' => time() + $window];\n    if (file_exists($file)) {\n        $existing = json_decode(file_get_contents($file), true);\n        if ($existing && isset($existing['reset'])) {\n            if (time() < $existing['reset']) {\n                $data = $existing;\n            }\n        }\n    }\n    \n    $data['count']++;\n    \n    if ($data['count'] > $max) {\n        $retryAfter = $data['reset'] - time();\n        header('Retry-After: ' . $retryAfter);\n        errorResponse('Rate limit exceeded. Try again later.', 429, [\n            'retry_after' => $retryAfter,\n            'limit' => $max,\n            'window' => $window,\n        ]);\n    }\n    \n    file_put_contents($file, json_encode($data), LOCK_EX);\n}\n\n\/\/ \u2500\u2500\u2500 Input Validation \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nfunction validateRequired(array $data, array $fields): ?array {\n    $missing = [];\n    foreach ($fields as $field) {\n        if (!isset($data[$field]) || (is_string($data[$field]) && trim($data[$field]) === '')) {\n            $missing[] = $field;\n        }\n    }\n    return empty($missing) ? null : $missing;\n}\n\nfunction sanitizeString(string $value): string {\n    $value = strip_tags($value);\n    $value = trim($value);\n    return htmlspecialchars($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');\n}\n\nfunction sanitizeEmail(string $email): string {\n    $email = filter_var($email, FILTER_SANITIZE_EMAIL);\n    return filter_var($email, FILTER_VALIDATE_EMAIL) ? strtolower($email) : '';\n}\n\nfunction sanitizePhone(string $phone): string {\n    return preg_replace('\/[^0-9+\\-\\(\\) ]\/', '', trim($phone));\n}\n\n\/\/ \u2500\u2500\u2500 Pagination \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nfunction getPaginationParams(): array {\n    $page = max(1, (int) getParam('page', 1));\n    $limit = min(100, max(1, (int) getParam('limit', 20)));\n    $offset = ($page - 1) * $limit;\n    \n    return [\n        'page' => $page,\n        'limit' => $limit,\n        'offset' => $offset,\n    ];\n}\n\nfunction paginatedResponse(array $items, int $total, int $page, int $limit): void {\n    $totalPages = ceil($total \/ $limit);\n    \n    successResponse([\n        'items' => $items,\n        'pagination' => [\n            'page' => $page,\n            'limit' => $limit,\n            'total' => $total,\n            'total_pages' => $totalPages,\n            'has_more' => $page < $totalPages,\n        ],\n    ]);\n}\n\n\/\/ \u2500\u2500\u2500 CSRF Protection \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nfunction generateCsrfToken(): string {\n    return bin2hex(random_bytes(32));\n}\n\nfunction validateCsrfToken(string $token): bool {\n    $sessionToken = $_SESSION['csrf_token'] ?? '';\n    return hash_equals($sessionToken, $token);\n}\n\n\/\/ \u2500\u2500\u2500 File Upload Helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nfunction handleFileUpload(string $fieldName, string $subDir = ''): ?string {\n    if (!isset($_FILES[$fieldName]) || $_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) {\n        return null;\n    }\n    \n    $file = $_FILES[$fieldName];\n    \n    \/\/ Validate file size\n    if ($file['size'] > MAX_UPLOAD_SIZE) {\n        errorResponse('File too large. Maximum: ' . (MAX_UPLOAD_SIZE \/ 1024 \/ 1024) . 'MB', 413);\n    }\n    \n    \/\/ Validate extension\n    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));\n    if (!in_array($ext, ALLOWED_EXTENSIONS)) {\n        errorResponse('File type not allowed. Allowed: ' . implode(', ', ALLOWED_EXTENSIONS), 415);\n    }\n    \n    \/\/ Validate MIME type\n    $allowedMimes = [\n        'image\/jpeg', 'image\/png', 'image\/gif', 'image\/webp',\n        'application\/pdf', 'application\/msword',\n        'application\/vnd.openxmlformats-officedocument.wordprocessingml.document',\n    ];\n    $finfo = finfo_open(FILEINFO_MIME_TYPE);\n    $mimeType = finfo_file($finfo, $file['tmp_name']);\n    finfo_close($finfo);\n    if (!in_array($mimeType, $allowedMimes)) {\n        errorResponse('Invalid file type (MIME: ' . $mimeType . ')', 415);\n    }\n    \n    \/\/ Create upload directory\n    $uploadDir = UPLOAD_DIR . '\/' . ($subDir ? $subDir . '\/' : '');\n    if (!is_dir($uploadDir)) {\n        mkdir($uploadDir, 0755, true);\n    }\n    \n    \/\/ Generate unique filename\n    $filename = uniqid() . '_' . bin2hex(random_bytes(8)) . '.' . $ext;\n    $filepath = $uploadDir . $filename;\n    \n    if (!move_uploaded_file($file['tmp_name'], $filepath)) {\n        errorResponse('Failed to save uploaded file', 500);\n    }\n    \n    return UPLOAD_URL . '\/' . ($subDir ? $subDir . '\/' : '') . $filename;\n}\n\n\/\/ \u2500\u2500\u2500 Logging \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nfunction logAudit(\n    int|null $userId,\n    int|null $patientId,\n    string $action,\n    string $entityType,\n    int|null $entityId = null,\n    mixed $oldValues = null,\n    mixed $newValues = null\n): void {\n    try {\n        $db = Database::getInstance();\n        $stmt = $db->prepare('\n            INSERT INTO audit_logs (user_id, patient_id, action, entity_type, entity_id, old_values, new_values, ip_address, user_agent)\n            VALUES (:user_id, :patient_id, :action, :entity_type, :entity_id, :old_values, :new_values, :ip_address, :user_agent)\n        ');\n        $stmt->execute([\n            ':user_id' => $userId,\n            ':patient_id' => $patientId,\n            ':action' => $action,\n            ':entity_type' => $entityType,\n            ':entity_id' => $entityId,\n            ':old_values' => $oldValues ? json_encode($oldValues) : null,\n            ':new_values' => $newValues ? json_encode($newValues) : null,\n            ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? ($_SERVER['SERVER_ADDR'] ?? '127.0.0.1'),\n            ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'CLI',\n        ]);\n    } catch (\\Exception $e) {\n        error_log('Audit log failed: ' . $e->getMessage());\n    }\n}\n\n\/\/ \u2500\u2500\u2500 CORS & Pre-flight \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nfunction handleCors(): void {\n    \/\/ CORS is handled in .htaccess, but ensure pre-flight works\n    $method = $_SERVER['REQUEST_METHOD'] ?? '';\n    if ($method === 'OPTIONS') {\n        http_response_code(204);\n        exit;\n    }\n}\n",
+            "is_error": false,
+            "time": 1784187626
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_UXnTJG0K94OHgHmcMjNj5044",
+            "content": "<?php\n\/**\n * Doctor\/Staff Registration API\n * \n * POST \/api\/auth\/register.php\n * Body: {\n *   \"email\": \"...\",\n *   \"password\": \"...\",\n *   \"full_name\": \"...\",\n *   \"name_bn\": \"...\",\n *   \"role\": \"doctor|nurse|reception|...\",\n *   \"specialization\": \"...\",\n *   \"phone\": \"...\",\n *   \"bmdc_registration\": \"...\"\n * }\n * \n * Creates a user account with registration_status='pending'.\n * Admin must approve before the account can log in.\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\n\nhandleCors();\nrequireMethod('POST');\ncheckRateLimit('register_' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));\n\n$input = getJsonInput();\n\n\/\/ Validate required fields\n$missing = validateRequired($input, ['email', 'password', 'full_name']);\nif ($missing) {\n    errorResponse('Missing required fields', 400, [\n        'missing_fields' => $missing,\n    ]);\n}\n\n$email = sanitizeEmail($input['email']);\n$password = $input['password'];\n$fullName = trim($input['full_name']);\n$nameBn = trim($input['name_bn'] ?? '');\n$role = trim($input['role'] ?? 'doctor');\n$specialization = trim($input['specialization'] ?? '');\n$phone = sanitizePhone($input['phone'] ?? '');\n$bmdcRegistration = trim($input['bmdc_registration'] ?? '');\n\n\/\/ Validate email\nif (empty($email)) {\n    errorResponse('Invalid email address', 400);\n}\n\n\/\/ Validate password strength\nif (strlen($password) < 6) {\n    errorResponse('Password must be at least 6 characters', 400);\n}\n\n\/\/ Validate role\n$allowedRoles = [\n    'admin', 'consultant_doctor', 'medical_officer', 'intern_doctor',\n    'nurse', 'staff', 'reception', 'doctor',\n    'assistant_registrar', 'registrar',\n    'assistant_professor', 'associate_professor', 'professor'\n];\nif (!in_array($role, $allowedRoles)) {\n    errorResponse('Invalid role specified', 400);\n}\n\ntry {\n    $db = Database::getInstance();\n    \n    \/\/ Check if email already exists\n    $stmt = $db->prepare('SELECT id, email, registration_status FROM users WHERE email = :email LIMIT 1');\n    $stmt->execute([':email' => $email]);\n    $existing = $stmt->fetch();\n    \n    if ($existing) {\n        if ($existing['registration_status'] === 'rejected') {\n            \/\/ Re-registration after rejection - update the record\n            $passwordHash = password_hash($password, PASSWORD_BCRYPT);\n            $updateStmt = $db->prepare('\n                UPDATE users SET \n                    password_hash = :password_hash,\n                    full_name = :full_name,\n                    name_bn = :name_bn,\n                    role = :role,\n                    specialization = :specialization,\n                    phone = :phone,\n                    bmdc_registration = :bmdc_registration,\n                    registration_status = \"pending\",\n                    approved_by = NULL,\n                    approved_at = NULL,\n                    updated_at = NOW()\n                WHERE id = :id\n            ');\n            $updateStmt->execute([\n                ':password_hash' => $passwordHash,\n                ':full_name' => $fullName,\n                ':name_bn' => $nameBn,\n                ':role' => $role,\n                ':specialization' => $specialization,\n                ':phone' => $phone,\n                ':bmdc_registration' => $bmdcRegistration,\n                ':id' => $existing['id'],\n            ]);\n            \n            \/\/ Log audit\n            logAudit(null, null, 'update', 'user', $existing['id'], \n                ['action' => 're-registration'], \n                ['email' => $email, 'role' => $role]\n            );\n            \n            successResponse([\n                'message' => 'Your account has been re-submitted for approval. Please wait for admin approval.',\n                'status' => 'pending',\n            ], 'Registration updated');\n        }\n        \n        errorResponse('This email is already registered in the system.', 409);\n    }\n    \n    \/\/ Hash password\n    $passwordHash = password_hash($password, PASSWORD_BCRYPT);\n    \n    \/\/ Insert new user with pending status\n    $stmt = $db->prepare('\n        INSERT INTO users (email, password_hash, full_name, name_bn, role, specialization, phone, bmdc_registration, is_active, registration_status, email_verified_at)\n        VALUES (:email, :password_hash, :full_name, :name_bn, :role, :specialization, :phone, :bmdc_registration, 1, \"pending\", NULL)\n    ');\n    $stmt->execute([\n        ':email' => $email,\n        ':password_hash' => $passwordHash,\n        ':full_name' => $fullName,\n        ':name_bn' => $nameBn,\n        ':role' => $role,\n        ':specialization' => $specialization,\n        ':phone' => $phone,\n        ':bmdc_registration' => $bmdcRegistration,\n    ]);\n    \n    $userId = (int)$db->lastInsertId();\n    \n    \/\/ Log audit\n    logAudit($userId, null, 'create', 'user', $userId, null, \n        ['email' => $email, 'role' => $role, 'registration_status' => 'pending']\n    );\n    \n    successResponse([\n        'user_id' => $userId,\n        'email' => $email,\n        'full_name' => $fullName,\n        'role' => $role,\n        'status' => 'pending',\n        'message' => 'Account created! Please wait for admin approval before logging in.',\n    ], 'Registration successful');\n    \n} catch (\\Exception $e) {\n    error_log('Registration error: ' . $e->getMessage());\n    errorResponse('Registration failed. Please try again.', 500);\n}\n",
+            "is_error": false,
+            "time": 1784187627
         }
     ]
 }
