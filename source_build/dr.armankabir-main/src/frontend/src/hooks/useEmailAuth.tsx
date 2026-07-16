@@ -1,4 +1,13 @@
-import type React from "react";
+/**
+ * Email Authentication — PHP/MySQL Backend
+ *
+ * All auth operations now go through the PHP API.
+ * localStorage is no longer used for auth state.
+ * Session tokens are stored in memory and persisted to localStorage
+ * only for page refresh survival.
+ */
+
+import type React from 'react';
 import {
   createContext,
   useCallback,
@@ -6,175 +15,109 @@ import {
   useEffect,
   useRef,
   useState,
-} from "react";
-import type { StaffRole } from "../types";
-
-const REGISTRY_KEY = "medicare_doctors_registry";
-const SESSION_KEY = "medicare_current_doctor";
-const PATIENT_REGISTRY_KEY = "medicare_patients_auth_registry";
-const PATIENT_SESSION_KEY = "medicare_patient_session";
-const AUDIT_LOG_KEY = "medicare_audit_log";
-// Canonical cross-session email key — used by getDoctorEmail() in useQueries.ts
-// to ensure every device resolves the same storage key prefix after login.
-const CANONICAL_EMAIL_KEY = "app_current_user_email";
-const PATIENT_SIGNUP_MAP_KEY = "medicare_patient_signup_map";
+} from 'react';
+import { post, get, setAuthToken, clearAuthToken } from '../lib/api';
+import type { ApiError } from '../lib/api';
+import type { StaffRole } from '../types';
 
 export interface DoctorAccount {
-  id: string;
+  id: number;
   email: string;
-  passwordHash: string;
-  name: string;
-  designation: string;
-  degree: string;
-  specialization: string;
-  hospital: string;
-  phone: string;
-  createdAt: string;
+  full_name: string;
+  name_bn?: string;
   role: StaffRole;
-  status: "pending" | "approved" | "rejected";
+  specialization?: string;
+  phone?: string;
+  designation?: string;
+  degree?: string;
+  photo_url?: string;
+  signature_url?: string;
+  bmdc_registration?: string;
+  is_active?: boolean;
 }
 
 export interface PatientAccount {
   id: string;
+  patient_id: number;
   phone: string;
-  passwordHash: string;
-  name: string;
-  age?: string;
+  full_name: string;
+  name_bn?: string;
   gender?: string;
-  registerNumber?: string;
-  patientId?: string;
-  status: "pending" | "approved" | "rejected";
-  createdAt: string;
+  date_of_birth?: string;
+  register_number?: string;
+  photo_url?: string;
+  status?: string;
 }
 
-export interface AuditLogEntry {
-  id: string;
-  timestamp: string;
-  userRole: StaffRole | "admin" | "patient";
-  userName: string;
-  action: string;
-  target: string;
-}
-
-function hashPassword(key: string, password: string): string {
-  return btoa(`${key.toLowerCase()}::${password}`);
-}
-
-const VALID_ROLES: StaffRole[] = [
-  "admin",
-  "consultant_doctor",
-  "assistant_professor",
-  "associate_professor",
-  "professor",
-  "medical_officer",
-  "assistant_registrar",
-  "registrar",
-  "intern_doctor",
-  "nurse",
-  "reception",
-  "staff",
-  "patient",
-  "doctor",
+// Valid staff roles (kept for backward compatibility)
+export const VALID_ROLES: StaffRole[] = [
+  'admin',
+  'consultant_doctor',
+  'assistant_professor',
+  'associate_professor',
+  'professor',
+  'medical_officer',
+  'assistant_registrar',
+  'registrar',
+  'intern_doctor',
+  'nurse',
+  'reception',
+  'staff',
+  'doctor',
 ];
 
 export function isConsultantLevel(role: StaffRole): boolean {
   return [
-    "consultant_doctor",
-    "assistant_professor",
-    "associate_professor",
-    "professor",
+    'consultant_doctor',
+    'assistant_professor',
+    'associate_professor',
+    'professor',
   ].includes(role);
 }
 
+// ── Legacy helpers (kept for backward compatibility with components) ────────
+
 export function loadRegistry(): DoctorAccount[] {
-  try {
-    const raw = localStorage.getItem(REGISTRY_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as DoctorAccount[];
-      return parsed.map((d) => ({
-        ...d,
-        role: VALID_ROLES.includes(d.role) ? d.role : "doctor",
-        status: d.status ?? "approved",
-      }));
-    }
-  } catch {}
   return [];
 }
 
-export function saveRegistry(registry: DoctorAccount[]) {
-  localStorage.setItem(REGISTRY_KEY, JSON.stringify(registry));
+export function saveRegistry(_registry: DoctorAccount[]): void {
+  // Registry is server-side
 }
 
 export function loadPatientRegistry(): PatientAccount[] {
-  try {
-    const raw = localStorage.getItem(PATIENT_REGISTRY_KEY);
-    if (raw) return JSON.parse(raw) as PatientAccount[];
-  } catch {}
   return [];
 }
 
-export function savePatientRegistry(registry: PatientAccount[]) {
-  localStorage.setItem(PATIENT_REGISTRY_KEY, JSON.stringify(registry));
+export function savePatientRegistry(_registry: PatientAccount[]): void {
+  // Registry is server-side
 }
 
-export function appendAuditLog(entry: Omit<AuditLogEntry, "id">) {
-  try {
-    const logs = getAuditLog();
-    logs.push({
-      ...entry,
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2),
-    });
-    const trimmed = logs.slice(-1000);
-    localStorage.setItem(AUDIT_LOG_KEY, JSON.stringify(trimmed));
-  } catch {}
+export function appendAuditLog(_entry: Record<string, unknown>): void {
+  // Audit logging is server-side
 }
 
-export function getAuditLog(): AuditLogEntry[] {
-  try {
-    const raw = localStorage.getItem(AUDIT_LOG_KEY);
-    if (raw) return JSON.parse(raw) as AuditLogEntry[];
-  } catch {}
+export function getAuditLog(): Record<string, unknown>[] {
   return [];
 }
-
-// ── Sign-up map helpers ───────────────────────────────────────────────────────
 
 export function loadSignUpMap(): Record<string, boolean> {
-  try {
-    const raw = localStorage.getItem(PATIENT_SIGNUP_MAP_KEY);
-    if (raw) return JSON.parse(raw) as Record<string, boolean>;
-  } catch {}
   return {};
 }
 
-export function saveSignUpMap(map: Record<string, boolean>) {
-  localStorage.setItem(PATIENT_SIGNUP_MAP_KEY, JSON.stringify(map));
+export function saveSignUpMap(_map: Record<string, boolean>): void {
+  // Server-side
 }
 
-export function setSignUpEnabled(registerNumber: string, enabled: boolean) {
-  const map = loadSignUpMap();
-  if (enabled) {
-    map[registerNumber] = true;
-  } else {
-    delete map[registerNumber];
-  }
-  saveSignUpMap(map);
+export function setSignUpEnabled(_registerNumber: string, _enabled: boolean): void {
+  // Server-side
 }
 
-export function isSignUpEnabled(registerNumber: string): boolean {
-  const map = loadSignUpMap();
-  return map[registerNumber] === true;
+export function isSignUpEnabled(_registerNumber: string): boolean {
+  return false;
 }
 
-// Normalize register number: "0001/26" and "1/26" treated as equal
-function normalizeRegNo(rn: string): string {
-  const parts = rn.trim().split("/");
-  if (parts.length === 2) {
-    const num = Number.parseInt(parts[0].trim(), 10);
-    return `${Number.isNaN(num) ? parts[0].trim() : num}/${parts[1].trim()}`;
-  }
-  return rn.trim().toLowerCase();
-}
+// ── Context type ───────────────────────────────────────────────────────────
 
 interface EmailAuthContextValue {
   currentDoctor: DoctorAccount | null;
@@ -182,22 +125,24 @@ interface EmailAuthContextValue {
   isInitializing: boolean;
   isLoggingIn: boolean;
   authError: string | null;
-  signUp: (
-    data: Omit<
-      DoctorAccount,
-      "id" | "passwordHash" | "createdAt" | "status"
-    > & { password: string },
-  ) => Promise<void>;
+  signUp: (data: {
+    email: string;
+    password: string;
+    full_name: string;
+    name_bn?: string;
+    role?: string;
+    specialization?: string;
+    phone?: string;
+    bmdc_registration?: string;
+  }) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
-  signOut: () => void;
-  updateProfile: (
-    data: Partial<Omit<DoctorAccount, "id" | "passwordHash" | "createdAt">>,
-  ) => void;
-  getPendingAccounts: () => DoctorAccount[];
-  approveAccount: (id: string) => void;
-  approveAccountWithRole: (id: string, role: StaffRole) => void;
-  rejectAccount: (id: string) => void;
-  reassignRole: (id: string, role: StaffRole) => void;
+  signOut: () => Promise<void>;
+  updateProfile: (data: Partial<DoctorAccount>) => Promise<void>;
+  getPendingAccounts: () => Promise<DoctorAccount[]>;
+  approveAccount: (id: number, role?: string) => Promise<void>;
+  approveAccountWithRole: (id: number, role: StaffRole) => Promise<void>;
+  rejectAccount: (id: number) => Promise<void>;
+  reassignRole: (id: number, role: StaffRole) => Promise<void>;
   // Patient auth
   patientSignUp: (data: {
     registerNumber: string;
@@ -205,105 +150,116 @@ interface EmailAuthContextValue {
     password: string;
   }) => Promise<void>;
   patientSignIn: (phone: string, password: string) => Promise<void>;
-  patientSignOut: () => void;
-  getPendingPatients: () => PatientAccount[];
-  approvePatient: (id: string) => void;
-  rejectPatient: (id: string) => void;
+  patientSignOut: () => Promise<void>;
+  getPendingPatients: () => Promise<PatientAccount[]>;
+  approvePatient: (id: number) => Promise<void>;
+  rejectPatient: (id: number) => Promise<void>;
   updatePatientCredentials: (
     registerNumber: string,
     newPhone?: string,
     newPassword?: string,
-  ) => void;
+  ) => Promise<void>;
+}
+
+const SESSION_STORAGE_KEY = 'phpAuthToken';
+
+function loadSessionToken(): string | null {
+  try {
+    return localStorage.getItem(SESSION_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function saveSessionToken(token: string): void {
+  try {
+    localStorage.setItem(SESSION_STORAGE_KEY, token);
+    setAuthToken(token);
+  } catch {
+    // ignore
+  }
+}
+
+function clearSessionToken(): void {
+  try {
+    localStorage.removeItem(SESSION_STORAGE_KEY);
+    clearAuthToken();
+  } catch {
+    // ignore
+  }
 }
 
 const EmailAuthContext = createContext<EmailAuthContextValue | null>(null);
 
 export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
-  const [currentDoctor, setCurrentDoctor] = useState<DoctorAccount | null>(
-    null,
-  );
-  const [currentPatient, setCurrentPatient] = useState<PatientAccount | null>(
-    null,
-  );
+  const [currentDoctor, setCurrentDoctor] = useState<DoctorAccount | null>(null);
+  const [currentPatient, setCurrentPatient] = useState<PatientAccount | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
+  // On mount, check for existing token and verify it
   useEffect(() => {
-    const doctorId = localStorage.getItem(SESSION_KEY);
-    if (doctorId) {
-      const registry = loadRegistry();
-      const doctor = registry.find((d) => d.id === doctorId) ?? null;
-      setCurrentDoctor(doctor);
+    const token = loadSessionToken();
+    if (token) {
+      setAuthToken(token);
+      // Verify the token is still valid
+      get<{ user?: DoctorAccount }>('/auth/verify.php')
+        .then((data) => {
+          if (data?.user) {
+            setCurrentDoctor(data.user);
+          } else {
+            // Try patient verification
+            return get<{ patient?: PatientAccount }>('/auth/patients/verify.php')
+              .then((pData) => {
+                if (pData?.patient) {
+                  setCurrentPatient(pData.patient);
+                }
+              })
+              .catch(() => {
+                clearSessionToken();
+              });
+          }
+        })
+        .catch(() => {
+          clearSessionToken();
+        })
+        .finally(() => {
+          setIsInitializing(false);
+        });
+    } else {
+      setIsInitializing(false);
     }
-    const patientId = localStorage.getItem(PATIENT_SESSION_KEY);
-    if (patientId) {
-      const registry = loadPatientRegistry();
-      const patient = registry.find((p) => p.id === patientId) ?? null;
-      setCurrentPatient(patient);
-    }
-    setIsInitializing(false);
   }, []);
 
   const signUp = useCallback(
-    async (
-      data: Omit<
-        DoctorAccount,
-        "id" | "passwordHash" | "createdAt" | "status"
-      > & { password: string },
-    ) => {
+    async (data: {
+      email: string;
+      password: string;
+      full_name: string;
+      name_bn?: string;
+      role?: string;
+      specialization?: string;
+      phone?: string;
+      bmdc_registration?: string;
+    }) => {
       setIsLoggingIn(true);
       setAuthError(null);
       try {
-        const registry = loadRegistry();
-        const patientRegistry = loadPatientRegistry();
-
-        // Global cross-check: email must not exist in ANY registry
-        const existingInPatients = patientRegistry.find(
-          (p) =>
-            (p as unknown as { email?: string }).email?.toLowerCase() ===
-            data.email.toLowerCase(),
-        );
-        if (existingInPatients) {
-          throw new Error("This email is already registered in the system.");
-        }
-
-        const existing = registry.find(
-          (d) => d.email.toLowerCase() === data.email.toLowerCase(),
-        );
-        if (existing) {
-          if (existing.status === "rejected") {
-            const idx = registry.findIndex((d) => d.id === existing.id);
-            const { password, ...rest } = data;
-            registry[idx] = {
-              ...rest,
-              id: existing.id,
-              passwordHash: hashPassword(data.email, password),
-              createdAt: new Date().toISOString(),
-              status: "pending",
-            };
-            saveRegistry(registry);
-            throw new Error(
-              "Your account has been re-submitted for approval. Please wait for admin approval.",
-            );
-          }
-          throw new Error("This email is already registered in the system.");
-        }
-        const { password, ...rest } = data;
-        const newDoctor: DoctorAccount = {
-          ...rest,
-          id: Date.now().toString(36) + Math.random().toString(36).slice(2),
-          passwordHash: hashPassword(data.email, password),
-          createdAt: new Date().toISOString(),
-          status: "pending",
-        };
-        registry.push(newDoctor);
-        saveRegistry(registry);
-        throw new Error(
-          "Account created! Please wait for admin approval before logging in.",
-        );
+        await post('/auth/register.php', {
+          email: data.email,
+          password: data.password,
+          full_name: data.full_name,
+          name_bn: data.name_bn ?? '',
+          role: data.role ?? 'doctor',
+          specialization: data.specialization ?? '',
+          phone: data.phone ?? '',
+          bmdc_registration: data.bmdc_registration ?? '',
+        });
+        // Don't throw — the API returns a success message for pending accounts
       } catch (e: unknown) {
-        const msg = e instanceof Error ? e.message : "Sign up failed.";
+        const msg =
+          e instanceof Error ? e.message : 'Sign up failed.';
         setAuthError(msg);
         throw e;
       } finally {
@@ -313,144 +269,110 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    setIsLoggingIn(true);
-    setAuthError(null);
-    try {
-      const registry = loadRegistry();
-      const doctor = registry.find(
-        (d) => d.email.toLowerCase() === email.toLowerCase(),
-      );
-      if (!doctor) throw new Error("No account found with this email.");
-      if (doctor.passwordHash !== hashPassword(email, password))
-        throw new Error("Incorrect password.");
-      if (doctor.status === "pending")
-        throw new Error("Your account is pending admin approval. Please wait.");
-      if (doctor.status === "rejected")
-        throw new Error(
-          "Your account has been rejected. Please contact the admin or re-register.",
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      setIsLoggingIn(true);
+      setAuthError(null);
+      try {
+        const result = await post<{ token: string; user: DoctorAccount }>(
+          '/auth/login.php',
+          { email, password },
         );
-      localStorage.setItem(SESSION_KEY, doctor.id);
-      localStorage.setItem(CANONICAL_EMAIL_KEY, doctor.email);
-      setCurrentDoctor(doctor);
-      appendAuditLog({
-        timestamp: new Date().toISOString(),
-        userRole: doctor.role,
-        userName: doctor.name,
-        action: "Logged in",
-        target: "System",
-      });
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Sign in failed.";
-      setAuthError(msg);
-      throw e;
-    } finally {
-      setIsLoggingIn(false);
+        saveSessionToken(result.token);
+        setCurrentDoctor(result.user);
+      } catch (e: unknown) {
+        const msg =
+          e instanceof Error ? e.message : 'Sign in failed.';
+        setAuthError(msg);
+        throw e;
+      } finally {
+        setIsLoggingIn(false);
+      }
+    },
+    [],
+  );
+
+  const signOut = useCallback(async () => {
+    try {
+      await post('/auth/logout.php');
+    } catch {
+      // Ignore logout errors
     }
+    clearSessionToken();
+    setCurrentDoctor(null);
+    setCurrentPatient(null);
+    setAuthError(null);
   }, []);
 
-  const signOut = useCallback(() => {
-    if (currentDoctor) {
-      appendAuditLog({
-        timestamp: new Date().toISOString(),
-        userRole: currentDoctor.role,
-        userName: currentDoctor.name,
-        action: "Logged out",
-        target: "System",
-      });
-    }
-    localStorage.removeItem(SESSION_KEY);
-    localStorage.removeItem(CANONICAL_EMAIL_KEY);
-    setCurrentDoctor(null);
-    setAuthError(null);
-  }, [currentDoctor]);
-
   const updateProfile = useCallback(
-    (
-      data: Partial<Omit<DoctorAccount, "id" | "passwordHash" | "createdAt">>,
-    ) => {
+    async (data: Partial<DoctorAccount>) => {
       if (!currentDoctor) return;
-      const registry = loadRegistry();
-      const idx = registry.findIndex((d) => d.id === currentDoctor.id);
-      if (idx < 0) return;
-      const updated = { ...registry[idx], ...data };
-      registry[idx] = updated;
-      saveRegistry(registry);
-      setCurrentDoctor(updated);
+      try {
+        const updated = await post<DoctorAccount>('/auth/update_profile.php', data);
+        setCurrentDoctor(updated);
+      } catch (e) {
+        console.error('Profile update failed:', e);
+      }
     },
     [currentDoctor],
   );
 
-  const getPendingAccounts = useCallback((): DoctorAccount[] => {
-    return loadRegistry().filter((d) => d.status === "pending");
-  }, []);
-
-  const approveAccount = useCallback((id: string) => {
-    const registry = loadRegistry();
-    const idx = registry.findIndex((d) => d.id === id);
-    if (idx >= 0) {
-      registry[idx] = { ...registry[idx], status: "approved" };
-      saveRegistry(registry);
+  const getPendingAccounts = useCallback(async (): Promise<DoctorAccount[]> => {
+    try {
+      const result = await get<{ users: DoctorAccount[] }>('/auth/pending.php');
+      return result.users ?? [];
+    } catch {
+      return [];
     }
   }, []);
 
-  const approveAccountWithRole = useCallback((id: string, role: StaffRole) => {
-    const registry = loadRegistry();
-    const idx = registry.findIndex((d) => d.id === id);
-    if (idx >= 0) {
-      registry[idx] = { ...registry[idx], status: "approved", role };
-      saveRegistry(registry);
-      appendAuditLog({
-        timestamp: new Date().toISOString(),
-        userRole: "admin",
-        userName: "Admin",
-        action: `Approved account with role: ${role}`,
-        target: registry[idx].name,
-      });
-    }
-  }, []);
+  const approveAccount = useCallback(
+    async (id: number, role?: string) => {
+      try {
+        await post('/auth/approve.php', {
+          user_id: id,
+          ...(role ? { role } : {}),
+        });
+      } catch (e) {
+        console.error('Approval failed:', e);
+      }
+    },
+    [],
+  );
 
-  const reassignRole = useCallback((id: string, role: StaffRole) => {
-    const registry = loadRegistry();
-    const idx = registry.findIndex((d) => d.id === id);
-    if (idx >= 0) {
-      registry[idx] = { ...registry[idx], role };
-      saveRegistry(registry);
-      appendAuditLog({
-        timestamp: new Date().toISOString(),
-        userRole: "admin",
-        userName: "Admin",
-        action: `Reassigned role to: ${role}`,
-        target: registry[idx].name,
-      });
-    }
-  }, []);
+  const approveAccountWithRole = useCallback(
+    async (id: number, role: StaffRole) => {
+      await approveAccount(id, role);
+    },
+    [approveAccount],
+  );
 
-  const rejectAccount = useCallback((id: string) => {
-    const registry = loadRegistry();
-    const idx = registry.findIndex((d) => d.id === id);
-    if (idx >= 0) {
-      const before = JSON.stringify(registry[idx]);
-      registry[idx] = { ...registry[idx], status: "rejected" };
-      saveRegistry(registry);
-      appendAuditLog({
-        timestamp: new Date().toISOString(),
-        userRole: "admin",
-        userName: "Admin",
-        action: "SOFT_DELETE — Account rejected",
-        target: registry[idx].name,
-      });
-      // Detailed before/after for medico-legal trail
-      const detailed = {
-        timestamp: new Date().toISOString(),
-        userRole: "admin" as const,
-        userName: "Admin",
-        action: "Account status changed to rejected (SOFT_DELETE)",
-        target: `before: ${before} | after: status=rejected`,
-      };
-      appendAuditLog(detailed);
-    }
-  }, []);
+  const reassignRole = useCallback(
+    async (id: number, role: StaffRole) => {
+      try {
+        await post('/auth/reassign_role.php', {
+          user_id: id,
+          role,
+        });
+      } catch (e) {
+        console.error('Role reassignment failed:', e);
+      }
+    },
+    [],
+  );
+
+  const rejectAccount = useCallback(
+    async (id: number) => {
+      try {
+        await post('/auth/reject.php', {
+          user_id: id,
+        });
+      } catch (e) {
+        console.error('Rejection failed:', e);
+      }
+    },
+    [],
+  );
 
   // ── Patient auth ──────────────────────────────────────────────────────────
 
@@ -463,152 +385,14 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoggingIn(true);
       setAuthError(null);
       try {
-        const { registerNumber, phone, password } = data;
-
-        if (!registerNumber?.trim()) {
-          throw new Error(
-            "Register number is required. Please contact the clinic to get your register number.",
-          );
-        }
-
-        // Scan all patient storage keys for register number match
-        const allPatients: Array<Record<string, unknown>> = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const k = localStorage.key(i);
-          if (
-            k &&
-            (k.startsWith("patients_") ||
-              k.startsWith("medicare_patients_data") ||
-              k === "medicare_patients")
-          ) {
-            try {
-              const raw = localStorage.getItem(k);
-              if (!raw) continue;
-              const arr = JSON.parse(raw);
-              if (Array.isArray(arr)) allPatients.push(...arr);
-            } catch {}
-          }
-        }
-
-        // Verify register number exists
-        const matchedPatient = allPatients.find(
-          (p) =>
-            typeof p.registerNumber === "string" &&
-            normalizeRegNo(p.registerNumber) === normalizeRegNo(registerNumber),
-        );
-        if (!matchedPatient) {
-          throw new Error(
-            "Register number not found. Please make sure you enter the exact register number given by the clinic (e.g. 0001/26). Contact the clinic if you need help.",
-          );
-        }
-
-        // Auto-fill patient details from the record
-        const patientName =
-          (matchedPatient.fullName as string) ||
-          (matchedPatient.name as string) ||
-          "Patient";
-        const patientAge = matchedPatient.dateOfBirth
-          ? String(
-              Math.floor(
-                (Date.now() -
-                  new Date(
-                    Number(
-                      typeof matchedPatient.dateOfBirth === "bigint"
-                        ? (matchedPatient.dateOfBirth as bigint) / 1000000n
-                        : (matchedPatient.dateOfBirth as number),
-                    ),
-                  ).getTime()) /
-                  (365.25 * 24 * 3600 * 1000),
-              ),
-            )
-          : ((matchedPatient.age as string) ?? "");
-        const patientGender = (matchedPatient.gender as string) ?? "";
-
-        // Resolve patient ID for linking
-        const rawId = matchedPatient.id;
-        const patientId =
-          typeof rawId === "string" && rawId.startsWith("__bigint__")
-            ? rawId.slice(10)
-            : String(rawId);
-
-        const registry = loadPatientRegistry();
-
-        // Global cross-check: phone used as identifier, but also check doctor registry for email collision
-        // (patients use phone as login key; check email field if present)
-
-        // Check duplicate by phone
-        const existingByPhone = registry.find((p) => p.phone === phone);
-        if (existingByPhone) {
-          if (existingByPhone.status === "rejected") {
-            const idx = registry.findIndex((p) => p.id === existingByPhone.id);
-            registry[idx] = {
-              ...existingByPhone,
-              name: patientName,
-              age: patientAge,
-              gender: patientGender,
-              registerNumber: registerNumber.trim(),
-              patientId,
-              passwordHash: hashPassword(phone, password),
-              createdAt: new Date().toISOString(),
-              status: "pending",
-            };
-            savePatientRegistry(registry);
-            throw new Error(
-              "Your account has been re-submitted for approval. Please wait for doctor approval.",
-            );
-          }
-          throw new Error("An account with this phone number already exists.");
-        }
-
-        // Check duplicate by register number
-        const existingByRegNo = registry.find(
-          (p) =>
-            p.registerNumber &&
-            normalizeRegNo(p.registerNumber) === normalizeRegNo(registerNumber),
-        );
-        if (existingByRegNo) {
-          if (existingByRegNo.status === "rejected") {
-            const idx = registry.findIndex((p) => p.id === existingByRegNo.id);
-            registry[idx] = {
-              ...existingByRegNo,
-              phone,
-              name: patientName,
-              age: patientAge,
-              gender: patientGender,
-              patientId,
-              passwordHash: hashPassword(phone, password),
-              createdAt: new Date().toISOString(),
-              status: "pending",
-            };
-            savePatientRegistry(registry);
-            throw new Error(
-              "Your account has been re-submitted for approval. Please wait for doctor approval.",
-            );
-          }
-          throw new Error(
-            "An account for this register number already exists. Please log in instead.",
-          );
-        }
-
-        const newPatient: PatientAccount = {
-          id: Date.now().toString(36) + Math.random().toString(36).slice(2),
-          phone,
-          passwordHash: hashPassword(phone, password),
-          name: patientName,
-          age: patientAge,
-          gender: patientGender,
-          registerNumber: registerNumber.trim(),
-          patientId,
-          status: "pending",
-          createdAt: new Date().toISOString(),
-        };
-        registry.push(newPatient);
-        savePatientRegistry(registry);
-        throw new Error(
-          "Account created! Please wait for doctor approval before logging in.",
-        );
+        await post('/auth/patients/register.php', {
+          register_number: data.registerNumber,
+          phone: data.phone,
+          password: data.password,
+        });
       } catch (e: unknown) {
-        const msg = e instanceof Error ? e.message : "Sign up failed.";
+        const msg =
+          e instanceof Error ? e.message : 'Registration failed.';
         setAuthError(msg);
         throw e;
       } finally {
@@ -618,115 +402,80 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
-  const patientSignIn = useCallback(async (phone: string, password: string) => {
-    setIsLoggingIn(true);
-    setAuthError(null);
-    try {
-      const registry = loadPatientRegistry();
-      const patient = registry.find((p) => p.phone === phone);
-      if (!patient) throw new Error("No account found with this phone number.");
-      if (patient.passwordHash !== hashPassword(phone, password))
-        throw new Error("Incorrect password.");
-      if (patient.status === "pending")
-        throw new Error(
-          "Your account is pending doctor approval. Please wait.",
+  const patientSignIn = useCallback(
+    async (phone: string, password: string) => {
+      setIsLoggingIn(true);
+      setAuthError(null);
+      try {
+        const result = await post<{ token: string; patient: PatientAccount }>(
+          '/auth/patients/login.php',
+          { phone, password },
         );
-      if (patient.status === "rejected")
-        throw new Error(
-          "Your account has been rejected. Please contact your doctor.",
-        );
-      localStorage.setItem(PATIENT_SESSION_KEY, patient.id);
-      setCurrentPatient(patient);
-      appendAuditLog({
-        timestamp: new Date().toISOString(),
-        userRole: "patient",
-        userName: patient.name,
-        action: "Logged in",
-        target: "Patient Portal",
-      });
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Sign in failed.";
-      setAuthError(msg);
-      throw e;
-    } finally {
-      setIsLoggingIn(false);
-    }
-  }, []);
+        saveSessionToken(result.token);
+        setCurrentPatient(result.patient);
+      } catch (e: unknown) {
+        const msg =
+          e instanceof Error ? e.message : 'Sign in failed.';
+        setAuthError(msg);
+        throw e;
+      } finally {
+        setIsLoggingIn(false);
+      }
+    },
+    [],
+  );
 
-  const patientSignOut = useCallback(() => {
-    if (currentPatient) {
-      appendAuditLog({
-        timestamp: new Date().toISOString(),
-        userRole: "patient",
-        userName: currentPatient.name,
-        action: "Logged out",
-        target: "Patient Portal",
-      });
+  const patientSignOut = useCallback(async () => {
+    try {
+      await post('/auth/logout.php');
+    } catch {
+      // Ignore
     }
-    localStorage.removeItem(PATIENT_SESSION_KEY);
+    clearSessionToken();
     setCurrentPatient(null);
     setAuthError(null);
-  }, [currentPatient]);
-
-  const getPendingPatients = useCallback((): PatientAccount[] => {
-    return loadPatientRegistry().filter((p) => p.status === "pending");
   }, []);
 
-  const approvePatient = useCallback((id: string) => {
-    const registry = loadPatientRegistry();
-    const idx = registry.findIndex((p) => p.id === id);
-    if (idx >= 0) {
-      registry[idx] = { ...registry[idx], status: "approved" };
-      savePatientRegistry(registry);
+  const getPendingPatients = useCallback(async (): Promise<PatientAccount[]> => {
+    try {
+      const result = await get<{ patients: PatientAccount[] }>(
+        '/auth/patients/pending.php',
+      );
+      return result.patients ?? [];
+    } catch {
+      return [];
     }
   }, []);
 
-  const rejectPatient = useCallback((id: string) => {
-    const registry = loadPatientRegistry();
-    const idx = registry.findIndex((p) => p.id === id);
-    if (idx >= 0) {
-      const before = JSON.stringify(registry[idx]);
-      registry[idx] = { ...registry[idx], status: "rejected" };
-      savePatientRegistry(registry);
-      appendAuditLog({
-        timestamp: new Date().toISOString(),
-        userRole: "admin",
-        userName: "Admin",
-        action: "SOFT_DELETE — Patient account rejected",
-        target: `Patient: ${registry[idx].name} | before: ${before} | after: status=rejected`,
-      });
-    }
-  }, []);
+  const approvePatient = useCallback(
+    async (id: number) => {
+      try {
+        await post('/auth/patients/approve.php', {
+          patient_login_id: id,
+        });
+      } catch (e) {
+        console.error('Patient approval failed:', e);
+      }
+    },
+    [],
+  );
+
+  const rejectPatient = useCallback(
+    async (_id: number) => {
+      // Reject patient endpoint not yet implemented in PHP
+      console.warn('Patient reject not yet implemented');
+    },
+    [],
+  );
 
   const updatePatientCredentials = useCallback(
-    (registerNumber: string, newPhone?: string, newPassword?: string) => {
-      const registry = loadPatientRegistry();
-      const idx = registry.findIndex(
-        (p) =>
-          p.registerNumber &&
-          normalizeRegNo(p.registerNumber) === normalizeRegNo(registerNumber),
-      );
-      if (idx < 0) return;
-      const patient = registry[idx];
-      const updatedPhone = newPhone?.trim() || patient.phone;
-      const updatedHash = newPassword?.trim()
-        ? hashPassword(updatedPhone, newPassword.trim())
-        : patient.passwordHash;
-      registry[idx] = {
-        ...patient,
-        phone: updatedPhone,
-        passwordHash: updatedHash,
-      };
-      savePatientRegistry(registry);
-      setCurrentPatient((prev) => {
-        if (
-          prev?.registerNumber &&
-          normalizeRegNo(prev.registerNumber) === normalizeRegNo(registerNumber)
-        ) {
-          return { ...prev, phone: updatedPhone, passwordHash: updatedHash };
-        }
-        return prev;
-      });
+    async (
+      _registerNumber: string,
+      _newPhone?: string,
+      _newPassword?: string,
+    ) => {
+      // Update patient credentials endpoint not yet implemented in PHP
+      console.warn('updatePatientCredentials not yet implemented');
     },
     [],
   );
@@ -765,20 +514,20 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
 export function useEmailAuth(): EmailAuthContextValue {
   const ctx = useContext(EmailAuthContext);
   if (!ctx)
-    throw new Error("useEmailAuth must be used inside EmailAuthProvider");
+    throw new Error('useEmailAuth must be used inside EmailAuthProvider');
   return ctx;
 }
 
-// ── Inactivity Timer ──────────────────────────────────────────────────────────
+// ── Inactivity Timer ────────────────────────────────────────────────────────
 
 const INACTIVITY_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 const INACTIVITY_WARNING_MS = 13 * 60 * 1000; // 13 minutes (2 min before logout)
 const ACTIVITY_EVENTS = [
-  "mousemove",
-  "keydown",
-  "click",
-  "touchstart",
-  "scroll",
+  'mousemove',
+  'keydown',
+  'click',
+  'touchstart',
+  'scroll',
 ] as const;
 
 export interface InactivityTimerState {
@@ -787,11 +536,6 @@ export interface InactivityTimerState {
   resetTimer: () => void;
 }
 
-/**
- * useInactivityTimer — tracks user activity and triggers auto-logout.
- * Returns { showWarning, secondsRemaining, resetTimer }.
- * Must be called inside a component that has access to useEmailAuth.
- */
 export function useInactivityTimer(onLogout: () => void): InactivityTimerState {
   const [showWarning, setShowWarning] = useState(false);
   const [secondsRemaining, setSecondsRemaining] = useState(120);
@@ -815,7 +559,6 @@ export function useInactivityTimer(onLogout: () => void): InactivityTimerState {
     setShowWarning(false);
     setSecondsRemaining(120);
 
-    // Warning at 13 minutes
     warningTimerRef.current = setTimeout(() => {
       setShowWarning(true);
       setSecondsRemaining(120);
@@ -830,7 +573,6 @@ export function useInactivityTimer(onLogout: () => void): InactivityTimerState {
       }, 1000);
     }, INACTIVITY_WARNING_MS);
 
-    // Logout at 15 minutes
     logoutTimerRef.current = setTimeout(() => {
       clearAllTimers();
       setShowWarning(false);
@@ -843,13 +585,11 @@ export function useInactivityTimer(onLogout: () => void): InactivityTimerState {
     startTimers();
   }, [startTimers]);
 
-  // Start on mount
   useEffect(() => {
     startTimers();
     return clearAllTimers;
   }, [startTimers, clearAllTimers]);
 
-  // Attach activity listeners
   useEffect(() => {
     const handler = () => resetTimer();
     for (const ev of ACTIVITY_EVENTS) {

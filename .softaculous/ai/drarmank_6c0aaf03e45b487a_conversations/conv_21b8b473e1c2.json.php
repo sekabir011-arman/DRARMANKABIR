@@ -77,7 +77,7 @@
         }
     ],
     "created_at": 1784125529,
-    "updated_at": 1784190482,
+    "updated_at": 1784196800,
     "messages": [
         {
             "id": "msg_compact",
@@ -2475,6 +2475,13 @@
             "content": "<?php\n\/**\n * Logout API\n * \n * POST \/api\/auth\/logout.php\n * Headers: Authorization: Bearer <token>\n * \n * Invalidates the current session.\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\nrequire_once __DIR__ . '\/middleware.php';\n\nhandleCors();\nrequireMethod('POST', 'GET');\n\n$user = requireAuth();\n\ntry {\n    $token = getBearerToken();\n    destroySession($token);\n    \n    logAudit($user['id'], null, 'logout', 'user', $user['id']);\n    \n    successResponse(null, 'Logged out successfully');\n} catch (\\Exception $e) {\n    error_log('Logout error: ' . $e->getMessage());\n    errorResponse('Logout failed', 500);\n}\n",
             "is_error": false,
             "time": 1784190482
+        },
+        {
+            "id": "msg_dcc77335e1",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784196800
         }
     ]
 }
