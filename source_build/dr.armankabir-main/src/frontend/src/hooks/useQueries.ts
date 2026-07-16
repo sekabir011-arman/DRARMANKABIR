@@ -1,9 +1,9 @@
 /**
  * React Query hooks — Service Layer
  *
- * All hooks delegate to service modules.
- * No direct fetch(), localStorage, or browser storage calls.
- * All data comes from MySQL via the PHP API.
+ * All CRUD operations now go through the service layer (DAL) → PHP API → MySQL.
+ * No localStorage, sessionStorage, IndexedDB, or direct fetch() calls.
+ * IDs are `number` (MySQL INT/BIGINT).
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -27,11 +27,12 @@ import type {
 import { patientService } from '../services/patients';
 import { visitService } from '../services/visits';
 import { prescriptionService } from '../services/prescriptions';
+import { appointmentService } from '../services/appointments';
 import { userService } from '../services/users';
 import { clinicalNotesService } from '../services/clinicalNotes';
-import { appointmentService } from '../services/appointments';
-import { vitalService } from '../services/vitals';
 import { admissionService } from '../services/admissions';
+import { vitalService } from '../services/vitals';
+import { authService } from '../services/auth';
 
 // ─── Patients ───────────────────────────────────────────────────────────────
 
@@ -53,7 +54,23 @@ export function useGetPatient(id: number | null) {
 export function useCreatePatient() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: patientService.create,
+    mutationFn: (data: {
+      fullName: string;
+      nameBn?: string | null;
+      dateOfBirth?: string | null;
+      gender?: string;
+      phone?: string | null;
+      email?: string | null;
+      address?: string | null;
+      bloodGroup?: string | null;
+      weight?: number | null;
+      height?: number | null;
+      allergies?: string[];
+      chronicConditions?: string[];
+      pastSurgicalHistory?: string | null;
+      patientType?: string;
+      photo?: string | null;
+    }) => patientService.create(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['patients'] }),
   });
 }
@@ -61,7 +78,24 @@ export function useCreatePatient() {
 export function useUpdatePatient() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: patientService.update,
+    mutationFn: (data: {
+      id: number;
+      fullName?: string;
+      nameBn?: string | null;
+      dateOfBirth?: string | null;
+      gender?: string;
+      phone?: string | null;
+      email?: string | null;
+      address?: string | null;
+      bloodGroup?: string | null;
+      weight?: number | null;
+      height?: number | null;
+      allergies?: string[];
+      chronicConditions?: string[];
+      pastSurgicalHistory?: string | null;
+      patientType?: string;
+      photo?: string | null;
+    }) => patientService.update(data),
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ['patients'] });
       qc.invalidateQueries({ queryKey: ['patient', vars.id.toString()] });
@@ -72,7 +106,7 @@ export function useUpdatePatient() {
 export function useDeletePatient() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: patientService.delete,
+    mutationFn: (id: number) => patientService.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['patients'] }),
   });
 }
@@ -90,7 +124,17 @@ export function useGetVisitsByPatient(patientId: number | null) {
 export function useCreateVisit() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: visitService.create,
+    mutationFn: (data: {
+      patientId: number;
+      visitDate?: string;
+      chiefComplaint?: string;
+      historyOfPresentIllness?: string | null;
+      vitalSigns?: VitalSigns;
+      physicalExamination?: string | null;
+      diagnosis?: string | null;
+      notes?: string | null;
+      visitType?: string;
+    }) => visitService.create(data),
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['visits', vars.patientId.toString()] }),
   });
@@ -109,7 +153,18 @@ export function useDeleteVisit() {
 export function useUpdateVisit() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: visitService.update,
+    mutationFn: (data: {
+      id: number;
+      patientId: number;
+      visitDate?: string;
+      chiefComplaint?: string;
+      historyOfPresentIllness?: string | null;
+      vitalSigns?: VitalSigns;
+      physicalExamination?: string | null;
+      diagnosis?: string | null;
+      notes?: string | null;
+      visitType?: string;
+    }) => visitService.update(data),
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['visits', vars.patientId.toString()] }),
   });
@@ -128,7 +183,14 @@ export function useGetPrescriptionsByPatient(patientId: number | null) {
 export function useCreatePrescription() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: prescriptionService.create,
+    mutationFn: (data: {
+      patientId: number;
+      visitId?: number | null;
+      prescriptionDate?: string;
+      diagnosis?: string | null;
+      medications: Medication[];
+      notes?: string | null;
+    }) => prescriptionService.create(data),
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['prescriptions', vars.patientId.toString()] }),
   });
@@ -147,7 +209,15 @@ export function useDeletePrescription() {
 export function useUpdatePrescription() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: prescriptionService.update,
+    mutationFn: (data: {
+      id: number;
+      patientId: number;
+      visitId?: number | null;
+      prescriptionDate?: string;
+      diagnosis?: string | null;
+      medications: Medication[];
+      notes?: string | null;
+    }) => prescriptionService.update(data),
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['prescriptions', vars.patientId.toString()] }),
   });
@@ -172,10 +242,7 @@ export function useGetCallerUserRole() {
 export function useSaveCallerUserProfile() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (profile: UserProfile) => {
-      userService.updateProfile(profile);
-      return profile;
-    },
+    mutationFn: (profile: UserProfile) => userService.updateProfile(profile),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['userProfile'] }),
   });
 }
@@ -265,7 +332,8 @@ export function useGetBedsByWard(ward: string | null) {
 export function useCreateBed() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: admissionService.createBed,
+    mutationFn: (data: { ward: string; bedNumber: string; bedType?: string }) =>
+      admissionService.createBed(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['beds'] }),
   });
 }
@@ -281,7 +349,10 @@ export function useGetAdmissionHistory(patientId: number | null) {
 export function useGetDrugReminders() {
   return useQuery<DrugReminder[]>({
     queryKey: ['drugReminders'],
-    queryFn: () => admissionService.getBedsByWard('').then(() => []), // placeholder
+    queryFn: async () => {
+      const { get } = await import('../lib/apiClient');
+      return get<DrugReminder[]>('/drugs/reminders.php');
+    },
   });
 }
 
@@ -289,8 +360,8 @@ export function useGetClinicalAlerts() {
   return useQuery<ClinicalAlert[]>({
     queryKey: ['clinicalAlerts'],
     queryFn: async () => {
-      // Placeholder: clinical alerts could come from a dedicated endpoint
-      return [];
+      const { get } = await import('../lib/apiClient');
+      return get<ClinicalAlert[]>('/clinical/alerts-list.php');
     },
   });
 }
@@ -306,7 +377,13 @@ export function useGetAppointmentsByPatient(patientId: number | null) {
 export function useCreateAppointment() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: appointmentService.create,
+    mutationFn: (data: {
+      patientId: number;
+      appointmentDate?: string;
+      doctorName?: string;
+      reason?: string;
+      status?: string;
+    }) => appointmentService.create(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['appointments'] }),
   });
 }
@@ -324,13 +401,17 @@ export function useGetVitalsByPatient(patientId: number | null) {
 export function useCreateVitals() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: vitalService.create,
+    mutationFn: (data: {
+      patientId: number;
+      vitalSigns: VitalSigns;
+      recordedAt?: string;
+    }) => vitalService.create(data),
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['vitals', vars.patientId.toString()] }),
   });
 }
 
-// ─── Sync status (no-op) ────────────────────────────────────────────────────
+// ─── Sync status (no-op — all data is server-side) ─────────────────────────
 
 export function useSyncStatus() {
   return useQuery({
@@ -341,61 +422,10 @@ export function useSyncStatus() {
       lastSyncAt: new Date(),
       canisterConnected: false,
     }),
+    staleTime: Infinity,
   });
 }
 
 export function isNetworkOnline(): boolean {
   return navigator.onLine;
-}
-
-// ─── Legacy stubs removed ──────────────────────────────────────────────────
-// All localStorage, canister actor, and sync queue code has been removed.
-// These exported names are kept as no-ops for backward compatibility only.
-
-export function setCanisterActor(_actor: unknown): void {
-  // No-op — canister actor removed
-}
-
-export function getCanisterActor(): unknown | null {
-  return null;
-}
-
-export function saveToStorage<T>(_key: string, _data: T[]): void {
-  // No-op — storage is server-side
-}
-
-export function loadFromStorage<T>(_key: string): T[] {
-  return [];
-}
-
-export function loadFromAllDoctorKeys<T>(_prefix: string): T[] {
-  return [];
-}
-
-export function getDoctorEmail(): string {
-  return '';
-}
-
-export function setCanonicalUserEmail(_email: string): void {
-  // No-op — handled by PHP session
-}
-
-export function clearCanonicalUserEmail(): void {
-  // No-op
-}
-
-export function storageKey(_prefix: string): string {
-  return '';
-}
-
-export function getVisitFormData(_visitId: string | number | null): Record<string, any> | null {
-  return null;
-}
-
-export function generateRegisterNumber(): string {
-  return '';
-}
-
-export function createPatientInStorage(_data: Record<string, unknown>): Patient {
-  throw new Error('createPatientInStorage is deprecated. Use useCreatePatient hook instead.');
 }
