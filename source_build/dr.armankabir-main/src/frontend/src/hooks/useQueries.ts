@@ -26,7 +26,6 @@ import type {
   ClinicalOrder,
   DrugReminder,
   Encounter,
-  Medication,
   Observation,
   Patient,
   Prescription,
@@ -34,9 +33,6 @@ import type {
   Visit,
   VitalSigns,
 } from '../types';
-import type { CreatePatientData, UpdatePatientData } from '../services/patients';
-import type { CreateVisitData, UpdateVisitData } from '../services/visits';
-import type { CreatePrescriptionData, UpdatePrescriptionData } from '../services/prescriptions';
 
 // ─── Patients ───────────────────────────────────────────────────────────────
 
@@ -58,7 +54,25 @@ export function useGetPatient(id: number | null) {
 export function useCreatePatient() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: CreatePatientData) => patientService.create(data),
+    mutationFn: async (data: {
+      fullName: string;
+      nameBn?: string | null;
+      dateOfBirth?: string | null;
+      gender?: string;
+      phone?: string | null;
+      email?: string | null;
+      address?: string | null;
+      bloodGroup?: string | null;
+      weight?: number | null;
+      height?: number | null;
+      allergies?: string[];
+      chronicConditions?: string[];
+      pastSurgicalHistory?: string | null;
+      patientType?: string;
+      photo?: string | null;
+    }) => {
+      return patientService.create(data);
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['patients'] }),
   });
 }
@@ -66,7 +80,26 @@ export function useCreatePatient() {
 export function useUpdatePatient() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: UpdatePatientData) => patientService.update(data),
+    mutationFn: async (data: {
+      id: number;
+      fullName?: string;
+      nameBn?: string | null;
+      dateOfBirth?: string | null;
+      gender?: string;
+      phone?: string | null;
+      email?: string | null;
+      address?: string | null;
+      bloodGroup?: string | null;
+      weight?: number | null;
+      height?: number | null;
+      allergies?: string[];
+      chronicConditions?: string[];
+      pastSurgicalHistory?: string | null;
+      patientType?: string;
+      photo?: string | null;
+    }) => {
+      return patientService.update(data);
+    },
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ['patients'] });
       qc.invalidateQueries({ queryKey: ['patient', vars.id.toString()] });
@@ -77,7 +110,9 @@ export function useUpdatePatient() {
 export function useDeletePatient() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => patientService.delete(id),
+    mutationFn: async (id: number) => {
+      await patientService.delete(id);
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['patients'] }),
   });
 }
@@ -95,7 +130,19 @@ export function useGetVisitsByPatient(patientId: number | null) {
 export function useCreateVisit() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: CreateVisitData) => visitService.create(data),
+    mutationFn: async (data: {
+      patientId: number;
+      visitDate?: string;
+      chiefComplaint?: string;
+      historyOfPresentIllness?: string | null;
+      vitalSigns?: VitalSigns;
+      physicalExamination?: string | null;
+      diagnosis?: string | null;
+      notes?: string | null;
+      visitType?: string;
+    }) => {
+      return visitService.create(data);
+    },
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['visits', vars.patientId.toString()] }),
   });
@@ -104,8 +151,9 @@ export function useCreateVisit() {
 export function useDeleteVisit() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, patientId }: { id: number; patientId: number }) =>
-      visitService.delete(id, patientId),
+    mutationFn: async ({ id, patientId }: { id: number; patientId: number }) => {
+      await visitService.delete(id, patientId);
+    },
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['visits', vars.patientId.toString()] }),
   });
@@ -114,7 +162,20 @@ export function useDeleteVisit() {
 export function useUpdateVisit() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: UpdateVisitData) => visitService.update(data),
+    mutationFn: async (data: {
+      id: number;
+      patientId: number;
+      visitDate?: string;
+      chiefComplaint?: string;
+      historyOfPresentIllness?: string | null;
+      vitalSigns?: VitalSigns;
+      physicalExamination?: string | null;
+      diagnosis?: string | null;
+      notes?: string | null;
+      visitType?: string;
+    }) => {
+      return visitService.update(data);
+    },
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['visits', vars.patientId.toString()] }),
   });
@@ -133,7 +194,16 @@ export function useGetPrescriptionsByPatient(patientId: number | null) {
 export function useCreatePrescription() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: CreatePrescriptionData) => prescriptionService.create(data),
+    mutationFn: async (data: {
+      patientId: number;
+      visitId?: number | null;
+      prescriptionDate?: string;
+      diagnosis?: string | null;
+      medications: import('../types').Medication[];
+      notes?: string | null;
+    }) => {
+      return prescriptionService.create(data);
+    },
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['prescriptions', vars.patientId.toString()] }),
   });
@@ -142,8 +212,9 @@ export function useCreatePrescription() {
 export function useDeletePrescription() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, patientId }: { id: number; patientId: number }) =>
-      prescriptionService.delete(id, patientId),
+    mutationFn: async ({ id, patientId }: { id: number; patientId: number }) => {
+      await prescriptionService.delete(id, patientId);
+    },
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['prescriptions', vars.patientId.toString()] }),
   });
@@ -152,7 +223,17 @@ export function useDeletePrescription() {
 export function useUpdatePrescription() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: UpdatePrescriptionData) => prescriptionService.update(data),
+    mutationFn: async (data: {
+      id: number;
+      patientId: number;
+      visitId?: number | null;
+      prescriptionDate?: string;
+      diagnosis?: string | null;
+      medications: import('../types').Medication[];
+      notes?: string | null;
+    }) => {
+      return prescriptionService.update(data);
+    },
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['prescriptions', vars.patientId.toString()] }),
   });
@@ -177,7 +258,10 @@ export function useGetCallerUserRole() {
 export function useSaveCallerUserProfile() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (profile: UserProfile) => userService.updateProfile(profile),
+    mutationFn: async (profile: UserProfile) => {
+      await userService.updateProfile(profile);
+      return profile;
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['userProfile'] }),
   });
 }
@@ -195,7 +279,7 @@ export function useGetEncountersByPatient(patientId: number | null) {
 export function useCreateEncounter() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { patientId: number; encounterData: Record<string, unknown> }) =>
+    mutationFn: async (data: { patientId: number; encounterData: Record<string, unknown> }) =>
       clinicalNotesService.createEncounter(data.patientId, data.encounterData),
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['encounters', vars.patientId.toString()] }),
@@ -213,7 +297,7 @@ export function useGetObservationsByPatient(patientId: number | null) {
 export function useCreateObservation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { patientId: number; observationData: Record<string, unknown> }) =>
+    mutationFn: async (data: { patientId: number; observationData: Record<string, unknown> }) =>
       clinicalNotesService.createObservation(data.patientId, data.observationData),
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['observations', vars.patientId.toString()] }),
@@ -231,7 +315,7 @@ export function useGetClinicalNotesByPatient(patientId: number | null) {
 export function useCreateClinicalNote() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { patientId: number; noteData: Record<string, unknown> }) =>
+    mutationFn: async (data: { patientId: number; noteData: Record<string, unknown> }) =>
       clinicalNotesService.createNote(data.patientId, data.noteData),
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['clinicalNotes', vars.patientId.toString()] }),
@@ -249,7 +333,7 @@ export function useGetOrdersByPatient(patientId: number | null) {
 export function useCreateOrder() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { patientId: number; orderData: Record<string, unknown> }) =>
+    mutationFn: async (data: { patientId: number; orderData: Record<string, unknown> }) =>
       clinicalNotesService.createOrder(data.patientId, data.orderData),
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['orders', vars.patientId.toString()] }),
@@ -269,7 +353,7 @@ export function useGetBedsByWard(ward: string | null) {
 export function useCreateBed() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { ward: string; bedNumber: string; bedType?: string }) =>
+    mutationFn: async (data: { ward: string; bedNumber: string; bedType?: string }) =>
       admissionService.createBed(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['beds'] }),
   });
@@ -318,8 +402,15 @@ export function useGetAppointmentsByPatient(patientId: number | null) {
 export function useCreateAppointment() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Parameters<typeof appointmentService.create>[]) =>
-      appointmentService.create(data),
+    mutationFn: async (data: {
+      patientId: number;
+      appointmentDate?: string;
+      doctorName?: string;
+      reason?: string;
+      status?: string;
+    }) => {
+      return appointmentService.create(data);
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['appointments'] }),
   });
 }
@@ -337,8 +428,13 @@ export function useGetVitalsByPatient(patientId: number | null) {
 export function useCreateVitals() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { patientId: number; vitalSigns: VitalSigns; recordedAt?: string }) =>
-      vitalService.create(data),
+    mutationFn: async (data: {
+      patientId: number;
+      vitalSigns: VitalSigns;
+      recordedAt?: string;
+    }) => {
+      return vitalService.create(data);
+    },
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['vitals', vars.patientId.toString()] }),
   });
@@ -360,4 +456,68 @@ export function useSyncStatus() {
 
 export function isNetworkOnline(): boolean {
   return navigator.onLine;
+}
+
+// ─── Legacy helpers — all deprecated, kept only for type compatibility ────
+
+import type { Medication } from '../types';
+
+/** @deprecated Use patientService directly */
+export function saveToStorage<T>(_key: string, _data: T[]): void {
+  // No-op — storage is server-side
+}
+
+/** @deprecated Use patientService directly */
+export function loadFromStorage<T>(_key: string): T[] {
+  return [];
+}
+
+/** @deprecated Use patientService directly */
+export function loadFromAllDoctorKeys<T>(_prefix: string): T[] {
+  return [];
+}
+
+/** @deprecated — email is retrieved from PHP session */
+export function getDoctorEmail(): string {
+  return '';
+}
+
+/** @deprecated — email comes from PHP session */
+export function setCanonicalUserEmail(_email: string): void {
+  // No-op — email comes from PHP session
+}
+
+/** @deprecated */
+export function clearCanonicalUserEmail(): void {
+  // No-op
+}
+
+/** @deprecated */
+export function storageKey(prefix: string): string {
+  return prefix;
+}
+
+/** @deprecated */
+export function getVisitFormData(_visitId: string | number | null): Record<string, any> | null {
+  return null;
+}
+
+/** @deprecated */
+export function generateRegisterNumber(): string {
+  return '';
+}
+
+/** @deprecated */
+export function createPatientInStorage(_data: Record<string, unknown>): Patient {
+  throw new Error('createPatientInStorage is deprecated. Use patientService.create() instead.');
+}
+
+/** @deprecated — Canister actor not used */
+export function setCanisterActor(_actor: unknown): void {
+  // No-op
+}
+
+/** @deprecated */
+export function getCanisterActor(): unknown | null {
+  return null;
 }
