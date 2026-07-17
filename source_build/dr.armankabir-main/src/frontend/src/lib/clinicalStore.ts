@@ -1,21 +1,16 @@
-// ── Shared helper for the medicare_clinical_data store ────────────────────────
-// Avoids duplication of getClinicalStore / saveClinicalStore between hooks and
-// components that need direct (non-React-Query) access.
-
-const CLINICAL_STORAGE_KEY = "medicare_clinical_data";
+/**
+ * Clinical Store
+ *
+ * All clinical data is now persisted server-side via the PHP/MySQL API.
+ * This file provides no-op stubs for backward compatibility.
+ * Components should use React Query hooks (useQueries.ts) instead.
+ */
 
 export function getClinicalStore(): Record<string, unknown[]> {
-  try {
-    const raw = localStorage.getItem(CLINICAL_STORAGE_KEY);
-    if (!raw) return {};
-    return JSON.parse(raw) as Record<string, unknown[]>;
-  } catch {
-    return {};
-  }
+  // Clinical data is fetched via React Query hooks (useGetObservationsByPatient, etc.)
+  return {};
 }
 
-export function saveClinicalStore(store: Record<string, unknown[]>): void {
-  try {
-    localStorage.setItem(CLINICAL_STORAGE_KEY, JSON.stringify(store));
-  } catch {}
+export function saveClinicalStore(_store: Record<string, unknown[]>): void {
+  // Clinical data is persisted via PHP API — no localStorage needed
 }
