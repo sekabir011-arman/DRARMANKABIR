@@ -2,8 +2,9 @@
  * Email Auth Hook — PHP/MySQL Backend
  *
  * All authentication is handled server-side via the PHP API.
- * PHP sessions (cookies) manage authentication state.
- * No tokens are stored in localStorage.
+ * No business data stored in localStorage.
+ * Authentication uses PHP session cookies only.
+ * Auth tokens are handled by the API client via same-origin credentials.
  */
 
 import type React from "react";
@@ -16,10 +17,8 @@ import {
   useState,
 } from "react";
 import type { StaffRole } from "../types";
-import { authService } from "../services";
-import type { DoctorAccount, PatientAccount } from "../services";
-
-export { DoctorAccount, PatientAccount };
+import { authService } from "../services/auth";
+import type { DoctorAccount, PatientAccount } from "../services/auth";
 
 export interface AuditLogEntry {
   id: string;
@@ -56,54 +55,12 @@ export function isConsultantLevel(role: StaffRole): boolean {
   ].includes(role);
 }
 
-// ── Legacy registry helpers (kept for backward compatibility, now no-ops) ──
-
-export function loadRegistry(): DoctorAccount[] {
-  return [];
-}
-
-export function saveRegistry(_registry: DoctorAccount[]): void {
-  // No-op — registry is server-side via authService
-}
-
-export function loadPatientRegistry(): PatientAccount[] {
-  return [];
-}
-
-export function savePatientRegistry(_registry: PatientAccount[]): void {
-  // No-op — registry is server-side via authService
-}
-
-export function appendAuditLog(_entry: Omit<AuditLogEntry, "id">): void {
-  // Audit logging handled by PHP backend
-}
-
-export function getAuditLog(): AuditLogEntry[] {
-  return [];
-}
-
-export function loadSignUpMap(): Record<string, boolean> {
-  return {};
-}
-
-export function saveSignUpMap(_map: Record<string, boolean>): void {
-  // No-op
-}
-
-export function setSignUpEnabled(_registerNumber: string, _enabled: boolean): void {
-  // No-op
-}
-
-export function isSignUpEnabled(_registerNumber: string): boolean {
-  return true;
-}
-
 // Normalize register number: "0001/26" and "1/26" treated as equal
 function normalizeRegNo(rn: string): string {
   const parts = rn.trim().split("/");
   if (parts.length === 2) {
-    const num = Number.parseInt(parts[0].trim(), 10);
-    return `${Number.isNaN(num) ? parts[0].trim() : num}/${parts[1].trim()}`;
+    const num = Number.parseInt(parts[].trim(), 10);
+    return `${Number.isNaN(num) ? parts[].trim() : num}/${parts[1].trim()}`;
   }
   return rn.trim().toLowerCase();
 }
@@ -150,6 +107,9 @@ interface EmailAuthContextValue {
 
 const EmailAuthContext = createContext<EmailAuthContextValue | null>(null);
 
+// UI preference keys (allowed in localStorage)
+const UI_PREF_KEYS = ['theme', 'language', 'sidebar_collapsed', 'table_preferences'];
+
 export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
   const [currentDoctor, setCurrentDoctor] = useState<DoctorAccount | null>(null);
   const [currentPatient, setCurrentPatient] = useState<PatientAccount | null>(null);
@@ -157,17 +117,16 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
-  // Restore session on mount by verifying the PHP session cookie
+  // Restore session on mount by verifying with the server
   useEffect(() => {
     const restoreSession = async () => {
       try {
-        // PHP session cookie is auto-sent; verify it
         const user = await authService.verifySession();
         if (user) {
           setCurrentDoctor(user);
         }
       } catch {
-        // Session invalid or expired
+        // Session invalid or expired — that's fine
       } finally {
         setIsInitializing(false);
       }
@@ -187,8 +146,15 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoggingIn(true);
       setAuthError(null);
       try {
-        await authService.signUp(data);
-        throw new Error("Account created! Please wait for admin approval before logging in.");
+        const result = await authService.signUp({
+          email: data.email,
+          password: data.password,
+          full_name: data.full_name,
+          role: data.role ?? "doctor",
+          specialization: data.specialization ?? "",
+          phone: data.phone ?? "",
+        });
+        throw new Error(result.message || "Account created! Please wait for admin approval before logging in.");
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : "Sign up failed.";
         setAuthError(msg);
@@ -216,15 +182,18 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
-    await authService.signOut();
+    try {
+      await authService.signOut();
+    } catch {
+      // Ignore logout errors
+    }
     setCurrentDoctor(null);
-    setCurrentPatient(null);
     setAuthError(null);
   }, []);
 
   const updateProfile = useCallback(
     async (_data: Partial<DoctorAccount>) => {
-      // Profile update handled by PHP backend via authService
+      // Profile update handled by PHP backend
       // API endpoint: POST /api/auth/update_profile.php
     },
     [],
@@ -269,14 +238,14 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
           );
         }
 
-        await authService.patientSignUp({
+        const result = await authService.patientSignUp({
           registerNumber: registerNumber.trim(),
           phone,
           password,
         });
 
         throw new Error(
-          "Account created! Please wait for doctor approval before logging in.",
+          result.message || "Account created! Please wait for doctor approval before logging in.",
         );
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : "Sign up failed.";
@@ -368,8 +337,8 @@ export function useEmailAuth(): EmailAuthContextValue {
 
 // ── Inactivity Timer ──────────────────────────────────────────────────────────
 
-const INACTIVITY_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
-const INACTIVITY_WARNING_MS = 13 * 60 * 1000; // 13 minutes (2 min before logout)
+const INACTIVITY_TIMEOUT_MS = 15 * 60 * 100; // 15 minutes
+const INACTIVITY_WARNING_MS = 13 * 60 * 100; // 13 minutes (2 min before logout)
 const ACTIVITY_EVENTS = [
   "mousemove",
   "keydown",
@@ -414,11 +383,11 @@ export function useInactivityTimer(onLogout: () => void): InactivityTimerState {
         setSecondsRemaining((s) => {
           if (s <= 1) {
             if (countdownRef.current) clearInterval(countdownRef.current);
-            return 0;
+            return ;
           }
           return s - 1;
         });
-      }, 1000);
+      }, 100);
     }, INACTIVITY_WARNING_MS);
 
     logoutTimerRef.current = setTimeout(() => {
