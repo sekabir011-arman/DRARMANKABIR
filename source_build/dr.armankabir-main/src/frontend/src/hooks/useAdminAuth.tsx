@@ -1,31 +1,22 @@
 /**
  * Admin Auth Hook — PHP/MySQL Backend
  *
- * Admin authentication now goes through the PHP API.
- * Hardcoded accounts removed.
+ * Admin authentication now goes through the PHP API / authService.
+ * No localStorage used — PHP session cookies handle authentication.
  */
 
 import { useCallback, useState } from "react";
-import { post } from "../lib/api";
-
-function loadSession(): boolean {
-  return localStorage.getItem("adminSession") === "true";
-}
+import { authService } from "../services/auth";
 
 export function useAdminAuth() {
-  const [isAdmin, setIsAdmin] = useState<boolean>(loadSession);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   const adminLogin = useCallback(
     async (username: string, password: string): Promise<boolean> => {
       try {
-        const result = await post<{ token: string }>("/auth/login.php", {
-          email: username,
-          password,
-        });
-        if (result?.token) {
-          localStorage.setItem("phpAuthToken", result.token);
-          localStorage.setItem("adminSession", "true");
-          setIsAdmin(true);
+        const result = await authService.signIn(username, password);
+        if (result.user) {
+          setIsAdmin(result.user.role === "admin");
           return true;
         }
       } catch {
@@ -36,9 +27,8 @@ export function useAdminAuth() {
     [],
   );
 
-  const adminLogout = useCallback(() => {
-    localStorage.removeItem("adminSession");
-    localStorage.removeItem("phpAuthToken");
+  const adminLogout = useCallback(async () => {
+    await authService.signOut();
     setIsAdmin(false);
   }, []);
 
