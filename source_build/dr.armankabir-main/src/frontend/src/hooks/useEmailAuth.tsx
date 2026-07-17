@@ -1,423 +1,136 @@
 /**
- * Email Auth Hook — PHP/MySQL Backend
+ * Email-based authentication hook
  *
- * All authentication is handled server-side via the PHP API.
- * No business data stored in localStorage.
- * Authentication uses PHP session cookies only.
- * Auth tokens are handled by the API client via same-origin credentials.
+ * Uses authService which communicates with the PHP/MySQL backend.
+ * Tokens are stored in httpOnly cookies by the backend, not in localStorage.
+ * This hook manages the React-side auth state and user profile.
  */
 
-import type React from "react";
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import type { StaffRole } from "../types";
-import { authService } from "../services/auth";
-import type { DoctorAccount, PatientAccount } from "../services/auth";
+import { useCallback, useEffect, useState } from 'react';
+import { authService } from '../services/authService';
+import type { UserProfile } from '../types';
 
-export interface AuditLogEntry {
-  id: string;
-  timestamp: string;
-  userRole: StaffRole | "admin" | "patient";
-  userName: string;
-  action: string;
-  target: string;
+export interface AuthState {
+  isAuthenticated: boolean;
+  user: UserProfile | null;
+  isLoading: boolean;
+  error: string | null;
 }
 
-const VALID_ROLES: StaffRole[] = [
-  "admin",
-  "consultant_doctor",
-  "assistant_professor",
-  "associate_professor",
-  "professor",
-  "medical_officer",
-  "assistant_registrar",
-  "registrar",
-  "intern_doctor",
-  "nurse",
-  "reception",
-  "staff",
-  "patient",
-  "doctor",
-];
+export function useEmailAuth() {
+  const [state, setState] = useState<AuthState>({
+    isAuthenticated: false,
+    user: null,
+    isLoading: true,
+    error: null,
+  });
 
-export function isConsultantLevel(role: StaffRole): boolean {
-  return [
-    "consultant_doctor",
-    "assistant_professor",
-    "associate_professor",
-    "professor",
-  ].includes(role);
-}
-
-// Normalize register number: "0001/26" and "1/26" treated as equal
-function normalizeRegNo(rn: string): string {
-  const parts = rn.trim().split("/");
-  if (parts.length === 2) {
-    const num = Number.parseInt(parts[].trim(), 10);
-    return `${Number.isNaN(num) ? parts[].trim() : num}/${parts[1].trim()}`;
-  }
-  return rn.trim().toLowerCase();
-}
-
-interface EmailAuthContextValue {
-  currentDoctor: DoctorAccount | null;
-  currentPatient: PatientAccount | null;
-  isInitializing: boolean;
-  isLoggingIn: boolean;
-  authError: string | null;
-  signUp: (data: {
-    email: string;
-    password: string;
-    full_name: string;
-    role?: string;
-    specialization?: string;
-    phone?: string;
-  }) => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
-  updateProfile: (data: Partial<DoctorAccount>) => Promise<void>;
-  getPendingAccounts: () => Promise<DoctorAccount[]>;
-  approveAccount: (id: number, role?: string) => Promise<void>;
-  approveAccountWithRole: (id: number, role: StaffRole) => Promise<void>;
-  rejectAccount: (id: number) => Promise<void>;
-  reassignRole: (id: number, role: StaffRole) => Promise<void>;
-  // Patient auth
-  patientSignUp: (data: {
-    registerNumber: string;
-    phone: string;
-    password: string;
-  }) => Promise<void>;
-  patientSignIn: (phone: string, password: string) => Promise<void>;
-  patientSignOut: () => void;
-  getPendingPatients: () => Promise<PatientAccount[]>;
-  approvePatient: (id: number) => Promise<void>;
-  rejectPatient: (id: number) => Promise<void>;
-  updatePatientCredentials: (
-    registerNumber: string,
-    newPhone?: string,
-    newPassword?: string,
-  ) => Promise<void>;
-}
-
-const EmailAuthContext = createContext<EmailAuthContextValue | null>(null);
-
-// UI preference keys (allowed in localStorage)
-const UI_PREF_KEYS = ['theme', 'language', 'sidebar_collapsed', 'table_preferences'];
-
-export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
-  const [currentDoctor, setCurrentDoctor] = useState<DoctorAccount | null>(null);
-  const [currentPatient, setCurrentPatient] = useState<PatientAccount | null>(null);
-  const [isInitializing, setIsInitializing] = useState(true);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
-
-  // Restore session on mount by verifying with the server
+  // Check session on mount
   useEffect(() => {
-    const restoreSession = async () => {
+    let cancelled = false;
+
+    async function checkSession() {
       try {
-        const user = await authService.verifySession();
-        if (user) {
-          setCurrentDoctor(user);
+        setState(prev => ({ ...prev, isLoading: true, error: null }));
+        const session = await authService.getSession();
+        if (cancelled) return;
+
+        if (session && session.user) {
+          setState({
+            isAuthenticated: true,
+            user: session.user,
+            isLoading: false,
+            error: null,
+          });
+        } else {
+          setState({
+            isAuthenticated: false,
+            user: null,
+            isLoading: false,
+            error: null,
+          });
         }
-      } catch {
-        // Session invalid or expired — that's fine
-      } finally {
-        setIsInitializing(false);
+      } catch (err) {
+        if (cancelled) return;
+        // Not authenticated — silent fail
+        setState({
+          isAuthenticated: false,
+          user: null,
+          isLoading: false,
+          error: null,
+        });
       }
-    };
-    restoreSession();
+    }
+
+    checkSession();
+    return () => { cancelled = true; };
   }, []);
 
-  const signUp = useCallback(
-    async (data: {
-      email: string;
-      password: string;
-      full_name: string;
-      role?: string;
-      specialization?: string;
-      phone?: string;
-    }) => {
-      setIsLoggingIn(true);
-      setAuthError(null);
-      try {
-        const result = await authService.signUp({
-          email: data.email,
-          password: data.password,
-          full_name: data.full_name,
-          role: data.role ?? "doctor",
-          specialization: data.specialization ?? "",
-          phone: data.phone ?? "",
-        });
-        throw new Error(result.message || "Account created! Please wait for admin approval before logging in.");
-      } catch (e: unknown) {
-        const msg = e instanceof Error ? e.message : "Sign up failed.";
-        setAuthError(msg);
-        throw e;
-      } finally {
-        setIsLoggingIn(false);
-      }
-    },
-    [],
-  );
-
-  const signIn = useCallback(async (email: string, password: string) => {
-    setIsLoggingIn(true);
-    setAuthError(null);
+  const login = useCallback(async (email: string, password: string) => {
+    setState(prev => ({ ...prev, isLoading: true, error: null }));
     try {
-      const result = await authService.signIn(email, password);
-      setCurrentDoctor(result.user);
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Sign in failed.";
-      setAuthError(msg);
-      throw e;
-    } finally {
-      setIsLoggingIn(false);
+      const result = await authService.login(email, password);
+      if (result && result.user) {
+        setState({
+          isAuthenticated: true,
+          user: result.user,
+          isLoading: false,
+          error: null,
+        });
+        return true;
+      }
+      throw new Error('Invalid credentials');
+    } catch (err: any) {
+      const message = err?.message || 'Login failed';
+      setState(prev => ({ ...prev, isLoading: false, error: message }));
+      return false;
     }
   }, []);
 
-  const signOut = useCallback(async () => {
+  const register = useCallback(async (email: string, password: string, name?: string) => {
+    setState(prev => ({ ...prev, isLoading: true, error: null }));
     try {
-      await authService.signOut();
+      const result = await authService.register(email, password, name);
+      if (result && result.user) {
+        setState({
+          isAuthenticated: true,
+          user: result.user,
+          isLoading: false,
+          error: null,
+        });
+        return true;
+      }
+      throw new Error('Registration failed');
+    } catch (err: any) {
+      const message = err?.message || 'Registration failed';
+      setState(prev => ({ ...prev, isLoading: false, error: message }));
+      return false;
+    }
+  }, []);
+
+  const logout = useCallback(async () => {
+    try {
+      await authService.logout();
     } catch {
-      // Ignore logout errors
+      // Even if server call fails, clear local state
     }
-    setCurrentDoctor(null);
-    setAuthError(null);
+    setState({
+      isAuthenticated: false,
+      user: null,
+      isLoading: false,
+      error: null,
+    });
   }, []);
 
-  const updateProfile = useCallback(
-    async (_data: Partial<DoctorAccount>) => {
-      // Profile update handled by PHP backend
-      // API endpoint: POST /api/auth/update_profile.php
-    },
-    [],
-  );
-
-  const getPendingAccounts = useCallback(async (): Promise<DoctorAccount[]> => {
-    return authService.getPendingAccounts();
+  const clearError = useCallback(() => {
+    setState(prev => ({ ...prev, error: null }));
   }, []);
 
-  const approveAccount = useCallback(async (id: number, role?: string) => {
-    await authService.approveAccount(id, role);
-  }, []);
-
-  const approveAccountWithRole = useCallback(async (id: number, role: StaffRole) => {
-    await approveAccount(id, role);
-  }, [approveAccount]);
-
-  const rejectAccount = useCallback(async (id: number) => {
-    await authService.rejectAccount(id);
-  }, []);
-
-  const reassignRole = useCallback(async (id: number, role: StaffRole) => {
-    await authService.reassignRole(id, role);
-  }, []);
-
-  // ── Patient auth ──────────────────────────────────────────────────────────
-
-  const patientSignUp = useCallback(
-    async (data: {
-      registerNumber: string;
-      phone: string;
-      password: string;
-    }) => {
-      setIsLoggingIn(true);
-      setAuthError(null);
-      try {
-        const { registerNumber, phone, password } = data;
-
-        if (!registerNumber?.trim()) {
-          throw new Error(
-            "Register number is required. Please contact the clinic to get your register number.",
-          );
-        }
-
-        const result = await authService.patientSignUp({
-          registerNumber: registerNumber.trim(),
-          phone,
-          password,
-        });
-
-        throw new Error(
-          result.message || "Account created! Please wait for doctor approval before logging in.",
-        );
-      } catch (e: unknown) {
-        const msg = e instanceof Error ? e.message : "Sign up failed.";
-        setAuthError(msg);
-        throw e;
-      } finally {
-        setIsLoggingIn(false);
-      }
-    },
-    [],
-  );
-
-  const patientSignIn = useCallback(async (phone: string, password: string) => {
-    setIsLoggingIn(true);
-    setAuthError(null);
-    try {
-      const result = await authService.patientSignIn(phone, password);
-      setCurrentPatient(result.patient);
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Sign in failed.";
-      setAuthError(msg);
-      throw e;
-    } finally {
-      setIsLoggingIn(false);
-    }
-  }, []);
-
-  const patientSignOut = useCallback(() => {
-    setCurrentPatient(null);
-    setAuthError(null);
-  }, []);
-
-  const getPendingPatients = useCallback(async (): Promise<PatientAccount[]> => {
-    return authService.getPendingPatients();
-  }, []);
-
-  const approvePatient = useCallback(async (id: number) => {
-    await authService.approvePatient(id);
-  }, []);
-
-  const rejectPatient = useCallback(async (id: number) => {
-    await authService.rejectPatient(id);
-  }, []);
-
-  const updatePatientCredentials = useCallback(
-    async (_registerNumber: string, _newPhone?: string, _newPassword?: string) => {
-      // Patient credential update handled by PHP backend
-    },
-    [],
-  );
-
-  return (
-    <EmailAuthContext.Provider
-      value={{
-        currentDoctor,
-        currentPatient,
-        isInitializing,
-        isLoggingIn,
-        authError,
-        signUp,
-        signIn,
-        signOut,
-        updateProfile,
-        getPendingAccounts,
-        approveAccount,
-        approveAccountWithRole,
-        rejectAccount,
-        reassignRole,
-        patientSignUp,
-        patientSignIn,
-        patientSignOut,
-        getPendingPatients,
-        approvePatient,
-        rejectPatient,
-        updatePatientCredentials,
-      }}
-    >
-      {children}
-    </EmailAuthContext.Provider>
-  );
-}
-
-export function useEmailAuth(): EmailAuthContextValue {
-  const ctx = useContext(EmailAuthContext);
-  if (!ctx)
-    throw new Error("useEmailAuth must be used inside EmailAuthProvider");
-  return ctx;
-}
-
-// ── Inactivity Timer ──────────────────────────────────────────────────────────
-
-const INACTIVITY_TIMEOUT_MS = 15 * 60 * 100; // 15 minutes
-const INACTIVITY_WARNING_MS = 13 * 60 * 100; // 13 minutes (2 min before logout)
-const ACTIVITY_EVENTS = [
-  "mousemove",
-  "keydown",
-  "click",
-  "touchstart",
-  "scroll",
-] as const;
-
-export interface InactivityTimerState {
-  showWarning: boolean;
-  secondsRemaining: number;
-  resetTimer: () => void;
-}
-
-export function useInactivityTimer(onLogout: () => void): InactivityTimerState {
-  const [showWarning, setShowWarning] = useState(false);
-  const [secondsRemaining, setSecondsRemaining] = useState(120);
-
-  const logoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const warningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const lastActivityRef = useRef<number>(Date.now());
-
-  const clearAllTimers = useCallback(() => {
-    if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
-    if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
-    if (countdownRef.current) clearInterval(countdownRef.current);
-    logoutTimerRef.current = null;
-    warningTimerRef.current = null;
-    countdownRef.current = null;
-  }, []);
-
-  const startTimers = useCallback(() => {
-    clearAllTimers();
-    setShowWarning(false);
-    setSecondsRemaining(120);
-
-    warningTimerRef.current = setTimeout(() => {
-      setShowWarning(true);
-      setSecondsRemaining(120);
-      countdownRef.current = setInterval(() => {
-        setSecondsRemaining((s) => {
-          if (s <= 1) {
-            if (countdownRef.current) clearInterval(countdownRef.current);
-            return ;
-          }
-          return s - 1;
-        });
-      }, 100);
-    }, INACTIVITY_WARNING_MS);
-
-    logoutTimerRef.current = setTimeout(() => {
-      clearAllTimers();
-      setShowWarning(false);
-      onLogout();
-    }, INACTIVITY_TIMEOUT_MS);
-  }, [clearAllTimers, onLogout]);
-
-  const resetTimer = useCallback(() => {
-    lastActivityRef.current = Date.now();
-    startTimers();
-  }, [startTimers]);
-
-  useEffect(() => {
-    startTimers();
-    return clearAllTimers;
-  }, [startTimers, clearAllTimers]);
-
-  useEffect(() => {
-    const handler = () => resetTimer();
-    for (const ev of ACTIVITY_EVENTS) {
-      window.addEventListener(ev, handler, { passive: true });
-    }
-    return () => {
-      for (const ev of ACTIVITY_EVENTS) {
-        window.removeEventListener(ev, handler);
-      }
-    };
-  }, [resetTimer]);
-
-  return { showWarning, secondsRemaining, resetTimer };
+  return {
+    ...state,
+    login,
+    register,
+    logout,
+    clearError,
+  };
 }
