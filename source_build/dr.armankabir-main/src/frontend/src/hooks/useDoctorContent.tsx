@@ -52,7 +52,7 @@ export function useDoctorContent() {
       if (!updated[doctorKey]) updated[doctorKey] = {};
       const parts = path.split(".");
       let obj = updated[doctorKey] as Record<string, unknown>;
-      for (let i = ; i < parts.length - 1; i++) {
+      for (let i = 0; i < parts.length - 1; i++) {
         if (!obj[parts[i]] || typeof obj[parts[i]] !== "object") {
           obj[parts[i]] = {};
         }
