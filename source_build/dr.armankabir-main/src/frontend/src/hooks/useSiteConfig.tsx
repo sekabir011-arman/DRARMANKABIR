@@ -1,54 +1,15 @@
-import { useCallback, useState } from "react";
+/**
+ * Site Config Hook — PHP/MySQL Backend
+ *
+ * Site configuration is stored server-side via the PHP API.
+ * No localStorage used — config is fetched via React Query hooks.
+ * Managed via landingService on the server.
+ */
+
+import { useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { landingService } from "../services/landing";
-import type { SiteConfig } from "../services/landing";
-
-export interface SocialLink {
-  label: string;
-  url: string;
-  icon: string;
-}
-
-export interface EmergencyContact {
-  doctorName: string;
-  whatsappNumber: string;
-  prefilledMessage: string;
-}
-
-export interface HeroSection {
-  taglineEn: string;
-  taglineBn: string;
-  subheadingEn: string;
-  subheadingBn: string;
-  heroTaglineEn?: string;
-  heroTaglineBn?: string;
-  heroDescriptionEn?: string;
-  heroDescriptionBn?: string;
-  cta1Label: string;
-  cta2Label: string;
-}
-
-export interface AboutSection {
-  visible: boolean;
-  clinicNameEn: string;
-  clinicNameBn: string;
-  descriptionEn: string;
-  descriptionBn: string;
-  yearsExperience: number;
-  patientCount: string;
-  doctorCount: number;
-  specialties: string[];
-  affiliations: string[];
-}
-
-export interface FooterSection {
-  addressEn: string;
-  addressBn: string;
-  phone: string;
-  email: string;
-  openingHours: string;
-  copyrightText: string;
-  socialLinks: SocialLink[];
-}
+import type { SiteConfig, HeroSection, AboutSection, FooterSection, EmergencyContact } from "../services/landing";
 
 export const DEFAULT_SITE_CONFIG: SiteConfig = {
   heroSection: {
@@ -113,81 +74,71 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
 };
 
 export function useSiteConfig() {
-  const [config, setConfig] = useState<SiteConfig>(DEFAULT_SITE_CONFIG);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  // Load config from server on mount
-  useCallback(async () => {
-    try {
-      const serverConfig = await landingService.getConfig();
-      if (serverConfig) {
-        setConfig(serverConfig);
+  const { data: config = DEFAULT_SITE_CONFIG, isLoading } = useQuery({
+    queryKey: ["siteConfig"],
+    queryFn: async () => {
+      try {
+        const result = await landingService.getConfig();
+        return result ?? DEFAULT_SITE_CONFIG;
+      } catch {
+        return DEFAULT_SITE_CONFIG;
       }
-    } catch {
-      // Fall back to default
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+  });
 
-  const persistConfig = useCallback(async (next: SiteConfig) => {
-    try {
-      await landingService.saveConfig(next);
-    } catch {
-      // Save failed — config still updated locally
-    }
-  }, []);
+  const mutation = useMutation({
+    mutationFn: async (updated: Partial<SiteConfig>) => {
+      await landingService.updateConfig(updated);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["siteConfig"] });
+    },
+  });
 
-  const updateHero = useCallback((hero: Partial<HeroSection>) => {
-    setConfig((prev) => {
-      const next = { ...prev, heroSection: { ...prev.heroSection, ...hero } };
-      persistConfig(next);
-      return next;
-    });
-  }, [persistConfig]);
+  const updateHero = useCallback(
+    (hero: Partial<HeroSection>) => {
+      mutation.mutate({ heroSection: { ...config.heroSection, ...hero } });
+    },
+    [mutation, config.heroSection],
+  );
 
-  const updateAbout = useCallback((about: Partial<AboutSection>) => {
-    setConfig((prev) => {
-      const next = { ...prev, aboutSection: { ...prev.aboutSection, ...about } };
-      persistConfig(next);
-      return next;
-    });
-  }, [persistConfig]);
+  const updateAbout = useCallback(
+    (about: Partial<AboutSection>) => {
+      mutation.mutate({ aboutSection: { ...config.aboutSection, ...about } });
+    },
+    [mutation, config.aboutSection],
+  );
 
-  const updateFooter = useCallback((footer: Partial<FooterSection>) => {
-    setConfig((prev) => {
-      const next = { ...prev, footerSection: { ...prev.footerSection, ...footer } };
-      persistConfig(next);
-      return next;
-    });
-  }, [persistConfig]);
+  const updateFooter = useCallback(
+    (footer: Partial<FooterSection>) => {
+      mutation.mutate({ footerSection: { ...config.footerSection, ...footer } });
+    },
+    [mutation, config.footerSection],
+  );
 
   const updateEmergencyContacts = useCallback(
     (contacts: EmergencyContact[]) => {
-      setConfig((prev) => {
-        const next = { ...prev, emergencyContacts: contacts };
-        persistConfig(next);
-        return next;
-      });
+      mutation.mutate({ emergencyContacts: contacts } as Partial<SiteConfig>);
     },
-    [persistConfig],
+    [mutation],
   );
 
-  const resetSection = useCallback((section: keyof SiteConfig) => {
-    setConfig((prev) => {
-      const next = { ...prev, [section]: DEFAULT_SITE_CONFIG[section] };
-      persistConfig(next);
-      return next;
-    });
-  }, [persistConfig]);
+  const resetSection = useCallback(
+    (section: keyof SiteConfig) => {
+      mutation.mutate({ [section]: DEFAULT_SITE_CONFIG[section] } as Partial<SiteConfig>);
+    },
+    [mutation],
+  );
 
   return {
     config,
-    loading,
     updateHero,
     updateAbout,
     updateFooter,
     updateEmergencyContacts,
     resetSection,
+    isLoading,
   };
 }
