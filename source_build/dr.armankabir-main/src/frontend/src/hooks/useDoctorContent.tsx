@@ -12,17 +12,15 @@ import { landingService } from "../services/landing";
 
 /**
  * Hook to manage doctor content overrides.
- * Content is stored server-side and fetched via React Query.
  */
 export function useDoctorContent() {
   const queryClient = useQueryClient();
 
-  // Fetch doctor content from PHP API
   const { data: overrides = {}, isLoading } = useQuery({
     queryKey: ["doctorContent"],
     queryFn: async () => {
       const config = await landingService.getConfig();
-      return config?.doctorContentOverrides ?? {};
+      return (config as any)?.doctorContentOverrides ?? {};
     },
   });
 
@@ -30,7 +28,7 @@ export function useDoctorContent() {
     mutationFn: async (newOverrides: Record<string, unknown>) => {
       await landingService.updateConfig({
         doctorContentOverrides: newOverrides,
-      });
+      } as any);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["doctorContent"] });
