@@ -6,63 +6,63 @@
     "mode": "build",
     "todos": [
         {
+            "priority": "high",
             "content": "Fix clinicalStore.ts - remove localStorage usage and make it stubs like hybridStorage.ts",
-            "status": "pending",
-            "priority": "high"
+            "status": "completed"
         },
         {
+            "priority": "high",
             "content": "Fix useQueries.ts - fix empty pendingChanges property (line 450)",
-            "status": "pending",
-            "priority": "high"
+            "status": "completed"
         },
         {
+            "priority": "high",
             "content": "Review and fix remaining hooks (useCanisterSync, useDoctorContent, useEmailAuth, useAdminAuth, useAdminSave, useSiteConfig, useRolePermissions)",
-            "status": "pending",
-            "priority": "high"
+            "status": "in_progress"
         },
         {
+            "priority": "high",
             "content": "Create StorageAdapter utility - unified interface for reading\/writing to PHP API with localStorage fallback during migration",
-            "status": "pending",
-            "priority": "high"
+            "status": "pending"
         },
         {
+            "priority": "high",
             "content": "Refactor Layout.tsx - remove localStorage usage, use services",
-            "status": "pending",
-            "priority": "high"
+            "status": "pending"
         },
         {
+            "priority": "high",
             "content": "Refactor PatientDashboard.tsx - the largest component with ~50+ localStorage refs",
-            "status": "pending",
-            "priority": "high"
+            "status": "pending"
         },
         {
+            "priority": "medium",
             "content": "Refactor component group: Prescription-related (NewPrescriptionMode, PrescriptionForm, PrescriptionPad, PrescriptionPadPreview, PrescriptionPDFManager, PrescriptionHeaderPanel, PrescriptionHelpers)",
-            "status": "pending",
-            "priority": "medium"
+            "status": "pending"
         },
         {
+            "priority": "medium",
             "content": "Refactor component group: Clinical data (ClinicalAlertsPanel, DailyProgressNote, IOChart, DrainMonitor, HandoverSystem, ReferralLetter)",
-            "status": "pending",
-            "priority": "medium"
+            "status": "pending"
         },
         {
+            "priority": "medium",
             "content": "Refactor component group: Patient-related (PatientForm, PatientTabs, PatientSummaryCard, PatientTimeline, PatientChat)",
-            "status": "pending",
-            "priority": "medium"
+            "status": "pending"
         },
         {
+            "priority": "medium",
             "content": "Refactor component group: Admin\/Landing (GallerySection, TestimonialsSection, MoneyReceipt, InvestigationPayment)",
-            "status": "pending",
-            "priority": "medium"
+            "status": "pending"
         },
         {
+            "priority": "high",
             "content": "Verify no localStorage references remain in src\/ by final grep",
-            "status": "pending",
-            "priority": "high"
+            "status": "pending"
         }
     ],
     "created_at": 1784213755,
-    "updated_at": 1784312580,
+    "updated_at": 1784312603,
     "messages": [
         {
             "id": "msg_compact",
@@ -1888,6 +1888,377 @@
             "content": "  445 | export function useSyncStatus() {\n  446 |   return useQuery({\n  447 |     queryKey: ['syncStatus'],\n  448 |     queryFn: async () => ({\n  449 |       isOnline: navigator.onLine,\n  450 |       pendingChanges: \n  451 |       lastSyncAt: new Date(),\n  452 |       canisterConnected: false,\n  453 |     }),\n  454 |   });\n  455 | }\n  456 | \n  457 | export function isNetworkOnline(): boolean {\n  458 |   return navigator.onLine;\n  459 | }",
             "is_error": false,
             "time": 1784312580
+        },
+        {
+            "id": "msg_beb561cb53",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I see line 450 still has `pendingChanges: ` with nothing after it. Let me fix this properly."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_YcErCm6ZOVbdunnCNKL92096",
+                    "name": "edit_file",
+                    "input": {
+                        "new_string": "      pendingChanges: false,",
+                        "old_string": "      pendingChanges: ",
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 47527,
+                "completion_tokens": 131,
+                "total_tokens": 47658,
+                "prompt_cache_hit_tokens": 47360,
+                "prompt_cache_miss_tokens": 167,
+                "prompt_tokens_details": {
+                    "cached_tokens": 47360
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 23
+                },
+                "cached_tokens": 47360
+            },
+            "time": 1784312583
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_YcErCm6ZOVbdunnCNKL92096",
+            "content": "Edited source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts (1 replacement)\n-       pendingChanges: \n+       pendingChanges: false,",
+            "is_error": false,
+            "time": 1784312583
+        },
+        {
+            "id": "msg_03591c2cab",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Wait, the old value was `pendingChanges: ` with nothing after it. Let me verify it gets properly set to `pendingChanges: false,`."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_k9FmdPlSymu5ph0a3bs30513",
+                    "name": "read_file",
+                    "input": {
+                        "offset": 448,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts",
+                        "limit": 6
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 47711,
+                "completion_tokens": 129,
+                "total_tokens": 47840,
+                "prompt_cache_hit_tokens": 47616,
+                "prompt_cache_miss_tokens": 95,
+                "prompt_tokens_details": {
+                    "cached_tokens": 47616
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 31
+                },
+                "cached_tokens": 47616
+            },
+            "time": 1784312586
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_k9FmdPlSymu5ph0a3bs30513",
+            "content": "  448 |     queryFn: async () => ({\n  449 |       isOnline: navigator.onLine,\n  450 |       pendingChanges: false,\n  451 |       lastSyncAt: new Date(),\n  452 |       canisterConnected: false,\n  453 |     }),",
+            "is_error": false,
+            "time": 1784312586
+        },
+        {
+            "id": "msg_f824c679c8",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Good - fixed. Now let me tackle the remaining hooks. Let me check what hooks still exist and need updating."
+                },
+                {
+                    "type": "text",
+                    "text": "Fixed. Now let me review the remaining hooks:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_MMNiIbMLfSVQSSHRzFsb4055",
+                    "name": "todo_write",
+                    "input": {
+                        "todos": [
+                            {
+                                "priority": "high",
+                                "content": "Fix clinicalStore.ts - remove localStorage usage and make it stubs like hybridStorage.ts",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix useQueries.ts - fix empty pendingChanges property (line 450)",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Review and fix remaining hooks (useCanisterSync, useDoctorContent, useEmailAuth, useAdminAuth, useAdminSave, useSiteConfig, useRolePermissions)",
+                                "status": "in_progress"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Create StorageAdapter utility - unified interface for reading\/writing to PHP API with localStorage fallback during migration",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Refactor Layout.tsx - remove localStorage usage, use services",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Refactor PatientDashboard.tsx - the largest component with ~50+ localStorage refs",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Refactor component group: Prescription-related (NewPrescriptionMode, PrescriptionForm, PrescriptionPad, PrescriptionPadPreview, PrescriptionPDFManager, PrescriptionHeaderPanel, PrescriptionHelpers)",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Refactor component group: Clinical data (ClinicalAlertsPanel, DailyProgressNote, IOChart, DrainMonitor, HandoverSystem, ReferralLetter)",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Refactor component group: Patient-related (PatientForm, PatientTabs, PatientSummaryCard, PatientTimeline, PatientChat)",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Refactor component group: Admin\/Landing (GallerySection, TestimonialsSection, MoneyReceipt, InvestigationPayment)",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Verify no localStorage references remain in src\/ by final grep",
+                                "status": "pending"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 47911,
+                "completion_tokens": 511,
+                "total_tokens": 48422,
+                "prompt_cache_hit_tokens": 47744,
+                "prompt_cache_miss_tokens": 167,
+                "prompt_tokens_details": {
+                    "cached_tokens": 47744
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 23
+                },
+                "cached_tokens": 47744
+            },
+            "time": 1784312591
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_MMNiIbMLfSVQSSHRzFsb4055",
+            "content": "Todo list updated with 11 items.",
+            "is_error": false,
+            "time": 1784312591
+        },
+        {
+            "id": "msg_54da73f155",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me check the remaining hooks to see their current state and what needs updating."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me read the remaining hooks to check their state:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_djSmKdABVxOgaGxokCa73027",
+                    "name": "read_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useCanisterSync.ts"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_0ugBsOYST4bVWx3YvMP42461",
+                    "name": "read_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useOnlineStatus.ts"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 48392,
+                "completion_tokens": 145,
+                "total_tokens": 48537,
+                "prompt_cache_hit_tokens": 47872,
+                "prompt_cache_miss_tokens": 520,
+                "prompt_tokens_details": {
+                    "cached_tokens": 47872
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 16
+                },
+                "cached_tokens": 47872
+            },
+            "time": 1784312594
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_djSmKdABVxOgaGxokCa73027",
+            "content": "    1 | import { useCallback, useEffect, useRef, useState } from \"react\";\n    2 | import { useCanisterActors } from \"..\/canisterActors\";\n    3 | \n    4 | \/\/ ---------------------------------------------------------------------------\n    5 | \/\/ Device ID \u2014 stable per browser via localStorage\n    6 | \/\/ ---------------------------------------------------------------------------\n    7 | \n    8 | function getOrCreateDeviceId(): string {\n    9 |   const KEY = \"sync_device_id\";\n   10 |   let id = localStorage.getItem(KEY);\n   11 |   if (!id) {\n   12 |     id = Math.random().toString(36).slice(2);\n   13 |     try {\n   14 |       localStorage.setItem(KEY, id);\n   15 |     } catch {\n   16 |       \/\/ storage may be blocked in private browsing; use session-scoped id\n   17 |     }\n   18 |   }\n   19 |   return id;\n   20 | }\n   21 | \n   22 | \/\/ ---------------------------------------------------------------------------\n   23 | \/\/ Types\n   24 | \/\/ ---------------------------------------------------------------------------\n   25 | \n   26 | export type SyncStatus = \"offline\" | \"syncing\" | \"synced\" | \"pending\";\n   27 | \n   28 | export interface UseCanisterSyncResult {\n   29 |   lastSyncTime: Date | null;\n   30 |   syncStatus: SyncStatus;\n   31 |   triggerSync: () => Promise<void>;\n   32 |   itemsPending: number;\n   33 |   syncBannerMessage: string | null;\n   34 | }\n   35 | \n   36 | \/\/ ---------------------------------------------------------------------------\n   37 | \/\/ Hook\n   38 | \/\/ ---------------------------------------------------------------------------\n   39 | \n   40 | const POLL_INTERVAL_MS = 15_000;\n   41 | \n   42 | export function useCanisterSync(): UseCanisterSyncResult {\n   43 |   const { syncActor } = useCanisterActors();\n   44 | \n   45 |   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);\n   46 |   const [syncStatus, setSyncStatus] = useState<SyncStatus>(\n   47 |     syncActor ? \"pending\" : \"offline\",\n   48 |   );\n   49 |   const [itemsPending, setItemsPending] = useState(0);\n   50 |   const [syncBannerMessage, setSyncBannerMessage] = useState<string | null>(\n   51 |     null,\n   52 |   );\n   53 |   const deviceIdRef = useRef<string | null>(null);\n   54 |   const isSyncingRef = useRef(false);\n   55 | \n   56 |   \/\/ Lazy-init deviceId (localStorage not available during SSR)\n   57 |   if (!deviceIdRef.current) {\n   58 |     try {\n   59 |       deviceIdRef.current = getOrCreateDeviceId();\n   60 |     } catch {\n   61 |       deviceIdRef.current = Math.random().toString(36).slice(2);\n   62 |     }\n   63 |   }\n   64 | \n   65 |   const triggerSync = useCallback(async () => {\n   66 |     if (!syncActor || isSyncingRef.current) {\n   67 |       if (!syncActor) {\n   68 |         setSyncBannerMessage(\n   69 |           \"Backend not connected \u2014 data is saved on this device only and will NOT sync to other devices. Contact support if this persists.\",\n   70 |         );\n   71 |       }\n   72 |       return;\n   73 |     }\n   74 | \n   75 |     isSyncingRef.current = true;\n   76 |     setSyncStatus(\"syncing\");\n   77 |     setSyncBannerMessage(null);\n   78 | \n   79 |     try {\n   80 |       await (\n   81 |         syncActor as unknown as {\n   82 |           recordDeviceSync: (\n   83 |             deviceId: string,\n   84 |             pendingChanges: bigint,\n   85 |           ) => Promise<unknown>;\n   86 |         }\n   87 |       ).recordDeviceSync(deviceIdRef.current ?? \"unknown\", BigInt(0));\n   88 | \n   89 |       setLastSyncTime(new Date());\n   90 |       setItemsPending(0);\n   91 |       setSyncStatus(\"synced\");\n   92 |       setSyncBannerMessage(null);\n   93 |     } catch {\n   94 |       \/\/ sync failed \u2014 stay in pending state so UI retries\n   95 |       setSyncStatus(\"pending\");\n   96 |       setSyncBannerMessage(\n   97 |         \"Sync failed \u2014 will retry automatically. Data is safe on this device.\",\n   98 |       );\n   99 |     } finally {\n  100 |       isSyncingRef.current = false;\n  101 |     }\n  102 |   }, [syncActor]);\n  103 | \n  104 |   \/\/ Keep syncStatus in sync when actor availability changes\n  105 |   useEffect(() => {\n  106 |     if (!syncActor) {\n  107 |       setSyncStatus(\"offline\");\n  108 |     } else if (syncStatus === \"offline\") {\n  109 |       setSyncStatus(\"pending\");\n  110 |     }\n  111 |   }, [syncActor, syncStatus]);\n  112 | \n  113 |   \/\/ Polling\n  114 |   useEffect(() => {\n  115 |     const interval = setInterval(() => {\n  116 |       triggerSync();\n  117 |     }, POLL_INTERVAL_MS);\n  118 | \n  119 |     \/\/ Kick off immediately on mount\n  120 |     triggerSync();\n  121 | \n  122 |     return () => clearInterval(interval);\n  123 |   }, [triggerSync]);\n  124 | \n  125 |   return {\n  126 |     lastSyncTime,\n  127 |     syncStatus,\n  128 |     triggerSync,\n  129 |     itemsPending,\n  130 |     syncBannerMessage,\n  131 |   };\n  132 | }\n  133 |",
+            "is_error": false,
+            "time": 1784312594
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_0ugBsOYST4bVWx3YvMP42461",
+            "content": "    1 | import { useEffect, useState } from \"react\";\n    2 | \n    3 | export function useOnlineStatus() {\n    4 |   const [isOnline, setIsOnline] = useState(navigator.onLine);\n    5 | \n    6 |   useEffect(() => {\n    7 |     const handleOnline = () => setIsOnline(true);\n    8 |     const handleOffline = () => setIsOnline(false);\n    9 | \n   10 |     window.addEventListener(\"online\", handleOnline);\n   11 |     window.addEventListener(\"offline\", handleOffline);\n   12 | \n   13 |     return () => {\n   14 |       window.removeEventListener(\"online\", handleOnline);\n   15 |       window.removeEventListener(\"offline\", handleOffline);\n   16 |     };\n   17 |   }, []);\n   18 | \n   19 |   return isOnline;\n   20 | }\n   21 |",
+            "is_error": false,
+            "time": 1784312594
+        },
+        {
+            "id": "msg_4f511f08fa",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me check what useCanisterSync is still doing - it imports from `..\/canisterActors` which is the old ICP canister actor system. Since we're migrating to PHP\/MySQL, this hook should be removed or turned into a no-op. Let me check if it's still used anywhere.\n\nAlso, I need to check the other hooks like useDoctorContent, useEmailAuth, useAdminAuth, useAdminSave, useSiteConfig, useRolePermissions."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_OAsL8hWYZCWX1mb2RzQD3477",
+                    "name": "read_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useDoctorContent.tsx"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_HT4yJSRrbXUoEM0nlIUH3865",
+                    "name": "read_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useEmailAuth.tsx"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_02_9v56DqALexuAubB7Gtgj6892",
+                    "name": "read_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useAdminAuth.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 50031,
+                "completion_tokens": 270,
+                "total_tokens": 50301,
+                "prompt_cache_hit_tokens": 48512,
+                "prompt_cache_miss_tokens": 1519,
+                "prompt_tokens_details": {
+                    "cached_tokens": 48512
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 97
+                },
+                "cached_tokens": 48512
+            },
+            "time": 1784312598
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_OAsL8hWYZCWX1mb2RzQD3477",
+            "content": "    1 | import { doctors } from \"@\/data\/doctorsData\";\n    2 | import type { DoctorKey } from \"@\/data\/doctorsData\";\n    3 | import { useCallback, useState } from \"react\";\n    4 | import { saveFrontPageContentWithSync } from \"..\/lib\/hybridStorage\";\n    5 | \n    6 | const STORAGE_KEY = \"doctorContentOverrides\";\n    7 | \n    8 | \/\/ Use any for override storage since content shape is dynamic\n    9 | type Overrides = Record<string, any>;\n   10 | \n   11 | function loadOverrides(): Overrides {\n   12 |   try {\n   13 |     return JSON.parse(localStorage.getItem(STORAGE_KEY) || \"{}\") as Overrides;\n   14 |   } catch {\n   15 |     return {};\n   16 |   }\n   17 | }\n   18 | \n   19 | function saveOverrides(overrides: Overrides) {\n   20 |   localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));\n   21 |   \/\/ Sync to canister so all devices see the latest doctor content overrides\n   22 |   try {\n   23 |     \/\/ eslint-disable-next-line @typescript-eslint\/no-require-imports\n   24 |     const mod = require(\"..\/hooks\/useQueries\") as {\n   25 |       getCanisterActor?: () => unknown;\n   26 |     };\n   27 |     saveFrontPageContentWithSync(mod.getCanisterActor?.() ?? null);\n   28 |   } catch {\n   29 |     saveFrontPageContentWithSync(null);\n   30 |   }\n   31 | }\n   32 | \n   33 | \/\/ dynamic deep merge for doctor content overrides\n   34 | function deepMerge(base: any, overrides: Record<string, any>): any {\n   35 |   const result = { ...base };\n   36 |   for (const [key, value] of Object.entries(overrides)) {\n   37 |     if (Array.isArray(value)) {\n   38 |       result[key] = value;\n   39 |     } else if (\n   40 |       value !== null &&\n   41 |       typeof value === \"object\" &&\n   42 |       typeof result[key] === \"object\" &&\n   43 |       result[key] !== null &&\n   44 |       !Array.isArray(result[key])\n   45 |     ) {\n   46 |       result[key] = deepMerge(result[key], value);\n   47 |     } else {\n   48 |       result[key] = value;\n   49 |     }\n   50 |   }\n   51 |   return result;\n   52 | }\n   53 | \n   54 | export function useDoctorContent() {\n   55 |   const [overrides, setOverrides] = useState<Overrides>(loadOverrides);\n   56 | \n   57 |   const getContent = useCallback(\n   58 |     \/\/ returns merged doctor data shape\n   59 |     (doctorKey: DoctorKey): any => {\n   60 |       const base = doctors[doctorKey];\n   61 |       const docOverrides = (overrides[doctorKey] || {}) as Overrides;\n   62 |       return deepMerge(base, docOverrides);\n   63 |     },\n   64 |     [overrides],\n   65 |   );\n   66 | \n   67 |   const updateField = useCallback(\n   68 |     \/\/ dynamic field value\n   69 |     (doctorKey: DoctorKey, path: string, value: any) => {\n   70 |       setOverrides((prev) => {\n   71 |         const updated = { ...prev };\n   72 |         if (!updated[doctorKey]) updated[doctorKey] = {};\n   73 |         const parts = path.split(\".\");\n   74 |         let obj = updated[doctorKey] as Overrides;\n   75 |         for (let i = 0; i < parts.length - 1; i++) {\n   76 |           if (!obj[parts[i]] || typeof obj[parts[i]] !== \"object\") {\n   77 |             obj[parts[i]] = {};\n   78 |           }\n   79 |           obj = obj[parts[i]] as Overrides;\n   80 |         }\n   81 |         obj[parts[parts.length - 1]] = value;\n   82 |         saveOverrides(updated);\n   83 |         return updated;\n   84 |       });\n   85 |     },\n   86 |     [],\n   87 |   );\n   88 | \n   89 |   const updateChambers = useCallback(\n   90 |     \/\/ dynamic chambers array\n   91 |     (doctorKey: DoctorKey, chambers: any[]) => {\n   92 |       setOverrides((prev) => {\n   93 |         const updated = {\n   94 |           ...prev,\n   95 |           [doctorKey]: {\n   96 |             ...((prev[doctorKey] as Overrides) || {}),\n   97 |             chambers,\n   98 |           },\n   99 |         };\n  100 |         saveOverrides(updated);\n  101 |         return updated;\n  102 |       });\n  103 |     },\n  104 |     [],\n  105 |   );\n  106 | \n  107 |   const getAll = useCallback(() => {\n  108 |     return {\n  109 |       arman: getContent(\"arman\"),\n  110 |       samia: getContent(\"samia\"),\n  111 |     };\n  112 |   }, [getContent]);\n  113 | \n  114 |   return { getContent, updateField, updateChambers, getAll };\n  115 | }\n  116 |",
+            "is_error": false,
+            "time": 1784312598
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_HT4yJSRrbXUoEM0nlIUH3865",
+            "content": "    1 | \/**\n    2 |  * Email Auth Hook \u2014 PHP\/MySQL Backend\n    3 |  *\n    4 |  * All authentication is handled server-side via the PHP API.\n    5 |  * No localStorage used for business data \u2014 only session cookies.\n    6 |  * Tokens are stored in memory only, not in browser storage.\n    7 |  *\/\n    8 | \n    9 | import type React from \"react\";\n   10 | import {\n   11 |   createContext,\n   12 |   useCallback,\n   13 |   useContext,\n   14 |   useEffect,\n   15 |   useRef,\n   16 |   useState,\n   17 | } from \"react\";\n   18 | import type { StaffRole } from \"..\/types\";\n   19 | import { authService } from \"..\/services\/auth\";\n   20 | import type { DoctorAccount, PatientAccount } from \"..\/services\/auth\";\n   21 | \n   22 | export interface AuditLogEntry {\n   23 |   id: string;\n   24 |   timestamp: string;\n   25 |   userRole: StaffRole | \"admin\" | \"patient\";\n   26 |   userName: string;\n   27 |   action: string;\n   28 |   target: string;\n   29 | }\n   30 | \n   31 | const VALID_ROLES: StaffRole[] = [\n   32 |   \"admin\",\n   33 |   \"consultant_doctor\",\n   34 |   \"assistant_professor\",\n   35 |   \"associate_professor\",\n   36 |   \"professor\",\n   37 |   \"medical_officer\",\n   38 |   \"assistant_registrar\",\n   39 |   \"registrar\",\n   40 |   \"intern_doctor\",\n   41 |   \"nurse\",\n   42 |   \"reception\",\n   43 |   \"staff\",\n   44 |   \"patient\",\n   45 |   \"doctor\",\n   46 | ];\n   47 | \n   48 | export function isConsultantLevel(role: StaffRole): boolean {\n   49 |   return [\n   50 |     \"consultant_doctor\",\n   51 |     \"assistant_professor\",\n   52 |     \"associate_professor\",\n   53 |     \"professor\",\n   54 |   ].includes(role);\n   55 | }\n   56 | \n   57 | \/\/ In-memory auth token (not persisted to localStorage)\n   58 | let _authToken: string | null = null;\n   59 | let _patientToken: string | null = null;\n   60 | \n   61 | export function getAuthToken(): string | null {\n   62 |   return _authToken;\n   63 | }\n   64 | \n   65 | function setAuthToken(token: string): void {\n   66 |   _authToken = token;\n   67 | }\n   68 | \n   69 | function clearAuthToken(): void {\n   70 |   _authToken = null;\n   71 | }\n   72 | \n   73 | export function getPatientToken(): string | null {\n   74 |   return _patientToken;\n   75 | }\n   76 | \n   77 | export function setPatientToken(token: string): void {\n   78 |   _patientToken = token;\n   79 | }\n   80 | \n   81 | export function clearPatientToken(): void {\n   82 |   _patientToken = null;\n   83 | }\n   84 | \n   85 | interface EmailAuthContextValue {\n   86 |   currentDoctor: DoctorAccount | null;\n   87 |   currentPatient: PatientAccount | null;\n   88 |   isInitializing: boolean;\n   89 |   isLoggingIn: boolean;\n   90 |   authError: string | null;\n   91 |   signUp: (data: {\n   92 |     email: string;\n   93 |     password: string;\n   94 |     full_name: string;\n   95 |     role?: string;\n   96 |     specialization?: string;\n   97 |     phone?: string;\n   98 |   }) => Promise<void>;\n   99 |   signIn: (email: string, password: string) => Promise<void>;\n  100 |   signOut: () => Promise<void>;\n  101 |   updateProfile: (data: Partial<DoctorAccount>) => Promise<void>;\n  102 |   getPendingAccounts: () => Promise<DoctorAccount[]>;\n  103 |   approveAccount: (id: number, role?: string) => Promise<void>;\n  104 |   approveAccountWithRole: (id: number, role: StaffRole) => Promise<void>;\n  105 |   rejectAccount: (id: number) => Promise<void>;\n  106 |   reassignRole: (id: number, role: StaffRole) => Promise<void>;\n  107 |   \/\/ Patient auth\n  108 |   patientSignUp: (data: {\n  109 |     registerNumber: string;\n  110 |     phone: string;\n  111 |     password: string;\n  112 |   }) => Promise<void>;\n  113 |   patientSignIn: (phone: string, password: string) => Promise<void>;\n  114 |   patientSignOut: () => void;\n  115 |   getPendingPatients: () => Promise<PatientAccount[]>;\n  116 |   approvePatient: (id: number) => Promise<void>;\n  117 |   rejectPatient: (id: number) => Promise<void>;\n  118 |   updatePatientCredentials: (\n  119 |     registerNumber: string,\n  120 |     newPhone?: string,\n  121 |     newPassword?: string,\n  122 |   ) => Promise<void>;\n  123 | }\n  124 | \n  125 | const EmailAuthContext = createContext<EmailAuthContextValue | null>(null);\n  126 | \n  127 | export function EmailAuthProvider({ children }: { children: React.ReactNode }) {\n  128 |   const [currentDoctor, setCurrentDoctor] = useState<DoctorAccount | null>(null);\n  129 |   const [currentPatient, setCurrentPatient] = useState<PatientAccount | null>(null);\n  130 |   const [isInitializing, setIsInitializing] = useState(true);\n  131 |   const [isLoggingIn, setIsLoggingIn] = useState(false);\n  132 |   const [authError, setAuthError] = useState<string | null>(null);\n  133 | \n  134 |   \/\/ Restore session on mount by verifying with the server (cookie-based)\n  135 |   useEffect(() => {\n  136 |     const restoreSession = async () => {\n  137 |       try {\n  138 |         const user = await authService.verifySession();\n  139 |         if (user) {\n  140 |           setCurrentDoctor(user);\n  141 |         }\n  142 |       } catch {\n  143 |         \/\/ Session invalid \u2014 not authenticated\n  144 |       } finally {\n  145 |         setIsInitializing(false);\n  146 |       }\n  147 |     };\n  148 |     restoreSession();\n  149 |   }, []);\n  150 | \n  151 |   const signUp = useCallback(\n  152 |     async (data: {\n  153 |       email: string;\n  154 |       password: string;\n  155 |       full_name: string;\n  156 |       role?: string;\n  157 |       specialization?: string;\n  158 |       phone?: string;\n  159 |     }) => {\n  160 |       setIsLoggingIn(true);\n  161 |       setAuthError(null);\n  162 |       try {\n  163 |         const result = await authService.signUp({\n  164 |           email: data.email,\n  165 |           password: data.password,\n  166 |           full_name: data.full_name,\n  167 |           role: data.role ?? \"doctor\",\n  168 |           specialization: data.specialization ?? \"\",\n  169 |           phone: data.phone ?? \"\",\n  170 |         });\n  171 |         throw new Error(result.message || \"Account created! Please wait for admin approval before logging in.\");\n  172 |       } catch (e: unknown) {\n  173 |         const msg = e instanceof Error ? e.message : \"Sign up failed.\";\n  174 |         setAuthError(msg);\n  175 |         throw e;\n  176 |       } finally {\n  177 |         setIsLoggingIn(false);\n  178 |       }\n  179 |     },\n  180 |     [],\n  181 |   );\n  182 | \n  183 |   const signIn = useCallback(async (email: string, password: string) => {\n  184 |     setIsLoggingIn(true);\n  185 |     setAuthError(null);\n  186 |     try {\n  187 |       const result = await authService.signIn(email, password);\n  188 |       if (result.token) {\n  189 |         setAuthToken(result.token);\n  190 |       }\n  191 |       setCurrentDoctor(result.user);\n  192 |     } catch (e: unknown) {\n  193 |       const msg = e instanceof Error ? e.message : \"Sign in failed.\";\n  194 |       setAuthError(msg);\n  195 |       throw e;\n  196 |     } finally {\n  197 |       setIsLoggingIn(false);\n  198 |     }\n  199 |   }, []);\n  200 | \n  201 |   const signOut = useCallback(async () => {\n  202 |     await authService.signOut();\n  203 |     clearAuthToken();\n  204 |     setCurrentDoctor(null);\n  205 |     setAuthError(null);\n  206 |   }, []);\n  207 | \n  208 |   const updateProfile = useCallback(\n  209 |     async (_data: Partial<DoctorAccount>) => {\n  210 |       \/\/ Profile update handled by PHP backend\n  211 |     },\n  212 |     [],\n  213 |   );\n  214 | \n  215 |   const getPendingAccounts = useCallback(async (): Promise<DoctorAccount[]> => {\n  216 |     return authService.getPendingAccounts();\n  217 |   }, []);\n  218 | \n  219 |   const approveAccount = useCallback(async (id: number, role?: string) => {\n  220 |     await authService.approveAccount(id, role);\n  221 |   }, []);\n  222 | \n  223 |   const approveAccountWithRole = useCallback(async (id: number, role: StaffRole) => {\n  224 |     await authService.approveAccount(id, role);\n  225 |   }, []);\n  226 | \n  227 |   const rejectAccount = useCallback(async (id: number) => {\n  228 |     await authService.rejectAccount(id);\n  229 |   }, []);\n  230 | \n  231 |   const reassignRole = useCallback(async (id: number, role: StaffRole) => {\n  232 |     await authService.reassignRole(id, role);\n  233 |   }, []);\n  234 | \n  235 |   \/\/ \u2500\u2500 Patient auth \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  236 | \n  237 |   const patientSignUp = useCallback(\n  238 |     async (data: {\n  239 |       registerNumber: string;\n  240 |       phone: string;\n  241 |       password: string;\n  242 |     }) => {\n  243 |       setIsLoggingIn(true);\n  244 |       setAuthError(null);\n  245 |       try {\n  246 |         const { registerNumber, phone, password } = data;\n  247 | \n  248 |         if (!registerNumber?.trim()) {\n  249 |           throw new Error(\n  250 |             \"Register number is required. Please contact the clinic to get your register number.\",\n  251 |           );\n  252 |         }\n  253 | \n  254 |         const result = await authService.patientSignUp({\n  255 |           registerNumber: registerNumber.trim(),\n  256 |           phone,\n  257 |           password,\n  258 |         });\n  259 | \n  260 |         throw new Error(\n  261 |           result.message || \"Account created! Please wait for doctor approval before logging in.\",\n  262 |         );\n  263 |       } catch (e: unknown) {\n  264 |         const msg = e instanceof Error ? e.message : \"Sign up failed.\";\n  265 |         setAuthError(msg);\n  266 |         throw e;\n  267 |       } finally {\n  268 |         setIsLoggingIn(false);\n  269 |       }\n  270 |     },\n  271 |     [],\n  272 |   );\n  273 | \n  274 |   const patientSignIn = useCallback(async (phone: string, password: string) => {\n  275 |     setIsLoggingIn(true);\n  276 |     setAuthError(null);\n  277 |     try {\n  278 |       const result = await authService.patientSignIn(phone, password);\n  279 |       if (result.token) {\n  280 |         setPatientToken(result.token);\n  281 |       }\n  282 |       setCurrentPatient(result.patient);\n  283 |     } catch (e: unknown) {\n  284 |       const msg = e instanceof Error ? e.message : \"Sign in failed.\";\n  285 |       setAuthError(msg);\n  286 |       throw e;\n  287 |     } finally {\n  288 |       setIsLoggingIn(false);\n  289 |     }\n  290 |   }, []);\n  291 | \n  292 |   const patientSignOut = useCallback(() => {\n  293 |     clearPatientToken();\n  294 |     setCurrentPatient(null);\n  295 |     setAuthError(null);\n  296 |   }, []);\n  297 | \n  298 |   const getPendingPatients = useCallback(async (): Promise<PatientAccount[]> => {\n  299 |     return authService.getPendingPatients();\n  300 |   }, []);\n  301 | \n  302 |   const approvePatient = useCallback(async (id: number) => {\n  303 |     await authService.approvePatient(id);\n  304 |   }, []);\n  305 | \n  306 |   const rejectPatient = useCallback(async (id: number) => {\n  307 |     await authService.rejectPatient(id);\n  308 |   }, []);\n  309 | \n  310 |   const updatePatientCredentials = useCallback(\n  311 |     async (_registerNumber: string, _newPhone?: string, _newPassword?: string) => {\n  312 |       \/\/ Patient credential update handled by PHP backend\n  313 |     },\n  314 |     [],\n  315 |   );\n  316 | \n  317 |   return (\n  318 |     <EmailAuthContext.Provider\n  319 |       value={{\n  320 |         currentDoctor,\n  321 |         currentPatient,\n  322 |         isInitializing,\n  323 |         isLoggingIn,\n  324 |         authError,\n  325 |         signUp,\n  326 |         signIn,\n  327 |         signOut,\n  328 |         updateProfile,\n  329 |         getPendingAccounts,\n  330 |         approveAccount,\n  331 |         approveAccountWithRole,\n  332 |         rejectAccount,\n  333 |         reassignRole,\n  334 |         patientSignUp,\n  335 |         patientSignIn,\n  336 |         patientSignOut,\n  337 |         getPendingPatients,\n  338 |         approvePatient,\n  339 |         rejectPatient,\n  340 |         updatePatientCredentials,\n  341 |       }}\n  342 |     >\n  343 |       {children}\n  344 |     <\/EmailAuthContext.Provider>\n  345 |   );\n  346 | }\n  347 | \n  348 | export function useEmailAuth(): EmailAuthContextValue {\n  349 |   const ctx = useContext(EmailAuthContext);\n  350 |   if (!ctx)\n  351 |     throw new Error(\"useEmailAuth must be used inside EmailAuthProvider\");\n  352 |   return ctx;\n  353 | }\n  354 | \n  355 | \/\/ \u2500\u2500 Inactivity Timer \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  356 | \n  357 | const INACTIVITY_TIMEOUT_MS = 15 * 60 * 100; \/\/ 15 minutes\n  358 | const INACTIVITY_WARNING_MS = 13 * 60 * 100; \/\/ 13 minutes (2 min before logout)\n  359 | const ACTIVITY_EVENTS = [\n  360 |   \"mousemove\",\n  361 |   \"keydown\",\n  362 |   \"click\",\n  363 |   \"touchstart\",\n  364 |   \"scroll\",\n  365 | ] as const;\n  366 | \n  367 | export interface InactivityTimerState {\n  368 |   showWarning: boolean;\n  369 |   secondsRemaining: number;\n  370 |   resetTimer: () => void;\n  371 | }\n  372 | \n  373 | export function useInactivityTimer(onLogout: () => void): InactivityTimerState {\n  374 |   const [showWarning, setShowWarning] = useState(false);\n  375 |   const [secondsRemaining, setSecondsRemaining] = useState(120);\n  376 | \n  377 |   const logoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);\n  378 |   const warningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);\n  379 |   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);\n  380 |   const lastActivityRef = useRef<number>(Date.now());\n  381 | \n  382 |   const clearAllTimers = useCallback(() => {\n  383 |     if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);\n  384 |     if (warningTimerRef.current) clearTimeout(warningTimerRef.current);\n  385 |     if (countdownRef.current) clearInterval(countdownRef.current);\n  386 |     logoutTimerRef.current = null;\n  387 |     warningTimerRef.current = null;\n  388 |     countdownRef.current = null;\n  389 |   }, []);\n  390 | \n  391 |   const startTimers = useCallback(() => {\n  392 |     clearAllTimers();\n  393 |     setShowWarning(false);\n  394 |     setSecondsRemaining(120);\n  395 | \n  396 |     warningTimerRef.current = setTimeout(() => {\n  397 |       setShowWarning(true);\n  398 |       setSecondsRemaining(120);\n  399 |       countdownRef.current = setInterval(() => {\n  400 |         setSecondsRemaining((s) => {\n  401 |           if (s <= 1) {\n  402 |             if (countdownRef.current) clearInterval(countdownRef.current);\n  403 |             return ;\n  404 |           }\n  405 |           return s - 1;\n  406 |         });\n  407 |       }, 100);\n  408 |     }, INACTIVITY_WARNING_MS);\n  409 | \n  410 |     logoutTimerRef.current = setTimeout(() => {\n  411 |       clearAllTimers();\n  412 |       setShowWarning(false);\n  413 |       onLogout();\n  414 |     }, INACTIVITY_TIMEOUT_MS);\n  415 |   }, [clearAllTimers, onLogout]);\n  416 | \n  417 |   const resetTimer = useCallback(() => {\n  418 |     lastActivityRef.current = Date.now();\n  419 |     startTimers();\n  420 |   }, [startTimers]);\n  421 | \n  422 |   useEffect(() => {\n  423 |     startTimers();\n  424 |     return clearAllTimers;\n  425 |   }, [startTimers, clearAllTimers]);\n  426 | \n  427 |   useEffect(() => {\n  428 |     const handler = () => resetTimer();\n  429 |     for (const ev of ACTIVITY_EVENTS) {\n  430 |       window.addEventListener(ev, handler, { passive: true });\n  431 |     }\n  432 |     return () => {\n  433 |       for (const ev of ACTIVITY_EVENTS) {\n  434 |         window.removeEventListener(ev, handler);\n  435 |       }\n  436 |     };\n  437 |   }, [resetTimer]);\n  438 | \n  439 |   return { showWarning, secondsRemaining, resetTimer };\n  440 | }\n  441 |",
+            "is_error": false,
+            "time": 1784312598
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_02_9v56DqALexuAubB7Gtgj6892",
+            "content": "    1 | \/**\n    2 |  * Admin Auth Hook \u2014 PHP\/MySQL Backend\n    3 |  *\n    4 |  * Admin authentication now goes through the PHP API.\n    5 |  * Hardcoded accounts removed.\n    6 |  *\/\n    7 | \n    8 | import { useCallback, useState } from \"react\";\n    9 | import { post } from \"..\/lib\/api\";\n   10 | \n   11 | function loadSession(): boolean {\n   12 |   return localStorage.getItem(\"adminSession\") === \"true\";\n   13 | }\n   14 | \n   15 | export function useAdminAuth() {\n   16 |   const [isAdmin, setIsAdmin] = useState<boolean>(loadSession);\n   17 | \n   18 |   const adminLogin = useCallback(\n   19 |     async (username: string, password: string): Promise<boolean> => {\n   20 |       try {\n   21 |         const result = await post<{ token: string }>(\"\/auth\/login.php\", {\n   22 |           email: username,\n   23 |           password,\n   24 |         });\n   25 |         if (result?.token) {\n   26 |           localStorage.setItem(\"phpAuthToken\", result.token);\n   27 |           localStorage.setItem(\"adminSession\", \"true\");\n   28 |           setIsAdmin(true);\n   29 |           return true;\n   30 |         }\n   31 |       } catch {\n   32 |         \/\/ Login failed\n   33 |       }\n   34 |       return false;\n   35 |     },\n   36 |     [],\n   37 |   );\n   38 | \n   39 |   const adminLogout = useCallback(() => {\n   40 |     localStorage.removeItem(\"adminSession\");\n   41 |     localStorage.removeItem(\"phpAuthToken\");\n   42 |     setIsAdmin(false);\n   43 |   }, []);\n   44 | \n   45 |   return { isAdmin, adminLogin, adminLogout };\n   46 | }\n   47 |",
+            "is_error": false,
+            "time": 1784312598
+        },
+        {
+            "id": "msg_bb4fb8e1d6",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I can see that:\n\n1. `useCanisterSync.ts` - Still uses `useCanisterActors` (ICP canister system) and `localStorage`. This should be migrated to use the PHP API's sync status endpoint.\n\n2. `useDoctorContent.tsx` - Still uses `localStorage` for overrides. Should delegate to the PHP API.\n\n3. `useEmailAuth.tsx` - Already properly uses `authService`. Has a small bug on line 403 where `return ;` has a syntax issue (empty return). Let me fix that.\n\n4. `useAdminAuth.tsx` - Still uses `localStorage` for session management. Should use PHP session cookies instead.\n\nLet me fix the hooks:\n\n1. Fix useEmailAuth.tsx - line 403 empty return\n2. Fix useAdminAuth.tsx - use PHP sessions, not localStorage\n3. Fix useDoctorContent.tsx - use PHP API\n4. Fix useCanisterSync.ts - remove localStorage dependency\n\nLet me start with these fixes."
+                },
+                {
+                    "type": "text",
+                    "text": "Good - I can see multiple issues. Let me fix them one by one. First, fix the bug in `useEmailAuth.tsx` (line 403 has an empty `return`):"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_7gHHHu1cOw7fUzUOxV5q4717",
+                    "name": "read_file",
+                    "input": {
+                        "limit": 10,
+                        "offset": 398,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useEmailAuth.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 56262,
+                "completion_tokens": 354,
+                "total_tokens": 56616,
+                "prompt_cache_hit_tokens": 50176,
+                "prompt_cache_miss_tokens": 6086,
+                "prompt_tokens_details": {
+                    "cached_tokens": 50176
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 216
+                },
+                "cached_tokens": 50176
+            },
+            "time": 1784312603
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_7gHHHu1cOw7fUzUOxV5q4717",
+            "content": "  398 |       setSecondsRemaining(120);\n  399 |       countdownRef.current = setInterval(() => {\n  400 |         setSecondsRemaining((s) => {\n  401 |           if (s <= 1) {\n  402 |             if (countdownRef.current) clearInterval(countdownRef.current);\n  403 |             return ;\n  404 |           }\n  405 |           return s - 1;\n  406 |         });\n  407 |       }, 100);",
+            "is_error": false,
+            "time": 1784312603
         }
     ]
 }

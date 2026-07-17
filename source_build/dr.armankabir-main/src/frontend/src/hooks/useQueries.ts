@@ -447,7 +447,7 @@ export function useSyncStatus() {
     queryKey: ['syncStatus'],
     queryFn: async () => ({
       isOnline: navigator.onLine,
-      pendingChanges: 
+      pendingChanges: false,
       lastSyncAt: new Date(),
       canisterConnected: false,
     }),
