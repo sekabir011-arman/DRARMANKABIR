@@ -89,7 +89,7 @@ export function useSiteConfig() {
 
   const mutation = useMutation({
     mutationFn: async (updated: Partial<SiteConfig>) => {
-      await landingService.updateConfig(updated);
+      await landingService.updateSiteConfig(updated);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["siteConfig"] });
