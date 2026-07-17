@@ -2,8 +2,8 @@
  * Email Auth Hook — PHP/MySQL Backend
  *
  * All authentication is handled server-side via the PHP API.
- * localStorage is no longer used as the primary auth store.
- * Sessions are managed via Bearer tokens stored in localStorage.
+ * PHP sessions (cookies) manage authentication state.
+ * No tokens are stored in localStorage.
  */
 
 import type React from "react";
@@ -16,33 +16,10 @@ import {
   useState,
 } from "react";
 import type { StaffRole } from "../types";
-import { post, get, setAuthToken, clearAuthToken } from "../lib/api";
+import { authService } from "../services";
+import type { DoctorAccount, PatientAccount } from "../services";
 
-export interface DoctorAccount {
-  id: number;
-  email: string;
-  full_name: string;
-  name_bn: string;
-  role: StaffRole;
-  specialization: string;
-  phone: string;
-  photo_url?: string;
-  signature_url?: string;
-  bmdc_registration?: string;
-}
-
-export interface PatientAccount {
-  id: number;
-  patient_id: number;
-  phone: string;
-  full_name: string;
-  name_bn: string;
-  gender?: string;
-  date_of_birth?: string;
-  register_number?: string;
-  photo_url?: string;
-  status: "pending" | "approved" | "rejected";
-}
+export { DoctorAccount, PatientAccount };
 
 export interface AuditLogEntry {
   id: string;
@@ -79,14 +56,14 @@ export function isConsultantLevel(role: StaffRole): boolean {
   ].includes(role);
 }
 
-// ── Legacy localStorage registry helpers (kept for backward compatibility) ──
+// ── Legacy registry helpers (kept for backward compatibility, now no-ops) ──
 
 export function loadRegistry(): DoctorAccount[] {
   return [];
 }
 
 export function saveRegistry(_registry: DoctorAccount[]): void {
-  // No-op — registry is server-side
+  // No-op — registry is server-side via authService
 }
 
 export function loadPatientRegistry(): PatientAccount[] {
@@ -94,7 +71,7 @@ export function loadPatientRegistry(): PatientAccount[] {
 }
 
 export function savePatientRegistry(_registry: PatientAccount[]): void {
-  // No-op — registry is server-side
+  // No-op — registry is server-side via authService
 }
 
 export function appendAuditLog(_entry: Omit<AuditLogEntry, "id">): void {
@@ -180,30 +157,17 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
-  // Restore session on mount by verifying the stored token
+  // Restore session on mount by verifying the PHP session cookie
   useEffect(() => {
     const restoreSession = async () => {
       try {
-        const token = localStorage.getItem("phpAuthToken");
-        if (token) {
-          // Try to verify the session
-          const result = await get<{ user: DoctorAccount }>("/auth/verify.php");
-          if (result?.user) {
-            setCurrentDoctor(result.user);
-            localStorage.setItem("app_current_user_email", result.user.email);
-          }
-        }
-
-        // Check for patient session
-        const patientToken = localStorage.getItem("phpPatientToken");
-        if (patientToken) {
-          // Patient session restore would go here
-          // For now just clear it and let them re-login
+        // PHP session cookie is auto-sent; verify it
+        const user = await authService.verifySession();
+        if (user) {
+          setCurrentDoctor(user);
         }
       } catch {
-        // Token invalid or expired — clear it
-        localStorage.removeItem("phpAuthToken");
-        localStorage.removeItem("app_current_user_email");
+        // Session invalid or expired
       } finally {
         setIsInitializing(false);
       }
@@ -223,15 +187,8 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoggingIn(true);
       setAuthError(null);
       try {
-        const result = await post<{ status: string; message: string }>("/auth/register.php", {
-          email: data.email,
-          password: data.password,
-          full_name: data.full_name,
-          role: data.role ?? "doctor",
-          specialization: data.specialization ?? "",
-          phone: data.phone ?? "",
-        });
-        throw new Error(result.message || "Account created! Please wait for admin approval before logging in.");
+        await authService.signUp(data);
+        throw new Error("Account created! Please wait for admin approval before logging in.");
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : "Sign up failed.";
         setAuthError(msg);
@@ -247,12 +204,7 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoggingIn(true);
     setAuthError(null);
     try {
-      const result = await post<{ token: string; user: DoctorAccount }>("/auth/login.php", {
-        email,
-        password,
-      });
-      setAuthToken(result.token);
-      localStorage.setItem("app_current_user_email", result.user.email);
+      const result = await authService.signIn(email, password);
       setCurrentDoctor(result.user);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Sign in failed.";
@@ -264,40 +216,26 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
-    try {
-      await post("/auth/logout.php");
-    } catch {
-      // Ignore logout errors
-    }
-    clearAuthToken();
-    localStorage.removeItem("app_current_user_email");
+    await authService.signOut();
     setCurrentDoctor(null);
+    setCurrentPatient(null);
     setAuthError(null);
   }, []);
 
   const updateProfile = useCallback(
     async (_data: Partial<DoctorAccount>) => {
-      // Profile update handled by PHP backend
+      // Profile update handled by PHP backend via authService
       // API endpoint: POST /api/auth/update_profile.php
-      // For now, no-op until endpoint is verified
     },
     [],
   );
 
   const getPendingAccounts = useCallback(async (): Promise<DoctorAccount[]> => {
-    try {
-      const result = await get<{ users: DoctorAccount[] }>("/auth/pending.php");
-      return result.users ?? [];
-    } catch {
-      return [];
-    }
+    return authService.getPendingAccounts();
   }, []);
 
   const approveAccount = useCallback(async (id: number, role?: string) => {
-    await post("/auth/approve.php", {
-      user_id: id,
-      ...(role ? { role } : {}),
-    });
+    await authService.approveAccount(id, role);
   }, []);
 
   const approveAccountWithRole = useCallback(async (id: number, role: StaffRole) => {
@@ -305,14 +243,11 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
   }, [approveAccount]);
 
   const rejectAccount = useCallback(async (id: number) => {
-    await post("/auth/reject.php", { user_id: id });
+    await authService.rejectAccount(id);
   }, []);
 
   const reassignRole = useCallback(async (id: number, role: StaffRole) => {
-    await post("/auth/reassign_role.php", {
-      user_id: id,
-      role,
-    });
+    await authService.reassignRole(id, role);
   }, []);
 
   // ── Patient auth ──────────────────────────────────────────────────────────
@@ -334,14 +269,14 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
           );
         }
 
-        const result = await post<{ message: string; status: string }>("/auth/patients/register.php", {
-          register_number: registerNumber.trim(),
+        await authService.patientSignUp({
+          registerNumber: registerNumber.trim(),
           phone,
           password,
         });
 
         throw new Error(
-          result.message || "Account created! Please wait for doctor approval before logging in.",
+          "Account created! Please wait for doctor approval before logging in.",
         );
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : "Sign up failed.";
@@ -358,11 +293,7 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoggingIn(true);
     setAuthError(null);
     try {
-      const result = await post<{ token: string; patient: PatientAccount }>("/auth/patients/login.php", {
-        phone,
-        password,
-      });
-      localStorage.setItem("phpPatientToken", result.token);
+      const result = await authService.patientSignIn(phone, password);
       setCurrentPatient(result.patient);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Sign in failed.";
@@ -374,36 +305,25 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const patientSignOut = useCallback(() => {
-    localStorage.removeItem("phpPatientToken");
     setCurrentPatient(null);
     setAuthError(null);
   }, []);
 
   const getPendingPatients = useCallback(async (): Promise<PatientAccount[]> => {
-    try {
-      const result = await get<{ patients: PatientAccount[] }>("/auth/patients/pending.php");
-      return result.patients ?? [];
-    } catch {
-      return [];
-    }
+    return authService.getPendingPatients();
   }, []);
 
   const approvePatient = useCallback(async (id: number) => {
-    await post("/auth/patients/approve.php", {
-      patient_login_id: id,
-    });
+    await authService.approvePatient(id);
   }, []);
 
   const rejectPatient = useCallback(async (id: number) => {
-    await post("/auth/patients/reject.php", {
-      patient_login_id: id,
-    });
+    await authService.rejectPatient(id);
   }, []);
 
   const updatePatientCredentials = useCallback(
     async (_registerNumber: string, _newPhone?: string, _newPassword?: string) => {
       // Patient credential update handled by PHP backend
-      // For now, no-op
     },
     [],
   );

@@ -68,3 +68,6 @@ Stack trace:
 #1 /home/drarmank/public_html/api/frontpage/get.php(21): requireMethod('GET')
 #2 {main}
   thrown in /home/drarmank/public_html/api/helpers.php on line 65
+[17-Jul-2026 18:29:46 Asia/Dhaka] Database connection failed: SQLSTATE[08004] [1040] Too many connections
+[17-Jul-2026 18:29:47 Asia/Dhaka] Database connection failed: SQLSTATE[08004] [1040] Too many connections
+[17-Jul-2026 18:29:47 Asia/Dhaka] Database connection failed: SQLSTATE[HY000] [1040] Too many connections
