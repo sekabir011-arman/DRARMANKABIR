@@ -1,12 +1,23 @@
 /**
- * React Query hooks — Service Layer
+ * React Query hooks — PHP/MySQL Backend
  *
- * All CRUD operations now go through the service layer (DAL) → PHP API → MySQL.
- * No localStorage, sessionStorage, IndexedDB, or direct fetch() calls.
- * IDs are `number` (MySQL INT/BIGINT).
+ * All CRUD operations now target the PHP/MySQL API via the service layer.
+ * No localStorage, sessionStorage, or IndexedDB is used for business data.
+ * No canister actors or sync queue code.
+ * IDs are number (MySQL INT/BIGINT).
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  patientService,
+  visitService,
+  prescriptionService,
+  appointmentService,
+  clinicalNotesService,
+  admissionService,
+  vitalService,
+  userService,
+} from '../services';
 import type {
   AdmissionHistory,
   BedRecord,
@@ -15,7 +26,6 @@ import type {
   ClinicalOrder,
   DrugReminder,
   Encounter,
-  Medication,
   Observation,
   Patient,
   Prescription,
@@ -24,22 +34,12 @@ import type {
   VitalSigns,
 } from '../types';
 
-import { patientService } from '../services/patients';
-import { visitService } from '../services/visits';
-import { prescriptionService } from '../services/prescriptions';
-import { appointmentService } from '../services/appointments';
-import { userService } from '../services/users';
-import { clinicalNotesService } from '../services/clinicalNotes';
-import { admissionService } from '../services/admissions';
-import { vitalService } from '../services/vitals';
-import { authService } from '../services/auth';
-
 // ─── Patients ───────────────────────────────────────────────────────────────
 
 export function useGetAllPatients() {
   return useQuery<Patient[]>({
     queryKey: ['patients'],
-    queryFn: () => patientService.getAll(1000),
+    queryFn: () => patientService.getAll(100),
   });
 }
 
@@ -54,23 +54,8 @@ export function useGetPatient(id: number | null) {
 export function useCreatePatient() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: {
-      fullName: string;
-      nameBn?: string | null;
-      dateOfBirth?: string | null;
-      gender?: string;
-      phone?: string | null;
-      email?: string | null;
-      address?: string | null;
-      bloodGroup?: string | null;
-      weight?: number | null;
-      height?: number | null;
-      allergies?: string[];
-      chronicConditions?: string[];
-      pastSurgicalHistory?: string | null;
-      patientType?: string;
-      photo?: string | null;
-    }) => patientService.create(data),
+    mutationFn: (data: Parameters<typeof patientService.create>[]) =>
+      patientService.create(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['patients'] }),
   });
 }
@@ -78,24 +63,8 @@ export function useCreatePatient() {
 export function useUpdatePatient() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: {
-      id: number;
-      fullName?: string;
-      nameBn?: string | null;
-      dateOfBirth?: string | null;
-      gender?: string;
-      phone?: string | null;
-      email?: string | null;
-      address?: string | null;
-      bloodGroup?: string | null;
-      weight?: number | null;
-      height?: number | null;
-      allergies?: string[];
-      chronicConditions?: string[];
-      pastSurgicalHistory?: string | null;
-      patientType?: string;
-      photo?: string | null;
-    }) => patientService.update(data),
+    mutationFn: (data: Parameters<typeof patientService.update>[]) =>
+      patientService.update(data),
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ['patients'] });
       qc.invalidateQueries({ queryKey: ['patient', vars.id.toString()] });
@@ -124,17 +93,8 @@ export function useGetVisitsByPatient(patientId: number | null) {
 export function useCreateVisit() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: {
-      patientId: number;
-      visitDate?: string;
-      chiefComplaint?: string;
-      historyOfPresentIllness?: string | null;
-      vitalSigns?: VitalSigns;
-      physicalExamination?: string | null;
-      diagnosis?: string | null;
-      notes?: string | null;
-      visitType?: string;
-    }) => visitService.create(data),
+    mutationFn: (data: Parameters<typeof visitService.create>[]) =>
+      visitService.create(data),
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['visits', vars.patientId.toString()] }),
   });
@@ -153,18 +113,8 @@ export function useDeleteVisit() {
 export function useUpdateVisit() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: {
-      id: number;
-      patientId: number;
-      visitDate?: string;
-      chiefComplaint?: string;
-      historyOfPresentIllness?: string | null;
-      vitalSigns?: VitalSigns;
-      physicalExamination?: string | null;
-      diagnosis?: string | null;
-      notes?: string | null;
-      visitType?: string;
-    }) => visitService.update(data),
+    mutationFn: (data: Parameters<typeof visitService.update>[]) =>
+      visitService.update(data),
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['visits', vars.patientId.toString()] }),
   });
@@ -183,14 +133,8 @@ export function useGetPrescriptionsByPatient(patientId: number | null) {
 export function useCreatePrescription() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: {
-      patientId: number;
-      visitId?: number | null;
-      prescriptionDate?: string;
-      diagnosis?: string | null;
-      medications: Medication[];
-      notes?: string | null;
-    }) => prescriptionService.create(data),
+    mutationFn: (data: Parameters<typeof prescriptionService.create>[]) =>
+      prescriptionService.create(data),
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['prescriptions', vars.patientId.toString()] }),
   });
@@ -209,15 +153,8 @@ export function useDeletePrescription() {
 export function useUpdatePrescription() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: {
-      id: number;
-      patientId: number;
-      visitId?: number | null;
-      prescriptionDate?: string;
-      diagnosis?: string | null;
-      medications: Medication[];
-      notes?: string | null;
-    }) => prescriptionService.update(data),
+    mutationFn: (data: Parameters<typeof prescriptionService.update>[]) =>
+      prescriptionService.update(data),
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['prescriptions', vars.patientId.toString()] }),
   });
@@ -247,7 +184,7 @@ export function useSaveCallerUserProfile() {
   });
 }
 
-// ─── Clinical Data Engine Hooks ─────────────────────────────────────────────
+// ─── Clinical Data Hooks ───────────────────────────────────────────────────
 
 export function useGetEncountersByPatient(patientId: number | null) {
   return useQuery<Encounter[]>({
@@ -321,6 +258,8 @@ export function useCreateOrder() {
   });
 }
 
+// ─── Beds & Admissions ─────────────────────────────────────────────────────
+
 export function useGetBedsByWard(ward: string | null) {
   return useQuery<BedRecord[]>({
     queryKey: ['beds', ward],
@@ -332,7 +271,7 @@ export function useGetBedsByWard(ward: string | null) {
 export function useCreateBed() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { ward: string; bedNumber: string; bedType?: string }) =>
+    mutationFn: (data: Parameters<typeof admissionService.createBed>[]) =>
       admissionService.createBed(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['beds'] }),
   });
@@ -345,6 +284,8 @@ export function useGetAdmissionHistory(patientId: number | null) {
     enabled: !!patientId,
   });
 }
+
+// ─── Drug Reminders & Alerts ───────────────────────────────────────────────
 
 export function useGetDrugReminders() {
   return useQuery<DrugReminder[]>({
@@ -366,6 +307,8 @@ export function useGetClinicalAlerts() {
   });
 }
 
+// ─── Appointments ──────────────────────────────────────────────────────────
+
 export function useGetAppointmentsByPatient(patientId: number | null) {
   return useQuery<any[]>({
     queryKey: ['appointments', patientId?.toString()],
@@ -377,13 +320,8 @@ export function useGetAppointmentsByPatient(patientId: number | null) {
 export function useCreateAppointment() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: {
-      patientId: number;
-      appointmentDate?: string;
-      doctorName?: string;
-      reason?: string;
-      status?: string;
-    }) => appointmentService.create(data),
+    mutationFn: (data: Parameters<typeof appointmentService.create>[]) =>
+      appointmentService.create(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['appointments'] }),
   });
 }
@@ -401,28 +339,24 @@ export function useGetVitalsByPatient(patientId: number | null) {
 export function useCreateVitals() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: {
-      patientId: number;
-      vitalSigns: VitalSigns;
-      recordedAt?: string;
-    }) => vitalService.create(data),
+    mutationFn: (data: Parameters<typeof vitalService.create>[]) =>
+      vitalService.create(data),
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['vitals', vars.patientId.toString()] }),
   });
 }
 
-// ─── Sync status (no-op — all data is server-side) ─────────────────────────
+// ─── Sync status (no-op — always online with PHP) ─────────────────────────
 
 export function useSyncStatus() {
   return useQuery({
     queryKey: ['syncStatus'],
     queryFn: async () => ({
       isOnline: navigator.onLine,
-      pendingChanges: 0,
+      pendingChanges: ,
       lastSyncAt: new Date(),
       canisterConnected: false,
     }),
-    staleTime: Infinity,
   });
 }
 
