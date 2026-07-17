@@ -39,12 +39,11 @@ export function useDoctorContent() {
 
   const getContent = useCallback(
     (doctorKey: string): Record<string, unknown> => {
-      const base = {};
       const docOverrides = (overrides[doctorKey] || {}) as Record<
         string,
         unknown
       >;
-      return { ...base, ...docOverrides };
+      return { ...docOverrides };
     },
     [overrides],
   );
