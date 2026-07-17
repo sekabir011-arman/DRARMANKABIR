@@ -1,325 +1,261 @@
-import type {
-  DoctorAccount,
-  PatientAccount,
-} from "./useEmailAuth";
-import {
-  loadPatientRegistry,
-  loadRegistry,
-  savePatientRegistry,
-  saveRegistry,
-  appendAuditLog,
-  STAFF_ROLE_LABELS,
-} from "./useEmailAuth";
+/**
+ * Admin Save Operations — PHP/MySQL Backend
+ *
+ * All admin operations go through the PHP API via authService and auditService.
+ * No localStorage used for any data storage.
+ */
+
 import type { StaffRole } from "../types";
+import { authService } from "../services/auth";
+import { auditService } from "../services/audit";
+import type { AuditLogEntry } from "../services/audit";
+import { post } from "../lib/apiClient";
+
+// ── Audit helpers ─────────────────────────────────────────────────────────────
 
 /**
- * Enhanced save with error handling, quota detection, and debugging
+ * Append an entry to the audit log via the PHP API.
  */
-export const enhancedSaveRegistry = (registry: DoctorAccount[]) => {
+async function appendAuditLog(entry: {
+  timestamp?: string;
+  userRole: string;
+  userName: string;
+  action: string;
+  target: string;
+}): Promise<void> {
   try {
-    const REGISTRY_KEY = "medicare_registry";
-    const serialized = JSON.stringify(registry);
-    
-    // Check size before saving
-    if (serialized.length > 4 * 1024 * 1024) {
-      console.error(
-        `[Storage] Registry too large: ${serialized.length} bytes`,
-      );
-      throw new Error("Registry data exceeds storage limit");
-    }
+    await post("/audit/create.php", {
+      action: entry.action,
+      target: entry.target,
+      details: JSON.stringify({
+        userRole: entry.userRole,
+        userName: entry.userName,
+      }),
+    });
+  } catch {
+    // Audit logging is non-critical
+    console.warn("[Audit] Failed to log entry");
+  }
+}
 
-    localStorage.setItem(REGISTRY_KEY, serialized);
+// ── Constants ─────────────────────────────────────────────────────────────────
 
-    // Verify the save worked
-    const verify = localStorage.getItem(REGISTRY_KEY);
-    if (!verify) {
-      throw new Error("Failed to verify registry save");
-    }
+export const STAFF_ROLE_LABELS: Record<StaffRole, string> = {
+  admin: "Admin",
+  consultant_doctor: "Consultant Doctor",
+  assistant_professor: "Assistant Professor",
+  associate_professor: "Associate Professor",
+  professor: "Professor",
+  medical_officer: "Medical Officer",
+  assistant_registrar: "Assistant Registrar",
+  registrar: "Registrar",
+  intern_doctor: "Intern Doctor",
+  nurse: "Nurse",
+  reception: "Reception",
+  staff: "Staff",
+  doctor: "Doctor",
+  patient: "Patient",
+};
 
-    console.log(`[Storage] Registry saved: ${registry.length} accounts`);
+// ── Registry load/save (delegated to PHP API) ────────────────────────────────
+
+/** Load doctor registry from PHP API */
+export async function loadRegistry(): Promise<any[]> {
+  try {
+    const result = await post<{ users: any[] }>("/auth/list.php", {
+      role: "doctor",
+    });
+    return result.users ?? [];
+  } catch {
+    return [];
+  }
+}
+
+/** Load patient registry from PHP API */
+export async function loadPatientRegistry(): Promise<any[]> {
+  try {
+    const result = await post<{ patients: any[] }>(
+      "/auth/patients/list.php",
+    );
+    return result.patients ?? [];
+  } catch {
+    return [];
+  }
+}
+
+/** Save doctor registry (no-op — data is persisted via PHP API) */
+export function saveRegistry(_registry: any[]): boolean {
+  // Registry is managed server-side via authService operations
+  return true;
+}
+
+/** Save patient registry (no-op — data is persisted via PHP API) */
+export function savePatientRegistry(_registry: any[]): boolean {
+  // Patient registry is managed server-side via authService operations
+  return true;
+}
+
+// ── Enhanced save wrappers (compatibility shims) ─────────────────────────────
+
+/**
+ * Save doctor registry with error handling (delegated to PHP API).
+ */
+export const enhancedSaveRegistry = async (
+  registry: any[],
+): Promise<boolean> => {
+  try {
+    // Registry updates go through authService operations
+    saveRegistry(registry);
     return true;
-  } catch (err: unknown) {
-    const errMsg =
-      err instanceof Error ? err.message : String(err);
-    console.error(`[Storage Error] Failed to save registry:`, errMsg);
-    
-    // Log quota errors
-    if (errMsg.includes("QuotaExceeded") || errMsg.includes("quota")) {
-      console.error(
-        "[Storage] LocalStorage quota exceeded. Try clearing old data.",
-      );
-    }
-    
+  } catch {
     return false;
   }
 };
 
-export const enhancedSavePatientRegistry = (registry: PatientAccount[]) => {
+/**
+ * Save patient registry with error handling (delegated to PHP API).
+ */
+export const enhancedSavePatientRegistry = async (
+  registry: any[],
+): Promise<boolean> => {
   try {
-    const PATIENT_REGISTRY_KEY = "medicare_patient_registry";
-    const serialized = JSON.stringify(registry);
-    
-    // Check size before saving
-    if (serialized.length > 4 * 1024 * 1024) {
-      console.error(
-        `[Storage] Patient registry too large: ${serialized.length} bytes`,
-      );
-      throw new Error("Patient registry data exceeds storage limit");
-    }
-
-    localStorage.setItem(PATIENT_REGISTRY_KEY, serialized);
-
-    // Verify the save worked
-    const verify = localStorage.getItem(PATIENT_REGISTRY_KEY);
-    if (!verify) {
-      throw new Error("Failed to verify patient registry save");
-    }
-
-    console.log(
-      `[Storage] Patient registry saved: ${registry.length} patients`,
-    );
+    savePatientRegistry(registry);
     return true;
-  } catch (err: unknown) {
-    const errMsg =
-      err instanceof Error ? err.message : String(err);
-    console.error(
-      `[Storage Error] Failed to save patient registry:`,
-      errMsg,
-    );
+  } catch {
     return false;
   }
 };
 
+// ── Admin actions ─────────────────────────────────────────────────────────────
+
 /**
- * Admin action: Approve staff account
+ * Admin action: Approve staff account.
  */
-export const approveStaffAccount = (
-  accountId: string,
+export const approveStaffAccount = async (
+  accountId: number,
   selectedRole: StaffRole,
-): boolean => {
+): Promise<boolean> => {
   try {
-    const reg = loadRegistry();
-    const idx = reg.findIndex((d) => d.id === accountId);
-    
-    if (idx < 0) {
-      console.error(`[Admin] Account not found: ${accountId}`);
-      return false;
-    }
-
-    const oldRole = reg[idx].role;
-    reg[idx] = { ...reg[idx], status: "approved", role: selectedRole };
-
-    const success = enhancedSaveRegistry(reg);
-    if (success) {
-      appendAuditLog({
-        timestamp: new Date().toISOString(),
-        userRole: "admin",
-        userName: "Admin",
-        action: `Approved account as ${STAFF_ROLE_LABELS[selectedRole] ?? selectedRole}`,
-        target: reg[idx].name,
-      });
-    }
-
-    return success;
-  } catch (err: unknown) {
+    await authService.approveAccount(accountId, selectedRole);
+    await appendAuditLog({
+      userRole: "admin",
+      userName: "Admin",
+      action: `Approved account as ${STAFF_ROLE_LABELS[selectedRole] ?? selectedRole}`,
+      target: `Account #${accountId}`,
+    });
+    return true;
+  } catch (err) {
     console.error("[Admin] Failed to approve staff:", err);
     return false;
   }
 };
 
 /**
- * Admin action: Reject staff account
+ * Admin action: Reject staff account.
  */
-export const rejectStaffAccount = (accountId: string): boolean => {
+export const rejectStaffAccount = async (
+  accountId: number,
+): Promise<boolean> => {
   try {
-    const reg = loadRegistry();
-    const idx = reg.findIndex((d) => d.id === accountId);
-    
-    if (idx < 0) {
-      console.error(`[Admin] Account not found: ${accountId}`);
-      return false;
-    }
-
-    const staffName = reg[idx].name;
-    reg[idx] = { ...reg[idx], status: "rejected" };
-
-    const success = enhancedSaveRegistry(reg);
-    if (success) {
-      appendAuditLog({
-        timestamp: new Date().toISOString(),
-        userRole: "admin",
-        userName: "Admin",
-        action: "Rejected account",
-        target: staffName,
-      });
-    }
-
-    return success;
-  } catch (err: unknown) {
+    await authService.rejectAccount(accountId);
+    await appendAuditLog({
+      userRole: "admin",
+      userName: "Admin",
+      action: "Rejected account",
+      target: `Account #${accountId}`,
+    });
+    return true;
+  } catch (err) {
     console.error("[Admin] Failed to reject staff:", err);
     return false;
   }
 };
 
 /**
- * Admin action: Approve patient account
+ * Admin action: Approve patient account.
  */
-export const approvePatientAccount = (patientId: string): boolean => {
+export const approvePatientAccount = async (
+  patientId: number,
+): Promise<boolean> => {
   try {
-    const reg = loadPatientRegistry();
-    const idx = reg.findIndex((p) => p.id === patientId);
-    
-    if (idx < 0) {
-      console.error(`[Admin] Patient not found: ${patientId}`);
-      return false;
-    }
-
-    const patientName = reg[idx].name;
-    reg[idx] = { ...reg[idx], status: "approved" };
-
-    const success = enhancedSavePatientRegistry(reg);
-    if (success) {
-      appendAuditLog({
-        timestamp: new Date().toISOString(),
-        userRole: "admin",
-        userName: "Admin",
-        action: "Approved patient account",
-        target: patientName,
-      });
-    }
-
-    return success;
-  } catch (err: unknown) {
+    await authService.approvePatient(patientId);
+    await appendAuditLog({
+      userRole: "admin",
+      userName: "Admin",
+      action: "Approved patient account",
+      target: `Patient #${patientId}`,
+    });
+    return true;
+  } catch (err) {
     console.error("[Admin] Failed to approve patient:", err);
     return false;
   }
 };
 
 /**
- * Admin action: Reject patient account
+ * Admin action: Reject patient account.
  */
-export const rejectPatientAccount = (patientId: string): boolean => {
+export const rejectPatientAccount = async (
+  patientId: number,
+): Promise<boolean> => {
   try {
-    const reg = loadPatientRegistry();
-    const idx = reg.findIndex((p) => p.id === patientId);
-    
-    if (idx < 0) {
-      console.error(`[Admin] Patient not found: ${patientId}`);
-      return false;
-    }
-
-    const patientName = reg[idx].name;
-    reg[idx] = { ...reg[idx], status: "rejected" };
-
-    const success = enhancedSavePatientRegistry(reg);
-    if (success) {
-      appendAuditLog({
-        timestamp: new Date().toISOString(),
-        userRole: "admin",
-        userName: "Admin",
-        action: "Rejected patient account",
-        target: patientName,
-      });
-    }
-
-    return success;
-  } catch (err: unknown) {
+    await authService.rejectPatient(patientId);
+    await appendAuditLog({
+      userRole: "admin",
+      userName: "Admin",
+      action: "Rejected patient account",
+      target: `Patient #${patientId}`,
+    });
+    return true;
+  } catch (err) {
     console.error("[Admin] Failed to reject patient:", err);
     return false;
   }
 };
 
 /**
- * Admin action: Reassign staff role
+ * Admin action: Reassign staff role.
  */
-export const reassignStaffRole = (
-  accountId: string,
+export const reassignStaffRole = async (
+  accountId: number,
   newRole: StaffRole,
-): boolean => {
+): Promise<boolean> => {
   try {
-    const reg = loadRegistry();
-    const idx = reg.findIndex((d) => d.id === accountId);
-    
-    if (idx < 0) {
-      console.error(`[Admin] Account not found: ${accountId}`);
-      return false;
-    }
-
-    const oldRole = reg[idx].role as StaffRole;
-    const staffName = reg[idx].name;
-
-    // Don't update if role is the same
-    if (oldRole === newRole) {
-      console.warn(`[Admin] Role unchanged for ${staffName}: ${oldRole}`);
-      return false;
-    }
-
-    reg[idx] = { ...reg[idx], role: newRole };
-
-    const success = enhancedSaveRegistry(reg);
-    if (success) {
-      appendAuditLog({
-        timestamp: new Date().toISOString(),
-        userRole: "admin",
-        userName: "Admin",
-        action: `Role changed: ${STAFF_ROLE_LABELS[oldRole] ?? oldRole} → ${STAFF_ROLE_LABELS[newRole]}`,
-        target: staffName,
-      });
-    }
-
-    return success;
-  } catch (err: unknown) {
+    await authService.reassignRole(accountId, newRole);
+    await appendAuditLog({
+      userRole: "admin",
+      userName: "Admin",
+      action: `Role changed to ${STAFF_ROLE_LABELS[newRole]}`,
+      target: `Account #${accountId}`,
+    });
+    return true;
+  } catch (err) {
     console.error("[Admin] Failed to reassign role:", err);
     return false;
   }
 };
 
 /**
- * Verify localStorage is working and report usage
+ * Verify PHP API connectivity.
  */
-export const verifyStorageCapacity = (): {
+export const verifyStorageCapacity = async (): Promise<{
   available: boolean;
   percentUsed: number;
   message: string;
-} => {
+}> => {
   try {
-    const test = "__storage_test__";
-    localStorage.setItem(test, "test");
-    const item = localStorage.getItem(test);
-    localStorage.removeItem(test);
-
-    if (item !== "test") {
-      return {
-        available: false,
-        percentUsed: 100,
-        message: "localStorage verification failed",
-      };
-    }
-
-    let totalSize = 0;
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key) {
-        totalSize +=
-          key.length + (localStorage.getItem(key)?.length || 0);
-      }
-    }
-
-    const approxLimit = 5 * 1024 * 1024; // 5MB typical
-    const percentUsed = Math.round((totalSize / approxLimit) * 100);
-
+    // Check if the server is reachable
+    await post("/auth/verify.php");
     return {
       available: true,
-      percentUsed,
-      message: `Storage: ${(totalSize / 1024).toFixed(2)}KB / ~${(approxLimit / 1024 / 1024).toFixed(0)}MB`,
+      percentUsed: ,
+      message: "Server storage available",
     };
-  } catch (err: unknown) {
-    const errMsg =
-      err instanceof Error ? err.message : String(err);
+  } catch {
     return {
       available: false,
-      percentUsed: 100,
-      message: `Storage error: ${errMsg}`,
+      percentUsed: ,
+      message: "Server unreachable - check your connection",
     };
   }
 };
