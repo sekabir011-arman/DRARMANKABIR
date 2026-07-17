@@ -26,6 +26,7 @@ import type {
   ClinicalOrder,
   DrugReminder,
   Encounter,
+  Medication,
   Observation,
   Patient,
   Prescription,
@@ -33,6 +34,9 @@ import type {
   Visit,
   VitalSigns,
 } from '../types';
+import type { CreatePatientData, UpdatePatientData } from '../services/patients';
+import type { CreateVisitData, UpdateVisitData } from '../services/visits';
+import type { CreatePrescriptionData, UpdatePrescriptionData } from '../services/prescriptions';
 
 // ─── Patients ───────────────────────────────────────────────────────────────
 
@@ -54,8 +58,7 @@ export function useGetPatient(id: number | null) {
 export function useCreatePatient() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Parameters<typeof patientService.create>[]) =>
-      patientService.create(data),
+    mutationFn: (data: CreatePatientData) => patientService.create(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['patients'] }),
   });
 }
@@ -63,8 +66,7 @@ export function useCreatePatient() {
 export function useUpdatePatient() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Parameters<typeof patientService.update>[]) =>
-      patientService.update(data),
+    mutationFn: (data: UpdatePatientData) => patientService.update(data),
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ['patients'] });
       qc.invalidateQueries({ queryKey: ['patient', vars.id.toString()] });
@@ -93,8 +95,7 @@ export function useGetVisitsByPatient(patientId: number | null) {
 export function useCreateVisit() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Parameters<typeof visitService.create>[]) =>
-      visitService.create(data),
+    mutationFn: (data: CreateVisitData) => visitService.create(data),
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['visits', vars.patientId.toString()] }),
   });
@@ -113,8 +114,7 @@ export function useDeleteVisit() {
 export function useUpdateVisit() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Parameters<typeof visitService.update>[]) =>
-      visitService.update(data),
+    mutationFn: (data: UpdateVisitData) => visitService.update(data),
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['visits', vars.patientId.toString()] }),
   });
@@ -133,8 +133,7 @@ export function useGetPrescriptionsByPatient(patientId: number | null) {
 export function useCreatePrescription() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Parameters<typeof prescriptionService.create>[]) =>
-      prescriptionService.create(data),
+    mutationFn: (data: CreatePrescriptionData) => prescriptionService.create(data),
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['prescriptions', vars.patientId.toString()] }),
   });
@@ -153,8 +152,7 @@ export function useDeletePrescription() {
 export function useUpdatePrescription() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Parameters<typeof prescriptionService.update>[]) =>
-      prescriptionService.update(data),
+    mutationFn: (data: UpdatePrescriptionData) => prescriptionService.update(data),
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['prescriptions', vars.patientId.toString()] }),
   });
@@ -271,7 +269,7 @@ export function useGetBedsByWard(ward: string | null) {
 export function useCreateBed() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Parameters<typeof admissionService.createBed>[]) =>
+    mutationFn: (data: { ward: string; bedNumber: string; bedType?: string }) =>
       admissionService.createBed(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['beds'] }),
   });
@@ -339,7 +337,7 @@ export function useGetVitalsByPatient(patientId: number | null) {
 export function useCreateVitals() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Parameters<typeof vitalService.create>[]) =>
+    mutationFn: (data: { patientId: number; vitalSigns: VitalSigns; recordedAt?: string }) =>
       vitalService.create(data),
     onSuccess: (_, vars) =>
       qc.invalidateQueries({ queryKey: ['vitals', vars.patientId.toString()] }),
