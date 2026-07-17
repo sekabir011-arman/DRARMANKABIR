@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
-import { saveFrontPageContentWithSync } from "../lib/hybridStorage";
+import { landingService } from "../services/landing";
+import type { SiteConfig } from "../services/landing";
 
 export interface SocialLink {
   label: string;
@@ -47,13 +48,6 @@ export interface FooterSection {
   openingHours: string;
   copyrightText: string;
   socialLinks: SocialLink[];
-}
-
-export interface SiteConfig {
-  heroSection: HeroSection;
-  aboutSection: AboutSection;
-  footerSection: FooterSection;
-  emergencyContacts: EmergencyContact[];
 }
 
 export const DEFAULT_SITE_CONFIG: SiteConfig = {
@@ -112,128 +106,84 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
     },
     {
       doctorName: "Dr. Samia Shikder",
-      whatsappNumber: "8801957212210",
+      whatsappNumber: "880195721221",
       prefilledMessage: "Hello Dr. Samia, I need an emergency consultation.",
     },
   ],
 };
 
-const STORAGE_KEY = "siteConfig";
-
-function deepMerge<T extends object>(base: T, overrides: Partial<T>): T {
-  const result = { ...base } as T;
-  for (const key of Object.keys(overrides) as (keyof T)[]) {
-    const val = overrides[key];
-    if (Array.isArray(val)) {
-      (result as Record<string, unknown>)[key as string] = val;
-    } else if (
-      val !== null &&
-      val !== undefined &&
-      typeof val === "object" &&
-      typeof result[key] === "object" &&
-      result[key] !== null &&
-      !Array.isArray(result[key])
-    ) {
-      (result as Record<string, unknown>)[key as string] = deepMerge(
-        result[key] as object,
-        val as object,
-      );
-    } else if (val !== undefined) {
-      (result as Record<string, unknown>)[key as string] = val;
-    }
-  }
-  return result;
-}
-
-function loadConfig(): SiteConfig {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_SITE_CONFIG;
-    return deepMerge(
-      DEFAULT_SITE_CONFIG,
-      JSON.parse(raw) as Partial<SiteConfig>,
-    );
-  } catch {
-    return DEFAULT_SITE_CONFIG;
-  }
-}
-
-function saveConfig(cfg: SiteConfig, actor?: unknown) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
-  // Sync to canister so all devices see the latest front page content
-  saveFrontPageContentWithSync(actor ?? null);
-}
-
-// Helper: resolve canister actor at call time (avoids import cycle)
-function resolveActor(): unknown | null {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mod = require("../hooks/useQueries") as {
-      getCanisterActor?: () => unknown;
-    };
-    return mod.getCanisterActor?.() ?? null;
-  } catch {
-    return null;
-  }
-}
-
 export function useSiteConfig() {
-  const [config, setConfig] = useState<SiteConfig>(loadConfig);
+  const [config, setConfig] = useState<SiteConfig>(DEFAULT_SITE_CONFIG);
+  const [loading, setLoading] = useState(true);
+
+  // Load config from server on mount
+  useCallback(async () => {
+    try {
+      const serverConfig = await landingService.getConfig();
+      if (serverConfig) {
+        setConfig(serverConfig);
+      }
+    } catch {
+      // Fall back to default
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const persistConfig = useCallback(async (next: SiteConfig) => {
+    try {
+      await landingService.saveConfig(next);
+    } catch {
+      // Save failed — config still updated locally
+    }
+  }, []);
 
   const updateHero = useCallback((hero: Partial<HeroSection>) => {
     setConfig((prev) => {
       const next = { ...prev, heroSection: { ...prev.heroSection, ...hero } };
-      saveConfig(next, resolveActor());
+      persistConfig(next);
       return next;
     });
-  }, []);
+  }, [persistConfig]);
 
   const updateAbout = useCallback((about: Partial<AboutSection>) => {
     setConfig((prev) => {
-      const next = {
-        ...prev,
-        aboutSection: { ...prev.aboutSection, ...about },
-      };
-      saveConfig(next, resolveActor());
+      const next = { ...prev, aboutSection: { ...prev.aboutSection, ...about } };
+      persistConfig(next);
       return next;
     });
-  }, []);
+  }, [persistConfig]);
 
   const updateFooter = useCallback((footer: Partial<FooterSection>) => {
     setConfig((prev) => {
-      const next = {
-        ...prev,
-        footerSection: { ...prev.footerSection, ...footer },
-      };
-      saveConfig(next, resolveActor());
+      const next = { ...prev, footerSection: { ...prev.footerSection, ...footer } };
+      persistConfig(next);
       return next;
     });
-  }, []);
+  }, [persistConfig]);
 
   const updateEmergencyContacts = useCallback(
     (contacts: EmergencyContact[]) => {
       setConfig((prev) => {
         const next = { ...prev, emergencyContacts: contacts };
-        saveConfig(next, resolveActor());
+        persistConfig(next);
         return next;
       });
     },
-    [],
+    [persistConfig],
   );
 
   const resetSection = useCallback((section: keyof SiteConfig) => {
     setConfig((prev) => {
-      const next = {
-        ...prev,
-        [section]: DEFAULT_SITE_CONFIG[section],
-      };
-      saveConfig(next, resolveActor());
+      const next = { ...prev, [section]: DEFAULT_SITE_CONFIG[section] };
+      persistConfig(next);
       return next;
     });
-  }, []);
+  }, [persistConfig]);
 
   return {
     config,
+    loading,
     updateHero,
     updateAbout,
     updateFooter,

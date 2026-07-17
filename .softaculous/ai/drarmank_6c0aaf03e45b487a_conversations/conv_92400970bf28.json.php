@@ -7,62 +7,57 @@
     "todos": [
         {
             "content": "Fix clinicalStore.ts - remove localStorage usage",
-            "status": "completed",
-            "priority": "high"
+            "priority": "high",
+            "status": "completed"
         },
         {
             "content": "Fix useQueries.ts - fix empty pendingChanges property",
-            "status": "completed",
-            "priority": "high"
+            "priority": "high",
+            "status": "completed"
         },
         {
-            "content": "Review and fix remaining hooks (useCanisterSync, useDoctorContent, useEmailAuth, useAdminAuth, useAdminSave, useSiteConfig, useRolePermissions)",
-            "status": "in_progress",
-            "priority": "high"
+            "content": "Fix useEmailAuth.tsx - empty return statement on line 403",
+            "priority": "high",
+            "status": "in_progress"
         },
         {
-            "content": "Create StorageAdapter utility - unified interface for PHP API with localStorage fallback during migration",
-            "status": "pending",
-            "priority": "high"
+            "content": "Fix useAdminAuth.tsx - remove localStorage usage",
+            "priority": "high",
+            "status": "completed"
         },
         {
-            "content": "Refactor Layout.tsx - remove localStorage usage, use services",
-            "status": "pending",
-            "priority": "high"
+            "content": "Rewrite useAdminSave.ts - broken imports from useEmailAuth, use PHP services",
+            "priority": "high",
+            "status": "pending"
         },
         {
-            "content": "Refactor PatientDashboard.tsx - the largest component with ~50+ localStorage refs",
-            "status": "pending",
-            "priority": "high"
+            "content": "Rewrite useSiteConfig.tsx - replace localStorage with landingService",
+            "priority": "high",
+            "status": "pending"
         },
         {
-            "content": "Refactor component group: Prescription-related",
-            "status": "pending",
-            "priority": "medium"
+            "content": "Rewrite useDoctorContent.tsx - replace localStorage with PHP API calls",
+            "priority": "high",
+            "status": "pending"
         },
         {
-            "content": "Refactor component group: Clinical data",
-            "status": "pending",
-            "priority": "medium"
+            "content": "Create StorageAdapter utility (storageAdapter.ts) for remaining components",
+            "priority": "high",
+            "status": "pending"
         },
         {
-            "content": "Refactor component group: Patient-related",
-            "status": "pending",
-            "priority": "medium"
-        },
-        {
-            "content": "Refactor component group: Admin\/Landing",
-            "status": "pending",
-            "priority": "medium"
+            "content": "Refactor Layout.tsx - remove localStorage usage",
+            "priority": "high",
+            "status": "pending"
         },
         {
             "content": "Verify no localStorage references remain in src\/ by final grep",
-            "status": "pending",
-            "priority": "high"
+            "priority": "high",
+            "status": "pending"
         }
     ],
     "created_at": 1784213755,
-    "updated_at": 1784313784,
+    "updated_at": 1784314385,
     "messages": [
         {
             "id": "msg_compact",
@@ -2890,6 +2885,174 @@
             "content": "    1 | \/**\n    2 |  * Admin Auth Hook \u2014 PHP\/MySQL Backend\n    3 |  *\n    4 |  * Admin authentication goes through the PHP API via authService.\n    5 |  * Session state is kept in memory only \u2014 no localStorage.\n    6 |  *\/\n    7 | \n    8 | import { useCallback, useState } from \"react\";\n    9 | import { authService } from \"..\/services\/auth\";\n   10 | \n   11 | export function useAdminAuth() {\n   12 |   const [isAdmin, setIsAdmin] = useState<boolean>(false);\n   13 | \n   14 |   const adminLogin = useCallback(\n   15 |     async (username: string, password: string): Promise<boolean> => {\n   16 |       try {\n   17 |         const result = await authService.signIn(username, password);\n   18 |         if (result.user) {\n   19 |           setIsAdmin(true);\n   20 |           return true;\n   21 |         }\n   22 |       } catch {\n   23 |         \/\/ Login failed\n   24 |       }\n   25 |       return false;\n   26 |     },\n   27 |     [],\n   28 |   );\n   29 | \n   30 |   const adminLogout = useCallback(async () => {\n   31 |     await authService.signOut();\n   32 |     setIsAdmin(false);\n   33 |   }, []);\n   34 | \n   35 |   return { isAdmin, adminLogin, adminLogout };\n   36 | }",
             "is_error": false,
             "time": 1784313784
+        },
+        {
+            "id": "msg_16860085e2",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784314367
+        },
+        {
+            "id": "msg_24b2be2739",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The user wants me to continue. Let me assess what's been done and what remains. I need to check the current state of localStorage references and continue refactoring the remaining hooks and components.\n\nLet me check what the current state of the `useAdminSave.ts` file is - it's the biggest problem since it references `loadRegistry`, `saveRegistry`, etc. from `useEmailAuth` which no longer exports those. Let me check what imports are broken.\n\nActually, looking at `useAdminSave.ts`, it imports `loadRegistry`, `loadPatientRegistry`, `saveRegistry`, `savePatientRegistry`, `appendAuditLog`, and `STAFF_ROLE_LABELS` from `.\/useEmailAuth`. But `useEmailAuth.tsx` no longer exports these - they were removed. This is a critical bug.\n\nLet me focus on:\n1. Fixing the broken imports in `useAdminSave.ts`\n2. Creating the StorageAdapter for the remaining components\n3. Refactoring Layout.tsx\n4. Refactoring PatientDashboard.tsx\n\nActually, given the massive scope of this refactoring (100+ components with localStorage references), let me think about a pragmatic approach.\n\nThe key insight is: we can't rewrite every single component in isolation. Instead, I should:\n1. Create a `storageAdapter.ts` that provides a clean API for reading\/writing data, backed by the PHP services\n2. Make the critical files (hooks, lib, Layout) use the new services\n3. For the components that still use localStorage directly - create a compatibility shim that delegates to the PHP API\n\nBut actually, looking at the scope again - the user asked me to continue from where I left off. Let me check what files have actual bugs (broken imports, syntax errors) vs files that just need refactoring.\n\nThe immediate bugs I've found:\n1. `clinicalStore.ts` - fixed \u2713\n2. `useQueries.ts` - empty `pendingChanges` - fixed \u2713\n3. `useEmailAuth.tsx` - empty `return ;` on line 403 - need to fix\n4. `useAdminAuth.tsx` - still uses localStorage in the original version I edited... wait, let me check if my edit actually fixed it.\n5. `useAdminSave.ts` - imports `loadRegistry`, `saveRegistry` etc from `useEmailAuth` which no longer exports them - CRITICAL BUG\n6. `useDoctorContent.tsx` - uses localStorage directly\n7. `useSiteConfig.tsx` - uses localStorage directly\n\nLet me continue fixing these issues one by one."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me check the critical bugs I've found. First, verify `useEmailAuth.tsx` still has the empty return issue:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_XZlM6lXu3PKY8oDmE1iF0934",
+                    "name": "read_file",
+                    "input": {
+                        "offset": 398,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useEmailAuth.tsx",
+                        "limit": 10
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_tiDEP6D4LK6K6j8MRNN87060",
+                    "name": "grep",
+                    "input": {
+                        "pattern": "export function loadRegistry|export function loadPatientRegistry|export function saveRegistry|export function savePatientRegistry|export function appendAuditLog|export const STAFF_ROLE_LABELS",
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useEmailAuth.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 71328,
+                "completion_tokens": 777,
+                "total_tokens": 72105,
+                "prompt_cache_hit_tokens": 57088,
+                "prompt_cache_miss_tokens": 14240,
+                "prompt_tokens_details": {
+                    "cached_tokens": 57088
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 546
+                },
+                "cached_tokens": 57088
+            },
+            "time": 1784314377
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_XZlM6lXu3PKY8oDmE1iF0934",
+            "content": "  398 |       setSecondsRemaining(120);\n  399 |       countdownRef.current = setInterval(() => {\n  400 |         setSecondsRemaining((s) => {\n  401 |           if (s <= 1) {\n  402 |             if (countdownRef.current) clearInterval(countdownRef.current);\n  403 |             return ;\n  404 |           }\n  405 |           return s - 1;\n  406 |         });\n  407 |       }, 100);",
+            "is_error": false,
+            "time": 1784314377
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_tiDEP6D4LK6K6j8MRNN87060",
+            "content": "No matches found for pattern: export function loadRegistry|export function loadPatientRegistry|export function saveRegistry|export function savePatientRegistry|export function appendAuditLog|export const STAFF_ROLE_LABELS",
+            "is_error": false,
+            "time": 1784314377
+        },
+        {
+            "id": "msg_41cb2cd0d4",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "There are two critical bugs:\n\n1. `useEmailAuth.tsx` line 403: `return ;` is invalid syntax (empty return statement in a function that expects a number)\n2. `useAdminSave.ts` imports functions from `.\/useEmailAuth` that no longer exist (loadRegistry, loadPatientRegistry, saveRegistry, savePatientRegistry, appendAuditLog, STAFF_ROLE_LABELS)\n\nLet me fix both of these.\n\nFor the empty return, the `setSecondsRemaining` callback expects to return a number. When `s <= 1`, we should still return `s` (which is `1` or less) to avoid the empty return.\n\nFor useAdminSave.ts - I need to either:\n- Recreate those functions in useEmailAuth or a separate module\n- Rewrite useAdminSave.ts to use the new service layer\n- Create a migration utility\n\nActually, the cleanest approach is to rewrite `useAdminSave.ts` to use the PHP API services instead of localStorage. These functions are admin operations that should go through the `authService`.\n\nLet me also look at the `useDoctorContent.tsx` which still uses localStorage, and `useSiteConfig.tsx`.\n\nLet me create a plan and execute it:\n\n1. Fix `useEmailAuth.tsx` - fix the empty return\n2. Rewrite `useAdminSave.ts` - replace localStorage with PHP API calls via authService\n3. Rewrite `useSiteConfig.tsx` - replace localStorage with landingService\n4. Rewrite `useDoctorContent.tsx` - replace localStorage with a proper service\n5. Create a storageAdapter.ts as a thin compatibility layer\n\nLet me tackle them in order."
+                },
+                {
+                    "type": "text",
+                    "text": "Found critical bugs! `useEmailAuth.tsx` has `return ;` (empty return) on line 403, and `useAdminSave.ts` imports functions from `.\/useEmailAuth` that no longer exist. Let me fix these."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_Vlnr4u8uWNMh22MahQrI3422",
+                    "name": "todo_write",
+                    "input": {
+                        "todos": [
+                            {
+                                "content": "Fix clinicalStore.ts - remove localStorage usage",
+                                "priority": "high",
+                                "status": "completed"
+                            },
+                            {
+                                "content": "Fix useQueries.ts - fix empty pendingChanges property",
+                                "priority": "high",
+                                "status": "completed"
+                            },
+                            {
+                                "content": "Fix useEmailAuth.tsx - empty return statement on line 403",
+                                "priority": "high",
+                                "status": "in_progress"
+                            },
+                            {
+                                "content": "Fix useAdminAuth.tsx - remove localStorage usage",
+                                "priority": "high",
+                                "status": "completed"
+                            },
+                            {
+                                "content": "Rewrite useAdminSave.ts - broken imports from useEmailAuth, use PHP services",
+                                "priority": "high",
+                                "status": "pending"
+                            },
+                            {
+                                "content": "Rewrite useSiteConfig.tsx - replace localStorage with landingService",
+                                "priority": "high",
+                                "status": "pending"
+                            },
+                            {
+                                "content": "Rewrite useDoctorContent.tsx - replace localStorage with PHP API calls",
+                                "priority": "high",
+                                "status": "pending"
+                            },
+                            {
+                                "content": "Create StorageAdapter utility (storageAdapter.ts) for remaining components",
+                                "priority": "high",
+                                "status": "pending"
+                            },
+                            {
+                                "content": "Refactor Layout.tsx - remove localStorage usage",
+                                "priority": "high",
+                                "status": "pending"
+                            },
+                            {
+                                "content": "Verify no localStorage references remain in src\/ by final grep",
+                                "priority": "high",
+                                "status": "pending"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 72271,
+                "completion_tokens": 689,
+                "total_tokens": 72960,
+                "prompt_cache_hit_tokens": 72064,
+                "prompt_cache_miss_tokens": 207,
+                "prompt_tokens_details": {
+                    "cached_tokens": 72064
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 355
+                },
+                "cached_tokens": 72064
+            },
+            "time": 1784314385
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_Vlnr4u8uWNMh22MahQrI3422",
+            "content": "Todo list updated with 10 items.",
+            "is_error": false,
+            "time": 1784314385
         }
     ]
 }
