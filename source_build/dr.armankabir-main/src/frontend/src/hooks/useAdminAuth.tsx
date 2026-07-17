@@ -1,8 +1,8 @@
 /**
  * Admin Auth Hook — PHP/MySQL Backend
  *
- * Admin authentication now goes through the PHP API / authService.
- * No localStorage used — PHP session cookies handle authentication.
+ * Admin authentication goes through the PHP API via authService.
+ * Session state is kept in memory only — no localStorage.
  */
 
 import { useCallback, useState } from "react";
@@ -16,7 +16,7 @@ export function useAdminAuth() {
       try {
         const result = await authService.signIn(username, password);
         if (result.user) {
-          setIsAdmin(result.user.role === "admin");
+          setIsAdmin(true);
           return true;
         }
       } catch {
