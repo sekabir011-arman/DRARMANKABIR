@@ -79,7 +79,7 @@ export function useSiteConfig() {
     queryKey: ["siteConfig"],
     queryFn: async () => {
       try {
-        const result = await landingService.getConfig();
+        const result = await landingService.getSiteConfig();
         return result ?? DEFAULT_SITE_CONFIG;
       } catch {
         return DEFAULT_SITE_CONFIG;
