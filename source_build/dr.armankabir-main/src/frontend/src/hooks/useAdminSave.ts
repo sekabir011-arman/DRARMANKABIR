@@ -248,13 +248,13 @@ export const verifyStorageCapacity = async (): Promise<{
     await post("/auth/verify.php");
     return {
       available: true,
-      percentUsed: ,
+      percentUsed: null,
       message: "Server storage available",
     };
   } catch {
     return {
       available: false,
-      percentUsed: ,
+      percentUsed: null,
       message: "Server unreachable - check your connection",
     };
   }
