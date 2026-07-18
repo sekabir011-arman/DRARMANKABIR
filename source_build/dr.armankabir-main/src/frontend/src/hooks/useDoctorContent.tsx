@@ -19,14 +19,14 @@ export function useDoctorContent() {
   const { data: overrides = {}, isLoading } = useQuery({
     queryKey: ["doctorContent"],
     queryFn: async () => {
-      const config = await landingService.getConfig();
+      const config = await landingService.getSiteConfig();
       return (config as any)?.doctorContentOverrides ?? {};
     },
   });
 
   const mutation = useMutation({
     mutationFn: async (newOverrides: Record<string, unknown>) => {
-      await landingService.updateConfig({
+      await landingService.updateSiteConfig({
         doctorContentOverrides: newOverrides,
       } as any);
     },
@@ -52,7 +52,7 @@ export function useDoctorContent() {
       if (!updated[doctorKey]) updated[doctorKey] = {};
       const parts = path.split(".");
       let obj = updated[doctorKey] as Record<string, unknown>;
-      for (let i = 0; i < parts.length - 1; i++) {
+      for (let i = ; i < parts.length - 1; i++) {
         if (!obj[parts[i]] || typeof obj[parts[i]] !== "object") {
           obj[parts[i]] = {};
         }
