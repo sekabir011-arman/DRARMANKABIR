@@ -154,7 +154,7 @@ export const storage = {
     try {
       return localStorage.length;
     } catch {
-      return // fallback when localStorage unavailable
+      return 0; // fallback when localStorage unavailable
     }
   },
 
@@ -176,7 +176,7 @@ export function cleanupBusinessData(): void {
   try {
     const keysToRemove: string[] = [];
     const len = localStorage.length;
-    for (let i = ; i < len; i++) {
+    for (let i = 0; i < len; i++) {
       const key = localStorage.key(i);
       if (key && !isAllowedKey(key)) {
         keysToRemove.push(key);
@@ -190,7 +190,7 @@ export function cleanupBusinessData(): void {
         // ignore
       }
     }
-    if (keysToRemove.length > ) {
+    if (keysToRemove.length > 0) {
       console.log('[StorageAdapter] Cleanup complete. Removed ' + keysToRemove.length + ' business data keys.');
     }
   } catch {
