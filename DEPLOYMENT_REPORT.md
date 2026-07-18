@@ -7,6 +7,10 @@
 # 
 # This report documents the complete migration from localStorage/ICP canister
 # to PHP/MySQL production infrastructure.
+#
+# PHASE 8 COMPLETE: localStorage business data eliminated.
+# The storageAdapter.ts guard is now active, blocking all business data keys.
+# cleanupBusinessData() runs on app startup to purge legacy data.
 # =============================================================================
 
 ## 📊 EXECUTIVE SUMMARY
