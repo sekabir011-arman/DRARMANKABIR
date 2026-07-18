@@ -6,38 +6,38 @@
     "mode": "build",
     "todos": [
         {
+            "priority": "high",
             "content": "Step 1: Create comprehensive audit report of all storageAdapter keys",
-            "status": "in_progress",
-            "priority": "high"
+            "status": "completed"
         },
         {
+            "priority": "high",
             "content": "Step 2: Fix api.ts to remove localStorage auth token usage (switch to apiClient.ts)",
-            "status": "pending",
-            "priority": "high"
+            "status": "in_progress"
         },
         {
+            "priority": "high",
             "content": "Step 3: Update storageAdapter.ts to remove business data helpers, keep only UI preferences",
-            "status": "pending",
-            "priority": "high"
+            "status": "pending"
         },
         {
+            "priority": "high",
             "content": "Step 4: Replace storageAdapter usage in all components with services\/React Query hooks",
-            "status": "pending",
-            "priority": "high"
+            "status": "pending"
         },
         {
+            "priority": "medium",
             "content": "Step 5: Remove dead code and deprecated helpers",
-            "status": "pending",
-            "priority": "medium"
+            "status": "pending"
         },
         {
+            "priority": "medium",
             "content": "Step 6: Generate final migration report",
-            "status": "pending",
-            "priority": "medium"
+            "status": "pending"
         }
     ],
     "created_at": 1784312191,
-    "updated_at": 1784381281,
+    "updated_at": 1784381310,
     "messages": [
         {
             "id": "msg_cc5f52c264",
@@ -1431,6 +1431,130 @@
             "content": "    1 | import { storage } from \"..\/lib\/storageAdapter\";\n    2 | \/**\n    3 |  * PHP API Client\n    4 |  *\n    5 |  * Centralized fetch wrapper for communicating with the PHP\/MySQL backend.\n    6 |  * Handles auth token injection, JSON parsing, and error normalization.\n    7 |  *\/\n    8 | \n    9 | const API_BASE = '\/api';\n   10 |",
             "is_error": false,
             "time": 1784381281
+        },
+        {
+            "id": "msg_635cba34e1",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "So the old `api.ts` is only imported by `hybridStorage.ts`. And `hybridStorage.ts` only uses `get, post, del` - but these are only used in the `loadFrontPageContentFromServer`, `saveFrontPageContentToServer` functions which are no-op stubs now.\n\nSo actually, the API infrastructure is already properly migrated! The old `api.ts` is essentially dead code that's only referenced by `hybridStorage.ts` which is also mostly dead code (all no-op stubs).\n\nNow the real work is:\n1. Clean up the storageAdapter.ts - remove business data helpers\n2. Clean up the old api.ts - since it's no longer used, we can remove the localStorage auth token usage\n3. The main issue: components are still using `storage.getItem` etc. for business data directly from localStorage\n\nFor the components, this is a massive effort. Let me think about what's realistic to automate vs. what requires manual attention.\n\nActually, looking at the project structure more carefully, I notice the project is at:\n- `source_build\/dr.armankabir-main\/src\/frontend\/src\/` \n\nThis is the source code that gets built\/deployed to `public_html\/`. The files in `source_build\/` are the development source files.\n\nLet me now take a pragmatic approach:\n1. Fix `api.ts` - remove the localStorage token storage, make it use PHP sessions like apiClient.ts (or just deprecate it)\n2. Fix `storageAdapter.ts` - remove business data helpers, keep only UI preference helpers\n3. Clean up `hybridStorage.ts` - it already has no-op stubs\n4. The component-level changes are documented as the migration path - I'll create a comprehensive tracking report\n\nLet me start implementing."
+                },
+                {
+                    "type": "text",
+                    "text": "Good. Now I have a complete picture. The old `api.ts` is only imported by `hybridStorage.ts` which is already stubbed out. Let me now execute the migration.\n\n## Step 1: Comprehensive Audit Report\n\nLet me first generate the complete audit report as a file, then start making the actual code changes."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_jeJxx0JJqDJzewyAPHZO0887",
+                    "name": "write_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/STORAGE_AUDIT_REPORT.md",
+                        "content": "# Storage Adapter Audit Report\n\n## Phase 3: Eliminate Business Data from storageAdapter\n\n### Overview\n\nAll storage keys used across the codebase have been audited and classified.\n\n### Category A: Business Data \u2014 MUST be migrated to PHP API\/MySQL\n\n| Key | Files | Module |\n|-----|-------|--------|\n| `patients` | Layout.tsx | Patients |\n| `registry` | Layout.tsx, PatientProfile.tsx | Staff Registry |\n| `patient_registry` | Layout.tsx | Patient Registry |\n| `patient_reg_incomplete_{id}` | Patients.tsx, EmergencyPrescription.tsx | Patients |\n| `patient_register_{patientId}` | PatientProfile.tsx, PatientDashboard.tsx | Patients |\n| `doctor_profile_{email}` | AdmitPatientDialog.tsx, PrescriptionPad, PatientDashboard.tsx | Doctors |\n| `medicare_doctors_data` | PatientProfile.tsx | Doctors |\n| `medicare_doctors_registry` | PrescriptionPad, PatientDashboard, PrescriptionPadPreview, UpgradedPrescriptionEMR, LandingPage | Doctors Registry |\n| `staff_shifts` | PatientProfile.tsx | Staff |\n| `medicare_drug_reminders` | Layout.tsx, App.tsx, NurseDashboard.tsx | Drug Reminders |\n| `drugReminders_*` | App.tsx, Layout.tsx | Drug Reminders |\n| `medicare_appointments` | ConsultantDashboard.tsx, StaffDashboard.tsx | Appointments |\n| `clinic_appointments` | Appointments.tsx | Appointments |\n| `public_appointment_requests` | Appointments.tsx | Appointments |\n| `appointments` | Staff.tsx, BedManagement.tsx | Appointments |\n| `medicare_clinical_data` | AuditLog.tsx, hybridStorage.ts | Clinical Data |\n| `clinicalAlerts_dismissed` | ClinicalAlertsPanel.tsx | Clinical Alerts |\n| `soapNotes_{id}` | ConsultantDashboard.tsx, MedicalOfficerDashboard.tsx | SOAP Notes |\n| `clinicalNotes_{id}` | InternDashboard.tsx | Clinical Notes |\n| `vitals_{patientId}` | ConsultantDashboard.tsx, NurseDashboard, MedicalOfficerDashboard | Vitals |\n| `alerts_{id}` | ConsultantDashboard.tsx | Alerts |\n| `intakeOutput_{id}_{today}` | NurseDashboard.tsx | Intake\/Output |\n| `dischargeStatus_{id}` | MedicalOfficerDashboard.tsx | Discharge |\n| `pregnancy_{patientId}` | PatientDashboard.tsx | Pregnancy Data |\n| `teleconsults_{patientId}` | PatientChat.tsx, PatientTimeline.tsx | Teleconsults |\n| `referrals_{email}_{patStr}` | PatientTimeline.tsx | Referrals |\n| `procedureLogs_{patStr}` | PatientTimeline.tsx | Procedure Logs |\n| `admissionHistory_{patStr}` | PatientTimeline.tsx | Admissions |\n| `consentForms_{patientId}` | ConsentForm.tsx | Consent Forms |\n| `visits_{email}` | PatientTimeline.tsx | Visits |\n| `prescriptions_{email}` | PatientTimeline.tsx | Prescriptions |\n| `doctorProfile` | PrescriptionForm.tsx | Doctor Profile |\n| `appointment_payments` | Layout.tsx | Payments |\n| `investigation_payments` | Layout.tsx | Payments |\n| `procedure_payments` | Layout.tsx | Payments |\n| `other_payments` | Layout.tsx | Payments |\n| `appointmentPayments` | OutstandingBalances.tsx | Payments |\n| `procedurePayments` | OutstandingBalances.tsx, Staff.tsx | Payments |\n| `moneyReceipts` | StaffDashboard.tsx | Payments |\n| `medicare_audit_log` | MedicalOfficerDashboard.tsx | Audit Logs |\n| `medicare_last_sync` | AdminDashboard.tsx | Sync Status |\n| `medicare_last_sync_at` | SyncStatusBadge.tsx | Sync Status |\n| `medicare_last_login` | ConsultantDashboard.tsx | Login Tracking |\n| `medicare_patient_submissions` | patientDashboardTypes.ts | Patient Submissions |\n| `vaccination_{id}` | patientDashboardTypes.ts | Vaccinations |\n| `family_history_risk_{id}` | patientDashboardTypes.ts | Family History |\n| `allergy_overrides_{id}` | patientDashboardTypes.ts | Allergies |\n| `handovers` | Layout.tsx | Handovers |\n| `visit_form_data_{id}` | PatientDashboard.tsx | Visit Form |\n| `medAdminRecord_{id}_{date}` | Layout.tsx | Medication Admin |\n| `savedPrescriptionPads_{patientId}` | PatientDashboard.tsx | Prescriptions |\n| `treatmentReferencePDF` | NewPrescriptionMode.tsx | Prescriptions |\n| `padStorage_*` | PrescriptionPad.tsx | Prescriptions |\n| `autosave_*` | VisitForm.tsx | Visit Autosave |\n| `rates_*` | InvestigationPayment.tsx, ProcedurePayment.tsx, AppointmentPayment.tsx | Rates |\n| `receipts_*` | MoneyReceipt.tsx | Receipts |\n| `shifts_*` | Staff.tsx | Staff Shifts |\n| `attendance_*` | Staff.tsx | Staff Attendance |\n| `leaveRequests_*` | Staff.tsx | Leave Requests |\n| `wardRoundChecklist_*` | WardRound.tsx | Ward Rounds |\n| `clinicalAlerts_*` | ClinicalAlertsPanel.tsx | Clinical Alerts |\n| `patients_*` | App.tsx, Layout.tsx, ConsultantDashboard.tsx, etc. | Patients (scanned) |\n| `serialDisplayVideoUrl_*` | SerialDisplay.tsx | Display Config |\n| `testimonials_*` | TestimonialsSection.tsx | Landing Page |\n| `gallery_*` | GallerySection.tsx | Landing Page |\n| `lab_system_name` | Settings.tsx | Lab Config |\n| `lab_api_endpoint` | Settings.tsx | Lab Config |\n| `clinic_prescriptions` | Staff.tsx | Prescriptions |\n| `medicare_current_doctor` | storageAdapter.ts, PrescriptionPad.tsx, SerialDisplay.tsx | Auth\/Doctor |\n| `medicare_logged_in_doctor` | PatientProfile.tsx | Auth\/Doctor |\n| `staff_auth` | PatientDashboard.tsx | Auth\/Staff |\n| `phpAuthToken` | api.ts | Auth Token |\n| `app_current_user_email` | SerialDisplay.tsx | User Email |\n\n### Category B: Authentication Tokens \u2014 MUST be removed from browser storage\n\n| Key | Files | Issue |\n|-----|-------|-------|\n| `phpAuthToken` | lib\/api.ts | JWT token in localStorage |\n| `staff_auth` | PatientDashboard.tsx | Staff auth in localStorage |\n| `medicare_current_doctor` | storageAdapter.ts, various | Doctor session in localStorage |\n| `medicare_logged_in_doctor` | PatientProfile.tsx | Doctor login in localStorage |\n\n### Category C: UI Preferences \u2014 KEEP in browser storage\n\n| Key | Files | Description |\n|-----|-------|-------|\n| `patient_language` | PatientDashboard.tsx | Language preference (en\/bn) |\n| `classroom_arman` | Settings.tsx | Admin content (non-sensitive) |\n| `classroom_samia` | Settings.tsx | Admin content (non-sensitive) |\n| `chamber_arman` | Settings.tsx | Admin content (non-sensitive) |\n| `chamber_samia` | Settings.tsx | Admin content (non-sensitive) |\n| `profile_arman` | Settings.tsx | Admin content (non-sensitive) |\n| `profile_samia` | Settings.tsx | Admin content (non-sensitive) |\n| `prescriptionHeaders_chamber` | Settings.tsx | Prescription header preference |\n| `prescriptionHeaders_hospital` | Settings.tsx | Prescription header preference |\n| `theme` | (not found but reserved) | Theme preference |\n| `sidebar_collapsed` | (not found but reserved) | Sidebar state |\n\n### Category D: Temporary Cache \/ Drafts \u2014 Should use API\n\n| Key | Description |\n|-----|-------------|\n| Autosave drafts (visit form, emergency prescription) | Form drafts |\n| Treatment templates | Cached templates |\n| Advice templates | Cached templates |\n\n### Summary\n\n- **Total unique storage keys:** ~80+\n- **Business data keys (A):** ~70+ \u2014 All must move to MySQL\n- **Auth keys (B):** ~4 \u2014 Must use HTTP-only cookies \/ PHP sessions\n- **UI preference keys (C):** ~10 \u2014 Keep in browser storage\n- **Temporary cache (D):** ~5 \u2014 Should use API\n\n### Module Status\n\n| Module | Storage Usage | Migration Status |\n|--------|---------------|-----------------|\n| Patients | Heavy | Services exist, hooks exist, components still use localStorage |\n| Doctors\/Staff | Heavy | Services exist, components still use localStorage |\n| Appointments | Heavy | Services exist, hooks exist, components still use localStorage |\n| Prescriptions | Heavy | Services exist, hooks exist, components still use localStorage |\n| Admissions | Medium | Services exist, hooks exist, components still use localStorage |\n| Clinical Notes | Heavy | Services exist, hooks exist, components still use localStorage |\n| Investigations | Medium | Services exist, components still use localStorage |\n| Payments | Heavy | Services exist, components still use localStorage |\n| Notifications | Medium | Services exist, components still use localStorage |\n| Landing Page | Medium | Services exist, components still use localStorage |\n| Settings | Medium | Services exist, components still use localStorage |\n| Audit Logs | Light | Services exist, components still use localStorage |\n| Auth | Light | Hooks use API, old api.ts still uses localStorage |\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 70675,
+                "completion_tokens": 2640,
+                "total_tokens": 73315,
+                "prompt_cache_hit_tokens": 70528,
+                "prompt_cache_miss_tokens": 147,
+                "prompt_tokens_details": {
+                    "cached_tokens": 70528
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 378
+                },
+                "cached_tokens": 70528
+            },
+            "time": 1784381305
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_jeJxx0JJqDJzewyAPHZO0887",
+            "content": "Successfully wrote 8189 bytes (145 lines) to source_build\/dr.armankabir-main\/src\/frontend\/src\/STORAGE_AUDIT_REPORT.md",
+            "is_error": false,
+            "time": 1784381305
+        },
+        {
+            "id": "msg_4952263d50",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Good. Now let me proceed with the actual code changes. Let me start with the most impactful ones:\n\n1. Fix `api.ts` - Remove localStorage token storage, make it use in-memory token or PHP sessions\n2. Fix `storageAdapter.ts` - Remove business data helpers, keep only UI preferences\n3. Fix `hybridStorage.ts` - Already mostly no-ops, just clean up\n\nLet me do these changes."
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me execute the code changes. Starting with the critical infrastructure files."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ZYAo9OK0Hsuzy9rYcLTx1600",
+                    "name": "todo_write",
+                    "input": {
+                        "todos": [
+                            {
+                                "priority": "high",
+                                "content": "Step 1: Create comprehensive audit report of all storageAdapter keys",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Step 2: Fix api.ts to remove localStorage auth token usage (switch to apiClient.ts)",
+                                "status": "in_progress"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Step 3: Update storageAdapter.ts to remove business data helpers, keep only UI preferences",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Step 4: Replace storageAdapter usage in all components with services\/React Query hooks",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Step 5: Remove dead code and deprecated helpers",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Step 6: Generate final migration report",
+                                "status": "pending"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 73364,
+                "completion_tokens": 339,
+                "total_tokens": 73703,
+                "prompt_cache_hit_tokens": 73216,
+                "prompt_cache_miss_tokens": 148,
+                "prompt_tokens_details": {
+                    "cached_tokens": 73216
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 90
+                },
+                "cached_tokens": 73216
+            },
+            "time": 1784381310
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ZYAo9OK0Hsuzy9rYcLTx1600",
+            "content": "Todo list updated with 6 items.",
+            "is_error": false,
+            "time": 1784381310
         }
     ]
 }
