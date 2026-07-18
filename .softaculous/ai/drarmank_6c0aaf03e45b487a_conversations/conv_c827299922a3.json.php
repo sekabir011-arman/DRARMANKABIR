@@ -13,12 +13,12 @@
         {
             "priority": "high",
             "content": "Fix patient login.php - add session_regenerate_id, secure cookies, audit logging",
-            "status": "in_progress"
+            "status": "completed"
         },
         {
             "priority": "high",
-            "content": "Fix middleware.php - remove $_GET['token'], remove refresh_token dead code, add cookie support",
-            "status": "pending"
+            "content": "Fix middleware.php - remove $_GET['token'], remove refresh_token dead code, add cookie support, CSRF, cleanup",
+            "status": "in_progress"
         },
         {
             "priority": "high",
@@ -32,32 +32,12 @@
         },
         {
             "priority": "high",
-            "content": "Remove all $_GET['token'] usage from getBearerToken() in middleware",
-            "status": "pending"
-        },
-        {
-            "priority": "high",
-            "content": "Implement CSRF validation for state-changing endpoints",
-            "status": "pending"
-        },
-        {
-            "priority": "high",
-            "content": "Add role\/permission authorization checks to all API endpoints",
-            "status": "pending"
-        },
-        {
-            "priority": "high",
             "content": "Add stronger rate limiting: separate LOGIN_RATE_LIMIT config",
             "status": "pending"
         },
         {
-            "priority": "high",
-            "content": "Add audit logging for all security events",
-            "status": "pending"
-        },
-        {
             "priority": "medium",
-            "content": "Enhance security headers via PHP as backup to .htaccess",
+            "content": "Add security headers via PHP as backup",
             "status": "pending"
         },
         {
@@ -67,7 +47,7 @@
         }
     ],
     "created_at": 1784398524,
-    "updated_at": 1784399211,
+    "updated_at": 1784399225,
     "messages": [
         {
             "id": "msg_85a3205730",
@@ -1555,6 +1535,132 @@
             "content": "Todo list updated with 12 items.",
             "is_error": false,
             "time": 1784399211
+        },
+        {
+            "id": "msg_631796725c",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me fix patient login.php - it has the password verified before status check (which should be after), and it doesn't use secure cookies or session regeneration. It also doesn't log failed attempts."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_F9QkBXLQA99n55vlxe690787",
+                    "name": "write_file",
+                    "input": {
+                        "path": "public_html\/api\/auth\/patients\/login.php",
+                        "content": "<?php\n\/**\n * Patient Login API\n * \n * POST \/api\/auth\/patients\/login.php\n * Body: { \"phone\": \"...\", \"password\": \"...\" }\n * \n * Authenticates a patient and creates a session.\n * Patient must have status='approved' to log in.\n *\/\n\nrequire_once __DIR__ . '\/..\/..\/database.php';\nrequire_once __DIR__ . '\/..\/..\/helpers.php';\nrequire_once __DIR__ . '\/..\/middleware.php';\n\nhandleCors();\nrequireMethod('POST');\ncheckRateLimit('patient_login_' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'), 5, 900);\n\n$input = getJsonInput();\n\n$missing = validateRequired($input, ['phone', 'password']);\nif ($missing) {\n    errorResponse('Missing required fields', 400, ['missing_fields' => $missing]);\n}\n\n$phone = sanitizePhone($input['phone']);\n$password = $input['password'];\n\nif (empty($phone)) {\n    errorResponse('Invalid phone number', 400);\n}\n\ntry {\n    $db = Database::getInstance();\n    \n    \/\/ Find patient login by phone\n    $stmt = $db->prepare('\n        SELECT pl.*, p.full_name, p.name_bn, p.gender, p.date_of_birth, p.register_number, p.photo_url\n        FROM patient_login pl\n        JOIN patients p ON pl.patient_id = p.id\n        WHERE pl.phone = :phone\n        LIMIT 1\n    ');\n    $stmt->execute([':phone' => $phone]);\n    $patientLogin = $stmt->fetch();\n    \n    if (!$patientLogin) {\n        logAudit(null, null, 'failed_login', 'patient', null, null, ['phone' => $phone, 'reason' => 'not_found']);\n        errorResponse('No account found with this phone number.', 401);\n    }\n    \n    \/\/ Verify password first (prevent status enumeration)\n    if (!password_verify($password, $patientLogin['password_hash'])) {\n        logAudit(null, null, 'failed_login', 'patient', $patientLogin['id'], null, ['reason' => 'invalid_password']);\n        errorResponse('Incorrect password.', 401);\n    }\n    \n    \/\/ Linear validation pipeline\n    if ($patientLogin['status'] === 'pending') {\n        logAudit(null, null, 'failed_login', 'patient', $patientLogin['id'], null, ['reason' => 'pending_approval']);\n        errorResponse('Your account is pending doctor approval. Please wait.', 403);\n    }\n    \n    if ($patientLogin['status'] === 'rejected') {\n        logAudit(null, null, 'failed_login', 'patient', $patientLogin['id'], null, ['reason' => 'account_rejected']);\n        errorResponse('Your account has been rejected. Please contact your doctor.', 403);\n    }\n    \n    \/\/ Regenerate PHP session ID to prevent session fixation\n    if (session_status() === PHP_SESSION_ACTIVE) {\n        session_regenerate_id(true);\n    }\n    \n    \/\/ Create session\n    $token = bin2hex(random_bytes(64));\n    $expiresAt = date('Y-m-d H:i:s', time() + SESSION_LIFETIME);\n    \n    $sessionStmt = $db->prepare('\n        INSERT INTO patient_sessions (patient_login_id, token, ip_address, user_agent, expires_at)\n        VALUES (:patient_login_id, :token, :ip_address, :user_agent, :expires_at)\n    ');\n    $sessionStmt->execute([\n        ':patient_login_id' => $patientLogin['id'],\n        ':token' => $token,\n        ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? null,\n        ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,\n        ':expires_at' => $expiresAt,\n    ]);\n    \n    \/\/ Set secure HttpOnly cookie\n    setcookie('session_token', $token, [\n        'expires' => time() + SESSION_LIFETIME,\n        'path' => '\/',\n        'domain' => '',\n        'secure' => true,\n        'httponly' => true,\n        'samesite' => 'Lax',\n    ]);\n    \n    \/\/ Update last login\n    $updateStmt = $db->prepare('UPDATE patient_login SET last_login_at = NOW() WHERE id = :id');\n    $updateStmt->execute([':id' => $patientLogin['id']]);\n    \n    \/\/ Log successful login\n    logAudit(null, $patientLogin['patient_id'], 'login', 'patient', $patientLogin['id']);\n    \n    \/\/ Return patient info\n    successResponse([\n        'token' => $token,\n        'patient' => [\n            'id' => (string)$patientLogin['id'],\n            'patient_id' => (int)$patientLogin['patient_id'],\n            'phone' => $patientLogin['phone'],\n            'full_name' => $patientLogin['full_name'],\n            'name_bn' => $patientLogin['name_bn'],\n            'gender' => $patientLogin['gender'],\n            'date_of_birth' => $patientLogin['date_of_birth'],\n            'register_number' => $patientLogin['register_number'],\n            'photo_url' => $patientLogin['photo_url'],\n            'status' => $patientLogin['status'],\n        ],\n    ], 'Login successful');\n    \n} catch (\\Exception $e) {\n    error_log('Patient login error: ' . $e->getMessage());\n    errorResponse('Login failed. Please try again.', 500);\n}\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 77840,
+                "completion_tokens": 1304,
+                "total_tokens": 79144,
+                "prompt_cache_hit_tokens": 77696,
+                "prompt_cache_miss_tokens": 144,
+                "prompt_tokens_details": {
+                    "cached_tokens": 77696
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 40
+                },
+                "cached_tokens": 77696
+            },
+            "time": 1784399220
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_F9QkBXLQA99n55vlxe690787",
+            "content": "Successfully wrote 4551 bytes (129 lines) to public_html\/api\/auth\/patients\/login.php",
+            "is_error": false,
+            "time": 1784399220
+        },
+        {
+            "id": "msg_a568ef94b6",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now let me fix middleware.php - this is the core. I need to:\n1. Remove `$_GET['token']` fallback from `getBearerToken()`\n2. Remove refresh_token dead code from `createSession()`\n3. Add cookie-based token reading support\n4. Add CSRF validation function\n5. Add proper session cleanup on auth check\n6. Add login-specific rate limiting hint"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_x7fhwAOsZuRlbQkS0ptw5528",
+                    "name": "todo_write",
+                    "input": {
+                        "todos": [
+                            {
+                                "priority": "high",
+                                "content": "Fix login.php - remove code before <?php tag, remove duplicates, create linear pipeline",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix patient login.php - add session_regenerate_id, secure cookies, audit logging",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix middleware.php - remove $_GET['token'], remove refresh_token dead code, add cookie support, CSRF, cleanup",
+                                "status": "in_progress"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix logout.php - complete session destruction, cookie cleanup, audit log",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Harden admin_login.php - store token in sessions table with validation",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Add stronger rate limiting: separate LOGIN_RATE_LIMIT config",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Add security headers via PHP as backup",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Generate final security report",
+                                "status": "pending"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 79176,
+                "completion_tokens": 335,
+                "total_tokens": 79511,
+                "prompt_cache_hit_tokens": 79104,
+                "prompt_cache_miss_tokens": 72,
+                "prompt_tokens_details": {
+                    "cached_tokens": 79104
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 83
+                },
+                "cached_tokens": 79104
+            },
+            "time": 1784399225
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_x7fhwAOsZuRlbQkS0ptw5528",
+            "content": "Todo list updated with 8 items.",
+            "is_error": false,
+            "time": 1784399225
         }
     ]
 }

@@ -7,7 +7,6 @@
  * 
  * Authenticates a patient and creates a session.
  * Patient must have status='approved' to log in.
- * Sets secure HttpOnly cookie and returns session token.
  */
 
 require_once __DIR__ . '/../../database.php';
@@ -16,7 +15,7 @@ require_once __DIR__ . '/../middleware.php';
 
 handleCors();
 requireMethod('POST');
-checkRateLimit('patient_login_' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'), 5, 900); // 5 attempts per 15 minutes
+checkRateLimit('patient_login_' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'), 5, 900);
 
 $input = getJsonInput();
 
@@ -51,20 +50,20 @@ try {
         errorResponse('No account found with this phone number.', 401);
     }
     
-    // Verify password
+    // Verify password first (prevent status enumeration)
     if (!password_verify($password, $patientLogin['password_hash'])) {
-        logAudit(null, null, 'failed_login', 'patient', $patientLogin['patient_id'], null, ['reason' => 'invalid_password']);
+        logAudit(null, null, 'failed_login', 'patient', $patientLogin['id'], null, ['reason' => 'invalid_password']);
         errorResponse('Incorrect password.', 401);
     }
     
-    // Linear status check pipeline
+    // Linear validation pipeline
     if ($patientLogin['status'] === 'pending') {
-        logAudit(null, null, 'failed_login', 'patient', $patientLogin['patient_id'], null, ['reason' => 'pending_approval']);
+        logAudit(null, null, 'failed_login', 'patient', $patientLogin['id'], null, ['reason' => 'pending_approval']);
         errorResponse('Your account is pending doctor approval. Please wait.', 403);
     }
     
     if ($patientLogin['status'] === 'rejected') {
-        logAudit(null, null, 'failed_login', 'patient', $patientLogin['patient_id'], null, ['reason' => 'account_rejected']);
+        logAudit(null, null, 'failed_login', 'patient', $patientLogin['id'], null, ['reason' => 'account_rejected']);
         errorResponse('Your account has been rejected. Please contact your doctor.', 403);
     }
     
@@ -104,7 +103,7 @@ try {
     $updateStmt->execute([':id' => $patientLogin['id']]);
     
     // Log successful login
-    logAudit(null, null, 'login', 'patient', $patientLogin['patient_id']);
+    logAudit(null, $patientLogin['patient_id'], 'login', 'patient', $patientLogin['id']);
     
     // Return patient info
     successResponse([
