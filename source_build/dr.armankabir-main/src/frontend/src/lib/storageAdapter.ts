@@ -38,13 +38,63 @@ const ALLOWED_UI_KEYS = new Set([
   'app_current_user_email',
 ]);
 
+/**
+ * Business data key prefixes that should NOT be in browser storage.
+ * These are blocked by the storage adapter guard.
+ */
+const BUSINESS_KEY_PREFIXES = [
+  'patients',
+  'patient_',
+  'registry',
+  'doctor_',
+  'medicare_',
+  'staff_',
+  'appointment',
+  'clinical',
+  'soapNotes',
+  'vitals_',
+  'alerts_',
+  'intakeOutput',
+  'dischargeStatus',
+  'pregnancy_',
+  'teleconsults',
+  'referrals_',
+  'procedureLogs',
+  'admissionHistory',
+  'consentForms',
+  'visits_',
+  'prescriptions_',
+  'prescription',
+  'handovers',
+  'rates_',
+  'receipts_',
+  'shifts_',
+  'attendance_',
+  'leaveRequests',
+  'wardRoundChecklist',
+  'testimonials',
+  'gallery_',
+  'lab_',
+  'drugReminders',
+  'moneyReceipts',
+  'phpAuthToken',
+  'staff_auth',
+  'drugReminders',
+];
+
 function isAllowedKey(key: string): boolean {
   if (ALLOWED_UI_KEYS.has(key)) return true;
   // Temporary UI state keys (draft autosave, scroll position, etc.)
   if (key.startsWith('autosave_')) return true;
   if (key.startsWith('draft_')) return true;
   if (key.startsWith('scroll_')) return true;
-  return false;
+  // Check if it's a business key prefix
+  for (const prefix of BUSINESS_KEY_PREFIXES) {
+    if (key === prefix || key.startsWith(prefix + '_') || key.startsWith(prefix + 's_')) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // ─── Core storage wrapper ───────────────────────────────────────────────────
@@ -117,3 +167,33 @@ export const storage = {
     }
   },
 };
+
+/**
+ * Clean up all business data from localStorage.
+ * Run this once on app startup to remove legacy data.
+ * Only UI preferences are preserved.
+ */
+export function cleanupBusinessData(): void {
+  try {
+    const keysToRemove: string[] = [];
+    for (let i = ; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && !isAllowedKey(key)) {
+        keysToRemove.push(key);
+      }
+    }
+    for (const key of keysToRemove) {
+      try {
+        localStorage.removeItem(key);
+        console.log(`[StorageAdapter] Cleaned up business data key: "${key}"`);
+      } catch {
+        // ignore
+      }
+    }
+    if (keysToRemove.length > ) {
+      console.log(`[StorageAdapter] Cleanup complete. Removed ${keysToRemove.length} business data keys.`);
+    }
+  } catch {
+    // ignore
+  }
+}
