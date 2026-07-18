@@ -48,10 +48,10 @@ END_MAP
 # MonthHostsKnown   = Number of hosts known
 # MonthHostsUnKnown = Number of hosts unknown
 BEGIN_GENERAL 8
-LastLine 20260717111844 39 6592 11486490330629
+LastLine 20260718102508 45 8031 10318608045916
 FirstTime 0
 LastTime 0
-LastUpdate 20260717114423 39 0 39 0 0
+LastUpdate 20260718115350 45 0 45 0 0
 TotalVisits 0                   
 TotalUnique 0                   
 MonthHostsKnown 0                   
@@ -60,44 +60,44 @@ END_GENERAL
 
 # Misc ID - Pages - Hits - Bandwidth
 BEGIN_MISC 10
-JavascriptDisabled 0 0 0
+AddToFavourites 0 12 0
+FlashSupport 0 0 0
 TotalMisc 0 0 0
 JavaEnabled 0 0 0
-DirectorSupport 0 0 0
 WindowsMediaPlayerSupport 0 0 0
-FlashSupport 0 0 0
+DirectorSupport 0 0 0
 QuickTimeSupport 0 0 0
-PDFSupport 0 0 0
 RealPlayerSupport 0 0 0
-AddToFavourites 0 10 0
+JavascriptDisabled 0 0 0
+PDFSupport 0 0 0
 END_MISC
 
 # Hour - Pages - Hits - Bandwidth - Not viewed Pages - Not viewed Hits - Not viewed Bandwidth
 BEGIN_TIME 24
 0 0 0 0 24 29 22260
 1 0 0 0 17 19 15105
-2 0 0 0 17 18 14310
-3 0 0 0 13 14 11130
-4 0 0 0 13 14 11130
-5 0 0 0 14 14 11130
+2 0 0 0 18 20 15900
+3 0 0 0 24 25 19875
+4 0 0 0 14 15 11925
+5 0 0 0 15 15 11925
 6 0 0 0 9 9 7155
-7 0 0 0 16 18 14310
-8 0 0 0 17 17 13515
+7 0 0 0 19 23 18285
+8 0 0 0 19 19 15105
 9 0 0 0 15 15 12372
-10 0 0 0 19 19 15105
-11 0 0 0 19 20 15900
-12 0 0 0 12 14 11130
-13 0 0 0 14 14 11130
-14 0 0 0 15 15 12372
-15 0 0 0 18 20 15900
-16 0 0 0 76 76 61314
-17 0 0 0 17 19 14310
-18 0 0 0 25 29 23949
-19 0 0 0 30 33 26334
-20 0 0 0 15 18 14310
-21 0 0 0 22 25 19875
-22 0 0 0 171 172 136740
-23 0 0 0 295 296 235767
+10 0 0 0 20 20 15900
+11 0 0 0 20 21 16695
+12 0 0 0 13 15 11925
+13 0 0 0 16 16 12720
+14 0 0 0 16 16 13167
+15 0 0 0 20 22 17490
+16 0 0 0 77 77 62109
+17 0 0 0 19 21 15900
+18 0 0 0 27 31 25539
+19 0 0 0 31 34 27129
+20 0 0 0 18 21 16695
+21 0 0 0 23 26 20670
+22 0 0 0 174 175 139125
+23 0 0 0 297 298 237357
 END_TIME
 
 # Domain - Pages - Hits - Bandwidth
@@ -193,8 +193,8 @@ END_KEYWORDS
 
 # Errors - Hits - Bandwidth
 BEGIN_ERRORS 2
+301 961 761610
 403 9 11178
-301 918 727425
 END_ERRORS
 
 # URL with 404 errors - Hits - Last URL referrer
@@ -224,7 +224,7 @@ END_SIDER
 BEGIN_FILESIZE 3
 1K-2K 9
 0-44 3
-500-1K 925
+500-1K 970
 END_FILESIZE
 
 # Request Time Range - Request Time Frequency

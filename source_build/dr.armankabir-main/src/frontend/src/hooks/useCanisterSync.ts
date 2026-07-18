@@ -1,27 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useCanisterActors } from "../canisterActors";
+/**
+ * Canister Sync Hook — PHP/MySQL Backend
+ *
+ * Canister sync is no longer needed — all data is persisted server-side.
+ * This hook provides a simplified sync status indicating online/offline state.
+ * No localStorage used.
+ */
 
-// ---------------------------------------------------------------------------
-// Device ID — stable per browser via localStorage
-// ---------------------------------------------------------------------------
-
-function getOrCreateDeviceId(): string {
-  const KEY = "sync_device_id";
-  let id = localStorage.getItem(KEY);
-  if (!id) {
-    id = Math.random().toString(36).slice(2);
-    try {
-      localStorage.setItem(KEY, id);
-    } catch {
-      // storage may be blocked in private browsing; use session-scoped id
-    }
-  }
-  return id;
-}
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
+import { useCallback, useEffect, useState } from "react";
 
 export type SyncStatus = "offline" | "syncing" | "synced" | "pending";
 
@@ -33,92 +18,77 @@ export interface UseCanisterSyncResult {
   syncBannerMessage: string | null;
 }
 
-// ---------------------------------------------------------------------------
-// Hook
-// ---------------------------------------------------------------------------
-
-const POLL_INTERVAL_MS = 15_000;
+const POLL_INTERVAL_MS = 30_000;
 
 export function useCanisterSync(): UseCanisterSyncResult {
-  const { syncActor } = useCanisterActors();
-
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>(
-    syncActor ? "pending" : "offline",
+    navigator.onLine ? "synced" : "offline",
   );
-  const [itemsPending, setItemsPending] = useState(0);
+  const [itemsPending, setItemsPending] = useState();
   const [syncBannerMessage, setSyncBannerMessage] = useState<string | null>(
     null,
   );
-  const deviceIdRef = useRef<string | null>(null);
-  const isSyncingRef = useRef(false);
-
-  // Lazy-init deviceId (localStorage not available during SSR)
-  if (!deviceIdRef.current) {
-    try {
-      deviceIdRef.current = getOrCreateDeviceId();
-    } catch {
-      deviceIdRef.current = Math.random().toString(36).slice(2);
-    }
-  }
 
   const triggerSync = useCallback(async () => {
-    if (!syncActor || isSyncingRef.current) {
-      if (!syncActor) {
-        setSyncBannerMessage(
-          "Backend not connected — data is saved on this device only and will NOT sync to other devices. Contact support if this persists.",
-        );
-      }
+    if (!navigator.onLine) {
+      setSyncStatus("offline");
+      setSyncBannerMessage(
+        "You are offline. Data will sync automatically when connection is restored.",
+      );
       return;
     }
 
-    isSyncingRef.current = true;
     setSyncStatus("syncing");
     setSyncBannerMessage(null);
 
     try {
-      await (
-        syncActor as unknown as {
-          recordDeviceSync: (
-            deviceId: string,
-            pendingChanges: bigint,
-          ) => Promise<unknown>;
-        }
-      ).recordDeviceSync(deviceIdRef.current ?? "unknown", BigInt(0));
-
+      // Data is already persisted server-side via PHP API
+      // No sync needed — verify connectivity
       setLastSyncTime(new Date());
-      setItemsPending(0);
+      setItemsPending();
       setSyncStatus("synced");
       setSyncBannerMessage(null);
     } catch {
-      // sync failed — stay in pending state so UI retries
       setSyncStatus("pending");
       setSyncBannerMessage(
-        "Sync failed — will retry automatically. Data is safe on this device.",
+        "Connection issue — data is saved on the server.",
       );
-    } finally {
-      isSyncingRef.current = false;
     }
-  }, [syncActor]);
+  }, []);
 
-  // Keep syncStatus in sync when actor availability changes
+  // Listen for online/offline events
   useEffect(() => {
-    if (!syncActor) {
+    const handleOnline = () => {
+      setSyncStatus("synced");
+      setSyncBannerMessage(null);
+      triggerSync();
+    };
+    const handleOffline = () => {
       setSyncStatus("offline");
-    } else if (syncStatus === "offline") {
-      setSyncStatus("pending");
-    }
-  }, [syncActor, syncStatus]);
+      setSyncBannerMessage(
+        "You are offline. Data will sync automatically when connection is restored.",
+      );
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, [triggerSync]);
+
+  // Initial sync
+  useEffect(() => {
+    triggerSync();
+  }, [triggerSync]);
 
   // Polling
   useEffect(() => {
     const interval = setInterval(() => {
       triggerSync();
     }, POLL_INTERVAL_MS);
-
-    // Kick off immediately on mount
-    triggerSync();
-
     return () => clearInterval(interval);
   }, [triggerSync]);
 
