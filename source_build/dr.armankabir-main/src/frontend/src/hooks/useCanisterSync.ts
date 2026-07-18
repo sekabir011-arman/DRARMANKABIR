@@ -25,7 +25,7 @@ export function useCanisterSync(): UseCanisterSyncResult {
   const [syncStatus, setSyncStatus] = useState<SyncStatus>(
     navigator.onLine ? "synced" : "offline",
   );
-  const [itemsPending, setItemsPending] = useState();
+  const [itemsPending, setItemsPending] = useState<number>();
   const [syncBannerMessage, setSyncBannerMessage] = useState<string | null>(
     null,
   );
