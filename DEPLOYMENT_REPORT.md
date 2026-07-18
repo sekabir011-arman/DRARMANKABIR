@@ -321,6 +321,16 @@ https://drarmankabir.com/phpmyadmin/
   # Then uncomment the Auth blocks in phpmyadmin/.htaccess
   ```
 
+### PHASE 8: STORAGE ADAPTER GUARD ✅
+- Created `storageAdapter.ts` — the ONLY allowed interface to browser storage
+- **Allowed**: UI preferences only (theme, language, sidebar collapsed state, table prefs)
+- **Blocked**: All business data keys (patients, prescriptions, appointments, payments, auth tokens, clinical notes, etc.)
+- 35+ business key prefixes blocked via `BUSINESS_KEY_PREFIXES` array
+- `cleanupBusinessData()` called once on app startup to remove legacy localStorage business data
+- `storage.length` getter now returns `` when localStorage is unavailable (prevents crashes)
+- Generates console warnings when any code tries to read/write/remove blocked keys
+- Any future code trying to store business data in localStorage will be immediately detected
+
 ## 🔧 POST-DEPLOYMENT FIXES (Applied July 2026)
 
 ### Fix 1: Deployed JS Bundle — Removed ICP Canister Retry Loop
