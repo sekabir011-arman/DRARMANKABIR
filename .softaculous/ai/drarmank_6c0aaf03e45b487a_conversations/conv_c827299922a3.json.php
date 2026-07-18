@@ -22,17 +22,17 @@
         },
         {
             "priority": "high",
-            "content": "Implement session_regenerate_id(true) after login, session_destroy() on logout",
+            "content": "Fix logout.php - complete session destruction, cookie cleanup, audit log",
             "status": "pending"
         },
         {
             "priority": "high",
-            "content": "Add secure cookie-based authentication alongside Authorization header",
+            "content": "Harden admin_login.php - store token in sessions table with validation",
             "status": "pending"
         },
         {
             "priority": "high",
-            "content": "Remove all $_GET['token'] usage from entire codebase",
+            "content": "Remove all $_GET['token'] usage from getBearerToken() in middleware",
             "status": "pending"
         },
         {
@@ -47,22 +47,17 @@
         },
         {
             "priority": "high",
-            "content": "Add stronger rate limiting for login endpoints (5 attempts, lockout)",
+            "content": "Add stronger rate limiting: separate LOGIN_RATE_LIMIT config",
             "status": "pending"
         },
         {
             "priority": "high",
-            "content": "Add audit logging for login, logout, failed login, role changes",
+            "content": "Add audit logging for all security events",
             "status": "pending"
         },
         {
             "priority": "medium",
-            "content": "Harden admin_login.php - store token in sessions table",
-            "status": "pending"
-        },
-        {
-            "priority": "medium",
-            "content": "Verify and enhance security headers in .htaccess",
+            "content": "Enhance security headers via PHP as backup to .htaccess",
             "status": "pending"
         },
         {
@@ -72,7 +67,7 @@
         }
     ],
     "created_at": 1784398524,
-    "updated_at": 1784398739,
+    "updated_at": 1784399211,
     "messages": [
         {
             "id": "msg_85a3205730",
@@ -1446,6 +1441,120 @@
             "content": "Todo list updated with 13 items.",
             "is_error": false,
             "time": 1784398739
+        },
+        {
+            "id": "msg_204d35d2f1",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784399202
+        },
+        {
+            "id": "msg_0f7b26e9ce",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The user said \"continue\" - I need to continue with the security hardening work. Let me pick up where I left off. I fixed login.php, now I need to:\n\n1. Fix patient login.php \n2. Fix middleware.php (remove $_GET['token'], remove refresh_token dead code, add cookie support)\n3. Fix logout.php\n4. Harden admin_login.php\n5. Add CSRF validation\n6. Add authorization checks\n7. etc.\n\nLet me continue systematically."
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me fix the patient login to match the hardened pipeline, then tackle middleware.php."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_2ynfAVILku3Hy0BaJi296082",
+                    "name": "todo_write",
+                    "input": {
+                        "todos": [
+                            {
+                                "priority": "high",
+                                "content": "Fix login.php - remove code before <?php tag, remove duplicates, create linear pipeline",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix patient login.php - add session_regenerate_id, secure cookies, audit logging",
+                                "status": "in_progress"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix middleware.php - remove $_GET['token'], remove refresh_token dead code, add cookie support",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix logout.php - complete session destruction, cookie cleanup, audit log",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Harden admin_login.php - store token in sessions table with validation",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Remove all $_GET['token'] usage from getBearerToken() in middleware",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Implement CSRF validation for state-changing endpoints",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Add role\/permission authorization checks to all API endpoints",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Add stronger rate limiting: separate LOGIN_RATE_LIMIT config",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Add audit logging for all security events",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Enhance security headers via PHP as backup to .htaccess",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Generate final security report",
+                                "status": "pending"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 77362,
+                "completion_tokens": 459,
+                "total_tokens": 77821,
+                "prompt_cache_hit_tokens": 3712,
+                "prompt_cache_miss_tokens": 73650,
+                "prompt_tokens_details": {
+                    "cached_tokens": 3712
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 101
+                },
+                "cached_tokens": 3712
+            },
+            "time": 1784399211
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_2ynfAVILku3Hy0BaJi296082",
+            "content": "Todo list updated with 12 items.",
+            "is_error": false,
+            "time": 1784399211
         }
     ]
 }
