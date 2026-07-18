@@ -1,9 +1,13 @@
-import { storage } from "../lib/storageAdapter";
 /**
- * PHP API Client
+ * PHP API Client (Legacy Compatibility Layer)
  *
- * Centralized fetch wrapper for communicating with the PHP/MySQL backend.
- * Handles auth token injection, JSON parsing, and error normalization.
+ * @deprecated Use apiClient.ts for all new code.
+ * This file is kept for backward compatibility only.
+ * Authentication is now managed via PHP sessions (cookies auto-sent by the browser).
+ * No tokens stored in localStorage.
+ *
+ * All services now import from apiClient.ts directly.
+ * This module is only used by hybridStorage.ts (no-op stubs).
  */
 
 const API_BASE = '/api';
@@ -39,28 +43,19 @@ class ApiError extends Error {
   }
 }
 
+// In-memory auth token (not persisted to localStorage)
+let _authToken: string | null = null;
+
 function getAuthToken(): string | null {
-  try {
-    return storage.getItem('phpAuthToken');
-  } catch {
-    return null;
-  }
+  return _authToken;
 }
 
 export function setAuthToken(token: string): void {
-  try {
-    storage.setItem('phpAuthToken', token);
-  } catch {
-    // ignore
-  }
+  _authToken = token;
 }
 
 export function clearAuthToken(): void {
-  try {
-    storage.removeItem('phpAuthToken');
-  } catch {
-    // ignore
-  }
+  _authToken = null;
 }
 
 function buildUrl(path: string, params?: Record<string, string | number | undefined | null>): string {
@@ -97,6 +92,7 @@ async function request<T = any>(
   const options: RequestInit = {
     method,
     headers,
+    credentials: 'same-origin', // PHP session cookie
   };
 
   if (body !== undefined) {
@@ -113,7 +109,7 @@ async function request<T = any>(
   try {
     response = await fetch(url, options);
   } catch (err) {
-    throw new ApiError('Network error. Please check your connection.', 0);
+    throw new ApiError('Network error. Please check your connection.', );
   }
 
   let json: ApiResponse<T>;
