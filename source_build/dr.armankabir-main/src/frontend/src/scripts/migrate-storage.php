@@ -15,8 +15,8 @@ foreach ($iterator as $file) {
         }
     }
 }
-echo "Files with localStorage: " . count($files) . "\n";
-
+echo "Files with localStorage: " . count($files) . "
+";
 function calcImportPath($file, $src) {
     $dir = dirname(realpath($file));
     $src = realpath($src);
@@ -28,40 +28,42 @@ function calcImportPath($file, $src) {
     }
     return $rel . "lib/storageAdapter";
 }
-
 $total = ;
 foreach ($files as $path) {
     $content = file_get_contents($path);
     $new = $content;
-    
-    if (strpos($new, "storageAdapter") === false) {
-        $lines = explode("\n", $new);
+    if (strpos($new, "from") !== false && strpos($new, "storageAdapter") === false) {
+        $lines = explode("
+", $new);
         $last = -1;
         foreach ($lines as $i => $line) {
             if (preg_match("/^import /", trim($line))) $last = $i;
         }
-        $imp = "import { storageAdapter } from \"" . calcImportPath($path, $srcDir) . "\";";
+        $imp = "import { storage } from \"" . calcImportPath($path, $srcDir) . "\";";
         if ($last >= ) {
             array_splice($lines, $last + 1, , [$imp]);
-            $new = implode("\n", $lines);
+            $new = implode("
+", $lines);
         } else {
-            $new = $imp . "\n" . $new;
+            $new = $imp . "
+" . $new;
         }
     }
-    
     $cnt = ;
-    $new = str_replace("localStorage.getItem(", "storageAdapter.getItem(", $new, $c); $cnt += $c;
-    $new = str_replace("localStorage.setItem(", "storageAdapter.setItem(", $new, $c); $cnt += $c;
-    $new = str_replace("localStorage.removeItem(", "storageAdapter.removeItem(", $new, $c); $cnt += $c;
-    $new = str_replace("localStorage.clear()", "storageAdapter.clear()", $new, $c); $cnt += $c;
-    $new = str_replace("localStorage.length", "storageAdapter.length", $new, $c); $cnt += $c;
-    $new = str_replace("localStorage.key(", "storageAdapter.key(", $new, $c); $cnt += $c;
-    
+    $new = str_replace("localStorage.getItem(", "storage.getItem(", $new, $c); $cnt += $c;
+    $new = str_replace("localStorage.setItem(", "storage.setItem(", $new, $c); $cnt += $c;
+    $new = str_replace("localStorage.removeItem(", "storage.removeItem(", $new, $c); $cnt += $c;
+    $new = str_replace("localStorage.clear()", "storage.clear()", $new, $c); $cnt += $c;
+    $new = str_replace("localStorage.length", "storage.length", $new, $c); $cnt += $c;
+    $new = str_replace("localStorage.key(", "storage.key(", $new, $c); $cnt += $c;
     if ($cnt > ) {
         file_put_contents($path, $new);
         $total += $cnt;
         $rel = str_replace($srcDir . "/", "", $path);
-        echo "  " . $rel . " (" . $cnt . ")\n";
+        echo "  $rel ($cnt)
+";
     }
 }
-echo "\nTotal replacements: " . $total . "\n";
+echo "
+Total replacements: $total
+";

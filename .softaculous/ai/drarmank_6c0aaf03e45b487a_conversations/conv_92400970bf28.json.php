@@ -32,7 +32,7 @@
         }
     ],
     "created_at": 1784213755,
-    "updated_at": 1784378154,
+    "updated_at": 1784378845,
     "messages": [
         {
             "id": "msg_compact",
@@ -4373,6 +4373,279 @@
             "content": "    1 | \/**\n    2 |  * Storage Adapter \u2014 Central Access Layer for Client-Side Persistence\n    3 |  *\n    4 |  * This adapter replaces direct localStorage access in components.\n    5 |  * It mirrors the localStorage API exactly so existing code works without changes.\n    6 |  *\n    7 |  * Migration path:\n    8 |  *   When a PHP API endpoint becomes available for a data type, change the\n    9 |  *   component to use the service\/hook instead of this adapter. No other\n   10 |  *   changes needed in the component.\n   11 |  *\n   12 |  * Usage:\n   13 |  *   import { storage } from '..\/lib\/storageAdapter';\n   14 |  *   const data = storage.getItem('key');\n   15 |  *   storage.setItem('key', 'value');\n   16 |  *\/\n   17 | \n   18 | \/\/ Re-export localStorage with the same API\n   19 | \/\/ This allows us to add logging, migration tracking, or fallback logic later\n   20 | export const storage = {\n   21 |   getItem(key: string): string | null {\n   22 |     try {\n   23 |       return localStorage.getItem(key);\n   24 |     } catch {\n   25 |       return null;\n   26 |     }\n   27 |   },\n   28 | \n   29 |   setItem(key: string, value: string): void {\n   30 |     try {\n   31 |       localStorage.setItem(key, value);\n   32 |     } catch (err) {\n   33 |       console.warn(`[StorageAdapter] Failed to write key \"${key}\":`, err);\n   34 |     }\n   35 |   },\n   36 | \n   37 |   removeItem(key: string): void {\n   38 |     try {\n   39 |       localStorage.removeItem(key);\n   40 |     } catch {\n   41 |       \/\/ ignore\n   42 |     }\n   43 |   },\n   44 | export function clear(): void {\n   45 |   try {\n   46 |     localStorage.clear();\n   47 |   } catch {\n   48 |     \/\/ ignore\n   49 |   }\n   50 | }\n   51 | \n   52 | export function key(index: number): string | null {\n   53 |   try {\n   54 |     return localStorage.key(index);\n   55 |   } catch {\n   56 |     return null;\n   57 |   }\n   58 | }\n   59 | \n   60 | export function getLength(): number {\n   61 |   try {\n   62 |     return localStorage.length;\n   63 |   } catch {\n   64 |     return ;\n   65 |   }\n   66 | }\n   67 |   },\n   68 | \n   69 |   get length(): number {\n   70 |     try {\n   71 |       return localStorage.length;\n   72 |     } catch {\n   73 |       return ;\n   74 |     }\n   75 |   },\n   76 | \n   77 |   key(index: number): string | null {\n   78 |     try {\n   79 |       return localStorage.key(index);\n   80 |     } catch {\n   81 |       return null;\n   82 |     }\n   83 |   },\n   84 | };\n   85 | \n   86 | \/\/ \u2500\u2500 Typed helpers for common business data patterns \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   87 | \/\/ These provide structured access and a migration path to the PHP API.\n   88 | \n   89 | export const storageHelpers = {\n   90 |   \/** Get a parsed JSON value *\/\n   91 |   getJSON<T = unknown>(key: string, fallback: T): T {\n   92 |     const raw = storage.getItem(key);\n   93 |     if (raw === null) return fallback;\n   94 |     try {\n   95 |       return JSON.parse(raw) as T;\n   96 |     } catch {\n   97 |       return fallback;\n   98 |     }\n   99 |   },\n  100 | \n  101 |   \/** Set a value as JSON string *\/\n  102 |   setJSON(key: string, value: unknown): void {\n  103 |     storage.setItem(key, JSON.stringify(value));\n  104 |   },\n  105 | \n  106 |   \/** Get an array (parsed from JSON) *\/\n  107 |   getArray<T = unknown>(key: string): T[] {\n  108 |     return this.getJSON<T[]>(key, []);\n  109 |   },\n  110 | \n  111 |   \/** Get doctor registry *\/\n  112 |   getDoctorsRegistry<T = Record<string, unknown>>(): T[] {\n  113 |     return this.getArray<T>('medicare_doctors_registry');\n  114 |   },\n  115 | \n  116 |   \/** Set doctor registry *\/\n  117 |   setDoctorsRegistry(data: unknown[]): void {\n  118 |     this.setJSON('medicare_doctors_registry', data);\n  119 |   },\n  120 | \n  121 |   \/** Get current doctor *\/\n  122 |   getCurrentDoctor<T = Record<string, unknown>>(): T | null {\n  123 |     const raw = storage.getItem('medicare_current_doctor');\n  124 |     if (!raw) return null;\n  125 |     try {\n  126 |       return JSON.parse(raw) as T;\n  127 |     } catch {\n  128 |       return null;\n  129 |     }\n  130 |   },\n  131 | \n  132 |   \/** Set current doctor *\/\n  133 |   setCurrentDoctor(data: Record<string, unknown> | null): void {\n  134 |     if (data === null) {\n  135 |       storage.removeItem('medicare_current_doctor');\n  136 |     } else {\n  137 |       this.setJSON('medicare_current_doctor', data);\n  138 |     }\n  139 |   },\n  140 | };\n  141 |",
             "is_error": false,
             "time": 1784378154
+        },
+        {
+            "id": "msg_95fe3c04b1",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784378286
+        },
+        {
+            "id": "msg_1eb36c0dce",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784378814
+        },
+        {
+            "id": "msg_a017b5d62a",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The storageAdapter already exists! Let me check the current state of things and run the migration script."
+                },
+                {
+                    "type": "text",
+                    "text": "Great - the `storageAdapter.ts` already exists with the right structure. Let me run the migration script to bulk-convert all files:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_JpoF5CoRL6pfRybRuXLp1684",
+                    "name": "bash",
+                    "input": {
+                        "command": "cat \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/scripts\/migrate-storage.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 54991,
+                "completion_tokens": 121,
+                "total_tokens": 55112,
+                "prompt_cache_hit_tokens": 0,
+                "prompt_cache_miss_tokens": 54991,
+                "prompt_tokens_details": {
+                    "cached_tokens": 0
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 20
+                }
+            },
+            "time": 1784378819
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_JpoF5CoRL6pfRybRuXLp1684",
+            "content": "#!\/usr\/bin\/env php\n<?php\n$srcDir = __DIR__ . \"\/..\";\n$files = [];\n$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($srcDir));\nforeach ($iterator as $file) {\n    if ($file->isFile() && preg_match(\"\/\\.(ts|tsx)$\/\", $file->getFilename())) {\n        $path = $file->getPathname();\n        if (strpos($path, \"storageAdapter\") !== false) continue;\n        if (strpos($path, \"node_modules\") !== false) continue;\n        if (strpos($path, \"scripts\") !== false) continue;\n        $content = @file_get_contents($path);\n        if ($content !== false && strpos($content, \"localStorage.\") !== false) {\n            $files[] = $path;\n        }\n    }\n}\necho \"Files with localStorage: \" . count($files) . \"\\n\";\n\nfunction calcImportPath($file, $src) {\n    $dir = dirname(realpath($file));\n    $src = realpath($src);\n    $rel = \"\";\n    $cur = $dir;\n    while ($cur !== $src && strlen($cur) > strlen($src)) {\n        $rel .= \"..\/\";\n        $cur = dirname($cur);\n    }\n    return $rel . \"lib\/storageAdapter\";\n}\n\n$total = ;\nforeach ($files as $path) {\n    $content = file_get_contents($path);\n    $new = $content;\n    \n    if (strpos($new, \"storageAdapter\") === false) {\n        $lines = explode(\"\\n\", $new);\n        $last = -1;\n        foreach ($lines as $i => $line) {\n            if (preg_match(\"\/^import \/\", trim($line))) $last = $i;\n        }\n        $imp = \"import { storageAdapter } from \\\"\" . calcImportPath($path, $srcDir) . \"\\\";\";\n        if ($last >= ) {\n            array_splice($lines, $last + 1, , [$imp]);\n            $new = implode(\"\\n\", $lines);\n        } else {\n            $new = $imp . \"\\n\" . $new;\n        }\n    }\n    \n    $cnt = ;\n    $new = str_replace(\"localStorage.getItem(\", \"storageAdapter.getItem(\", $new, $c); $cnt += $c;\n    $new = str_replace(\"localStorage.setItem(\", \"storageAdapter.setItem(\", $new, $c); $cnt += $c;\n    $new = str_replace(\"localStorage.removeItem(\", \"storageAdapter.removeItem(\", $new, $c); $cnt += $c;\n    $new = str_replace(\"localStorage.clear()\", \"storageAdapter.clear()\", $new, $c); $cnt += $c;\n    $new = str_replace(\"localStorage.length\", \"storageAdapter.length\", $new, $c); $cnt += $c;\n    $new = str_replace(\"localStorage.key(\", \"storageAdapter.key(\", $new, $c); $cnt += $c;\n    \n    if ($cnt > ) {\n        file_put_contents($path, $new);\n        $total += $cnt;\n        $rel = str_replace($srcDir . \"\/\", \"\", $path);\n        echo \"  \" . $rel . \" (\" . $cnt . \")\\n\";\n    }\n}\necho \"\\nTotal replacements: \" . $total . \"\\n\";",
+            "is_error": false,
+            "time": 1784378819
+        },
+        {
+            "id": "msg_f05b76c3e1",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The issue is the import name: the file exports `storage` not `storageAdapter`. Let me fix the script to import `storage` from the storageAdapter. Also the script has some issues - it uses `storageAdapter` but the actual export in the file is `storage`.\n\nLet me fix the script to import `storage` correctly, then run it."
+                },
+                {
+                    "type": "text",
+                    "text": "I see - the storageAdapter exports `storage` (not `storageAdapter`). Let me fix the migration script and run it:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_cytwTnJGibs9Shqw4jCS4631",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && php -r '\n$script = <<<\"PHPCODE\"\n#!\/usr\/bin\/env php\n<?php\n\\$srcDir = __DIR__ . \"\/..\";\n\\$files = [];\n\\$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(\\$srcDir));\nforeach (\\$iterator as \\$file) {\n    if (\\$file->isFile() && preg_match(\"\/\\.(ts|tsx)$\/\", \\$file->getFilename())) {\n        \\$path = \\$file->getPathname();\n        if (strpos(\\$path, \"storageAdapter\") !== false) continue;\n        if (strpos(\\$path, \"node_modules\") !== false) continue;\n        if (strpos(\\$path, \"scripts\") !== false) continue;\n        \\$content = @file_get_contents(\\$path);\n        if (\\$content !== false && strpos(\\$content, \"localStorage.\") !== false) {\n            \\$files[] = \\$path;\n        }\n    }\n}\necho \"Files with localStorage: \" . count(\\$files) . \"\\n\";\nfunction calcImportPath(\\$file, \\$src) {\n    \\$dir = dirname(realpath(\\$file));\n    \\$src = realpath(\\$src);\n    \\$rel = \"\";\n    \\$cur = \\$dir;\n    while (\\$cur !== \\$src && strlen(\\$cur) > strlen(\\$src)) {\n        \\$rel .= \"..\/\";\n        \\$cur = dirname(\\$cur);\n    }\n    return \\$rel . \"lib\/storageAdapter\";\n}\n\\$total = ;\nforeach (\\$files as \\$path) {\n    \\$content = file_get_contents(\\$path);\n    \\$new = \\$content;\n    if (strpos(\\$new, \"from\") !== false && strpos(\\$new, \"storageAdapter\") === false) {\n        \\$lines = explode(\"\\n\", \\$new);\n        \\$last = -1;\n        foreach (\\$lines as \\$i => \\$line) {\n            if (preg_match(\"\/^import \/\", trim(\\$line))) \\$last = \\$i;\n        }\n        \\$imp = \"import { storage } from \\\"\" . calcImportPath(\\$path, \\$srcDir) . \"\\\";\";\n        if (\\$last >= ) {\n            array_splice(\\$lines, \\$last + 1, , [\\$imp]);\n            \\$new = implode(\"\\n\", \\$lines);\n        } else {\n            \\$new = \\$imp . \"\\n\" . \\$new;\n        }\n    }\n    \\$cnt = ;\n    \\$new = str_replace(\"localStorage.getItem(\", \"storage.getItem(\", \\$new, \\$c); \\$cnt += \\$c;\n    \\$new = str_replace(\"localStorage.setItem(\", \"storage.setItem(\", \\$new, \\$c); \\$cnt += \\$c;\n    \\$new = str_replace(\"localStorage.removeItem(\", \"storage.removeItem(\", \\$new, \\$c); \\$cnt += \\$c;\n    \\$new = str_replace(\"localStorage.clear()\", \"storage.clear()\", \\$new, \\$c); \\$cnt += \\$c;\n    \\$new = str_replace(\"localStorage.length\", \"storage.length\", \\$new, \\$c); \\$cnt += \\$c;\n    \\$new = str_replace(\"localStorage.key(\", \"storage.key(\", \\$new, \\$c); \\$cnt += \\$c;\n    if (\\$cnt > ) {\n        file_put_contents(\\$path, \\$new);\n        \\$total += \\$cnt;\n        \\$rel = str_replace(\\$srcDir . \"\/\", \"\", \\$path);\n        echo \"  \\$rel (\\$cnt)\\n\";\n    }\n}\necho \"\\nTotal replacements: \\$total\\n\";\nPHPCODE;\nfile_put_contents(\"scripts\/migrate-storage.php\", $script);\necho \"Written OK\\n\";\n'"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 55857,
+                "completion_tokens": 958,
+                "total_tokens": 56815,
+                "prompt_cache_hit_tokens": 55040,
+                "prompt_cache_miss_tokens": 817,
+                "prompt_tokens_details": {
+                    "cached_tokens": 55040
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 73
+                },
+                "cached_tokens": 55040
+            },
+            "time": 1784378826
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_cytwTnJGibs9Shqw4jCS4631",
+            "content": "Written OK\n\nUnsuccessful stat on filename containing newline at \/var\/cpanel\/ea4\/ea_php_cli.pm line 87.\n",
+            "is_error": false,
+            "time": 1784378827
+        },
+        {
+            "id": "msg_80eb53769c",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ET_Sv5id9Gnt5FsjPx8pQaU8116",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && php scripts\/migrate-storage.php 2>&1"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 56859,
+                "completion_tokens": 79,
+                "total_tokens": 56938,
+                "prompt_cache_hit_tokens": 56704,
+                "prompt_cache_miss_tokens": 155,
+                "prompt_tokens_details": {
+                    "cached_tokens": 56704
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 0
+                },
+                "cached_tokens": 56704
+            },
+            "time": 1784378830
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ET_Sv5id9Gnt5FsjPx8pQaU8116",
+            "content": "\n[Exit code: 255]",
+            "is_error": true,
+            "time": 1784378830
+        },
+        {
+            "id": "msg_9c6f53654d",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The script has syntax issues. Let me debug it."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_su2JZ3QKDpcCzdAblAx36136",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && php -l scripts\/migrate-storage.php 2>&1"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 56956,
+                "completion_tokens": 92,
+                "total_tokens": 57048,
+                "prompt_cache_hit_tokens": 56832,
+                "prompt_cache_miss_tokens": 124,
+                "prompt_tokens_details": {
+                    "cached_tokens": 56832
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 11
+                },
+                "cached_tokens": 56832
+            },
+            "time": 1784378833
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_su2JZ3QKDpcCzdAblAx36136",
+            "content": "Errors parsing scripts\/migrate-storage.php\n\n[Exit code: 255]",
+            "is_error": true,
+            "time": 1784378833
+        },
+        {
+            "id": "msg_c8f85104d0",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The heredoc syntax is probably mangled. Let me write the PHP script directly."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me write the script in a simpler way:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_fRLYth8vlBKpXZvqeZY17605",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && php -r '\n\/\/ Inline migration directly\n$srcDir = getcwd();\n$files = [];\n$it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($srcDir));\nforeach ($it as $f) {\n    if ($f->isFile() && preg_match(\"\/\\.(ts|tsx)$\/\", $f->getFilename())) {\n        $path = $f->getPathname();\n        if (strpos($path, \"storageAdapter\") !== false) continue;\n        if (strpos($path, \"node_modules\") !== false) continue;\n        if (strpos($path, \"scripts\") !== false) continue;\n        $c = file_get_contents($path);\n        if ($c !== false && strpos($c, \"localStorage.\") !== false) $files[] = $path;\n    }\n}\necho \"Files: \" . count($files) . PHP_EOL;\n\nfunction calcPath($file, $src) {\n    $dir = dirname(realpath($file));\n    $src = realpath($src);\n    $rel = \"\";\n    $cur = $dir;\n    while ($cur !== $src && strlen($cur) > strlen($src)) {\n        $rel .= \"..\/\";\n        $cur = dirname($cur);\n    }\n    return $rel . \"lib\/storageAdapter\";\n}\n\n$total = ;\nforeach ($files as $path) {\n    $content = file_get_contents($path);\n    $new = $content;\n    if (strpos($new, \"storage\") === false || (strpos($new, \"from\") !== false && strpos($new, \"storageAdapter\") === false)) {\n        \/\/ Check if import from storageAdapter already exists  \n        if (preg_match(\"\/import.*storageAdapter\/\", $new)) {\n            \/\/ already imported\n        } else {\n            $lines = explode(\"\\n\", $new);\n            $last = -1;\n            foreach ($lines as $i => $line) {\n                if (preg_match(\"\/^import \/\", trim($line))) $last = $i;\n            }\n            $imp = \"import { storage } from \\\"\" . calcPath($path, $srcDir) . \"\\\";\";\n            if ($last >= ) {\n                array_splice($lines, $last + 1, , [$imp]);\n                $new = implode(\"\\n\", $lines);\n            } else {\n                $new = $imp . \"\\n\" . $new;\n            }\n        }\n    }\n    $cnt = ;\n    $patterns = [\n        \"localStorage.getItem(\" => \"storage.getItem(\",\n        \"localStorage.setItem(\" => \"storage.setItem(\",\n        \"localStorage.removeItem(\" => \"storage.removeItem(\",\n        \"localStorage.clear()\" => \"storage.clear()\",\n        \"localStorage.length\" => \"storage.length\",\n        \"localStorage.key(\" => \"storage.key(\",\n    ];\n    foreach ($patterns as $old => $newStr) {\n        $new = str_replace($old, $newStr, $new, $c);\n        $cnt += $c;\n    }\n    if ($cnt > ) {\n        file_put_contents($path, $new);\n        $total += $cnt;\n        echo \"  \" . str_replace($srcDir . \"\/\", \"\", $path) . \" (\" . $cnt . \")\" . PHP_EOL;\n    }\n}\necho PHP_EOL . \"Total: \" . $total . PHP_EOL;\n'"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 57077,
+                "completion_tokens": 825,
+                "total_tokens": 57902,
+                "prompt_cache_hit_tokens": 56960,
+                "prompt_cache_miss_tokens": 117,
+                "prompt_tokens_details": {
+                    "cached_tokens": 56960
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 17
+                },
+                "cached_tokens": 56960
+            },
+            "time": 1784378840
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_fRLYth8vlBKpXZvqeZY17605",
+            "content": "Unsuccessful stat on filename containing newline at \/var\/cpanel\/ea4\/ea_php_cli.pm line 87.\n\n[Exit code: 255]",
+            "is_error": true,
+            "time": 1784378841
+        },
+        {
+            "id": "msg_b51628ff19",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The issue seems to be with the PHP heredoc parsing on this server. Let me write the script file using write_file instead, or use a different approach. The cPanel's ea_php_cli is having issues with newlines in the filename. Let me just use a simple approach - write the script file first then run it.\n\nActually, the issue is the `ea_php_cli.pm` line 87 error - this is a cPanel module issue with newlines in the command. Let me try a simpler php command."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_S8YjlXdfkMgQUFsGuNn48362",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && php -r \"echo 'hello';\""
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 57950,
+                "completion_tokens": 186,
+                "total_tokens": 58136,
+                "prompt_cache_hit_tokens": 57856,
+                "prompt_cache_miss_tokens": 94,
+                "prompt_tokens_details": {
+                    "cached_tokens": 57856
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 110
+                },
+                "cached_tokens": 57856
+            },
+            "time": 1784378844
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_S8YjlXdfkMgQUFsGuNn48362",
+            "content": "hello",
+            "is_error": false,
+            "time": 1784378845
         }
     ]
 }

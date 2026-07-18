@@ -12,11 +12,12 @@
  * Usage:
  *   import { storage } from '../lib/storageAdapter';
  *   const data = storage.getItem('key');
+ *   data = storage.getItem('key');
  *   storage.setItem('key', 'value');
  */
 
-// Re-export localStorage with the same API
-// This allows us to add logging, migration tracking, or fallback logic later
+// ── Core storage wrapper ───────────────────────────────────────────────────
+
 export const storage = {
   getItem(key: string): string | null {
     try {
@@ -41,29 +42,13 @@ export const storage = {
       // ignore
     }
   },
-export function clear(): void {
-  try {
-    localStorage.clear();
-  } catch {
-    // ignore
-  }
-}
 
-export function key(index: number): string | null {
-  try {
-    return localStorage.key(index);
-  } catch {
-    return null;
-  }
-}
-
-export function getLength(): number {
-  try {
-    return localStorage.length;
-  } catch {
-    return ;
-  }
-}
+  clear(): void {
+    try {
+      localStorage.clear();
+    } catch {
+      // ignore
+    }
   },
 
   get length(): number {
