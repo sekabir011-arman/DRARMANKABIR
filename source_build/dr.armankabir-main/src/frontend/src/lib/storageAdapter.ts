@@ -1,32 +1,66 @@
 /**
  * Storage Adapter — UI Preferences Only
  *
- * This adapter is now limited to non-sensitive UI preferences only.
- * All business data (patients, doctors, appointments, prescriptions,
- * payments, etc.) MUST be loaded/saved through the PHP API and MySQL.
+ * This adapter is kept ONLY for non-sensitive UI preferences:
+ *   - Theme
+ *   - Language
+ *   - Sidebar collapsed state
+ *   - Table layout preferences
+ *   - Prescription header preferences
+ *   - Admin content (classroom, chamber, profile content)
  *
- * Authentication tokens MUST NOT be stored in browser storage.
- * Only PHP sessions and HttpOnly secure cookies are used for auth.
+ * ALL business data (patients, doctors, appointments, prescriptions,
+ * payments, clinical notes, etc.) is stored server-side in MySQL
+ * via the PHP API. Use the service layer (services/*.ts) and
+ * React Query hooks (hooks/useQueries.ts) instead.
  *
- * ALLOWED KEYS (UI Preferences only):
- *   - patient_language
- *   - theme
- *   - sidebar_collapsed
- *   - table_layout_*
- *   - classroom_arman, classroom_samia
- *   - chamber_arman, chamber_samia
- *   - profile_arman, profile_samia
- *   - prescriptionHeaders_chamber, prescriptionHeaders_hospital
+ * Authentication uses PHP sessions with HttpOnly cookies.
+ * No tokens are stored in localStorage.
  *
  * Usage:
  *   import { storage } from '../lib/storageAdapter';
  *   const lang = storage.getItem('patient_language');
  */
 
-// ── Core storage wrapper (UI preferences only) ─────────────────────────────
+// ── UI Preferences Only ──────────────────────────────────────────────────
+
+const UI_PREFERENCE_KEYS = new Set([
+  'patient_language',
+  'theme',
+  'sidebar_collapsed',
+  'table_layout',
+  'classroom_arman',
+  'classroom_samia',
+  'chamber_arman',
+  'chamber_samia',
+  'profile_arman',
+  'profile_samia',
+  'prescriptionHeaders_chamber',
+  'prescriptionHeaders_hospital',
+  'lab_system_name',
+  'lab_api_endpoint',
+  // Serial display per-user video URL (non-sensitive UI config)
+  'serialDisplayVideoUrl_',
+]);
+
+function isUIPreference(key: string): boolean {
+  if (UI_PREFERENCE_KEYS.has(key)) return true;
+  // Allow keys with known prefixes for UI preferences
+  if (key.startsWith('serialDisplayVideoUrl_')) return true;
+  return false;
+}
+
+// ── Core storage wrapper ──────────────────────────────────────────────────
 
 export const storage = {
   getItem(key: string): string | null {
+    if (!isUIPreference(key)) {
+      console.warn(
+        `[StorageAdapter] Blocked read of non-UI key "${key}". ` +
+          'Business data must be loaded via the PHP API service layer.',
+      );
+      return null;
+    }
     try {
       return localStorage.getItem(key);
     } catch {
@@ -35,6 +69,13 @@ export const storage = {
   },
 
   setItem(key: string, value: string): void {
+    if (!isUIPreference(key)) {
+      console.warn(
+        `[StorageAdapter] Blocked write of non-UI key "${key}". ` +
+          'Business data must be saved via the PHP API service layer.',
+      );
+      return;
+    }
     try {
       localStorage.setItem(key, value);
     } catch (err) {
@@ -43,6 +84,12 @@ export const storage = {
   },
 
   removeItem(key: string): void {
+    if (!isUIPreference(key)) {
+      console.warn(
+        `[StorageAdapter] Blocked removal of non-UI key "${key}".`,
+      );
+      return;
+    }
     try {
       localStorage.removeItem(key);
     } catch {
@@ -75,25 +122,36 @@ export const storage = {
   },
 };
 
-// ── UI Preference Helpers (the only data allowed in browser storage) ──────
-// Business data helpers have been removed.
-// Doctor registry, current doctor, and other business data must go through
-// the PHP API via services/*.ts
+// ── UI Preference Helpers (kept for convenience) ─────────────────────────
 
-export const storageHelpers = {
-  /** Get a parsed JSON value (for UI prefs only) */
-  getJSON<T = unknown>(key: string, fallback: T): T {
-    const raw = storage.getItem(key);
-    if (raw === null) return fallback;
-    try {
-      return JSON.parse(raw) as T;
-    } catch {
-      return fallback;
-    }
+export const uiPrefs = {
+  /** Get language preference */
+  getLanguage(): 'en' | 'bn' {
+    return (storage.getItem('patient_language') as 'en' | 'bn') ?? 'en';
   },
 
-  /** Set a value as JSON string (for UI prefs only) */
-  setJSON(key: string, value: unknown): void {
-    storage.setItem(key, JSON.stringify(value));
+  /** Set language preference */
+  setLanguage(lang: 'en' | 'bn'): void {
+    storage.setItem('patient_language', lang);
+  },
+
+  /** Get theme preference */
+  getTheme(): 'light' | 'dark' {
+    return (storage.getItem('theme') as 'light' | 'dark') ?? 'light';
+  },
+
+  /** Set theme preference */
+  setTheme(theme: 'light' | 'dark'): void {
+    storage.setItem('theme', theme);
+  },
+
+  /** Get sidebar collapsed state */
+  isSidebarCollapsed(): boolean {
+    return storage.getItem('sidebar_collapsed') === 'true';
+  },
+
+  /** Set sidebar collapsed state */
+  setSidebarCollapsed(collapsed: boolean): void {
+    storage.setItem('sidebar_collapsed', String(collapsed));
   },
 };
