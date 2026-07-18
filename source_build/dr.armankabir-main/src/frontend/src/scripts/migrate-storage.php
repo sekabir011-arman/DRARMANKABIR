@@ -1,0 +1,67 @@
+#!/usr/bin/env php
+<?php
+$srcDir = __DIR__ . "/..";
+$files = [];
+$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($srcDir));
+foreach ($iterator as $file) {
+    if ($file->isFile() && preg_match("/\.(ts|tsx)$/", $file->getFilename())) {
+        $path = $file->getPathname();
+        if (strpos($path, "storageAdapter") !== false) continue;
+        if (strpos($path, "node_modules") !== false) continue;
+        if (strpos($path, "scripts") !== false) continue;
+        $content = @file_get_contents($path);
+        if ($content !== false && strpos($content, "localStorage.") !== false) {
+            $files[] = $path;
+        }
+    }
+}
+echo "Files with localStorage: " . count($files) . "\n";
+
+function calcImportPath($file, $src) {
+    $dir = dirname(realpath($file));
+    $src = realpath($src);
+    $rel = "";
+    $cur = $dir;
+    while ($cur !== $src && strlen($cur) > strlen($src)) {
+        $rel .= "../";
+        $cur = dirname($cur);
+    }
+    return $rel . "lib/storageAdapter";
+}
+
+$total = ;
+foreach ($files as $path) {
+    $content = file_get_contents($path);
+    $new = $content;
+    
+    if (strpos($new, "storageAdapter") === false) {
+        $lines = explode("\n", $new);
+        $last = -1;
+        foreach ($lines as $i => $line) {
+            if (preg_match("/^import /", trim($line))) $last = $i;
+        }
+        $imp = "import { storageAdapter } from \"" . calcImportPath($path, $srcDir) . "\";";
+        if ($last >= ) {
+            array_splice($lines, $last + 1, , [$imp]);
+            $new = implode("\n", $lines);
+        } else {
+            $new = $imp . "\n" . $new;
+        }
+    }
+    
+    $cnt = ;
+    $new = str_replace("localStorage.getItem(", "storageAdapter.getItem(", $new, $c); $cnt += $c;
+    $new = str_replace("localStorage.setItem(", "storageAdapter.setItem(", $new, $c); $cnt += $c;
+    $new = str_replace("localStorage.removeItem(", "storageAdapter.removeItem(", $new, $c); $cnt += $c;
+    $new = str_replace("localStorage.clear()", "storageAdapter.clear()", $new, $c); $cnt += $c;
+    $new = str_replace("localStorage.length", "storageAdapter.length", $new, $c); $cnt += $c;
+    $new = str_replace("localStorage.key(", "storageAdapter.key(", $new, $c); $cnt += $c;
+    
+    if ($cnt > ) {
+        file_put_contents($path, $new);
+        $total += $cnt;
+        $rel = str_replace($srcDir . "/", "", $path);
+        echo "  " . $rel . " (" . $cnt . ")\n";
+    }
+}
+echo "\nTotal replacements: " . $total . "\n";
