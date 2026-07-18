@@ -1,0 +1,79 @@
+/**
+ * Doctor Content Hook — PHP/MySQL Backend
+ *
+ * Doctor content is stored server-side via the PHP API.
+ * No localStorage used — content is fetched via React Query hooks.
+ */
+
+import { useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { landingService } from "../services/landing";
+
+export function useDoctorContent() {
+  const queryClient = useQueryClient();
+
+  const { data: overrides = {}, isLoading } = useQuery({
+    queryKey: ["doctorContent"],
+    queryFn: async () => {
+      const config = await landingService.getSiteConfig();
+      return (config as any)?.doctorContentOverrides ?? {};
+    },
+  });
+
+  const mutation = useMutation({
+    mutationFn: async (newOverrides: Record<string, unknown>) => {
+      await landingService.updateSiteConfig({
+        doctorContentOverrides: newOverrides,
+      } as any);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["doctorContent"] });
+    },
+  });
+
+  const getContent = useCallback(
+    (doctorKey: string): Record<string, unknown> => {
+      const docOverrides = (overrides[doctorKey] || {}) as Record<string, unknown>;
+      return { ...docOverrides };
+    },
+    [overrides],
+  );
+
+  const updateField = useCallback(
+    (doctorKey: string, path: string, value: unknown) => {
+      const updated = { ...overrides };
+      if (!updated[doctorKey]) updated[doctorKey] = {};
+      const parts = path.split(".");
+      let obj = updated[doctorKey] as Record<string, unknown>;
+      for (let i = ; i < parts.length - 1; i++) {
+        if (!obj[parts[i]] || typeof obj[parts[i]] !== "object") {
+          obj[parts[i]] = {};
+        }
+        obj = obj[parts[i]] as Record<string, unknown>;
+      }
+      obj[parts[parts.length - 1]] = value;
+      mutation.mutate(updated);
+    },
+    [overrides, mutation],
+  );
+
+  const updateChambers = useCallback(
+    (doctorKey: string, chambers: unknown[]) => {
+      const updated = {
+        ...overrides,
+        [doctorKey]: {
+          ...((overrides[doctorKey] as Record<string, unknown>) || {}),
+          chambers,
+        },
+      };
+      mutation.mutate(updated);
+    },
+    [overrides, mutation],
+  );
+
+  const getAll = useCallback(() => {
+    return overrides;
+  }, [overrides]);
+
+  return { getContent, updateField, updateChambers, getAll, isLoading };
+}
