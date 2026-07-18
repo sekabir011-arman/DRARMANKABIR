@@ -46,7 +46,7 @@ export function useCanisterSync(): UseCanisterSyncResult {
       // Data is already persisted server-side via PHP API
       // No sync needed — verify connectivity
       setLastSyncTime(new Date());
-      setItemsPending();
+      setItemsPending(undefined);
       setSyncStatus("synced");
       setSyncBannerMessage(null);
     } catch {
