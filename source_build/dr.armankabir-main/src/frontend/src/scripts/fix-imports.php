@@ -37,7 +37,7 @@ function calcImportPath($file, $src) {
     return $rel . 'lib/storageAdapter';
 }
 
-$zero = intval();
+$zero = ;
 foreach ($files as $path) {
     $content = file_get_contents($path);
     $lines = explode("\n", $content);
