@@ -79,7 +79,6 @@ const BUSINESS_KEY_PREFIXES = [
   'moneyReceipts',
   'phpAuthToken',
   'staff_auth',
-  'drugReminders',
 ];
 
 function isAllowedKey(key: string): boolean {
@@ -90,7 +89,7 @@ function isAllowedKey(key: string): boolean {
   if (key.startsWith('scroll_')) return true;
   // Check if it's a business key prefix
   for (const prefix of BUSINESS_KEY_PREFIXES) {
-    if (key === prefix || key.startsWith(prefix + '_') || key.startsWith(prefix + 's_')) {
+    if (key === prefix || key.startsWith(prefix + '_')) {
       return false;
     }
   }
@@ -176,7 +175,8 @@ export const storage = {
 export function cleanupBusinessData(): void {
   try {
     const keysToRemove: string[] = [];
-    for (let i = ; i < localStorage.length; i++) {
+    const len = localStorage.length;
+    for (let i = 0; i < len; i++) {
       const key = localStorage.key(i);
       if (key && !isAllowedKey(key)) {
         keysToRemove.push(key);
@@ -185,13 +185,13 @@ export function cleanupBusinessData(): void {
     for (const key of keysToRemove) {
       try {
         localStorage.removeItem(key);
-        console.log(`[StorageAdapter] Cleaned up business data key: "${key}"`);
+        console.log('[StorageAdapter] Cleaned up business data key:', key);
       } catch {
         // ignore
       }
     }
-    if (keysToRemove.length > ) {
-      console.log(`[StorageAdapter] Cleanup complete. Removed ${keysToRemove.length} business data keys.`);
+    if (keysToRemove.length > 0) {
+      console.log('[StorageAdapter] Cleanup complete. Removed ' + keysToRemove.length + ' business data keys.');
     }
   } catch {
     // ignore
