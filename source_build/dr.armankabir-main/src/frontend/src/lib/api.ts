@@ -10,9 +10,9 @@
  * Migration: Replace all imports from './api' with './apiClient'.
  */
 
-import { get, post, put, del, upload, setAuthToken, clearAuthToken, ApiError } from './apiClient';
+import { get, post, put, del, upload, ApiError } from './apiClient';
 
 export type { ApiResponse, PaginatedData } from './apiClient';
 export { ApiError };
 
-export { get, post, put, del, upload, setAuthToken, clearAuthToken };
+export { get, post, put, del, upload };
