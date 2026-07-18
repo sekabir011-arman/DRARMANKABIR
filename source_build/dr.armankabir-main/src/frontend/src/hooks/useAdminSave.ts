@@ -234,8 +234,7 @@ export const reassignStaffRole = async (
     return false;
   }
 };
-/** Verify PHP API connectivity. */
-export const verifyStorageCapacity = async (): Promise<{
+
 /**
  * Verify PHP API connectivity.
  */
