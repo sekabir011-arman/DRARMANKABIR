@@ -234,12 +234,12 @@ export const reassignStaffRole = async (
     return false;
   }
 };
-
-/**
- * Verify PHP API connectivity.
- */
+/** Verify PHP API connectivity. */
 export const verifyStorageCapacity = async (): Promise<{
   available: boolean;
+  percentUsed: number | null;
+  message: string;
+}> => {
   percentUsed: number;
   message: string;
 }> => {
