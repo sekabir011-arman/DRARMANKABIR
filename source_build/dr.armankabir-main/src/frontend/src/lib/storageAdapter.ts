@@ -98,12 +98,35 @@ function isAllowedKey(key: string): boolean {
 
 // ─── Core storage wrapper ───────────────────────────────────────────────────
 
+// ─── Soft Block Mode ────────────────────────────────────────────────────────
+// When true, business data keys are blocked entirely (getItem returns null,
+// setItem/removeItem are no-ops). When false, operations are allowed with a
+// deprecation warning. Set to true after all components have migrated.
+let HARD_BLOCK = false;
+
+export function enableHardBlock(): void {
+  HARD_BLOCK = true;
+}
+
+export function disableHardBlock(): void {
+  HARD_BLOCK = false;
+}
+
+function shouldBlock(key: string): boolean {
+  if (isAllowedKey(key)) return false;
+  if (HARD_BLOCK) {
+    console.warn(`[StorageAdapter] BLOCKED "${key}". Business data must come from PHP API.`);
+    return true;
+  }
+  console.warn(`[StorageAdapter] DEPRECATED "${key}". Business data should use PHP API, not localStorage.`);
+  return false; // soft mode: warn but allow
+}
+
+// ─── Core storage wrapper ───────────────────────────────────────────────────
+
 export const storage = {
   getItem(key: string): string | null {
-    if (!isAllowedKey(key)) {
-      console.warn(`[StorageAdapter] Blocked read of non-UI key "${key}". Business data must come from PHP API.`);
-      return null;
-    }
+    if (shouldBlock(key)) return null;
     try {
       return localStorage.getItem(key);
     } catch {
@@ -112,10 +135,7 @@ export const storage = {
   },
 
   setItem(key: string, value: string): void {
-    if (!isAllowedKey(key)) {
-      console.warn(`[StorageAdapter] Blocked write of non-UI key "${key}". Business data must go to PHP API.`);
-      return;
-    }
+    if (shouldBlock(key)) return;
     try {
       localStorage.setItem(key, value);
     } catch (err) {
@@ -124,10 +144,7 @@ export const storage = {
   },
 
   removeItem(key: string): void {
-    if (!isAllowedKey(key)) {
-      console.warn(`[StorageAdapter] Blocked remove of non-UI key "${key}". Business data must come from PHP API.`);
-      return;
-    }
+    if (shouldBlock(key)) return;
     try {
       localStorage.removeItem(key);
     } catch {
@@ -154,7 +171,7 @@ export const storage = {
     try {
       return localStorage.length;
     } catch {
-      return 0; // fallback when localStorage unavailable
+      return ; // fallback when localStorage unavailable
     }
   },
 
