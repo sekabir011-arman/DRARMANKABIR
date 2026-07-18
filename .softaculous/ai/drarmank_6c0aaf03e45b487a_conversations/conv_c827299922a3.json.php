@@ -8,6 +8,11 @@
         {
             "priority": "high",
             "content": "Fix login.php - remove code before <?php tag, remove duplicates, create linear pipeline",
+            "status": "completed"
+        },
+        {
+            "priority": "high",
+            "content": "Fix patient login.php - add session_regenerate_id, secure cookies, audit logging",
             "status": "in_progress"
         },
         {
@@ -67,7 +72,7 @@
         }
     ],
     "created_at": 1784398524,
-    "updated_at": 1784398724,
+    "updated_at": 1784398739,
     "messages": [
         {
             "id": "msg_85a3205730",
@@ -1286,6 +1291,161 @@
             "content": "Todo list updated with 12 items.",
             "is_error": false,
             "time": 1784398724
+        },
+        {
+            "id": "msg_b7be70d762",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me now write the complete fixed login.php file."
+                },
+                {
+                    "type": "text",
+                    "text": "**Step 1: Completely rewrite login.php** - removing the code-before-PHP-tag vulnerability, duplicate checks, adding session regeneration, secure cookies, failed login audit, and stronger rate limiting."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_dtBitF1LcCuRkQTWL5FV2696",
+                    "name": "write_file",
+                    "input": {
+                        "path": "public_html\/api\/auth\/login.php",
+                        "content": "<?php\n\/**\n * Login API\n * \n * POST \/api\/auth\/login.php\n * Body: { \"email\": \"...\", \"password\": \"...\" }\n * \n * Validates credentials and creates a session.\n * Sets secure HttpOnly cookie and returns session token.\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\nrequire_once __DIR__ . '\/middleware.php';\n\nhandleCors();\nrequireMethod('POST');\ncheckRateLimit('login_' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'), 5, 900); \/\/ 5 attempts per 15 minutes\n\n$input = getJsonInput();\n\n\/\/ Validate required fields\n$missing = validateRequired($input, ['email', 'password']);\nif ($missing) {\n    errorResponse('Missing required fields', 400, [\n        'missing_fields' => $missing,\n    ]);\n}\n\n$email = sanitizeEmail($input['email']);\n$password = $input['password'];\n\nif (empty($email)) {\n    errorResponse('Invalid email address', 400);\n}\n\ntry {\n    $db = Database::getInstance();\n    \n    \/\/ Find user by email (only fetch needed columns)\n    $stmt = $db->prepare('SELECT id, email, password_hash, full_name, name_bn, role, specialization, phone, photo_url, signature_url, bmdc_registration, is_active, registration_status FROM users WHERE email = :email LIMIT 1');\n    $stmt->execute([':email' => $email]);\n    $user = $stmt->fetch();\n    \n    if (!$user) {\n        logAudit(null, null, 'failed_login', 'user', null, null, ['email' => $email, 'reason' => 'user_not_found']);\n        errorResponse('Invalid email or password', 401);\n    }\n    \n    \/\/ Linear validation pipeline\n    if (!$user['is_active']) {\n        logAudit($user['id'], null, 'failed_login', 'user', $user['id'], null, ['reason' => 'account_deactivated']);\n        errorResponse('Account is deactivated. Contact administrator.', 403);\n    }\n    \n    if ($user['registration_status'] === 'pending') {\n        logAudit($user['id'], null, 'failed_login', 'user', $user['id'], null, ['reason' => 'pending_approval']);\n        errorResponse('Your account is pending admin approval. Please wait.', 403);\n    }\n    \n    if ($user['registration_status'] === 'rejected') {\n        logAudit($user['id'], null, 'failed_login', 'user', $user['id'], null, ['reason' => 'account_rejected']);\n        errorResponse('Your account has been rejected. Please contact the admin or re-register.', 403);\n    }\n    \n    \/\/ Verify password\n    if (!password_verify($password, $user['password_hash'])) {\n        logAudit($user['id'], null, 'failed_login', 'user', $user['id'], null, ['reason' => 'invalid_password']);\n        errorResponse('Invalid email or password', 401);\n    }\n    \n    \/\/ Regenerate PHP session ID to prevent session fixation\n    if (session_status() === PHP_SESSION_ACTIVE) {\n        session_regenerate_id(true);\n    }\n    \n    \/\/ Create session in database\n    $token = createSession($user['id']);\n    \n    \/\/ Set secure HttpOnly cookie\n    $cookieParams = session_get_cookie_params();\n    setcookie('session_token', $token, [\n        'expires' => time() + SESSION_LIFETIME,\n        'path' => '\/',\n        'domain' => '',\n        'secure' => true,\n        'httponly' => true,\n        'samesite' => 'Lax',\n    ]);\n    \n    \/\/ Update last login\n    $updateStmt = $db->prepare('UPDATE users SET last_login_at = NOW() WHERE id = :id');\n    $updateStmt->execute([':id' => $user['id']]);\n    \n    \/\/ Log successful login\n    logAudit($user['id'], null, 'login', 'user', $user['id']);\n    \n    \/\/ Return user info (excluding password hash)\n    unset($user['password_hash']);\n    \n    successResponse([\n        'token' => $token,\n        'user' => [\n            'id' => (int)$user['id'],\n            'email' => $user['email'],\n            'full_name' => $user['full_name'],\n            'name_bn' => $user['name_bn'],\n            'role' => $user['role'],\n            'specialization' => $user['specialization'],\n            'phone' => $user['phone'],\n            'photo_url' => $user['photo_url'],\n            'signature_url' => $user['signature_url'],\n            'bmdc_registration' => $user['bmdc_registration'],\n        ],\n    ], 'Login successful');\n    \n} catch (\\Exception $e) {\n    error_log('Login error: ' . $e->getMessage());\n    errorResponse('Login failed. Please try again.', 500);\n}\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 80074,
+                "completion_tokens": 1214,
+                "total_tokens": 81288,
+                "prompt_cache_hit_tokens": 80000,
+                "prompt_cache_miss_tokens": 74,
+                "prompt_tokens_details": {
+                    "cached_tokens": 80000
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 11
+                },
+                "cached_tokens": 80000
+            },
+            "time": 1784398733
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_dtBitF1LcCuRkQTWL5FV2696",
+            "content": "Successfully wrote 4182 bytes (121 lines) to public_html\/api\/auth\/login.php",
+            "is_error": false,
+            "time": 1784398734
+        },
+        {
+            "id": "msg_d2b81ecd3e",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Good, login.php is fixed. Now let me fix the patient login similarly, then middleware.php, then the other files."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_fJkjjEFM6c2utIfaMIg46891",
+                    "name": "todo_write",
+                    "input": {
+                        "todos": [
+                            {
+                                "priority": "high",
+                                "content": "Fix login.php - remove code before <?php tag, remove duplicates, create linear pipeline",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix patient login.php - add session_regenerate_id, secure cookies, audit logging",
+                                "status": "in_progress"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix middleware.php - remove $_GET['token'], remove refresh_token dead code, add cookie support",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Implement session_regenerate_id(true) after login, session_destroy() on logout",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Add secure cookie-based authentication alongside Authorization header",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Remove all $_GET['token'] usage from entire codebase",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Implement CSRF validation for state-changing endpoints",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Add role\/permission authorization checks to all API endpoints",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Add stronger rate limiting for login endpoints (5 attempts, lockout)",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Add audit logging for login, logout, failed login, role changes",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Harden admin_login.php - store token in sessions table",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Verify and enhance security headers in .htaccess",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Generate final security report",
+                                "status": "pending"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 81318,
+                "completion_tokens": 386,
+                "total_tokens": 81704,
+                "prompt_cache_hit_tokens": 81280,
+                "prompt_cache_miss_tokens": 38,
+                "prompt_tokens_details": {
+                    "cached_tokens": 81280
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 25
+                },
+                "cached_tokens": 81280
+            },
+            "time": 1784398739
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_fJkjjEFM6c2utIfaMIg46891",
+            "content": "Todo list updated with 13 items.",
+            "is_error": false,
+            "time": 1784398739
         }
     ]
 }
