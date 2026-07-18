@@ -438,3 +438,5 @@ worker-src 'self' blob:;
 - Bengali (Bangla) language support is built into the schema (utf8mb4)
 - **Console errors are resolved** — open DevTools → Console to verify: no red errors should appear
 - **Browser console should now show zero errors** related to canister/CSP/missing env vars
+- **Storage Adapter Guard Active** — any legacy code attempting to store business data in localStorage will get a deprecation warning (`[StorageAdapter] DEPRECATED "key"`) in soft mode, or be fully blocked in hard mode
+- **`enableHardBlock()` ready** in `storageAdapter.ts` — once all components have migrated to PHP API calls, call `enableHardBlock()` to permanently prevent business data from entering localStorage
