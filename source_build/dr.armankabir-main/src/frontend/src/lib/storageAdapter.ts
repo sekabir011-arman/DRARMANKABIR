@@ -55,7 +55,7 @@ export const storage = {
     try {
       return localStorage.length;
     } catch {
-      return ;
+      return 0;
     }
   },
 
