@@ -1196,6 +1196,9 @@ interface DrugReminder {
 }
 
 function AppInner() {
+  // Clean up legacy business data from localStorage on startup
+  cleanupBusinessData();
+
   const {
     currentDoctor,
     currentPatient,
