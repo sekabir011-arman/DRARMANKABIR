@@ -1,4 +1,9 @@
-/**
+import { get, post, put, del, upload, ApiError } from './apiClient';
+
+export type { ApiResponse, PaginatedData } from './apiClient';
+export { ApiError };
+
+export { get, post, put, del, upload };/**
  * PHP API Client — DEPRECATED
  *
  * This file is kept only for backward compatibility with hybridStorage.ts.
