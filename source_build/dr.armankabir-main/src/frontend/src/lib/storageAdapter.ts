@@ -41,13 +41,29 @@ export const storage = {
       // ignore
     }
   },
+export function clear(): void {
+  try {
+    localStorage.clear();
+  } catch {
+    // ignore
+  }
+}
 
-  clear(): void {
-    try {
-      localStorage.clear();
-    } catch {
-      // ignore
-    }
+export function key(index: number): string | null {
+  try {
+    return localStorage.key(index);
+  } catch {
+    return null;
+  }
+}
+
+export function getLength(): number {
+  try {
+    return localStorage.length;
+  } catch {
+    return ;
+  }
+}
   },
 
   get length(): number {
