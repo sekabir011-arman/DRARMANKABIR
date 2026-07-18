@@ -3,12 +3,16 @@
  *
  * Doctor content is stored server-side via the PHP API.
  * No localStorage used — content is fetched via React Query hooks.
+ * Overrides are managed via the landingService on the server.
  */
 
 import { useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { landingService } from "../services/landing";
 
+/**
+ * Hook to manage doctor content overrides.
+ */
 export function useDoctorContent() {
   const queryClient = useQueryClient();
 
@@ -33,7 +37,10 @@ export function useDoctorContent() {
 
   const getContent = useCallback(
     (doctorKey: string): Record<string, unknown> => {
-      const docOverrides = (overrides[doctorKey] || {}) as Record<string, unknown>;
+      const docOverrides = (overrides[doctorKey] || {}) as Record<
+        string,
+        unknown
+      >;
       return { ...docOverrides };
     },
     [overrides],
@@ -45,7 +52,7 @@ export function useDoctorContent() {
       if (!updated[doctorKey]) updated[doctorKey] = {};
       const parts = path.split(".");
       let obj = updated[doctorKey] as Record<string, unknown>;
-      for (let i = ; i < parts.length - 1; i++) {
+      for (let i = 0; i < parts.length - 1; i++) {
         if (!obj[parts[i]] || typeof obj[parts[i]] !== "object") {
           obj[parts[i]] = {};
         }
