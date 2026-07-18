@@ -15,8 +15,8 @@ foreach ($iterator as $file) {
         }
     }
 }
-echo "Files with localStorage: " . count($files) . "
-";
+echo "Files with localStorage: " . count($files) . "\n";
+
 function calcImportPath($file, $src) {
     $dir = dirname(realpath($file));
     $src = realpath($src);
@@ -28,13 +28,13 @@ function calcImportPath($file, $src) {
     }
     return $rel . "lib/storageAdapter";
 }
+
 $total = ;
 foreach ($files as $path) {
     $content = file_get_contents($path);
     $new = $content;
-    if (strpos($new, "from") !== false && strpos($new, "storageAdapter") === false) {
-        $lines = explode("
-", $new);
+    if (strpos($new, "storage") === false) {
+        $lines = explode("\n", $new);
         $last = -1;
         foreach ($lines as $i => $line) {
             if (preg_match("/^import /", trim($line))) $last = $i;
@@ -42,11 +42,9 @@ foreach ($files as $path) {
         $imp = "import { storage } from \"" . calcImportPath($path, $srcDir) . "\";";
         if ($last >= ) {
             array_splice($lines, $last + 1, , [$imp]);
-            $new = implode("
-", $lines);
+            $new = implode("\n", $lines);
         } else {
-            $new = $imp . "
-" . $new;
+            $new = $imp . "\n" . $new;
         }
     }
     $cnt = ;
@@ -60,10 +58,7 @@ foreach ($files as $path) {
         file_put_contents($path, $new);
         $total += $cnt;
         $rel = str_replace($srcDir . "/", "", $path);
-        echo "  $rel ($cnt)
-";
+        echo "  $rel ($cnt)\n";
     }
 }
-echo "
-Total replacements: $total
-";
+echo "\nTotal replacements: $total\n";
