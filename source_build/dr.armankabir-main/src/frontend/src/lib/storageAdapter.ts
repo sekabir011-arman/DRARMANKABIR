@@ -12,7 +12,6 @@
  * Usage:
  *   import { storage } from '../lib/storageAdapter';
  *   const data = storage.getItem('key');
- *   data = storage.getItem('key');
  *   storage.setItem('key', 'value');
  */
 
