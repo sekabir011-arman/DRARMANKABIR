@@ -171,7 +171,7 @@ export const storage = {
     try {
       return localStorage.length;
     } catch {
-      return ; // fallback when localStorage unavailable
+      return 0; // fallback when localStorage unavailable
     }
   },
 
