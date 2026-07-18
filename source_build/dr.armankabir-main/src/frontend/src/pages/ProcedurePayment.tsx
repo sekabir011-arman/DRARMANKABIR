@@ -36,6 +36,7 @@ import {
   sendReceiptWhatsApp,
 } from "../components/MoneyReceipt";
 import type {
+import { storage } from "../lib/storageAdapter";
   InvestigationLineItem,
   MoneyReceiptData,
   PaymentMethod,
@@ -62,20 +63,20 @@ const PAYMENTS_KEY = "procedurePayments";
 
 function loadProcedureRates(): ProcedureRate[] {
   try {
-    return JSON.parse(localStorage.getItem(RATES_KEY) || "[]");
+    return JSON.parse(storage.getItem(RATES_KEY) || "[]");
   } catch {
     return [];
   }
 }
 
 function saveProcedureRates(rates: ProcedureRate[]) {
-  localStorage.setItem(RATES_KEY, JSON.stringify(rates));
+  storage.setItem(RATES_KEY, JSON.stringify(rates));
 }
 
 function loadProcedureReceipts(): ProcedureReceiptRecord[] {
   try {
     const all: ProcedureReceiptRecord[] = JSON.parse(
-      localStorage.getItem(PAYMENTS_KEY) || "[]",
+      storage.getItem(PAYMENTS_KEY) || "[]",
     );
     return all;
   } catch {
@@ -88,7 +89,7 @@ function saveProcedureReceipt(r: ProcedureReceiptRecord) {
   const idx = all.findIndex((x) => x.id === r.id);
   if (idx >= 0) all[idx] = r;
   else all.unshift(r);
-  localStorage.setItem(PAYMENTS_KEY, JSON.stringify(all));
+  storage.setItem(PAYMENTS_KEY, JSON.stringify(all));
   saveReceiptToStore(r);
 }
 

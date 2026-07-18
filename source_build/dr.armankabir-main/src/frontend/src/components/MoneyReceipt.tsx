@@ -33,6 +33,7 @@ import {
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import type {
+import { storage } from "../lib/storageAdapter";
   InvoiceState,
   MoneyReceiptData,
   PaymentMethod,
@@ -45,7 +46,7 @@ const RECEIPTS_KEY = "clinic_receipts";
 
 export function loadReceipts(): MoneyReceiptData[] {
   try {
-    return JSON.parse(localStorage.getItem(RECEIPTS_KEY) || "[]");
+    return JSON.parse(storage.getItem(RECEIPTS_KEY) || "[]");
   } catch {
     return [];
   }
@@ -59,7 +60,7 @@ export function saveReceiptToStore(receipt: MoneyReceiptData) {
   } else {
     all.unshift(receipt);
   }
-  localStorage.setItem(RECEIPTS_KEY, JSON.stringify(all));
+  storage.setItem(RECEIPTS_KEY, JSON.stringify(all));
 }
 
 // ── Per-type sequential receipt number generators ─────────────────────────────
@@ -79,14 +80,14 @@ export function generateTypedReceiptNumber(prefix: ReceiptPrefix): string {
   const yearKey = getYearKey(prefix);
   const counterKey = getCounterKey(prefix);
 
-  const storedYear = Number.parseInt(localStorage.getItem(yearKey) || "0", 10);
+  const storedYear = Number.parseInt(storage.getItem(yearKey) || "0", 10);
   let count = 1;
   if (storedYear === year) {
-    count = Number.parseInt(localStorage.getItem(counterKey) || "0", 10) + 1;
+    count = Number.parseInt(storage.getItem(counterKey) || "0", 10) + 1;
   }
 
-  localStorage.setItem(yearKey, String(year));
-  localStorage.setItem(counterKey, String(count));
+  storage.setItem(yearKey, String(year));
+  storage.setItem(counterKey, String(count));
   return `${prefix}-${year}-${String(count).padStart(4, "0")}`;
 }
 
@@ -1128,7 +1129,7 @@ export function ReceiptsHistoryList() {
   function handleDelete(id: string) {
     const updated = receipts.filter((r) => r.id !== id);
     setReceipts(updated);
-    localStorage.setItem(RECEIPTS_KEY, JSON.stringify(updated));
+    storage.setItem(RECEIPTS_KEY, JSON.stringify(updated));
     toast.success("Receipt deleted");
   }
 

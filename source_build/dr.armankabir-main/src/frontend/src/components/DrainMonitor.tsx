@@ -19,6 +19,7 @@ import {
   YAxis,
 } from "recharts";
 import { toast } from "sonner";
+import { storage } from "../lib/storageAdapter";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 export type DrainType = "JP" | "Hemovac" | "T-tube" | "Other";
@@ -51,7 +52,7 @@ function loadDrainEntries(
   patientId: string,
 ): DrainEntry[] {
   try {
-    const raw = localStorage.getItem(storageKey(doctorEmail, patientId));
+    const raw = storage.getItem(storageKey(doctorEmail, patientId));
     return raw ? (JSON.parse(raw) as DrainEntry[]) : [];
   } catch {
     return [];
@@ -63,7 +64,7 @@ function saveDrainEntries(
   patientId: string,
   entries: DrainEntry[],
 ) {
-  localStorage.setItem(
+  storage.setItem(
     storageKey(doctorEmail, patientId),
     JSON.stringify(entries),
   );

@@ -30,6 +30,7 @@ import {
   setPrescriptionHeaderImage,
 } from "../hooks/useQueries";
 import type { PrescriptionHeaderType } from "../types";
+import { storage } from "../lib/storageAdapter";
 
 interface PrescriptionHeaderPanelProps {
   headerType: PrescriptionHeaderType;
@@ -55,7 +56,7 @@ export function getPrescriptionHeaderText(
   const email = getDoctorEmail();
   const key = `${HEADER_TEXT_KEY_PREFIX}${type}_${email}`;
   try {
-    const raw = localStorage.getItem(key);
+    const raw = storage.getItem(key);
     return raw ? (JSON.parse(raw) as PrescriptionHeaderData) : null;
   } catch {
     return null;
@@ -68,7 +69,7 @@ function setPrescriptionHeaderText(
 ): void {
   const email = getDoctorEmail();
   const key = `${HEADER_TEXT_KEY_PREFIX}${type}_${email}`;
-  localStorage.setItem(key, JSON.stringify(data));
+  storage.setItem(key, JSON.stringify(data));
 }
 
 export default function PrescriptionHeaderPanel({
@@ -131,7 +132,7 @@ export default function PrescriptionHeaderPanel({
       // Clear image, save text
       const email = getDoctorEmail();
       const imgKey = `prescriptionHeaders_${headerType}_${email}`;
-      localStorage.removeItem(imgKey);
+      storage.removeItem(imgKey);
       setPreviewImg(null);
       setPrescriptionHeaderText(headerType, textData);
       toast.success("Header text saved.");
@@ -142,7 +143,7 @@ export default function PrescriptionHeaderPanel({
   function handleClearImage() {
     const email = getDoctorEmail();
     const imgKey = `prescriptionHeaders_${headerType}_${email}`;
-    localStorage.removeItem(imgKey);
+    storage.removeItem(imgKey);
     setPreviewImg(null);
     setMode("text");
     toast.success("Header image removed.");
@@ -246,7 +247,7 @@ export default function PrescriptionHeaderPanel({
                   onClick={() => {
                     handleClearImage();
                     const email = getDoctorEmail();
-                    localStorage.removeItem(
+                    storage.removeItem(
                       `${HEADER_TEXT_KEY_PREFIX}${headerType}_${email}`,
                     );
                     toast.success("Header cleared.");

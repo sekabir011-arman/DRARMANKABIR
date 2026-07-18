@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { storage } from "../lib/storageAdapter";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -61,7 +62,7 @@ function getChatKey(patientId: bigint) {
 
 function loadMessages(patientId: bigint): ChatMessage[] {
   try {
-    const raw = localStorage.getItem(getChatKey(patientId));
+    const raw = storage.getItem(getChatKey(patientId));
     return raw ? (JSON.parse(raw) as ChatMessage[]) : [];
   } catch {
     return [];
@@ -69,12 +70,12 @@ function loadMessages(patientId: bigint): ChatMessage[] {
 }
 
 function saveMessages(patientId: bigint, msgs: ChatMessage[]) {
-  localStorage.setItem(getChatKey(patientId), JSON.stringify(msgs));
+  storage.setItem(getChatKey(patientId), JSON.stringify(msgs));
 }
 
 export function loadTeleconsults(patientId: bigint): TeleconsultRecord[] {
   try {
-    const raw = localStorage.getItem(`teleconsults_${patientId}`);
+    const raw = storage.getItem(`teleconsults_${patientId}`);
     return raw ? (JSON.parse(raw) as TeleconsultRecord[]) : [];
   } catch {
     return [];
@@ -82,7 +83,7 @@ export function loadTeleconsults(patientId: bigint): TeleconsultRecord[] {
 }
 
 function saveTeleconsults(patientId: bigint, records: TeleconsultRecord[]) {
-  localStorage.setItem(`teleconsults_${patientId}`, JSON.stringify(records));
+  storage.setItem(`teleconsults_${patientId}`, JSON.stringify(records));
 }
 
 /** Mark all unread patient messages as seen by the doctor/admin */

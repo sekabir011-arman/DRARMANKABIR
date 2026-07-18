@@ -907,7 +907,7 @@ function AppointmentsTab({
 }) {
   const allAppts = useMemo(() => {
     try {
-      const raw = localStorage.getItem(APPOINTMENTS_KEY);
+      const raw = storage.getItem(APPOINTMENTS_KEY);
       if (!raw) return [];
       const all = JSON.parse(raw) as Array<{
         id: string;
@@ -952,7 +952,7 @@ function AppointmentsTab({
       return;
     }
     try {
-      const raw = localStorage.getItem(APPOINTMENTS_KEY);
+      const raw = storage.getItem(APPOINTMENTS_KEY);
       const all = raw ? JSON.parse(raw) : [];
       all.push({
         id: Date.now().toString(36),
@@ -967,7 +967,7 @@ function AppointmentsTab({
         createdAt: new Date().toISOString(),
         createdBy: currentRole,
       });
-      localStorage.setItem(APPOINTMENTS_KEY, JSON.stringify(all));
+      storage.setItem(APPOINTMENTS_KEY, JSON.stringify(all));
       toast.success("Appointment created");
       setShowForm(false);
       setForm({
@@ -1465,8 +1465,8 @@ function HistoryTabContent({
                         e.stopPropagation();
                         const stored = getVisitFormData(v.id) || {};
                         stored.showToPatient = !showToPatient;
-                        localStorage.setItem(
-                          `visit_form_data_${v.id}_${(localStorage.getItem("staff_auth") ? JSON.parse(localStorage.getItem("staff_auth") || "{}").email : null) || "default"}`,
+                        storage.setItem(
+                          `visit_form_data_${v.id}_${(storage.getItem("staff_auth") ? JSON.parse(storage.getItem("staff_auth") || "{}").email : null) || "default"}`,
                           JSON.stringify(stored),
                         );
                         toast.success(
@@ -2106,7 +2106,7 @@ export default function PatientDashboardInner({
   const [reminders, setReminders] = useState<DrugReminder[]>(() => {
     try {
       const all: DrugReminder[] = JSON.parse(
-        localStorage.getItem(REMINDERS_KEY) || "[]",
+        storage.getItem(REMINDERS_KEY) || "[]",
       );
       return all.filter((r) => r.patientId === patientId.toString());
     } catch {
@@ -2118,13 +2118,13 @@ export default function PatientDashboardInner({
     setReminders(updated);
     const all: DrugReminder[] = (() => {
       try {
-        return JSON.parse(localStorage.getItem(REMINDERS_KEY) || "[]");
+        return JSON.parse(storage.getItem(REMINDERS_KEY) || "[]");
       } catch {
         return [];
       }
     })();
     const others = all.filter((r) => r.patientId !== patientId.toString());
-    localStorage.setItem(
+    storage.setItem(
       REMINDERS_KEY,
       JSON.stringify([...others, ...updated]),
     );
@@ -2161,7 +2161,7 @@ export default function PatientDashboardInner({
     active: boolean;
   } | null>(() => {
     try {
-      const raw = localStorage.getItem(`pregnancy_${patientId}`);
+      const raw = storage.getItem(`pregnancy_${patientId}`);
       return raw ? JSON.parse(raw) : null;
     } catch {
       return null;
@@ -2180,12 +2180,12 @@ export default function PatientDashboardInner({
       para: paraInput,
       active: true,
     };
-    localStorage.setItem(`pregnancy_${patientId}`, JSON.stringify(data));
+    storage.setItem(`pregnancy_${patientId}`, JSON.stringify(data));
     setPregnancyData(data);
     setShowPregnancyForm(false);
   };
   const clearPregnancyData = () => {
-    localStorage.removeItem(`pregnancy_${patientId}`);
+    storage.removeItem(`pregnancy_${patientId}`);
     setPregnancyData(null);
   };
   const calcPregnancy = (lmp: string) => {
@@ -2324,7 +2324,7 @@ export default function PatientDashboardInner({
   // ── Bilingual language toggle ───────────────────────────────────────────────
   const [lang, setLang] = useState<"en" | "bn">(() => {
     try {
-      return (localStorage.getItem("patient_language") as "en" | "bn") ?? "en";
+      return (storage.getItem("patient_language") as "en" | "bn") ?? "en";
     } catch {
       return "en";
     }
@@ -2333,7 +2333,7 @@ export default function PatientDashboardInner({
     const next = lang === "en" ? "bn" : "en";
     setLang(next);
     try {
-      localStorage.setItem("patient_language", next);
+      storage.setItem("patient_language", next);
     } catch {}
   };
   const t = (en: string, bn: string) => (lang === "bn" ? bn : en);
@@ -3606,7 +3606,7 @@ export default function PatientDashboardInner({
                     patientId={String(patientId)}
                     doctorEmail={(() => {
                       try {
-                        const session = localStorage.getItem(
+                        const session = storage.getItem(
                           "medicare_current_doctor",
                         );
                         if (!session) return "default";
@@ -4425,7 +4425,7 @@ export default function PatientDashboardInner({
                   patientId={String(patientId)}
                   doctorEmail={(() => {
                     try {
-                      const session = localStorage.getItem(
+                      const session = storage.getItem(
                         "medicare_current_doctor",
                       );
                       if (!session) return "default";
@@ -4444,7 +4444,7 @@ export default function PatientDashboardInner({
                   })()}
                   authorName={(() => {
                     try {
-                      const session = localStorage.getItem(
+                      const session = storage.getItem(
                         "medicare_current_doctor",
                       );
                       if (!session)
@@ -4485,7 +4485,7 @@ export default function PatientDashboardInner({
                 patientId={patientId}
                 doctorEmail={(() => {
                   try {
-                    const session = localStorage.getItem(
+                    const session = storage.getItem(
                       "medicare_current_doctor",
                     );
                     if (!session) return "default";
@@ -4504,7 +4504,7 @@ export default function PatientDashboardInner({
                 viewerRole={viewerRole ?? "doctor"}
                 authorName={(() => {
                   try {
-                    const session = localStorage.getItem(
+                    const session = storage.getItem(
                       "medicare_current_doctor",
                     );
                     if (!session)
@@ -4561,7 +4561,7 @@ export default function PatientDashboardInner({
                 viewerRole={viewerRole ?? "doctor"}
                 authorName={(() => {
                   try {
-                    const session = localStorage.getItem(
+                    const session = storage.getItem(
                       "medicare_current_doctor",
                     );
                     if (!session)
@@ -4583,7 +4583,7 @@ export default function PatientDashboardInner({
                 currentUser={{
                   name: (() => {
                     try {
-                      const session = localStorage.getItem(
+                      const session = storage.getItem(
                         "medicare_current_doctor",
                       );
                       if (!session)
@@ -4606,7 +4606,7 @@ export default function PatientDashboardInner({
                   role: viewerRole ?? "doctor",
                   email: (() => {
                     try {
-                      const session = localStorage.getItem(
+                      const session = storage.getItem(
                         "medicare_current_doctor",
                       );
                       if (!session) return "";

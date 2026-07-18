@@ -21,6 +21,7 @@ import {
   checkExtendedClinicalAlerts,
 } from "../lib/clinicalIntelligence";
 import type {
+import { storage } from "../lib/storageAdapter";
   ExtendedAlert,
   ExtendedAlertInput,
   Patient,
@@ -66,14 +67,14 @@ const SEVERITY_STYLES = {
 function appendAudit(patientId: string, alertId: string, message: string) {
   try {
     const key = `auditLog_${patientId}`;
-    const arr = JSON.parse(localStorage.getItem(key) ?? "[]") as unknown[];
+    const arr = JSON.parse(storage.getItem(key) ?? "[]") as unknown[];
     arr.push({
       alertId,
       message,
       timestamp: new Date().toISOString(),
       action: "acknowledged",
     });
-    localStorage.setItem(key, JSON.stringify(arr));
+    storage.setItem(key, JSON.stringify(arr));
   } catch {}
 }
 
@@ -107,7 +108,7 @@ interface DismissedSet {
 function loadDismissed(): DismissedSet {
   try {
     return JSON.parse(
-      localStorage.getItem("clinicalAlerts_dismissed") ?? "{}",
+      storage.getItem("clinicalAlerts_dismissed") ?? "{}",
     ) as DismissedSet;
   } catch {
     return {};
@@ -115,7 +116,7 @@ function loadDismissed(): DismissedSet {
 }
 function saveDismissed(d: DismissedSet) {
   try {
-    localStorage.setItem("clinicalAlerts_dismissed", JSON.stringify(d));
+    storage.setItem("clinicalAlerts_dismissed", JSON.stringify(d));
   } catch {}
 }
 

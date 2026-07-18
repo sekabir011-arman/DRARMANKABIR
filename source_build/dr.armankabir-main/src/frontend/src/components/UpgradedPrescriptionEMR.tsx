@@ -935,7 +935,7 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
         // Skip draft, load from this specific visit
         applyVisitData(visitExtendedData);
       } else {
-        const raw = localStorage.getItem(DRAFT_KEY);
+        const raw = storage.getItem(DRAFT_KEY);
         if (raw) {
           try {
             const d = JSON.parse(raw);
@@ -979,7 +979,7 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
   const saveDraft = useCallback(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      localStorage.setItem(
+      storage.setItem(
         DRAFT_KEY,
         JSON.stringify({
           cc,
@@ -1508,7 +1508,7 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
         let latestTs = 0;
         for (const key of visitKeys) {
           try {
-            const raw = localStorage.getItem(key);
+            const raw = storage.getItem(key);
             if (!raw) continue;
             const parsed = JSON.parse(raw) as Record<string, unknown>;
             if (
@@ -1530,10 +1530,10 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
         // Also check using visitId if provided
         if (visitId) {
           const directKey = `visit_form_data_${visitId}_${doctorEmail}`;
-          if (localStorage.getItem(directKey)) latestVisitKey = directKey;
+          if (storage.getItem(directKey)) latestVisitKey = directKey;
         }
         if (latestVisitKey) {
-          const raw = localStorage.getItem(latestVisitKey);
+          const raw = storage.getItem(latestVisitKey);
           if (raw) {
             const visitData = JSON.parse(raw) as Record<string, unknown>;
             const currentDrugNames = new Set(
@@ -1578,7 +1578,7 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
               }
             }
             visitData.drugHistory = updated;
-            localStorage.setItem(latestVisitKey, JSON.stringify(visitData));
+            storage.setItem(latestVisitKey, JSON.stringify(visitData));
           }
         }
       } catch {
@@ -1591,7 +1591,7 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
     const snapshotKey = "medicare_rx_snapshots";
     const existing = (() => {
       try {
-        return JSON.parse(localStorage.getItem(snapshotKey) || "{}");
+        return JSON.parse(storage.getItem(snapshotKey) || "{}");
       } catch {
         return {};
       }
@@ -1628,8 +1628,8 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
       labelTimestamp,
       status,
     };
-    localStorage.setItem(snapshotKey, JSON.stringify(existing));
-    localStorage.removeItem(DRAFT_KEY);
+    storage.setItem(snapshotKey, JSON.stringify(existing));
+    storage.removeItem(DRAFT_KEY);
 
     // Auto-populate drug reminders (only for active, non-PRN prescriptions)
     if (status === "active") {
@@ -1643,7 +1643,7 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
         const apptKey = "medicare_appointments";
         const existingAppts = (() => {
           try {
-            return JSON.parse(localStorage.getItem(apptKey) ?? "[]") as Record<
+            return JSON.parse(storage.getItem(apptKey) ?? "[]") as Record<
               string,
               unknown
             >[];
@@ -1668,7 +1668,7 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
           notes: "Auto-created from prescription follow-up date",
           appointmentType: "chamber",
         };
-        localStorage.setItem(apptKey, JSON.stringify([appt, ...existingAppts]));
+        storage.setItem(apptKey, JSON.stringify([appt, ...existingAppts]));
         const formattedDate = new Date(followUpDate).toLocaleDateString(
           "en-GB",
           {
@@ -1690,14 +1690,14 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
   function getDoctorInfo() {
     try {
       // Try per-doctor profile key first (matches useQueries.ts pattern)
-      const sessionId = localStorage.getItem("medicare_current_doctor");
+      const sessionId = storage.getItem("medicare_current_doctor");
       if (sessionId) {
         const registry = JSON.parse(
           storageAdapter.getItem("medicare_doctors_registry") || "[]",
         ) as Array<{ id: string; email: string }>;
         const doctor = registry.find((d) => d.id === sessionId);
         if (doctor?.email) {
-          const profileRaw = localStorage.getItem(
+          const profileRaw = storage.getItem(
             `doctor_profile_${doctor.email}`,
           );
           if (profileRaw) {
@@ -1711,7 +1711,7 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
     }
     try {
       // Fallback: legacy key
-      const data = localStorage.getItem("medicare_doctors_data");
+      const data = storage.getItem("medicare_doctors_data");
       if (data) {
         const parsed = JSON.parse(data);
         const doc =
@@ -1853,7 +1853,7 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
                           type="button"
                           onClick={() => {
                             const email = getDoctorEmail();
-                            localStorage.removeItem(
+                            storage.removeItem(
                               `prescriptionHeaders_${type}_${email}`,
                             );
                             if (type === "hospital") setHospitalHeaderImg(null);
@@ -2580,7 +2580,7 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
                                 try {
                                   const auditKey = "medicare_audit_overrides";
                                   const audits = JSON.parse(
-                                    localStorage.getItem(auditKey) || "[]",
+                                    storage.getItem(auditKey) || "[]",
                                   ) as unknown[];
                                   audits.push({
                                     type: "AllergyOverride",
@@ -2593,7 +2593,7 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
                                     justification: overrideJustification.trim(),
                                     timestamp: new Date().toISOString(),
                                   });
-                                  localStorage.setItem(
+                                  storage.setItem(
                                     auditKey,
                                     JSON.stringify(audits),
                                   );

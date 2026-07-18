@@ -41,6 +41,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useEmailAuth } from "../hooks/useEmailAuth";
 import type { MoneyReceiptData, Patient } from "../types";
+import { storage } from "../lib/storageAdapter";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -92,7 +93,7 @@ const STORAGE_PREFIX = "procedureLogs_";
 
 export function loadProcedureLogs(patientId: string): ProcedureRecord[] {
   try {
-    const raw = localStorage.getItem(`${STORAGE_PREFIX}${patientId}`);
+    const raw = storage.getItem(`${STORAGE_PREFIX}${patientId}`);
     return raw ? (JSON.parse(raw) as ProcedureRecord[]) : [];
   } catch {
     return [];
@@ -100,7 +101,7 @@ export function loadProcedureLogs(patientId: string): ProcedureRecord[] {
 }
 
 function saveProcedureLogs(patientId: string, logs: ProcedureRecord[]) {
-  localStorage.setItem(`${STORAGE_PREFIX}${patientId}`, JSON.stringify(logs));
+  storage.setItem(`${STORAGE_PREFIX}${patientId}`, JSON.stringify(logs));
 }
 
 // ── Procedure receipts helper ─────────────────────────────────────────────────
@@ -108,7 +109,7 @@ function saveProcedureLogs(patientId: string, logs: ProcedureRecord[]) {
 function getProcedureReceipts(patientId: string): MoneyReceiptData[] {
   try {
     const all: MoneyReceiptData[] = JSON.parse(
-      localStorage.getItem("money_receipts") || "[]",
+      storage.getItem("money_receipts") || "[]",
     );
     return all.filter(
       (r) => r.type === "procedure" && r.patientId === patientId,

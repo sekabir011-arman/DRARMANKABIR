@@ -34,14 +34,15 @@ import {
 import type { DoctorAccount, PatientAccount } from "../../hooks/useEmailAuth";
 import { STAFF_ROLE_LABELS } from "../../types";
 import type { StaffRole } from "../../types";
+import { storage } from "../../lib/storageAdapter";
 
 function getTotalPatients(): number {
   let count = 0;
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
+  for (let i = 0; i < storage.length; i++) {
+    const k = storage.key(i);
     if (!k?.startsWith("patients_")) continue;
     try {
-      const arr = JSON.parse(localStorage.getItem(k) || "[]") as unknown[];
+      const arr = JSON.parse(storage.getItem(k) || "[]") as unknown[];
       count += arr.length;
     } catch {}
   }
@@ -49,7 +50,7 @@ function getTotalPatients(): number {
 }
 
 function getSyncStatus(): string {
-  const lastSync = localStorage.getItem("medicare_last_sync");
+  const lastSync = storage.getItem("medicare_last_sync");
   if (!lastSync) return "Never synced";
   const diffMs = Date.now() - Number(lastSync);
   const diffMin = Math.floor(diffMs / 60000);
@@ -60,11 +61,11 @@ function getSyncStatus(): string {
 
 function getAdmittedCount(): number {
   let count = 0;
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
+  for (let i = 0; i < storage.length; i++) {
+    const k = storage.key(i);
     if (!k?.startsWith("patients_")) continue;
     try {
-      const arr = JSON.parse(localStorage.getItem(k) || "[]") as Array<
+      const arr = JSON.parse(storage.getItem(k) || "[]") as Array<
         Record<string, unknown>
       >;
       count += arr.filter(
@@ -81,11 +82,11 @@ function getAdmittedCount(): number {
 function getVisitsThisWeek(): number {
   const weekAgo = Date.now() - 7 * 24 * 3600 * 1000;
   let count = 0;
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
+  for (let i = 0; i < storage.length; i++) {
+    const k = storage.key(i);
     if (!k?.startsWith("visits_")) continue;
     try {
-      const arr = JSON.parse(localStorage.getItem(k) || "[]") as Array<{
+      const arr = JSON.parse(storage.getItem(k) || "[]") as Array<{
         createdAt?: string;
       }>;
       count += arr.filter(

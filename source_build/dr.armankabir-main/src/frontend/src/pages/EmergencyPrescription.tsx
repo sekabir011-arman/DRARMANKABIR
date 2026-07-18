@@ -86,6 +86,7 @@ import {
   useGetAllPatients,
 } from "../hooks/useQueries";
 import type { Medication, Patient, Prescription } from "../types";
+import { storage } from "../lib/storageAdapter";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -809,7 +810,7 @@ export default function EmergencyPrescription() {
   const saveDraft = useCallback(() => {
     if (!draftKey) return;
     try {
-      localStorage.setItem(
+      storage.setItem(
         draftKey,
         JSON.stringify({
           cc,
@@ -855,7 +856,7 @@ export default function EmergencyPrescription() {
   useEffect(() => {
     if (!selectedPatient || !draftKey) return;
     try {
-      const raw = localStorage.getItem(draftKey);
+      const raw = storage.getItem(draftKey);
       if (!raw) return;
       const d = JSON.parse(raw);
       if (d.cc) setCc(d.cc);
@@ -1101,7 +1102,7 @@ export default function EmergencyPrescription() {
 
       // Mark registration as incomplete for emergency patients
       try {
-        localStorage.setItem(`patient_reg_incomplete_${newPat.id}`, "true");
+        storage.setItem(`patient_reg_incomplete_${newPat.id}`, "true");
       } catch {}
 
       setSelectedPatient(newPat);
@@ -1234,7 +1235,7 @@ export default function EmergencyPrescription() {
 
       // 5. Persist extended fields (valid until, follow-up, counselling, snapshot, emergency flag)
       const extKey = `prescription_ext_${newRx.id}`;
-      localStorage.setItem(
+      storage.setItem(
         extKey,
         JSON.stringify({
           prescriptionType: "emergency",
@@ -1250,7 +1251,7 @@ export default function EmergencyPrescription() {
       );
 
       // 6. Clear draft
-      if (draftKey) localStorage.removeItem(draftKey);
+      if (draftKey) storage.removeItem(draftKey);
 
       // 7. Create nurse notification for emergency Rx
       addEmergencyNotification({

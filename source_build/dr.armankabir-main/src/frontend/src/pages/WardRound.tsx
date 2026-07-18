@@ -51,6 +51,7 @@ import {
 } from "../lib/clinicalIntelligence";
 import { isConsultantType } from "../types";
 import type { ClinicalAlert, Patient, StaffRole } from "../types";
+import { storage } from "../lib/storageAdapter";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -92,7 +93,7 @@ const NOTE_STATE_KEY = (patientId: string, date: string) =>
 function loadNoteState(patientId: string, date: string): NoteState {
   try {
     return (
-      (localStorage.getItem(NOTE_STATE_KEY(patientId, date)) as NoteState) ??
+      (storage.getItem(NOTE_STATE_KEY(patientId, date)) as NoteState) ??
       "none"
     );
   } catch {
@@ -106,7 +107,7 @@ export function saveNoteState(
   state: NoteState,
 ) {
   try {
-    localStorage.setItem(NOTE_STATE_KEY(patientId, date), state);
+    storage.setItem(NOTE_STATE_KEY(patientId, date), state);
   } catch {}
 }
 
@@ -544,7 +545,7 @@ type WardChecklist = Record<string, ChecklistEntry>;
 
 function loadChecklist(date: string): WardChecklist {
   try {
-    const raw = localStorage.getItem(`wardRoundChecklist_${date}`);
+    const raw = storage.getItem(`wardRoundChecklist_${date}`);
     return raw ? (JSON.parse(raw) as WardChecklist) : {};
   } catch {
     return {};
@@ -552,7 +553,7 @@ function loadChecklist(date: string): WardChecklist {
 }
 function saveChecklist(date: string, data: WardChecklist) {
   try {
-    localStorage.setItem(`wardRoundChecklist_${date}`, JSON.stringify(data));
+    storage.setItem(`wardRoundChecklist_${date}`, JSON.stringify(data));
   } catch {}
 }
 
@@ -1032,9 +1033,9 @@ function NursePatientCard({
               }
               const key = `nursing_notes_${String(patient.id)}_${format(new Date(), "yyyy-MM-dd")}`;
               const existing = JSON.parse(
-                localStorage.getItem(key) ?? "[]",
+                storage.getItem(key) ?? "[]",
               ) as unknown[];
-              localStorage.setItem(
+              storage.setItem(
                 key,
                 JSON.stringify([
                   ...existing,
@@ -1155,11 +1156,11 @@ function WardPatientCard({
     let pulse = "";
     let spo2 = "";
     let temp = "";
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
+    for (let i = 0; i < storage.length; i++) {
+      const k = storage.key(i);
       if (k?.startsWith("visit_form_data_") && k.endsWith(`_${email}`)) {
         try {
-          const raw = localStorage.getItem(k);
+          const raw = storage.getItem(k);
           if (!raw) continue;
           const parsed = JSON.parse(raw);
           if (String(parsed.patientId) !== String(patient.id)) continue;
@@ -1362,11 +1363,11 @@ export default function WardRound() {
       let pulse = "";
       let spo2 = "";
       let temp = "";
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
+      for (let i = 0; i < storage.length; i++) {
+        const k = storage.key(i);
         if (k?.startsWith("visit_form_data_") && k.endsWith(`_${email}`)) {
           try {
-            const raw = localStorage.getItem(k);
+            const raw = storage.getItem(k);
             if (!raw) continue;
             const parsed = JSON.parse(raw);
             if (String(parsed.patientId) !== String(p.id)) continue;

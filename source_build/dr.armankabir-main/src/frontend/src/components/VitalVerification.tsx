@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { useEmailAuth } from "../hooks/useEmailAuth";
 import { useRolePermissions } from "../hooks/useRolePermissions";
 import type { VitalVerificationStatus } from "../types";
+import { storage } from "../lib/storageAdapter";
 
 export interface VerifiableVital {
   id: string;
@@ -46,7 +47,7 @@ const VITALS_KEY = (patientId: string) => `vital_verifications_${patientId}`;
 
 export function loadVerifiableVitals(patientId: string): VerifiableVital[] {
   try {
-    const raw = localStorage.getItem(VITALS_KEY(patientId));
+    const raw = storage.getItem(VITALS_KEY(patientId));
     return raw ? (JSON.parse(raw) as VerifiableVital[]) : [];
   } catch {
     return [];
@@ -58,7 +59,7 @@ export function saveVerifiableVitals(
   vitals: VerifiableVital[],
 ) {
   try {
-    localStorage.setItem(VITALS_KEY(patientId), JSON.stringify(vitals));
+    storage.setItem(VITALS_KEY(patientId), JSON.stringify(vitals));
   } catch {}
 }
 

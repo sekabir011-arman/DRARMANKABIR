@@ -1,3 +1,4 @@
+import { storage } from "../lib/storageAdapter";
 /**
  * PHP API Client
  *
@@ -40,7 +41,7 @@ class ApiError extends Error {
 
 function getAuthToken(): string | null {
   try {
-    return localStorage.getItem('phpAuthToken');
+    return storage.getItem('phpAuthToken');
   } catch {
     return null;
   }
@@ -48,7 +49,7 @@ function getAuthToken(): string | null {
 
 export function setAuthToken(token: string): void {
   try {
-    localStorage.setItem('phpAuthToken', token);
+    storage.setItem('phpAuthToken', token);
   } catch {
     // ignore
   }
@@ -56,7 +57,7 @@ export function setAuthToken(token: string): void {
 
 export function clearAuthToken(): void {
   try {
-    localStorage.removeItem('phpAuthToken');
+    storage.removeItem('phpAuthToken');
   } catch {
     // ignore
   }

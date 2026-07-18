@@ -50,6 +50,7 @@ import { STAFF_ROLE_LABELS } from "../types";
 import DrainMonitor from "./DrainMonitor";
 import IOChart from "./IOChart";
 import SystemicExaminationSection from "./SystemicExaminationSection";
+import { storage } from "../lib/storageAdapter";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -224,7 +225,7 @@ function loadNote(
   date: string,
 ): DailyNoteData | null {
   try {
-    const raw = localStorage.getItem(noteKey(doctorEmail, patientId, date));
+    const raw = storage.getItem(noteKey(doctorEmail, patientId, date));
     return raw ? (JSON.parse(raw) as DailyNoteData) : null;
   } catch {
     return null;
@@ -237,7 +238,7 @@ function saveNote(
   date: string,
   data: DailyNoteData,
 ) {
-  localStorage.setItem(
+  storage.setItem(
     noteKey(doctorEmail, patientId, date),
     JSON.stringify(data),
   );

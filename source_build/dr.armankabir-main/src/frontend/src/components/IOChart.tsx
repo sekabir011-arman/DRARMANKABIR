@@ -20,6 +20,7 @@ import {
   YAxis,
 } from "recharts";
 import { toast } from "sonner";
+import { storage } from "../lib/storageAdapter";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 export interface IOEntry {
@@ -58,7 +59,7 @@ function loadEntries(
   date: string,
 ): IOEntry[] {
   try {
-    const raw = localStorage.getItem(storageKey(doctorEmail, patientId, date));
+    const raw = storage.getItem(storageKey(doctorEmail, patientId, date));
     return raw ? (JSON.parse(raw) as IOEntry[]) : [];
   } catch {
     return [];
@@ -71,7 +72,7 @@ function saveEntries(
   date: string,
   entries: IOEntry[],
 ) {
-  localStorage.setItem(
+  storage.setItem(
     storageKey(doctorEmail, patientId, date),
     JSON.stringify(entries),
   );

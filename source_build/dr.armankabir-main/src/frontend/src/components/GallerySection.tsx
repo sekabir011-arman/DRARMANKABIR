@@ -4,6 +4,7 @@ import { ImageIcon, Pencil, Trash2, Upload, X } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
+import { storage } from "../lib/storageAdapter";
 
 export interface GalleryPhoto {
   id: string;
@@ -17,7 +18,7 @@ const DEFAULT_HEADING = "Our Clinic Gallery";
 
 function loadPhotos(): GalleryPhoto[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = storage.getItem(STORAGE_KEY);
     return raw ? (JSON.parse(raw) as GalleryPhoto[]) : [];
   } catch {
     return [];
@@ -25,11 +26,11 @@ function loadPhotos(): GalleryPhoto[] {
 }
 
 function savePhotos(photos: GalleryPhoto[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(photos));
+  storage.setItem(STORAGE_KEY, JSON.stringify(photos));
 }
 
 function loadHeading(): string {
-  return localStorage.getItem(HEADING_KEY) || DEFAULT_HEADING;
+  return storage.getItem(HEADING_KEY) || DEFAULT_HEADING;
 }
 
 export default function GallerySection({ isAdmin }: { isAdmin: boolean }) {
@@ -101,7 +102,7 @@ export default function GallerySection({ isAdmin }: { isAdmin: boolean }) {
 
   const saveHeading = () => {
     const h = headingDraft.trim() || DEFAULT_HEADING;
-    localStorage.setItem(HEADING_KEY, h);
+    storage.setItem(HEADING_KEY, h);
     setHeading(h);
     setEditHeading(false);
     toast.success("Gallery heading updated.");

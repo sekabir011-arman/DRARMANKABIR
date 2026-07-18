@@ -1,5 +1,3 @@
-#!/usr/bin/env php
 <?php
-$total = ;
-$cnt = ;
-echo "test ";
+$zero = chr(48);
+echo "Zero: [" . $zero . "] len=" . strlen($zero) . PHP_EOL;

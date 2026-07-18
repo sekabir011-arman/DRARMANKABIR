@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, FileText, Trash2, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { storage } from "../lib/storageAdapter";
 
 const PDF_KEY = "prescription_pad_pdf";
 const PDF_NAME_KEY = "prescription_pad_pdf_name";
@@ -10,7 +11,7 @@ const PDF_NAME_KEY = "prescription_pad_pdf_name";
 export default function PrescriptionPDFManager() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [pdfName, setPdfName] = useState<string | null>(() =>
-    localStorage.getItem(PDF_NAME_KEY),
+    storage.getItem(PDF_NAME_KEY),
   );
   const [uploading, setUploading] = useState(false);
 
@@ -25,8 +26,8 @@ export default function PrescriptionPDFManager() {
     const reader = new FileReader();
     reader.onload = () => {
       const base64 = reader.result as string;
-      localStorage.setItem(PDF_KEY, base64);
-      localStorage.setItem(PDF_NAME_KEY, file.name);
+      storage.setItem(PDF_KEY, base64);
+      storage.setItem(PDF_NAME_KEY, file.name);
       setPdfName(file.name);
       setUploading(false);
       toast.success("Prescription PDF template uploaded.");
@@ -40,15 +41,15 @@ export default function PrescriptionPDFManager() {
   };
 
   const handleDelete = () => {
-    localStorage.removeItem(PDF_KEY);
-    localStorage.removeItem(PDF_NAME_KEY);
+    storage.removeItem(PDF_KEY);
+    storage.removeItem(PDF_NAME_KEY);
     setPdfName(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
     toast.success("PDF template removed.");
   };
 
   const handlePreview = () => {
-    const stored = localStorage.getItem(PDF_KEY);
+    const stored = storage.getItem(PDF_KEY);
     if (!stored) {
       toast.error("No PDF template stored.");
       return;

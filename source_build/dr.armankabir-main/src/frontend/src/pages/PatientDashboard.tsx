@@ -50,6 +50,7 @@ import { getPermissionsForRole } from "../hooks/useRolePermissions";
 import { useRolePermissions } from "../hooks/useRolePermissions";
 import type { Prescription, Visit } from "../types";
 import type { StaffRole } from "../types";
+import { storage } from "../lib/storageAdapter";
 
 function getAge(dateOfBirth?: bigint): number | null {
   if (!dateOfBirth) return null;
@@ -134,7 +135,7 @@ export default function PatientDashboard({
   const loadSavedPads = () => {
     if (!patientId) return;
     try {
-      const raw = localStorage.getItem(`savedPrescriptionPads_${patientId}`);
+      const raw = storage.getItem(`savedPrescriptionPads_${patientId}`);
       if (raw) setSavedPads(JSON.parse(raw));
     } catch {}
   };
@@ -351,8 +352,8 @@ export default function PatientDashboard({
   function markPrescriptionViewed(rxId: bigint) {
     try {
       const key = `rx_viewed_by_patient_${String(rxId)}`;
-      if (!localStorage.getItem(key)) {
-        localStorage.setItem(key, String(Date.now()));
+      if (!storage.getItem(key)) {
+        storage.setItem(key, String(Date.now()));
       }
     } catch {
       /* ignore */
@@ -411,7 +412,7 @@ export default function PatientDashboard({
         setRxVisitExtendedData(extendedData);
       }
       if (patientId && !regNum) {
-        const regRaw = localStorage.getItem(`patient_register_${patientId}`);
+        const regRaw = storage.getItem(`patient_register_${patientId}`);
         if (regRaw) setRxPatientRegisterNumber(regRaw);
       } else if (regNum) {
         setRxPatientRegisterNumber(regNum);
@@ -514,7 +515,7 @@ export default function PatientDashboard({
   const doctorName = (() => {
     try {
       const email = getDoctorEmail();
-      const raw = localStorage.getItem(`doctor_profile_${email}`);
+      const raw = storage.getItem(`doctor_profile_${email}`);
       if (raw) {
         const profile = JSON.parse(raw) as Record<string, string>;
         return profile.name || profile.fullName || email;
@@ -532,7 +533,7 @@ export default function PatientDashboard({
   // Merge viewedByPatientAt from localStorage into each prescription
   const prescriptionsWithMeta = prescriptions.map((rx) => {
     try {
-      const viewedAt = localStorage.getItem(
+      const viewedAt = storage.getItem(
         `rx_viewed_by_patient_${String(rx.id)}`,
       );
       if (viewedAt) {

@@ -28,6 +28,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { buildWhatsAppUrl, normalisePhone } from "../lib/whatsappTemplates";
 import type { StaffRole } from "../types";
+import { storage } from "../lib/storageAdapter";
 
 export type InvStatus = "ordered" | "sample_collected" | "report_collected";
 
@@ -75,7 +76,7 @@ export function loadTrackedInvestigations(
   patientId: string,
 ): TrackedInvestigation[] {
   try {
-    const raw = localStorage.getItem(getTrackerKey(patientId));
+    const raw = storage.getItem(getTrackerKey(patientId));
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -87,7 +88,7 @@ function saveTrackedInvestigations(
   items: TrackedInvestigation[],
 ) {
   try {
-    localStorage.setItem(getTrackerKey(patientId), JSON.stringify(items));
+    storage.setItem(getTrackerKey(patientId), JSON.stringify(items));
   } catch {}
 }
 

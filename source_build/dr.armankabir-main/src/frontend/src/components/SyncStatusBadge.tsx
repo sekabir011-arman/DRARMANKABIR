@@ -8,6 +8,7 @@ import { CheckCircle2, Loader2, WifiOff } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { getPendingChangesCount, isNetworkOnline } from "../lib/hybridStorage";
+import { storage } from "../lib/storageAdapter";
 
 type SyncState = "synced" | "syncing" | "pending";
 
@@ -32,7 +33,7 @@ export default function SyncStatusBadge() {
 
   useEffect(() => {
     // Restore last sync time from localStorage on mount
-    const raw = localStorage.getItem("medicare_last_sync_at");
+    const raw = storage.getItem("medicare_last_sync_at");
     if (raw) {
       const d = new Date(raw);
       if (!Number.isNaN(d.getTime())) setLastSyncTime(d.getTime());

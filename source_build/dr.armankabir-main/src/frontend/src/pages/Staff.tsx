@@ -50,6 +50,7 @@ import {
 import type { DoctorAccount } from "../hooks/useEmailAuth";
 import { STAFF_ROLE_COLORS, STAFF_ROLE_LABELS } from "../types";
 import type { StaffRole } from "../types";
+import { storage } from "../lib/storageAdapter";
 
 // ── Storage Keys ──────────────────────────────────────────────────────────────
 const SHIFTS_KEY = "staff_shifts";
@@ -113,7 +114,7 @@ interface AttendanceRecord {
 // ── Storage helpers ───────────────────────────────────────────────────────────
 function loadShifts(): StaffShift[] {
   try {
-    const raw = localStorage.getItem(SHIFTS_KEY);
+    const raw = storage.getItem(SHIFTS_KEY);
     return raw ? (JSON.parse(raw) as StaffShift[]) : [];
   } catch {
     return [];
@@ -121,12 +122,12 @@ function loadShifts(): StaffShift[] {
 }
 
 function saveShifts(shifts: StaffShift[]) {
-  localStorage.setItem(SHIFTS_KEY, JSON.stringify(shifts));
+  storage.setItem(SHIFTS_KEY, JSON.stringify(shifts));
 }
 
 function loadAttendance(): AttendanceRecord[] {
   try {
-    const raw = localStorage.getItem(ATTENDANCE_KEY);
+    const raw = storage.getItem(ATTENDANCE_KEY);
     return raw ? (JSON.parse(raw) as AttendanceRecord[]) : [];
   } catch {
     return [];
@@ -134,12 +135,12 @@ function loadAttendance(): AttendanceRecord[] {
 }
 
 function saveAttendance(records: AttendanceRecord[]) {
-  localStorage.setItem(ATTENDANCE_KEY, JSON.stringify(records));
+  storage.setItem(ATTENDANCE_KEY, JSON.stringify(records));
 }
 
 function loadLeaveRequests(): LeaveRequest[] {
   try {
-    const raw = localStorage.getItem(LEAVE_REQUESTS_KEY);
+    const raw = storage.getItem(LEAVE_REQUESTS_KEY);
     return raw ? (JSON.parse(raw) as LeaveRequest[]) : [];
   } catch {
     return [];
@@ -147,7 +148,7 @@ function loadLeaveRequests(): LeaveRequest[] {
 }
 
 function saveLeaveRequests(requests: LeaveRequest[]) {
-  localStorage.setItem(LEAVE_REQUESTS_KEY, JSON.stringify(requests));
+  storage.setItem(LEAVE_REQUESTS_KEY, JSON.stringify(requests));
 }
 
 // ── Helper: log attendance on login ──────────────────────────────────────────
@@ -629,7 +630,7 @@ export default function Staff() {
     const prescriptions: Array<{ createdBy?: string; createdAt?: string }> =
       (() => {
         try {
-          const raw = localStorage.getItem("clinic_prescriptions");
+          const raw = storage.getItem("clinic_prescriptions");
           return raw ? JSON.parse(raw) : [];
         } catch {
           return [];
@@ -641,7 +642,7 @@ export default function Staff() {
       date?: string;
     }> = (() => {
       try {
-        const raw = localStorage.getItem("procedurePayments");
+        const raw = storage.getItem("procedurePayments");
         return raw ? JSON.parse(raw) : [];
       } catch {
         return [];
@@ -654,7 +655,7 @@ export default function Staff() {
       date?: string;
     }> = (() => {
       try {
-        const raw = localStorage.getItem("appointments");
+        const raw = storage.getItem("appointments");
         return raw ? JSON.parse(raw) : [];
       } catch {
         return [];

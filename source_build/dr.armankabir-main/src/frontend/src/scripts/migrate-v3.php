@@ -1,22 +1,20 @@
 #!/usr/bin/env php
 <?php
-$srcDir = __DIR__ . "/..";
+$srcDir = realpath(__DIR__ . "/..");
 $files = [];
-$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($srcDir));
-foreach ($iterator as $file) {
-    if ($file->isFile() && preg_match("/\.(ts|tsx)$/", $file->getFilename())) {
-        $path = $file->getPathname();
-        if (strpos($path, "storageAdapter") !== false) continue;
-        if (strpos($path, "node_modules") !== false) continue;
-        if (strpos($path, "scripts") !== false) continue;
-        $content = @file_get_contents($path);
-        if ($content !== false && strpos($content, "localStorage.") !== false) {
-            $files[] = $path;
-        }
-    }
+$it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($srcDir));
+foreach ($it as $f) {
+    if (!$f->isFile()) continue;
+    $ext = pathinfo($f->getFilename(), PATHINFO_EXTENSION);
+    if ($ext !== "ts" && $ext !== "tsx") continue;
+    $path = $f->getPathname();
+    if (strpos($path, "storageAdapter") !== false) continue;
+    if (strpos($path, "node_modules") !== false) continue;
+    if (strpos($path, "scripts") !== false) continue;
+    $c = @file_get_contents($path);
+    if ($c !== false && strpos($c, "localStorage.") !== false) $files[] = $path;
 }
 echo "Files with localStorage: " . count($files) . "\n";
-
 function calcImportPath($file, $src) {
     $dir = dirname(realpath($file));
     $src = realpath($src);
@@ -28,12 +26,12 @@ function calcImportPath($file, $src) {
     }
     return $rel . "lib/storageAdapter";
 }
-
 $total = 0;
 foreach ($files as $path) {
     $content = file_get_contents($path);
     $new = $content;
-    if (strpos($new, "storage") === false) {
+    $hasImport = (strpos($new, "storageAdapter") !== false);
+    if (!$hasImport) {
         $lines = explode("\n", $new);
         $last = -1;
         foreach ($lines as $i => $line) {

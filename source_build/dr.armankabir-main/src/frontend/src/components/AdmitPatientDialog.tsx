@@ -24,6 +24,7 @@ import {
 } from "../hooks/useQueries";
 import type { Patient, Prescription, Visit } from "../types";
 import type { StaffRole } from "../types";
+import { storage } from "../lib/storageAdapter";
 
 interface Props {
   open: boolean;
@@ -39,7 +40,7 @@ interface Props {
 function getDoctorSettings() {
   try {
     const email = getDoctorEmail();
-    const raw = localStorage.getItem(`doctor_profile_${email}`);
+    const raw = storage.getItem(`doctor_profile_${email}`);
     if (!raw) return null;
     return JSON.parse(raw) as Record<string, string>;
   } catch {

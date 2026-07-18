@@ -1,3 +1,4 @@
+import { storage } from "../lib/storageAdapter";
 // Bengali Advice Templates — Starter set + user-saved custom templates
 
 export interface AdviceTemplate {
@@ -67,7 +68,7 @@ const CUSTOM_KEY = "medicare_custom_advice_templates";
 
 export function getCustomTemplates(): AdviceTemplate[] {
   try {
-    const raw = localStorage.getItem(CUSTOM_KEY);
+    const raw = storage.getItem(CUSTOM_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -81,12 +82,12 @@ export function getAllTemplates(): AdviceTemplate[] {
 export function saveCustomTemplate(template: AdviceTemplate): void {
   const existing = getCustomTemplates();
   const updated = [...existing.filter((t) => t.id !== template.id), template];
-  localStorage.setItem(CUSTOM_KEY, JSON.stringify(updated));
+  storage.setItem(CUSTOM_KEY, JSON.stringify(updated));
 }
 
 export function deleteCustomTemplate(id: string): void {
   const existing = getCustomTemplates();
-  localStorage.setItem(
+  storage.setItem(
     CUSTOM_KEY,
     JSON.stringify(existing.filter((t) => t.id !== id)),
   );

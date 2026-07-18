@@ -29,7 +29,7 @@ function calcImportPath($file, $src) {
     return $rel . "lib/storageAdapter";
 }
 
-$total = 0;
+$total = ;
 foreach ($files as $path) {
     $content = file_get_contents($path);
     $new = $content;
@@ -40,21 +40,21 @@ foreach ($files as $path) {
             if (preg_match("/^import /", trim($line))) $last = $i;
         }
         $imp = "import { storage } from \"" . calcImportPath($path, $srcDir) . "\";";
-        if ($last >= 0) {
-            array_splice($lines, $last + 1, 0, [$imp]);
+        if ($last >= ) {
+            array_splice($lines, $last + 1, , [$imp]);
             $new = implode("\n", $lines);
         } else {
             $new = $imp . "\n" . $new;
         }
     }
-    $cnt = 0;
+    $cnt = ;
     $new = str_replace("localStorage.getItem(", "storage.getItem(", $new, $c); $cnt += $c;
     $new = str_replace("localStorage.setItem(", "storage.setItem(", $new, $c); $cnt += $c;
     $new = str_replace("localStorage.removeItem(", "storage.removeItem(", $new, $c); $cnt += $c;
     $new = str_replace("localStorage.clear()", "storage.clear()", $new, $c); $cnt += $c;
     $new = str_replace("localStorage.length", "storage.length", $new, $c); $cnt += $c;
     $new = str_replace("localStorage.key(", "storage.key(", $new, $c); $cnt += $c;
-    if ($cnt > 0) {
+    if ($cnt > ) {
         file_put_contents($path, $new);
         $total += $cnt;
         $rel = str_replace($srcDir . "/", "", $path);

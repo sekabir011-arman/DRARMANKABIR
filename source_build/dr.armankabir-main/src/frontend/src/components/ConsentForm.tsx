@@ -12,6 +12,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useEmailAuth } from "../hooks/useEmailAuth";
 import type { Patient } from "../types";
+import { storage } from "../lib/storageAdapter";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -206,7 +207,7 @@ I confirm that the nature, purpose, risks, and benefits of this procedure have b
 
 export function loadConsentForms(patientId: bigint): ConsentRecord[] {
   try {
-    const raw = localStorage.getItem(`consentForms_${patientId}`);
+    const raw = storage.getItem(`consentForms_${patientId}`);
     return raw ? (JSON.parse(raw) as ConsentRecord[]) : [];
   } catch {
     return [];
@@ -217,7 +218,7 @@ export function saveConsentForms(
   patientId: bigint,
   records: ConsentRecord[],
 ): void {
-  localStorage.setItem(`consentForms_${patientId}`, JSON.stringify(records));
+  storage.setItem(`consentForms_${patientId}`, JSON.stringify(records));
 }
 
 // ── Canvas signature hook ─────────────────────────────────────────────────────

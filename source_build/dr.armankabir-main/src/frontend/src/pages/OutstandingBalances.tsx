@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { loadReceipts } from "../components/MoneyReceipt";
+import { storage } from "../lib/storageAdapter";
 
 // ── Storage helpers ────────────────────────────────────────────────────────────
 
@@ -32,7 +33,7 @@ function loadAdvancePayments(): Array<{
   appliedToReceipt?: string;
 }> {
   try {
-    return JSON.parse(localStorage.getItem(ADV_PAYMENTS_KEY) || "[]");
+    return JSON.parse(storage.getItem(ADV_PAYMENTS_KEY) || "[]");
   } catch {
     return [];
   }
@@ -49,7 +50,7 @@ function loadAppointmentPayments(): Array<{
   paymentMethod?: string;
 }> {
   try {
-    return JSON.parse(localStorage.getItem("appointmentPayments") || "[]");
+    return JSON.parse(storage.getItem("appointmentPayments") || "[]");
   } catch {
     return [];
   }
@@ -69,7 +70,7 @@ function loadProcedureReceipts(): Array<{
   invoiceState?: string;
 }> {
   try {
-    return JSON.parse(localStorage.getItem("procedurePayments") || "[]");
+    return JSON.parse(storage.getItem("procedurePayments") || "[]");
   } catch {
     return [];
   }

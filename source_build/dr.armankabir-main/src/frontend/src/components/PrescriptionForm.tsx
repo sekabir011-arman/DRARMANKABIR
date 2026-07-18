@@ -20,6 +20,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import type { Medication } from "../types";
 import { type DimsEntry, getDimsByDiagnosis, searchDims } from "./DimsData";
+import { storage } from "../lib/storageAdapter";
 
 interface InitialRxData {
   prescriptionDate: bigint;
@@ -257,7 +258,7 @@ export default function PrescriptionForm({
   const handlePrint = () => {
     const doctorProfile = (() => {
       try {
-        return JSON.parse(localStorage.getItem("doctorProfile") || "{}");
+        return JSON.parse(storage.getItem("doctorProfile") || "{}");
       } catch {
         return {};
       }

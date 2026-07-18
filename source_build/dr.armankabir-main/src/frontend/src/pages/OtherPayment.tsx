@@ -32,6 +32,7 @@ import {
 } from "../components/MoneyReceipt";
 import { useEmailAuth } from "../hooks/useEmailAuth";
 import type { MoneyReceiptData, PaymentMethod, RefundRecord } from "../types";
+import { storage } from "../lib/storageAdapter";
 
 const OTHER_PAYMENTS_KEY = "other_payments_index";
 const ADV_PAYMENTS_KEY = "advance_payments";
@@ -51,7 +52,7 @@ interface AdvancePaymentRecord {
 
 function loadAdvancePayments(): AdvancePaymentRecord[] {
   try {
-    return JSON.parse(localStorage.getItem(ADV_PAYMENTS_KEY) || "[]");
+    return JSON.parse(storage.getItem(ADV_PAYMENTS_KEY) || "[]");
   } catch {
     return [];
   }
@@ -62,20 +63,20 @@ function saveAdvancePayment(r: AdvancePaymentRecord) {
   const idx = all.findIndex((x) => x.id === r.id);
   if (idx >= 0) all[idx] = r;
   else all.unshift(r);
-  localStorage.setItem(ADV_PAYMENTS_KEY, JSON.stringify(all));
+  storage.setItem(ADV_PAYMENTS_KEY, JSON.stringify(all));
 }
 
 function getAdvCounter(): string {
   const year = new Date().getFullYear();
   const yearKey = "receipt_year_adv";
   const counterKey = "receipt_counter_adv";
-  const storedYear = Number.parseInt(localStorage.getItem(yearKey) || "0", 10);
+  const storedYear = Number.parseInt(storage.getItem(yearKey) || "0", 10);
   let count = 1;
   if (storedYear === year) {
-    count = Number.parseInt(localStorage.getItem(counterKey) || "0", 10) + 1;
+    count = Number.parseInt(storage.getItem(counterKey) || "0", 10) + 1;
   }
-  localStorage.setItem(yearKey, String(year));
-  localStorage.setItem(counterKey, String(count));
+  storage.setItem(yearKey, String(year));
+  storage.setItem(counterKey, String(count));
   return `ADV-${year}-${String(count).padStart(4, "0")}`;
 }
 
@@ -104,7 +105,7 @@ interface OtherPaymentRecord {
 
 function loadOtherPayments(): OtherPaymentRecord[] {
   try {
-    return JSON.parse(localStorage.getItem(OTHER_PAYMENTS_KEY) || "[]");
+    return JSON.parse(storage.getItem(OTHER_PAYMENTS_KEY) || "[]");
   } catch {
     return [];
   }
@@ -115,7 +116,7 @@ function saveOtherPayment(r: OtherPaymentRecord) {
   const idx = all.findIndex((x) => x.id === r.id);
   if (idx >= 0) all[idx] = r;
   else all.unshift(r);
-  localStorage.setItem(OTHER_PAYMENTS_KEY, JSON.stringify(all));
+  storage.setItem(OTHER_PAYMENTS_KEY, JSON.stringify(all));
 }
 
 interface OtherLineItem {
@@ -580,7 +581,7 @@ export default function OtherPayment() {
       refund,
     };
     all[idx] = updated;
-    localStorage.setItem(OTHER_PAYMENTS_KEY, JSON.stringify(all));
+    storage.setItem(OTHER_PAYMENTS_KEY, JSON.stringify(all));
     setHistory(all);
     setShowRefund(null);
     toast.success(

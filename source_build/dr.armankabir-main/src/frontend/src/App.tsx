@@ -97,6 +97,7 @@ import {
   STAFF_ROLE_LABELS,
 } from "./types";
 import type { StaffRole } from "./types";
+import { storage } from "lib/storageAdapter";
 
 // ── Route tree ────────────────────────────────────────────────────────────────
 
@@ -1509,11 +1510,11 @@ function AppInner() {
       // Collect all admitted patient IDs
       const admittedIds = new Set<string>();
       const patientNames: Record<string, string> = {};
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
+      for (let i = 0; i < storage.length; i++) {
+        const k = storage.key(i);
         if (!k?.startsWith("patients_")) continue;
         try {
-          const arr = JSON.parse(localStorage.getItem(k) || "[]") as Array<{
+          const arr = JSON.parse(storage.getItem(k) || "[]") as Array<{
             id: unknown;
             fullName?: string;
             isAdmitted?: boolean;
@@ -1626,15 +1627,15 @@ function AppInner() {
       // Check both reminder storage formats
       try {
         const legacy = JSON.parse(
-          localStorage.getItem("medicare_drug_reminders") || "[]",
+          storage.getItem("medicare_drug_reminders") || "[]",
         );
         checkReminders(legacy);
       } catch {}
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
+      for (let i = 0; i < storage.length; i++) {
+        const k = storage.key(i);
         if (!k?.startsWith("drugReminders_")) continue;
         try {
-          const arr = JSON.parse(localStorage.getItem(k) || "[]");
+          const arr = JSON.parse(storage.getItem(k) || "[]");
           checkReminders(arr);
         } catch {}
       }
@@ -1647,7 +1648,7 @@ function AppInner() {
     if (!currentPatient) return;
     try {
       const allReminders: DrugReminder[] = JSON.parse(
-        localStorage.getItem(REMINDERS_KEY) || "[]",
+        storage.getItem(REMINDERS_KEY) || "[]",
       );
       let patId = "";
       if (currentPatient.registerNumber) {
@@ -1656,7 +1657,7 @@ function AppInner() {
         );
         outer: for (const key of keys) {
           try {
-            const arr = JSON.parse(localStorage.getItem(key) || "[]") as Array<
+            const arr = JSON.parse(storage.getItem(key) || "[]") as Array<
               Record<string, unknown>
             >;
             for (const p of arr) {
@@ -1716,10 +1717,10 @@ function AppInner() {
     setNavReminders(updated);
     try {
       const all: DrugReminder[] = JSON.parse(
-        localStorage.getItem(REMINDERS_KEY) || "[]",
+        storage.getItem(REMINDERS_KEY) || "[]",
       );
       const others = all.filter((r) => r.patientId !== patientId);
-      localStorage.setItem(
+      storage.setItem(
         REMINDERS_KEY,
         JSON.stringify([...others, ...updated]),
       );
@@ -1749,7 +1750,7 @@ function AppInner() {
         k.startsWith("patients_"),
       );
       for (const key of keys) {
-        const arr = JSON.parse(localStorage.getItem(key) || "[]") as Array<
+        const arr = JSON.parse(storage.getItem(key) || "[]") as Array<
           Record<string, unknown>
         >;
         for (const p of arr) {
@@ -2324,7 +2325,7 @@ function PatientPortalView({
           k.startsWith("patients_"),
         );
         for (const key of keys) {
-          const raw = localStorage.getItem(key);
+          const raw = storage.getItem(key);
           if (!raw) continue;
           const arr = JSON.parse(raw) as Array<Record<string, unknown>>;
           const found = arr.find(

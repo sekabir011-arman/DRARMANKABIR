@@ -4,6 +4,7 @@
  */
 
 import type {
+import { storage } from "../lib/storageAdapter";
   AllergyOverrideRecord,
   FamilyHistoryRisk,
   VaccinationRecord,
@@ -79,7 +80,7 @@ const PROBLEM_LIST_KEY_PREFIX = "problem_list_";
 
 export function loadComplaints(patientId: string): ComplaintEntry[] {
   try {
-    const raw = localStorage.getItem(COMPLAINTS_KEY_PREFIX + patientId);
+    const raw = storage.getItem(COMPLAINTS_KEY_PREFIX + patientId);
     if (raw) return JSON.parse(raw) as ComplaintEntry[];
   } catch {}
   return [];
@@ -89,7 +90,7 @@ export function saveComplaints(
   patientId: string,
   complaints: ComplaintEntry[],
 ): void {
-  localStorage.setItem(
+  storage.setItem(
     COMPLAINTS_KEY_PREFIX + patientId,
     JSON.stringify(complaints),
   );
@@ -97,7 +98,7 @@ export function saveComplaints(
 
 export function loadAdviceEntries(patientId: string): AdviceEntry[] {
   try {
-    const raw = localStorage.getItem(ADVICE_KEY_PREFIX + patientId);
+    const raw = storage.getItem(ADVICE_KEY_PREFIX + patientId);
     if (raw) return JSON.parse(raw) as AdviceEntry[];
   } catch {}
   return [];
@@ -107,19 +108,19 @@ export function saveAdviceEntries(
   patientId: string,
   entries: AdviceEntry[],
 ): void {
-  localStorage.setItem(ADVICE_KEY_PREFIX + patientId, JSON.stringify(entries));
+  storage.setItem(ADVICE_KEY_PREFIX + patientId, JSON.stringify(entries));
 }
 
 export function loadSubmissions(): PatientSubmission[] {
   try {
-    const raw = localStorage.getItem(PATIENT_SUBMISSIONS_KEY);
+    const raw = storage.getItem(PATIENT_SUBMISSIONS_KEY);
     if (raw) return JSON.parse(raw) as PatientSubmission[];
   } catch {}
   return [];
 }
 
 export function saveSubmissions(subs: PatientSubmission[]): void {
-  localStorage.setItem(PATIENT_SUBMISSIONS_KEY, JSON.stringify(subs));
+  storage.setItem(PATIENT_SUBMISSIONS_KEY, JSON.stringify(subs));
 }
 
 export function loadDailyProgress(
@@ -128,7 +129,7 @@ export function loadDailyProgress(
 ): SoapEntry[] {
   try {
     const key = `${DAILY_PROGRESS_KEY_PREFIX}${doctorEmail}_${patientId}`;
-    const raw = localStorage.getItem(key);
+    const raw = storage.getItem(key);
     if (raw) return JSON.parse(raw) as SoapEntry[];
   } catch {}
   return [];
@@ -140,7 +141,7 @@ export function saveDailyProgress(
   entries: SoapEntry[],
 ): void {
   const key = `${DAILY_PROGRESS_KEY_PREFIX}${doctorEmail}_${patientId}`;
-  localStorage.setItem(key, JSON.stringify(entries));
+  storage.setItem(key, JSON.stringify(entries));
 }
 
 export function loadProblemList(
@@ -149,7 +150,7 @@ export function loadProblemList(
 ): ProblemItem[] {
   try {
     const key = `${PROBLEM_LIST_KEY_PREFIX}${doctorEmail}_${patientId}`;
-    const raw = localStorage.getItem(key);
+    const raw = storage.getItem(key);
     if (raw) return JSON.parse(raw) as ProblemItem[];
   } catch {}
   return [];
@@ -161,7 +162,7 @@ export function saveProblemList(
   items: ProblemItem[],
 ): void {
   const key = `${PROBLEM_LIST_KEY_PREFIX}${doctorEmail}_${patientId}`;
-  localStorage.setItem(key, JSON.stringify(items));
+  storage.setItem(key, JSON.stringify(items));
 }
 
 // ── Vaccination Records ───────────────────────────────────────────────────────
@@ -172,7 +173,7 @@ export function loadVaccinationRecords(
 ): VaccinationRecord[] {
   try {
     const key = `${VACCINATION_KEY_PREFIX}${doctorEmail}_${patientId}`;
-    const raw = localStorage.getItem(key);
+    const raw = storage.getItem(key);
     if (raw) return JSON.parse(raw) as VaccinationRecord[];
   } catch {}
   return [];
@@ -184,7 +185,7 @@ export function saveVaccinationRecords(
   records: VaccinationRecord[],
 ): void {
   const key = `${VACCINATION_KEY_PREFIX}${doctorEmail}_${patientId}`;
-  localStorage.setItem(key, JSON.stringify(records));
+  storage.setItem(key, JSON.stringify(records));
 }
 
 // ── Family History Risk ───────────────────────────────────────────────────────
@@ -195,7 +196,7 @@ export function loadFamilyHistoryRisk(
 ): FamilyHistoryRisk | null {
   try {
     const key = `${FAMILY_HISTORY_RISK_KEY_PREFIX}${doctorEmail}_${patientId}`;
-    const raw = localStorage.getItem(key);
+    const raw = storage.getItem(key);
     if (raw) return JSON.parse(raw) as FamilyHistoryRisk;
   } catch {}
   return null;
@@ -207,7 +208,7 @@ export function saveFamilyHistoryRisk(
   risk: FamilyHistoryRisk,
 ): void {
   const key = `${FAMILY_HISTORY_RISK_KEY_PREFIX}${doctorEmail}_${patientId}`;
-  localStorage.setItem(key, JSON.stringify(risk));
+  storage.setItem(key, JSON.stringify(risk));
 }
 
 // ── Allergy Override Records ──────────────────────────────────────────────────
@@ -218,7 +219,7 @@ export function loadAllergyOverrides(
 ): AllergyOverrideRecord[] {
   try {
     const key = `${ALLERGY_OVERRIDES_KEY_PREFIX}${doctorEmail}_${patientId}`;
-    const raw = localStorage.getItem(key);
+    const raw = storage.getItem(key);
     if (raw) return JSON.parse(raw) as AllergyOverrideRecord[];
   } catch {}
   return [];
@@ -230,7 +231,7 @@ export function saveAllergyOverrides(
   overrides: AllergyOverrideRecord[],
 ): void {
   const key = `${ALLERGY_OVERRIDES_KEY_PREFIX}${doctorEmail}_${patientId}`;
-  localStorage.setItem(key, JSON.stringify(overrides));
+  storage.setItem(key, JSON.stringify(overrides));
 }
 
 // ── Emergency Notifications ───────────────────────────────────────────────────
@@ -251,7 +252,7 @@ const EMERGENCY_NOTIFICATIONS_KEY = "emergency_rx_notifications";
 
 export function loadEmergencyNotifications(): EmergencyNotification[] {
   try {
-    const raw = localStorage.getItem(EMERGENCY_NOTIFICATIONS_KEY);
+    const raw = storage.getItem(EMERGENCY_NOTIFICATIONS_KEY);
     if (raw) return JSON.parse(raw) as EmergencyNotification[];
   } catch {}
   return [];
@@ -260,7 +261,7 @@ export function loadEmergencyNotifications(): EmergencyNotification[] {
 export function saveEmergencyNotifications(
   notifications: EmergencyNotification[],
 ): void {
-  localStorage.setItem(
+  storage.setItem(
     EMERGENCY_NOTIFICATIONS_KEY,
     JSON.stringify(notifications),
   );
@@ -317,7 +318,7 @@ export function autoLinkEmergencyRxToInpatientChart(
     // Find emergency Rx ext records for this patient
     const autoLinkedDrugs: string[] = [];
     const prescriptionsKey = `prescriptions_${doctorEmail}_${patientId}`;
-    const rxRaw = localStorage.getItem(prescriptionsKey);
+    const rxRaw = storage.getItem(prescriptionsKey);
     if (!rxRaw) return [];
 
     const prescriptions = JSON.parse(rxRaw) as Array<{
@@ -338,7 +339,7 @@ export function autoLinkEmergencyRxToInpatientChart(
 
     for (const rx of prescriptions) {
       const extKey = `prescription_ext_${rx.id}`;
-      const extRaw = localStorage.getItem(extKey);
+      const extRaw = storage.getItem(extKey);
       const isEmergency =
         (extRaw && JSON.parse(extRaw)?.prescriptionType === "emergency") ||
         rx.medications?.some((m) => m.prescriptionType === "emergency");
@@ -352,7 +353,7 @@ export function autoLinkEmergencyRxToInpatientChart(
       // Get existing inpatient medication chart key
       const today = new Date(admissionDate).toISOString().split("T")[0];
       const chartKey = `daily_note_${doctorEmail}_${patientId}_${today}`;
-      const chartRaw = localStorage.getItem(chartKey);
+      const chartRaw = storage.getItem(chartKey);
       const chart = chartRaw ? JSON.parse(chartRaw) : null;
       const existingDrugNames = new Set<string>(
         (chart?.planItems ?? []).map((p: { description?: string }) =>
@@ -381,7 +382,7 @@ export function autoLinkEmergencyRxToInpatientChart(
 
         if (chart) {
           chart.planItems = [...(chart.planItems ?? []), planItem];
-          localStorage.setItem(chartKey, JSON.stringify(chart));
+          storage.setItem(chartKey, JSON.stringify(chart));
         }
         autoLinkedDrugs.push(drugName);
         existingDrugNames.add(drugName.toLowerCase());

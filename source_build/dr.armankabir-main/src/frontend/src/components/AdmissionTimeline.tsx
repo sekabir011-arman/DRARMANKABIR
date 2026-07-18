@@ -23,6 +23,7 @@ import { STAFF_ROLE_LABELS } from "../types";
 import type { StaffRole } from "../types";
 import type { AdmissionHistoryRecord } from "./AdmissionHistory";
 import { loadAdmissionHistory } from "./AdmissionHistory";
+import { storage } from "../lib/storageAdapter";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -47,14 +48,14 @@ function loadDailyNoteEntries(
   const entries: DailyNoteEntry[] = [];
   try {
     // Scan all localStorage keys that match daily_note_{email}_{patientId}_{date}
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
+    for (let i = 0; i < storage.length; i++) {
+      const key = storage.key(i);
       if (!key) continue;
       const prefix = `daily_note_${doctorEmail}_${patientId}_`;
       if (!key.startsWith(prefix)) continue;
       const date = key.slice(prefix.length);
       try {
-        const raw = localStorage.getItem(key);
+        const raw = storage.getItem(key);
         if (!raw) continue;
         const data = JSON.parse(raw) as {
           assessment?: string;

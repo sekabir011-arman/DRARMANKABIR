@@ -69,6 +69,7 @@ import {
 } from "../hooks/useEmailAuth";
 import type { InvestigationRate } from "../types";
 import { STAFF_ROLE_LABELS, type StaffRole } from "../types";
+import { storage } from "../lib/storageAdapter";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -98,7 +99,7 @@ function PhotoUploader({
   ocidPrefix: string;
 }) {
   const [photo, setPhoto] = useState<string | null>(() =>
-    localStorage.getItem(storageKey),
+    storage.getItem(storageKey),
   );
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -119,7 +120,7 @@ function PhotoUploader({
     const reader = new FileReader();
     reader.onload = (ev) => {
       const dataUrl = ev.target?.result as string;
-      localStorage.setItem(storageKey, dataUrl);
+      storage.setItem(storageKey, dataUrl);
       setPhoto(dataUrl);
       toast.success("Photo updated");
     };
@@ -165,7 +166,7 @@ function PhotoUploader({
             type="button"
             className="text-xs text-destructive hover:underline ml-3"
             onClick={() => {
-              localStorage.removeItem(storageKey);
+              storage.removeItem(storageKey);
               setPhoto(null);
               toast.success("Photo removed");
             }}
@@ -196,7 +197,7 @@ function PdfUploader({
   ocidPrefix: string;
 }) {
   const [fileName, setFileName] = useState<string | null>(() => {
-    const raw = localStorage.getItem(storageKey);
+    const raw = storage.getItem(storageKey);
     if (!raw) return null;
     try {
       return JSON.parse(raw).name || "Uploaded";
@@ -216,7 +217,7 @@ function PdfUploader({
     const reader = new FileReader();
     reader.onload = (ev) => {
       const dataUrl = ev.target?.result as string;
-      localStorage.setItem(
+      storage.setItem(
         storageKey,
         JSON.stringify({ name: file.name, data: dataUrl }),
       );
@@ -255,7 +256,7 @@ function PdfUploader({
             variant="ghost"
             className="h-7 text-xs text-destructive hover:text-destructive"
             onClick={() => {
-              localStorage.removeItem(storageKey);
+              storage.removeItem(storageKey);
               setFileName(null);
               toast.success("Removed");
             }}
@@ -749,26 +750,26 @@ function AdminContentManagement() {
 
 function AdminPublicContent() {
   const [classroomArman, setClassroomArman] = useState(
-    () => localStorage.getItem("classroom_arman") ?? "",
+    () => storage.getItem("classroom_arman") ?? "",
   );
   const [classroomSamia, setClassroomSamia] = useState(
-    () => localStorage.getItem("classroom_samia") ?? "",
+    () => storage.getItem("classroom_samia") ?? "",
   );
   const [chamberArman, setChamberArman] = useState(
-    () => localStorage.getItem("chamber_arman") ?? "",
+    () => storage.getItem("chamber_arman") ?? "",
   );
   const [chamberSamia, setChamberSamia] = useState(
-    () => localStorage.getItem("chamber_samia") ?? "",
+    () => storage.getItem("chamber_samia") ?? "",
   );
   const [profileArman, setProfileArman] = useState(
-    () => localStorage.getItem("profile_arman") ?? "",
+    () => storage.getItem("profile_arman") ?? "",
   );
   const [profileSamia, setProfileSamia] = useState(
-    () => localStorage.getItem("profile_samia") ?? "",
+    () => storage.getItem("profile_samia") ?? "",
   );
 
   const saveSection = (key: string, value: string, label: string) => {
-    localStorage.setItem(key, value);
+    storage.setItem(key, value);
     toast.success(`${label} saved`);
   };
 
@@ -977,7 +978,7 @@ function AdminPublicContent() {
 const RATES_KEY = "investigation_rates";
 
 function saveRates(rates: InvestigationRate[]) {
-  localStorage.setItem(RATES_KEY, JSON.stringify(rates));
+  storage.setItem(RATES_KEY, JSON.stringify(rates));
 }
 
 function AdminInvestigationRates() {
@@ -1375,13 +1376,13 @@ function AdminSystemSettings({ onLogout }: { onLogout: () => void }) {
 
   const exportAllData = () => {
     const snapshot: Record<string, unknown> = {};
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
+    for (let i = 0; i < storage.length; i++) {
+      const k = storage.key(i);
       if (!k) continue;
       try {
-        snapshot[k] = JSON.parse(localStorage.getItem(k) ?? "null");
+        snapshot[k] = JSON.parse(storage.getItem(k) ?? "null");
       } catch {
-        snapshot[k] = localStorage.getItem(k);
+        snapshot[k] = storage.getItem(k);
       }
     }
     const blob = new Blob([JSON.stringify(snapshot, null, 2)], {
@@ -1398,11 +1399,11 @@ function AdminSystemSettings({ onLogout }: { onLogout: () => void }) {
 
   const exportPatients = () => {
     const allPatients: Array<Record<string, unknown>> = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
+    for (let i = 0; i < storage.length; i++) {
+      const k = storage.key(i);
       if (!k?.startsWith("patients_")) continue;
       try {
-        const arr = JSON.parse(localStorage.getItem(k) ?? "[]") as Array<
+        const arr = JSON.parse(storage.getItem(k) ?? "[]") as Array<
           Record<string, unknown>
         >;
         allPatients.push(...arr);
@@ -1530,9 +1531,9 @@ function AdminSystemSettings({ onLogout }: { onLogout: () => void }) {
             <Label>Lab System Name</Label>
             <Input
               placeholder="e.g. Hospital Lab System"
-              defaultValue={localStorage.getItem("lab_system_name") ?? ""}
+              defaultValue={storage.getItem("lab_system_name") ?? ""}
               onBlur={(e) =>
-                localStorage.setItem("lab_system_name", e.target.value)
+                storage.setItem("lab_system_name", e.target.value)
               }
               data-ocid="admin.lab_system_name.input"
             />
@@ -1541,9 +1542,9 @@ function AdminSystemSettings({ onLogout }: { onLogout: () => void }) {
             <Label>API Endpoint URL</Label>
             <Input
               placeholder="https://lab.hospital.com/api/results"
-              defaultValue={localStorage.getItem("lab_api_endpoint") ?? ""}
+              defaultValue={storage.getItem("lab_api_endpoint") ?? ""}
               onBlur={(e) =>
-                localStorage.setItem("lab_api_endpoint", e.target.value)
+                storage.setItem("lab_api_endpoint", e.target.value)
               }
               data-ocid="admin.lab_api.input"
             />
@@ -1609,7 +1610,7 @@ function NotificationPrefs({ storageKey }: { storageKey: string }) {
   type PrefsShape = Record<string, boolean>;
   const [prefs, setPrefs] = useState<PrefsShape>(() => {
     try {
-      return JSON.parse(localStorage.getItem(storageKey) ?? "{}") as PrefsShape;
+      return JSON.parse(storage.getItem(storageKey) ?? "{}") as PrefsShape;
     } catch {
       return {};
     }
@@ -1618,7 +1619,7 @@ function NotificationPrefs({ storageKey }: { storageKey: string }) {
   const toggle = (key: string, defaultVal: boolean) => {
     const updated = { ...prefs, [key]: !(prefs[key] ?? defaultVal) };
     setPrefs(updated);
-    localStorage.setItem(storageKey, JSON.stringify(updated));
+    storage.setItem(storageKey, JSON.stringify(updated));
     toast.success("Preference saved");
   };
 
@@ -1700,19 +1701,19 @@ function NotificationPrefs({ storageKey }: { storageKey: string }) {
 function PrescriptionHeaderSelector({ doctorEmail }: { doctorEmail: string }) {
   const prefKey = `prescriptionHeaderPref_${doctorEmail}`;
   const [headerType, setHeaderType] = useState<"chamber" | "hospital">(() => {
-    const raw = localStorage.getItem(prefKey);
+    const raw = storage.getItem(prefKey);
     return (raw as "chamber" | "hospital") ?? "chamber";
   });
 
   const save = () => {
-    localStorage.setItem(prefKey, headerType);
+    storage.setItem(prefKey, headerType);
     toast.success("Prescription header preference saved");
   };
 
   const chamberHeader = (() => {
     try {
       return JSON.parse(
-        localStorage.getItem("prescriptionHeaders_chamber") ?? "null",
+        storage.getItem("prescriptionHeaders_chamber") ?? "null",
       );
     } catch {
       return null;
@@ -1721,7 +1722,7 @@ function PrescriptionHeaderSelector({ doctorEmail }: { doctorEmail: string }) {
   const hospitalHeader = (() => {
     try {
       return JSON.parse(
-        localStorage.getItem("prescriptionHeaders_hospital") ?? "null",
+        storage.getItem("prescriptionHeaders_hospital") ?? "null",
       );
     } catch {
       return null;
@@ -1819,10 +1820,10 @@ function SerialDisplayVideoSettings({ doctorEmail }: { doctorEmail: string }) {
   const storageKey = `serialDisplayVideoUrl_${doctorEmail}`;
   const [inputUrl, setInputUrl] = useState("");
   const [savedUrl, setSavedUrl] = useState<string | null>(() =>
-    localStorage.getItem(storageKey),
+    storage.getItem(storageKey),
   );
   const [previewUrl, setPreviewUrl] = useState<string | null>(() => {
-    const v = localStorage.getItem(storageKey);
+    const v = storage.getItem(storageKey);
     return v ? toEmbedUrl(v) : null;
   });
   const [showPreview, setShowPreview] = useState(false);
@@ -1833,7 +1834,7 @@ function SerialDisplayVideoSettings({ doctorEmail }: { doctorEmail: string }) {
       return;
     }
     const embed = toEmbedUrl(inputUrl.trim());
-    localStorage.setItem(storageKey, inputUrl.trim());
+    storage.setItem(storageKey, inputUrl.trim());
     // Broadcast change to other tabs (including SerialDisplay)
     try {
       const bc = new BroadcastChannel("serial_display_video_sync");
@@ -1848,7 +1849,7 @@ function SerialDisplayVideoSettings({ doctorEmail }: { doctorEmail: string }) {
   };
 
   const handleClear = () => {
-    localStorage.removeItem(storageKey);
+    storage.removeItem(storageKey);
     try {
       const bc = new BroadcastChannel("serial_display_video_sync");
       bc.postMessage({ videoUrl: null });
@@ -1971,11 +1972,11 @@ function PatientProfileView() {
   // Load clinical patient record for more details
   const clinicalRecord = (() => {
     if (!currentPatient.registerNumber) return null;
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
+    for (let i = 0; i < storage.length; i++) {
+      const k = storage.key(i);
       if (!k?.startsWith("patients_")) continue;
       try {
-        const arr = JSON.parse(localStorage.getItem(k) ?? "[]") as Array<
+        const arr = JSON.parse(storage.getItem(k) ?? "[]") as Array<
           Record<string, unknown>
         >;
         for (const p of arr) {
@@ -2065,7 +2066,7 @@ function ProfileUpdateRequest({ registerNumber }: { registerNumber: string }) {
     const key = `pendingProfileUpdates_${registerNumber}`;
     const existing = (() => {
       try {
-        return JSON.parse(localStorage.getItem(key) ?? "[]") as Array<
+        return JSON.parse(storage.getItem(key) ?? "[]") as Array<
           Record<string, unknown>
         >;
       } catch {
@@ -2078,7 +2079,7 @@ function ProfileUpdateRequest({ registerNumber }: { registerNumber: string }) {
       submittedAt: new Date().toISOString(),
       status: "pending",
     });
-    localStorage.setItem(key, JSON.stringify(existing));
+    storage.setItem(key, JSON.stringify(existing));
     setPhone("");
     setAddress("");
     setSubmitting(false);
@@ -2122,7 +2123,7 @@ function PatientNotifPrefs({ phone }: { phone: string }) {
   type PrefsShape = Record<string, boolean>;
   const [prefs, setPrefs] = useState<PrefsShape>(() => {
     try {
-      return JSON.parse(localStorage.getItem(storageKey) ?? "{}") as PrefsShape;
+      return JSON.parse(storage.getItem(storageKey) ?? "{}") as PrefsShape;
     } catch {
       return {};
     }
@@ -2131,7 +2132,7 @@ function PatientNotifPrefs({ phone }: { phone: string }) {
   const toggle = (key: string, defaultVal: boolean) => {
     const updated = { ...prefs, [key]: !(prefs[key] ?? defaultVal) };
     setPrefs(updated);
-    localStorage.setItem(storageKey, JSON.stringify(updated));
+    storage.setItem(storageKey, JSON.stringify(updated));
     toast.success("Preference saved");
   };
 

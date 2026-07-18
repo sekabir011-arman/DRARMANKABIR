@@ -170,7 +170,7 @@ function HeaderBlock({
   // Dynamic fallback — read from localStorage doctor profile
   const getDoctorProfile = () => {
     try {
-      const sessionId = localStorage.getItem("medicare_current_doctor");
+      const sessionId = storage.getItem("medicare_current_doctor");
       if (sessionId) {
         const registry = JSON.parse(
           storageAdapter.getItem("medicare_doctors_registry") || "[]",
@@ -178,7 +178,7 @@ function HeaderBlock({
         const doc = registry.find((d) => d.id === sessionId);
         if (doc?.email) {
           const profile = JSON.parse(
-            localStorage.getItem(`doctor_profile_${doc.email}`) || "null",
+            storage.getItem(`doctor_profile_${doc.email}`) || "null",
           );
           if (profile) return profile;
         }
@@ -352,7 +352,7 @@ export default function PrescriptionPadPreview({
   // Get doctor name for signature
   function getDoctorDisplayName(): string {
     try {
-      const sessionId = localStorage.getItem("medicare_current_doctor");
+      const sessionId = storage.getItem("medicare_current_doctor");
       if (sessionId) {
         const registry = JSON.parse(
           storageAdapter.getItem("medicare_doctors_registry") || "[]",
@@ -360,7 +360,7 @@ export default function PrescriptionPadPreview({
         const doc = registry.find((d) => d.id === sessionId);
         if (doc?.email) {
           const profile = JSON.parse(
-            localStorage.getItem(`doctor_profile_${doc.email}`) || "null",
+            storage.getItem(`doctor_profile_${doc.email}`) || "null",
           );
           if (profile?.name) return profile.name;
         }

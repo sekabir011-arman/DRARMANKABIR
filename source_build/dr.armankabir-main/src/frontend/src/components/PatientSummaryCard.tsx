@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { AlertTriangle, Printer, User } from "lucide-react";
 import { useRef, useState } from "react";
 import type { Patient, Prescription, Visit } from "../types";
+import { storage } from "../lib/storageAdapter";
 
 // QR display: show URL in a bordered box with instructions
 
@@ -92,10 +93,10 @@ function getRecentInvestigations(visits: Visit[]): InvResult[] {
     const extData = (() => {
       try {
         const key = `visit_form_data_${v.id}`;
-        for (let i = 0; i < localStorage.length; i++) {
-          const k = localStorage.key(i);
+        for (let i = 0; i < storage.length; i++) {
+          const k = storage.key(i);
           if (k?.startsWith(key)) {
-            const raw = localStorage.getItem(k);
+            const raw = storage.getItem(k);
             if (raw) return JSON.parse(raw) as Record<string, unknown>;
           }
         }

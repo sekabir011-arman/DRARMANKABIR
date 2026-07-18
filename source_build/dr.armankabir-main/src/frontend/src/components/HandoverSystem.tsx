@@ -48,6 +48,7 @@ import type { StaffRole } from "../types";
 import { STAFF_ROLE_LABELS } from "../types";
 import type { TrackedInvestigation } from "./InvestigationTracker";
 import { loadTrackedInvestigations } from "./InvestigationTracker";
+import { storage } from "../lib/storageAdapter";
 
 // ── Local Types ────────────────────────────────────────────────────────────────
 
@@ -204,7 +205,7 @@ const UNREAD_KEY = (email: string) => `handover_unread_comments_${email}`;
 
 function getUnreadCommentIds(email: string): string[] {
   try {
-    const raw = localStorage.getItem(UNREAD_KEY(email));
+    const raw = storage.getItem(UNREAD_KEY(email));
     return raw ? (JSON.parse(raw) as string[]) : [];
   } catch {
     return [];
@@ -215,13 +216,13 @@ function addUnreadCommentId(email: string, commentId: string) {
   const existing = getUnreadCommentIds(email);
   if (!existing.includes(commentId)) {
     existing.push(commentId);
-    localStorage.setItem(UNREAD_KEY(email), JSON.stringify(existing));
+    storage.setItem(UNREAD_KEY(email), JSON.stringify(existing));
   }
 }
 
 function markCommentRead(email: string, commentId: string) {
   const existing = getUnreadCommentIds(email).filter((id) => id !== commentId);
-  localStorage.setItem(UNREAD_KEY(email), JSON.stringify(existing));
+  storage.setItem(UNREAD_KEY(email), JSON.stringify(existing));
 }
 
 // ── Storage ────────────────────────────────────────────────────────────────────
@@ -230,7 +231,7 @@ const DOCS_KEY = (patientId: string) => `handover_docs_${patientId}`;
 
 function loadDocs(patientId: string): HandoverDocument[] {
   try {
-    const raw = localStorage.getItem(DOCS_KEY(patientId));
+    const raw = storage.getItem(DOCS_KEY(patientId));
     return raw ? (JSON.parse(raw) as HandoverDocument[]) : [];
   } catch {
     return [];
@@ -239,7 +240,7 @@ function loadDocs(patientId: string): HandoverDocument[] {
 
 function saveDocs(patientId: string, docs: HandoverDocument[]) {
   try {
-    localStorage.setItem(DOCS_KEY(patientId), JSON.stringify(docs));
+    storage.setItem(DOCS_KEY(patientId), JSON.stringify(docs));
   } catch {}
 }
 
@@ -1611,10 +1612,10 @@ function DocView({
       const globalKey = "handover_new_comments_global";
       try {
         const existing = JSON.parse(
-          localStorage.getItem(globalKey) ?? "[]",
+          storage.getItem(globalKey) ?? "[]",
         ) as string[];
         existing.push(newComment.id);
-        localStorage.setItem(globalKey, JSON.stringify(existing));
+        storage.setItem(globalKey, JSON.stringify(existing));
       } catch {}
     }
     toast.success("Comment saved — nurse/MO will be notified");
@@ -2247,7 +2248,7 @@ function DocView({
                           try {
                             const auditKey = "medicare_audit_log";
                             const auditLog = JSON.parse(
-                              localStorage.getItem(auditKey) ?? "[]",
+                              storage.getItem(auditKey) ?? "[]",
                             ) as Array<{
                               id: string;
                               action: string;
@@ -2268,7 +2269,7 @@ function DocView({
                               timestamp: acknowledgedAt,
                               details: `Handover received by ${currentUser.name} (${currentUser.role}) for patient ${doc.patientName} — Shift: ${doc.shiftLabel} ${doc.shiftStart}–${doc.shiftEnd}`,
                             });
-                            localStorage.setItem(
+                            storage.setItem(
                               auditKey,
                               JSON.stringify(auditLog.slice(0, 500)),
                             );
@@ -2417,7 +2418,7 @@ export default function HandoverSystem({
     const globalKey = "handover_new_comments_global";
     try {
       const newCommentIds = JSON.parse(
-        localStorage.getItem(globalKey) ?? "[]",
+        storage.getItem(globalKey) ?? "[]",
       ) as string[];
       if (newCommentIds.length === 0) return;
 
@@ -2444,7 +2445,7 @@ export default function HandoverSystem({
           duration: 8000,
         });
         // Clear the global list after processing
-        localStorage.removeItem(globalKey);
+        storage.removeItem(globalKey);
       }
     } catch {}
   }, [patientId, currentUser.email, isConsultant, unreadCommentIds]);

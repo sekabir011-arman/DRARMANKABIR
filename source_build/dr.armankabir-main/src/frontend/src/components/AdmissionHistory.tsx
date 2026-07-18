@@ -37,6 +37,7 @@ import { toast } from "sonner";
 import type { Patient } from "../types";
 import type { StaffRole } from "../types";
 import { STAFF_ROLE_LABELS } from "../types";
+import { storage } from "../lib/storageAdapter";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -100,7 +101,7 @@ export function loadAdmissionHistory(
   patientId: string,
 ): AdmissionHistoryRecord[] {
   try {
-    const raw = localStorage.getItem(`${ADMISSION_HISTORY_PREFIX}${patientId}`);
+    const raw = storage.getItem(`${ADMISSION_HISTORY_PREFIX}${patientId}`);
     if (!raw) return [];
     return JSON.parse(raw) as AdmissionHistoryRecord[];
   } catch {
@@ -112,7 +113,7 @@ export function saveAdmissionHistory(
   patientId: string,
   records: AdmissionHistoryRecord[],
 ) {
-  localStorage.setItem(
+  storage.setItem(
     `${ADMISSION_HISTORY_PREFIX}${patientId}`,
     JSON.stringify(records),
   );

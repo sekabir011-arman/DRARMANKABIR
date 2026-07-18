@@ -168,7 +168,7 @@ function PrescriptionHeader({
   // Chamber fallback — read full doctor profile from localStorage
   const getDoctorProfileFallback = () => {
     try {
-      const sessionId = localStorage.getItem("medicare_current_doctor");
+      const sessionId = storage.getItem("medicare_current_doctor");
       if (sessionId) {
         const registry = JSON.parse(
           storageAdapter.getItem("medicare_doctors_registry") || "[]",
@@ -176,7 +176,7 @@ function PrescriptionHeader({
         const doc = registry.find((d) => d.id === sessionId);
         if (doc?.email) {
           const profile = JSON.parse(
-            localStorage.getItem(`doctor_profile_${doc.email}`) || "null",
+            storage.getItem(`doctor_profile_${doc.email}`) || "null",
           );
           if (profile) return profile;
         }
@@ -390,7 +390,7 @@ export default function PrescriptionPad({
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(padStorageKey);
+      const saved = storage.getItem(padStorageKey);
       if (saved) {
         const d = JSON.parse(saved);
         if (d.cc !== undefined) setCc(d.cc);
@@ -414,7 +414,7 @@ export default function PrescriptionPad({
     if (!matchKey) return;
     try {
       // visit form data is dynamic
-      const vd = JSON.parse(localStorage.getItem(matchKey) || "null") as Record<
+      const vd = JSON.parse(storage.getItem(matchKey) || "null") as Record<
         string,
         any
       > | null;
@@ -454,7 +454,7 @@ export default function PrescriptionPad({
 
   function getDoctorName(): string {
     try {
-      const sessionId = localStorage.getItem("medicare_current_doctor");
+      const sessionId = storage.getItem("medicare_current_doctor");
       if (sessionId) {
         const registry = JSON.parse(
           storageAdapter.getItem("medicare_doctors_registry") || "[]",
@@ -462,7 +462,7 @@ export default function PrescriptionPad({
         const doc = registry.find((d) => d.id === sessionId);
         if (doc?.email) {
           const profile = JSON.parse(
-            localStorage.getItem(`doctor_profile_${doc.email}`) || "null",
+            storage.getItem(`doctor_profile_${doc.email}`) || "null",
           );
           if (profile?.name) return profile.name;
         }
@@ -476,7 +476,7 @@ export default function PrescriptionPad({
 
   const savePad = () => {
     try {
-      localStorage.setItem(
+      storage.setItem(
         padStorageKey,
         JSON.stringify({
           cc,
@@ -492,7 +492,7 @@ export default function PrescriptionPad({
         const key = `savedPrescriptionPads_${patientId}`;
         const existing = (() => {
           try {
-            return JSON.parse(localStorage.getItem(key) || "[]");
+            return JSON.parse(storage.getItem(key) || "[]");
           } catch {
             return [];
           }
@@ -507,7 +507,7 @@ export default function PrescriptionPad({
           diagnosis: diagnosisVal,
           medications: prescription?.medications ?? [],
         });
-        localStorage.setItem(key, JSON.stringify(existing));
+        storage.setItem(key, JSON.stringify(existing));
       }
       toast.success("Prescription pad saved");
       setEditMode(false);

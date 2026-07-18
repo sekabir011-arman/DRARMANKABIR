@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import { useEmailAuth } from "../hooks/useEmailAuth";
 import { getDoctorEmail } from "../hooks/useQueries";
 import type { Patient, Prescription, Visit } from "../types";
+import { storage } from "../lib/storageAdapter";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -96,7 +97,7 @@ export function loadReferrals(
   patientId: string,
 ): ReferralRecord[] {
   try {
-    const raw = localStorage.getItem(storageKey(email, patientId));
+    const raw = storage.getItem(storageKey(email, patientId));
     return raw ? (JSON.parse(raw) as ReferralRecord[]) : [];
   } catch {
     return [];
@@ -108,7 +109,7 @@ function saveReferrals(
   patientId: string,
   records: ReferralRecord[],
 ) {
-  localStorage.setItem(storageKey(email, patientId), JSON.stringify(records));
+  storage.setItem(storageKey(email, patientId), JSON.stringify(records));
 }
 
 // ── Active medications helper ─────────────────────────────────────────────────
@@ -116,10 +117,10 @@ function saveReferrals(
 function getActiveMeds(patientId: string): string {
   const meds: string[] = [];
   try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
+    for (let i = 0; i < storage.length; i++) {
+      const k = storage.key(i);
       if (!k?.startsWith("prescriptions_")) continue;
-      const arr = JSON.parse(localStorage.getItem(k) || "[]") as Array<{
+      const arr = JSON.parse(storage.getItem(k) || "[]") as Array<{
         patientId?: string | bigint;
         medications?: Array<{
           drugForm?: string;

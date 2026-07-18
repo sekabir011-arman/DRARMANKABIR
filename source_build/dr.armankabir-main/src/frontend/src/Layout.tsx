@@ -53,6 +53,7 @@ import {
   STAFF_ROLE_TEXT_COLOR,
 } from "./types";
 import type { StaffRole } from "./types";
+import { storage } from "lib/storageAdapter";
 
 // Roles
 const MED_ALERT_ROLES: StaffRole[] = ["nurse", "intern_doctor"];
@@ -99,7 +100,7 @@ interface LayoutProps {
 // ── Storage helpers ────────────────────────────────────────────────────────────
 function loadBool(key: string, def: boolean): boolean {
   try {
-    const v = localStorage.getItem(key);
+    const v = storage.getItem(key);
     if (v === null) return def;
     return v === "true";
   } catch {
@@ -108,7 +109,7 @@ function loadBool(key: string, def: boolean): boolean {
 }
 function saveBool(key: string, val: boolean) {
   try {
-    localStorage.setItem(key, String(val));
+    storage.setItem(key, String(val));
   } catch {}
 }
 
@@ -116,10 +117,10 @@ function saveBool(key: string, val: boolean) {
 function getPendingApprovalCount(): number {
   try {
     const registry = JSON.parse(
-      localStorage.getItem("registry") ?? "[]",
+      storage.getItem("registry") ?? "[]",
     ) as Array<{ approvalStatus?: string; status?: string }>;
     const patientRegistry = JSON.parse(
-      localStorage.getItem("patient_registry") ?? "[]",
+      storage.getItem("patient_registry") ?? "[]",
     ) as Array<{ approvalStatus?: string; status?: string }>;
     const staffPending = registry.filter(
       (a) => a.approvalStatus === "pending" || a.status === "pending",
@@ -143,7 +144,7 @@ function getUnpaidInvoicesCount(): number {
     ];
     let total = 0;
     for (const key of keys) {
-      const items = JSON.parse(localStorage.getItem(key) ?? "[]") as Array<{
+      const items = JSON.parse(storage.getItem(key) ?? "[]") as Array<{
         status?: string;
       }>;
       total += items.filter(
@@ -159,7 +160,7 @@ function getUnpaidInvoicesCount(): number {
 function getPendingHandoverCount(): number {
   try {
     const handovers = JSON.parse(
-      localStorage.getItem("handovers") ?? "[]",
+      storage.getItem("handovers") ?? "[]",
     ) as Array<{ acknowledged?: boolean; acknowledgmentStatus?: string }>;
     return handovers.filter(
       (h) => h.acknowledged === false || h.acknowledgmentStatus === "pending",
@@ -173,7 +174,7 @@ function getAdmittedPatientCount(): number {
   try {
     // Try direct patients key first
     const direct = JSON.parse(
-      localStorage.getItem("patients") ?? "[]",
+      storage.getItem("patients") ?? "[]",
     ) as Array<{ isAdmitted?: boolean; patientType?: string; status?: string }>;
     if (direct.length > 0) {
       return direct.filter(
@@ -185,10 +186,10 @@ function getAdmittedPatientCount(): number {
     }
     // Fallback: scan patients_* keys
     let count = 0;
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
+    for (let i = 0; i < storage.length; i++) {
+      const k = storage.key(i);
       if (!k?.startsWith("patients_")) continue;
-      const arr = JSON.parse(localStorage.getItem(k) ?? "[]") as Array<{
+      const arr = JSON.parse(storage.getItem(k) ?? "[]") as Array<{
         isAdmitted?: boolean;
         patientType?: string;
         status?: string;
@@ -340,13 +341,13 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
           times: string[];
           enabled: boolean;
         }> = JSON.parse(
-          localStorage.getItem("medicare_drug_reminders") || "[]",
+          storage.getItem("medicare_drug_reminders") || "[]",
         );
         const admittedIds = new Set<string>();
-        for (let i = 0; i < localStorage.length; i++) {
-          const k = localStorage.key(i);
+        for (let i = 0; i < storage.length; i++) {
+          const k = storage.key(i);
           if (!k?.startsWith("patients_")) continue;
-          const arr = JSON.parse(localStorage.getItem(k) || "[]") as Array<{
+          const arr = JSON.parse(storage.getItem(k) || "[]") as Array<{
             id: unknown;
             isAdmitted?: boolean;
             patientType?: string;
@@ -379,7 +380,7 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
               }> = (() => {
                 try {
                   return JSON.parse(
-                    localStorage.getItem(
+                    storage.getItem(
                       `medAdminRecord_${r.patientId}_${today}`,
                     ) || "[]",
                   );

@@ -23,6 +23,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useEmailAuth } from "../../hooks/useEmailAuth";
 import type { Patient } from "../../types";
+import { storage } from "../../lib/storageAdapter";
 
 interface LocalPatient extends Patient {
   bedNumber?: string;
@@ -60,11 +61,11 @@ interface DeterioratingVitalItem {
 
 function loadAllPatients(): LocalPatient[] {
   const result: LocalPatient[] = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
+  for (let i = 0; i < storage.length; i++) {
+    const k = storage.key(i);
     if (!k?.startsWith("patients_")) continue;
     try {
-      const arr = JSON.parse(localStorage.getItem(k) || "[]") as LocalPatient[];
+      const arr = JSON.parse(storage.getItem(k) || "[]") as LocalPatient[];
       result.push(...arr);
     } catch {}
   }
@@ -84,11 +85,11 @@ function isAdmitted(p: LocalPatient) {
 
 function loadPendingDrafts(): DraftApprovalItem[] {
   const results: DraftApprovalItem[] = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
+  for (let i = 0; i < storage.length; i++) {
+    const k = storage.key(i);
     if (!k?.startsWith("prescriptions_")) continue;
     try {
-      const arr = JSON.parse(localStorage.getItem(k) || "[]") as Array<
+      const arr = JSON.parse(storage.getItem(k) || "[]") as Array<
         Record<string, unknown>
       >;
       for (const rx of arr) {
@@ -119,7 +120,7 @@ function getRecentActivity() {
     target: string;
   }> = [];
   try {
-    const raw = localStorage.getItem("medicare_audit_log");
+    const raw = storage.getItem("medicare_audit_log");
     if (raw) {
       const all = JSON.parse(raw) as typeof logs;
       return all.slice(-8).reverse();
@@ -135,7 +136,7 @@ function loadOverdueNotes(patients: LocalPatient[]): OverdueNoteItem[] {
     .map((p) => {
       try {
         const notes = JSON.parse(
-          localStorage.getItem(`soapNotes_${String(p.id)}`) || "[]",
+          storage.getItem(`soapNotes_${String(p.id)}`) || "[]",
         ) as Array<{ createdAt?: string; date?: string }>;
         if (notes.length === 0) return { ...p, hoursSinceNote: 999 };
         const sorted = notes.sort((a, b) => {
@@ -163,7 +164,7 @@ function loadPendingDischarges(
     .filter(isAdmitted)
     .filter((p) => {
       try {
-        const ds = localStorage.getItem(`dischargeStatus_${String(p.id)}`);
+        const ds = storage.getItem(`dischargeStatus_${String(p.id)}`);
         if (!ds) return false;
         const data = JSON.parse(ds) as {
           initiated?: boolean;
@@ -178,7 +179,7 @@ function loadPendingDischarges(
       let dischargeInitiatedAt = "";
       try {
         const ds = JSON.parse(
-          localStorage.getItem(`dischargeStatus_${String(p.id)}`) || "{}",
+          storage.getItem(`dischargeStatus_${String(p.id)}`) || "{}",
         ) as { initiatedAt?: string };
         dischargeInitiatedAt = ds.initiatedAt ?? "";
       } catch {}
@@ -200,7 +201,7 @@ function loadDeterioratingVitals(
   for (const p of admitted) {
     try {
       const vitals = JSON.parse(
-        localStorage.getItem(`vitals_${String(p.id)}`) || "[]",
+        storage.getItem(`vitals_${String(p.id)}`) || "[]",
       ) as Array<{
         spo2?: number;
         pulse?: number;

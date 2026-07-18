@@ -19,6 +19,7 @@ import { useRef, useState } from "react";
 import InvestigationPaymentComponent from "../components/InvestigationPayment";
 import WalkInInvestigationForm from "../components/WalkInInvestigationForm";
 import { useEmailAuth } from "../hooks/useEmailAuth";
+import { storage } from "../lib/storageAdapter";
 
 interface PatientEntry {
   id: unknown;
@@ -36,10 +37,10 @@ interface PatientEntry {
 function loadAllPatients(): PatientEntry[] {
   const results: PatientEntry[] = [];
   try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
+    for (let i = 0; i < storage.length; i++) {
+      const k = storage.key(i);
       if (!k?.startsWith("patients_")) continue;
-      const arr: PatientEntry[] = JSON.parse(localStorage.getItem(k) || "[]");
+      const arr: PatientEntry[] = JSON.parse(storage.getItem(k) || "[]");
       results.push(...arr);
     }
   } catch {}

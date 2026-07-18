@@ -40,6 +40,7 @@ import QuestionStepper from "./QuestionStepper";
 import RespiratoryExam from "./RespiratoryExam";
 import SystemicExaminationSection from "./SystemicExaminationSection";
 import {
+import { storage } from "../lib/storageAdapter";
   loadFamilyHistoryRisk,
   saveFamilyHistoryRisk,
 } from "./patientDashboardTypes";
@@ -933,7 +934,7 @@ export default function VisitForm({
     autosaveKeyRef.current = `visitFormAutosave_${id}_${email}`;
 
     try {
-      const raw = localStorage.getItem(autosaveKeyRef.current);
+      const raw = storage.getItem(autosaveKeyRef.current);
       if (!raw) return;
       const saved = JSON.parse(raw) as Record<string, unknown>;
       if (saved.formData) setFormData(saved.formData as VisitFormData);
@@ -994,7 +995,7 @@ export default function VisitForm({
           epiSchedule,
           autosavedAt: new Date().toISOString(),
         };
-        localStorage.setItem(autosaveKeyRef.current, JSON.stringify(snapshot));
+        storage.setItem(autosaveKeyRef.current, JSON.stringify(snapshot));
         setAutosavedAt(new Date());
       } catch {
         // ignore storage errors
@@ -1594,10 +1595,10 @@ export default function VisitForm({
         diagnosisStatus,
         templateExamRows,
       };
-      localStorage.setItem(extendedKey, JSON.stringify(extendedData));
+      storage.setItem(extendedKey, JSON.stringify(extendedData));
       // Clear autosave entry on successful manual save
       if (autosaveKeyRef.current) {
-        localStorage.removeItem(autosaveKeyRef.current);
+        storage.removeItem(autosaveKeyRef.current);
         setAutosavedAt(null);
       }
     } catch {
@@ -2989,8 +2990,8 @@ export default function VisitForm({
               const rows = formData.previous_investigation_rows || [];
               if (rows.length === 0) return;
               const key = `archived_investigations_${patientId}`;
-              const existing = JSON.parse(localStorage.getItem(key) || "[]");
-              localStorage.setItem(key, JSON.stringify([...existing, ...rows]));
+              const existing = JSON.parse(storage.getItem(key) || "[]");
+              storage.setItem(key, JSON.stringify([...existing, ...rows]));
               handleChange("previous_investigation_rows", []);
               toast.success("Investigation profile archived successfully.");
             }}

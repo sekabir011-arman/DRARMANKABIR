@@ -25,6 +25,7 @@ import React from "react";
 import { useMemo, useState } from "react";
 import { loadReceipts } from "../components/MoneyReceipt";
 import type { MoneyReceiptData } from "../types";
+import { storage } from "../lib/storageAdapter";
 
 // ── Storage keys ───────────────────────────────────────────────────────────────
 
@@ -71,7 +72,7 @@ interface DayTotals {
 
 function loadProcedurePayments(): MoneyReceiptData[] {
   try {
-    return JSON.parse(localStorage.getItem(PROC_PAYMENTS_KEY) || "[]");
+    return JSON.parse(storage.getItem(PROC_PAYMENTS_KEY) || "[]");
   } catch {
     return [];
   }
@@ -87,7 +88,7 @@ function loadAppointmentPayments(): Array<{
   paymentMethod?: string;
 }> {
   try {
-    return JSON.parse(localStorage.getItem(APT_PAYMENTS_KEY) || "[]");
+    return JSON.parse(storage.getItem(APT_PAYMENTS_KEY) || "[]");
   } catch {
     return [];
   }
@@ -95,7 +96,7 @@ function loadAppointmentPayments(): Array<{
 
 function loadOtherPayments(): OtherPaymentRecord[] {
   try {
-    return JSON.parse(localStorage.getItem(OTHER_PAYMENTS_KEY) || "[]");
+    return JSON.parse(storage.getItem(OTHER_PAYMENTS_KEY) || "[]");
   } catch {
     return [];
   }
@@ -103,7 +104,7 @@ function loadOtherPayments(): OtherPaymentRecord[] {
 
 function loadRefunds(): LocalRefundRecord[] {
   try {
-    return JSON.parse(localStorage.getItem(REFUNDS_KEY) || "[]");
+    return JSON.parse(storage.getItem(REFUNDS_KEY) || "[]");
   } catch {
     return [];
   }

@@ -22,6 +22,7 @@ import {
   saveMedAdminRecord,
 } from "./NurseDueMeds";
 import type { MedAdminRecord } from "./NurseDueMeds";
+import { storage } from "../lib/storageAdapter";
 
 export type ShiftType = "morning" | "evening" | "night";
 
@@ -83,7 +84,7 @@ function loadMARRecords(
   MARStatus & { nurseName?: string; timestamp?: string; reason?: string }
 > {
   try {
-    const raw = localStorage.getItem(getMARKey(email, patientId, date, shift));
+    const raw = storage.getItem(getMARKey(email, patientId, date, shift));
     if (raw)
       return JSON.parse(raw) as Record<
         string,
@@ -113,7 +114,7 @@ function saveMARRecord(
     }),
     reason,
   };
-  localStorage.setItem(
+  storage.setItem(
     getMARKey(email, patientId, date, shift),
     JSON.stringify(all),
   );

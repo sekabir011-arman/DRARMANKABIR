@@ -10,6 +10,7 @@ import {
 } from "../hooks/useQueries";
 import type { PrescriptionHeaderType } from "../types";
 import { getPrescriptionHeaderText } from "./PrescriptionHeaderPanel";
+import { storage } from "../lib/storageAdapter";
 
 // ── Advice numbering ─────────────────────────────────────────────────────────
 
@@ -37,7 +38,7 @@ const SIG_KEY_PREFIX = "doctorSignature_";
 
 export function getDoctorSignature(doctorEmail?: string): string | null {
   const email = doctorEmail ?? getDoctorEmail();
-  return localStorage.getItem(`${SIG_KEY_PREFIX}${email}`);
+  return storage.getItem(`${SIG_KEY_PREFIX}${email}`);
 }
 
 export function setDoctorSignature(
@@ -45,12 +46,12 @@ export function setDoctorSignature(
   doctorEmail?: string,
 ): void {
   const email = doctorEmail ?? getDoctorEmail();
-  localStorage.setItem(`${SIG_KEY_PREFIX}${email}`, dataUrl);
+  storage.setItem(`${SIG_KEY_PREFIX}${email}`, dataUrl);
 }
 
 export function clearDoctorSignature(doctorEmail?: string): void {
   const email = doctorEmail ?? getDoctorEmail();
-  localStorage.removeItem(`${SIG_KEY_PREFIX}${email}`);
+  storage.removeItem(`${SIG_KEY_PREFIX}${email}`);
 }
 
 // ── Header renderer (returns HTML string for print windows) ──────────────────

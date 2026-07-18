@@ -39,6 +39,7 @@ import {
 import { getClinicalStore, saveClinicalStore } from "../lib/clinicalStore";
 import { saveClinicalEntitiesWithSync } from "../lib/hybridStorage";
 import type { BedRecord, BedType, Patient } from "../types";
+import { storage } from "../lib/storageAdapter";
 
 // ── BigInt normalisation helper ─────────────────────────────────────────────
 const normBigInt = (val: unknown): bigint => {
@@ -472,7 +473,7 @@ function ExpectedAdmissionsPanel({
 
   const todayAdmissions = useMemo(() => {
     try {
-      const raw = localStorage.getItem("appointments");
+      const raw = storage.getItem("appointments");
       if (!raw) return [];
       const all: Appointment[] = JSON.parse(raw);
       const today = format(new Date(), "yyyy-MM-dd");

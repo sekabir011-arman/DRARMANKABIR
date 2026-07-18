@@ -118,6 +118,7 @@ import {
   checkVitalAlerts,
 } from "../lib/clinicalIntelligence";
 import type { Patient, Prescription, StaffRole, Visit } from "../types";
+import { storage } from "../lib/storageAdapter";
 
 const RX_SKELETON_KEYS = ["rsk1", "rsk2", "rsk3"];
 // ── On-Duty Staff Card ──────────────────────────────────────────────────────────────
@@ -151,7 +152,7 @@ function OnDutyStaffCard({
     ward: string;
   }> = (() => {
     try {
-      const raw = localStorage.getItem("staff_shifts");
+      const raw = storage.getItem("staff_shifts");
       return raw ? JSON.parse(raw) : [];
     } catch {
       return [];
@@ -166,7 +167,7 @@ function OnDutyStaffCard({
     status: string;
   }> = (() => {
     try {
-      const raw = localStorage.getItem("registry");
+      const raw = storage.getItem("registry");
       return raw ? JSON.parse(raw) : [];
     } catch {
       return [];
@@ -435,7 +436,7 @@ function OverviewTab({
     if (!latestVisit) return null;
     try {
       const email = getDoctorEmail();
-      const raw = localStorage.getItem(
+      const raw = storage.getItem(
         `visit_form_data_${latestVisit.id}_${email}`,
       );
       if (raw)
@@ -1024,14 +1025,14 @@ export default function PatientProfile() {
               k === `visit_form_data_${targetVisitId}_${doctorEmail}`,
           );
           if (keys.length > 0) {
-            const raw = localStorage.getItem(keys[0]);
+            const raw = storage.getItem(keys[0]);
             if (raw) setRxVisitExtendedData(JSON.parse(raw));
           }
         }
       }
       // Load register number
       if (patientId) {
-        const regRaw = localStorage.getItem(`patient_register_${patientId}`);
+        const regRaw = storage.getItem(`patient_register_${patientId}`);
         if (regRaw) setRxPatientRegisterNumber(regRaw);
       }
     } catch {
@@ -1094,7 +1095,7 @@ export default function PatientProfile() {
   // Get doctor info from localStorage for sidebar
   function getDoctorSidebarInfo() {
     try {
-      const data = localStorage.getItem("medicare_doctors_data");
+      const data = storage.getItem("medicare_doctors_data");
       if (data) {
         const parsed = JSON.parse(data);
         const doc = parsed.drArman || Object.values(parsed)[0] || null;
@@ -1109,7 +1110,7 @@ export default function PatientProfile() {
     } catch {
       /* ignore */
     }
-    const loggedIn = localStorage.getItem("medicare_logged_in_doctor");
+    const loggedIn = storage.getItem("medicare_logged_in_doctor");
     if (loggedIn) {
       try {
         return JSON.parse(loggedIn) as {
@@ -1137,7 +1138,7 @@ export default function PatientProfile() {
     try {
       const doctorEmail = getDoctorEmail();
       const key = `visit_form_data_${latestVisit.id}_${doctorEmail}`;
-      const raw = localStorage.getItem(key);
+      const raw = storage.getItem(key);
       if (raw) {
         const parsed = JSON.parse(raw);
         return parsed.vitalSigns as {
@@ -1167,7 +1168,7 @@ export default function PatientProfile() {
     try {
       const doctorEmail = getDoctorEmail();
       const key = `visit_form_data_${latestVisit.id}_${doctorEmail}`;
-      const raw = localStorage.getItem(key);
+      const raw = storage.getItem(key);
       if (raw) {
         const parsed = JSON.parse(raw);
         return (
@@ -1851,7 +1852,7 @@ export default function PatientProfile() {
                     let visitExt: Record<string, unknown> | null = null;
                     try {
                       const key = `visit_form_data_${visit.id}_${doctorEmail}`;
-                      const raw = localStorage.getItem(key);
+                      const raw = storage.getItem(key);
                       if (raw) visitExt = JSON.parse(raw);
                     } catch {}
                     // Compile salient features from visit data
@@ -2276,7 +2277,7 @@ export default function PatientProfile() {
                 (patient as Patient & { registrationComplete?: boolean })
                   .registrationComplete === false ||
                 (patientId &&
-                  localStorage.getItem(
+                  storage.getItem(
                     `patient_reg_incomplete_${patientId}`,
                   ) === "true");
               if (!isIncomplete) return null;
@@ -2402,7 +2403,7 @@ export default function PatientProfile() {
                   .filter((rx) => {
                     if (!emergencyOnlyFilter) return true;
                     // Check if rx is emergency: look at medications prescriptionType or ext key
-                    const extRaw = localStorage.getItem(
+                    const extRaw = storage.getItem(
                       `prescription_ext_${rx.id}`,
                     );
                     if (extRaw) {
@@ -2425,7 +2426,7 @@ export default function PatientProfile() {
                     // Check if emergency
                     let isEmergency = false;
                     try {
-                      const extRaw = localStorage.getItem(
+                      const extRaw = storage.getItem(
                         `prescription_ext_${rx.id}`,
                       );
                       if (extRaw) {

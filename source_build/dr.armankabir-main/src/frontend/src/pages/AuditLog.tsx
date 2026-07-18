@@ -51,13 +51,14 @@ import { type AuditLogEntry, getAuditLog } from "../hooks/useEmailAuth";
 import { useEmailAuth } from "../hooks/useEmailAuth";
 import { useRolePermissions } from "../hooks/useRolePermissions";
 import type { AuditEntry } from "../types";
+import { storage } from "../lib/storageAdapter";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function getClinicalAuditEntries(): AuditEntry[] {
   try {
     const store = JSON.parse(
-      localStorage.getItem("medicare_clinical_data") || "{}",
+      storage.getItem("medicare_clinical_data") || "{}",
     ) as Record<string, unknown[]>;
     return (store.auditTrail ?? []) as AuditEntry[];
   } catch {

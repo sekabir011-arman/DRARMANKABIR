@@ -26,6 +26,7 @@ import {
 import { useMemo, useState } from "react";
 import { getDoctorEmail } from "../hooks/useQueries";
 import type { Patient } from "../types";
+import { storage } from "../lib/storageAdapter";
 
 // ── Event type definitions ────────────────────────────────────────────────────
 
@@ -149,7 +150,7 @@ function loadAllEvents(patientId: bigint, patient: Patient): TimelineEvent[] {
 
   // 2. Visits
   try {
-    const raw = localStorage.getItem(`visits_${email}`);
+    const raw = storage.getItem(`visits_${email}`);
     const allVisits: Array<Record<string, unknown>> = raw
       ? JSON.parse(raw)
       : [];
@@ -177,7 +178,7 @@ function loadAllEvents(patientId: bigint, patient: Patient): TimelineEvent[] {
 
   // 3. Prescriptions
   try {
-    const raw = localStorage.getItem(`prescriptions_${email}`);
+    const raw = storage.getItem(`prescriptions_${email}`);
     const allRx: Array<Record<string, unknown>> = raw ? JSON.parse(raw) : [];
     const patRx = allRx.filter((r) => String(r.patientId) === patStr);
     for (const rx of patRx) {
@@ -208,15 +209,15 @@ function loadAllEvents(patientId: bigint, patient: Patient): TimelineEvent[] {
 
   // 4. Vitals (from observation-style records)
   try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
+    for (let i = 0; i < storage.length; i++) {
+      const key = storage.key(i);
       if (
         !key?.includes(`vitals_${patStr}`) &&
         !key?.includes(`vital_record_${patStr}`)
       )
         continue;
       try {
-        const raw = localStorage.getItem(key);
+        const raw = storage.getItem(key);
         if (!raw) continue;
         const parsed: Array<Record<string, unknown>> = JSON.parse(raw);
         if (!Array.isArray(parsed)) continue;
@@ -251,8 +252,8 @@ function loadAllEvents(patientId: bigint, patient: Patient): TimelineEvent[] {
 
   // 5. Daily Progress Notes (SOAP)
   try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
+    for (let i = 0; i < storage.length; i++) {
+      const key = storage.key(i);
       if (
         !key?.includes("dailyNotes") &&
         !key?.includes(`soap_notes_${patStr}`)
@@ -260,7 +261,7 @@ function loadAllEvents(patientId: bigint, patient: Patient): TimelineEvent[] {
         continue;
       if (!key?.includes(patStr)) continue;
       try {
-        const raw = localStorage.getItem(key);
+        const raw = storage.getItem(key);
         if (!raw) continue;
         const parsed: Array<Record<string, unknown>> = JSON.parse(raw);
         if (!Array.isArray(parsed)) continue;
@@ -298,7 +299,7 @@ function loadAllEvents(patientId: bigint, patient: Patient): TimelineEvent[] {
 
   // 6. Discharge records
   try {
-    const raw = localStorage.getItem(`admissionHistory_${patStr}`);
+    const raw = storage.getItem(`admissionHistory_${patStr}`);
     const records: Array<Record<string, unknown>> = raw ? JSON.parse(raw) : [];
     for (const rec of records) {
       if (rec.dischargedOn) {
@@ -316,7 +317,7 @@ function loadAllEvents(patientId: bigint, patient: Patient): TimelineEvent[] {
 
   // 7. Teleconsults
   try {
-    const raw = localStorage.getItem(`teleconsults_${patStr}`);
+    const raw = storage.getItem(`teleconsults_${patStr}`);
     const tcList: Array<Record<string, unknown>> = raw ? JSON.parse(raw) : [];
     for (const tc of tcList) {
       events.push({
@@ -335,7 +336,7 @@ function loadAllEvents(patientId: bigint, patient: Patient): TimelineEvent[] {
 
   // 8. Referrals
   try {
-    const raw = localStorage.getItem(`referrals_${email}_${patStr}`);
+    const raw = storage.getItem(`referrals_${email}_${patStr}`);
     const refList: Array<Record<string, unknown>> = raw ? JSON.parse(raw) : [];
     for (const ref of refList) {
       events.push({
@@ -352,7 +353,7 @@ function loadAllEvents(patientId: bigint, patient: Patient): TimelineEvent[] {
 
   // 9. Procedures
   try {
-    const raw = localStorage.getItem(`procedureLogs_${patStr}`);
+    const raw = storage.getItem(`procedureLogs_${patStr}`);
     const procList: Array<Record<string, unknown>> = raw ? JSON.parse(raw) : [];
     for (const proc of procList) {
       events.push({

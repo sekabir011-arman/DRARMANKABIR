@@ -26,6 +26,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import type { Patient, Prescription, Visit } from "../types";
+import { storage } from "../lib/storageAdapter";
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -53,7 +54,7 @@ function _fmtDateTime(iso: string) {
 
 function loadLS<T>(key: string, fallback: T): T {
   try {
-    const raw = localStorage.getItem(key);
+    const raw = storage.getItem(key);
     return raw ? (JSON.parse(raw) as T) : fallback;
   } catch {
     return fallback;
@@ -62,7 +63,7 @@ function loadLS<T>(key: string, fallback: T): T {
 
 function saveLS<T>(key: string, value: T) {
   try {
-    localStorage.setItem(key, JSON.stringify(value));
+    storage.setItem(key, JSON.stringify(value));
   } catch {
     /* ignore */
   }

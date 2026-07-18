@@ -32,6 +32,7 @@ import {
 } from "../../components/NurseDueMeds";
 import { useEmailAuth } from "../../hooks/useEmailAuth";
 import type { Patient, VitalSigns } from "../../types";
+import { storage } from "../../lib/storageAdapter";
 
 interface LocalPatient extends Patient {
   registerNumber?: string;
@@ -69,11 +70,11 @@ interface OpdQueueItem {
 
 function loadAllPatients(): LocalPatient[] {
   const result: LocalPatient[] = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
+  for (let i = 0; i < storage.length; i++) {
+    const k = storage.key(i);
     if (!k?.startsWith("patients_")) continue;
     try {
-      const arr = JSON.parse(localStorage.getItem(k) || "[]") as LocalPatient[];
+      const arr = JSON.parse(storage.getItem(k) || "[]") as LocalPatient[];
       result.push(...arr);
     } catch {}
   }
@@ -87,7 +88,7 @@ function loadVitalsData(
   for (const p of patients) {
     const pidStr = String(p.id);
     try {
-      const raw = localStorage.getItem(`vitals_${pidStr}`);
+      const raw = storage.getItem(`vitals_${pidStr}`);
       if (raw) result[pidStr] = JSON.parse(raw) as VitalSigns[];
     } catch {}
   }
@@ -99,7 +100,7 @@ function getAlertSeverity(
 ): "critical" | "warning" | "stable" {
   try {
     const alerts: Array<{ severity: string }> = JSON.parse(
-      localStorage.getItem(`alerts_${String(patient.id)}`) || "[]",
+      storage.getItem(`alerts_${String(patient.id)}`) || "[]",
     );
     if (
       alerts.some((a) => a.severity === "Critical" || a.severity === "critical")
@@ -115,11 +116,11 @@ function getAlertSeverity(
 
 function loadPendingDrafts(): DraftApprovalItem[] {
   const results: DraftApprovalItem[] = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
+  for (let i = 0; i < storage.length; i++) {
+    const k = storage.key(i);
     if (!k?.startsWith("prescriptions_")) continue;
     try {
-      const arr = JSON.parse(localStorage.getItem(k) || "[]") as Array<
+      const arr = JSON.parse(storage.getItem(k) || "[]") as Array<
         Record<string, unknown>
       >;
       for (const rx of arr) {
@@ -150,11 +151,11 @@ function getRecentPrescriptions() {
     createdAt: string;
     status: string;
   }> = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
+  for (let i = 0; i < storage.length; i++) {
+    const k = storage.key(i);
     if (!k?.startsWith("prescriptions_")) continue;
     try {
-      const arr = JSON.parse(localStorage.getItem(k) || "[]") as Array<
+      const arr = JSON.parse(storage.getItem(k) || "[]") as Array<
         Record<string, unknown>
       >;
       for (const rx of arr) {
@@ -177,7 +178,7 @@ function loadTodayOpdQueue(): OpdQueueItem[] {
   const today = new Date().toISOString().split("T")[0];
   try {
     const all = JSON.parse(
-      localStorage.getItem("medicare_appointments") || "[]",
+      storage.getItem("medicare_appointments") || "[]",
     ) as Array<Record<string, unknown>>;
     return all
       .filter((a) => {
@@ -208,7 +209,7 @@ function loadAdmittedNeedingReview(
     .map((p) => {
       try {
         const notes = JSON.parse(
-          localStorage.getItem(`soapNotes_${String(p.id)}`) || "[]",
+          storage.getItem(`soapNotes_${String(p.id)}`) || "[]",
         ) as Array<{ createdAt?: string; date?: string }>;
         if (notes.length === 0) return { ...p, hoursSinceNote: 999 };
         const sorted = notes.sort((a, b) => {
@@ -230,23 +231,23 @@ function loadAdmittedNeedingReview(
 }
 
 function loadNewInvestigationResults(): InvestigationResult[] {
-  const lastLogin = Number(localStorage.getItem("medicare_last_login") || "0");
+  const lastLogin = Number(storage.getItem("medicare_last_login") || "0");
   const results: InvestigationResult[] = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
+  for (let i = 0; i < storage.length; i++) {
+    const k = storage.key(i);
     if (!k?.startsWith("investigations_")) continue;
     const patientId = k.replace("investigations_", "");
     try {
-      const inv = JSON.parse(localStorage.getItem(k) || "[]") as Array<
+      const inv = JSON.parse(storage.getItem(k) || "[]") as Array<
         Record<string, unknown>
       >;
       let patientName = "Unknown";
-      for (let j = 0; j < localStorage.length; j++) {
-        const pk = localStorage.key(j);
+      for (let j = 0; j < storage.length; j++) {
+        const pk = storage.key(j);
         if (!pk?.startsWith("patients_")) continue;
         try {
           const arr = JSON.parse(
-            localStorage.getItem(pk) || "[]",
+            storage.getItem(pk) || "[]",
           ) as LocalPatient[];
           const pt = arr.find((p) => String(p.id) === patientId);
           if (pt) {

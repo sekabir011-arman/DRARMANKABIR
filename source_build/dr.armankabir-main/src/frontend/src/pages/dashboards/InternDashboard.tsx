@@ -15,6 +15,7 @@ import {
 import { useMemo, useState } from "react";
 import { useEmailAuth } from "../../hooks/useEmailAuth";
 import type { Patient } from "../../types";
+import { storage } from "../../lib/storageAdapter";
 
 interface LocalPatient extends Patient {
   bedNumber?: string;
@@ -24,11 +25,11 @@ interface LocalPatient extends Patient {
 
 function loadAllPatients(): LocalPatient[] {
   const result: LocalPatient[] = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
+  for (let i = 0; i < storage.length; i++) {
+    const k = storage.key(i);
     if (!k?.startsWith("patients_")) continue;
     try {
-      const arr = JSON.parse(localStorage.getItem(k) || "[]") as LocalPatient[];
+      const arr = JSON.parse(storage.getItem(k) || "[]") as LocalPatient[];
       result.push(...arr);
     } catch {}
   }
@@ -57,11 +58,11 @@ interface DraftItem {
 
 function loadMyDrafts(doctorEmail: string): DraftItem[] {
   const results: DraftItem[] = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
+  for (let i = 0; i < storage.length; i++) {
+    const k = storage.key(i);
     if (!k?.startsWith("prescriptions_")) continue;
     try {
-      const arr = JSON.parse(localStorage.getItem(k) || "[]") as Array<
+      const arr = JSON.parse(storage.getItem(k) || "[]") as Array<
         Record<string, unknown>
       >;
       for (const rx of arr) {
@@ -105,7 +106,7 @@ export default function InternDashboard() {
   const patientsNeedingHistory = admittedPatients.filter((p) => {
     try {
       const notes = JSON.parse(
-        localStorage.getItem(`clinicalNotes_${String(p.id)}`) || "[]",
+        storage.getItem(`clinicalNotes_${String(p.id)}`) || "[]",
       ) as Array<{ createdAt: string }>;
       return !notes.some((n) => n.createdAt?.startsWith(today));
     } catch {

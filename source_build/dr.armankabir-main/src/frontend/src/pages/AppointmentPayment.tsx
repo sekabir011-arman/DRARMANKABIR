@@ -42,6 +42,7 @@ import {
   sendReceiptWhatsApp,
 } from "../components/MoneyReceipt";
 import type {
+import { storage } from "../lib/storageAdapter";
   InvoiceState,
   MoneyReceiptData,
   PaymentMethod,
@@ -99,26 +100,26 @@ interface AppointmentPaymentRecord {
 
 function loadPayments(): AppointmentPaymentRecord[] {
   try {
-    return JSON.parse(localStorage.getItem(APT_PAYMENTS_KEY) || "[]");
+    return JSON.parse(storage.getItem(APT_PAYMENTS_KEY) || "[]");
   } catch {
     return [];
   }
 }
 
 function savePayments(data: AppointmentPaymentRecord[]) {
-  localStorage.setItem(APT_PAYMENTS_KEY, JSON.stringify(data));
+  storage.setItem(APT_PAYMENTS_KEY, JSON.stringify(data));
 }
 
 function loadRates(): AppointmentRate[] {
   try {
-    return JSON.parse(localStorage.getItem(APT_RATES_KEY) || "[]");
+    return JSON.parse(storage.getItem(APT_RATES_KEY) || "[]");
   } catch {
     return [];
   }
 }
 
 function saveRates(data: AppointmentRate[]) {
-  localStorage.setItem(APT_RATES_KEY, JSON.stringify(data));
+  storage.setItem(APT_RATES_KEY, JSON.stringify(data));
 }
 
 function findRate(

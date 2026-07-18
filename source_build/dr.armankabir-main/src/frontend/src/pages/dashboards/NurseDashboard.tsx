@@ -33,11 +33,11 @@ interface HandoverRecord {
 
 function loadPendingHandovers(currentShift: string): HandoverRecord[] {
   const results: HandoverRecord[] = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
+  for (let i = 0; i < storage.length; i++) {
+    const k = storage.key(i);
     if (!k?.startsWith("handover_record_")) continue;
     try {
-      const rec = JSON.parse(localStorage.getItem(k) || "{}") as HandoverRecord;
+      const rec = JSON.parse(storage.getItem(k) || "{}") as HandoverRecord;
       if (
         rec.status === "pending_acknowledgment" &&
         rec.toShift === currentShift
@@ -51,6 +51,7 @@ function loadPendingHandovers(currentShift: string): HandoverRecord[] {
 import ClinicalAlertsPanel from "../../components/ClinicalAlertsPanel";
 import { useEmailAuth } from "../../hooks/useEmailAuth";
 import type { Patient, VitalSigns } from "../../types";
+import { storage } from "../../lib/storageAdapter";
 
 interface LocalPatient extends Patient {
   bedNumber?: string;
@@ -61,11 +62,11 @@ interface LocalPatient extends Patient {
 
 function loadAdmittedPatients(): LocalPatient[] {
   const result: LocalPatient[] = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
+  for (let i = 0; i < storage.length; i++) {
+    const k = storage.key(i);
     if (!k?.startsWith("patients_")) continue;
     try {
-      const arr = JSON.parse(localStorage.getItem(k) || "[]") as LocalPatient[];
+      const arr = JSON.parse(storage.getItem(k) || "[]") as LocalPatient[];
       result.push(
         ...arr.filter(
           (p) =>
@@ -81,11 +82,11 @@ function loadAdmittedPatients(): LocalPatient[] {
 
 function loadAllPatients(): LocalPatient[] {
   const result: LocalPatient[] = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
+  for (let i = 0; i < storage.length; i++) {
+    const k = storage.key(i);
     if (!k?.startsWith("patients_")) continue;
     try {
-      const arr = JSON.parse(localStorage.getItem(k) || "[]") as LocalPatient[];
+      const arr = JSON.parse(storage.getItem(k) || "[]") as LocalPatient[];
       result.push(...arr);
     } catch {}
   }
@@ -99,7 +100,7 @@ function loadVitalsData(
   for (const p of patients) {
     const pidStr = String(p.id);
     try {
-      const raw = localStorage.getItem(`vitals_${pidStr}`);
+      const raw = storage.getItem(`vitals_${pidStr}`);
       if (raw) result[pidStr] = JSON.parse(raw) as VitalSigns[];
     } catch {}
   }
@@ -152,7 +153,7 @@ function getMedsDue(patients: LocalPatient[]): MedDueEntry[] {
 
   try {
     const reminders = JSON.parse(
-      localStorage.getItem("medicare_drug_reminders") || "[]",
+      storage.getItem("medicare_drug_reminders") || "[]",
     ) as Array<{
       patientId: string;
       drugName: string;
@@ -170,7 +171,7 @@ function getMedsDue(patients: LocalPatient[]): MedDueEntry[] {
           (() => {
             try {
               return JSON.parse(
-                localStorage.getItem(
+                storage.getItem(
                   `medAdminRecord_${r.patientId}_${today}`,
                 ) || "[]",
               );
@@ -201,7 +202,7 @@ function getPatientsWithoutVitalsToday(
   return patients.filter((p) => {
     try {
       const vitals = JSON.parse(
-        localStorage.getItem(`vitals_${String(p.id)}`) || "[]",
+        storage.getItem(`vitals_${String(p.id)}`) || "[]",
       ) as Array<{ date: string; createdAt?: string }>;
       return !vitals.some((v) =>
         (v.date || v.createdAt || "").startsWith(today),
@@ -221,7 +222,7 @@ function getIOSummary(patients: LocalPatient[]) {
       let uoAlert = false;
       try {
         const io = JSON.parse(
-          localStorage.getItem(`intakeOutput_${String(p.id)}_${today}`) || "{}",
+          storage.getItem(`intakeOutput_${String(p.id)}_${today}`) || "{}",
         ) as {
           intake?: { oral?: number; iv?: number; ng?: number };
           output?: {
@@ -287,7 +288,7 @@ export default function NurseDashboard() {
   const [handoverText, setHandoverText] = useState(() => {
     try {
       return (
-        localStorage.getItem(
+        storage.getItem(
           `handover_${new Date().toISOString().split("T")[0]}_${currentDoctor?.email}`,
         ) || ""
       );
@@ -298,7 +299,7 @@ export default function NurseDashboard() {
   const [handoverSubmitted, setHandoverSubmitted] = useState(() => {
     try {
       return (
-        localStorage.getItem(
+        storage.getItem(
           `handover_submitted_${new Date().toISOString().split("T")[0]}_${currentDoctor?.email}`,
         ) === "true"
       );
@@ -310,11 +311,11 @@ export default function NurseDashboard() {
   function acknowledgeHandover(id: string) {
     try {
       const key = `handover_record_${id}`;
-      const raw = localStorage.getItem(key);
+      const raw = storage.getItem(key);
       if (raw) {
         const rec = JSON.parse(raw) as HandoverRecord;
         rec.status = "acknowledged";
-        localStorage.setItem(key, JSON.stringify(rec));
+        storage.setItem(key, JSON.stringify(rec));
       }
     } catch {}
     setAcknowledgedIds((prev) => new Set([...prev, id]));
@@ -668,7 +669,7 @@ export default function NurseDashboard() {
             onChange={(e) => {
               setHandoverText(e.target.value);
               try {
-                localStorage.setItem(
+                storage.setItem(
                   `handover_${new Date().toISOString().split("T")[0]}_${currentDoctor?.email}`,
                   e.target.value,
                 );
@@ -688,7 +689,7 @@ export default function NurseDashboard() {
                   return;
                 }
                 try {
-                  localStorage.setItem(
+                  storage.setItem(
                     `handover_submitted_${new Date().toISOString().split("T")[0]}_${currentDoctor?.email}`,
                     "true",
                   );

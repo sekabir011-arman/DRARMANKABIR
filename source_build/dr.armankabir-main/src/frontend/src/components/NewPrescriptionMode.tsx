@@ -22,6 +22,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import type { Medication } from "../types";
 import { type DimsEntry, getDimsByDiagnosis, searchDims } from "./DimsData";
+import { storage } from "../lib/storageAdapter";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -263,12 +264,12 @@ function loadVisitData(visitId: bigint | undefined): VisitExtendedData | null {
         k.includes(`visit_form_data_${visitId}`),
       );
       if (allKeys.length > 0) {
-        const raw = localStorage.getItem(allKeys[0]);
+        const raw = storage.getItem(allKeys[0]);
         return raw ? JSON.parse(raw) : null;
       }
       return null;
     }
-    const raw = localStorage.getItem(keys[0]);
+    const raw = storage.getItem(keys[0]);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -1394,9 +1395,9 @@ export default function NewPrescriptionMode({
                   <span className="text-xs text-teal-700">
                     Auto-filled from DIMS
                   </span>
-                  {localStorage.getItem("treatmentReferencePDF") && (
+                  {storage.getItem("treatmentReferencePDF") && (
                     <span className="text-[10px] text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200">
-                      + {localStorage.getItem("treatmentReferencePDF")}
+                      + {storage.getItem("treatmentReferencePDF")}
                     </span>
                   )}
                   <button

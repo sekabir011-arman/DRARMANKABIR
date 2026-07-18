@@ -20,6 +20,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import type {
+import { storage } from "../lib/storageAdapter";
   ClinicalNote,
   Encounter,
   Patient,
@@ -70,7 +71,7 @@ function formatDate(ts: bigint) {
 
 function getDoctorEmail(): string {
   try {
-    const raw = localStorage.getItem("staff_auth");
+    const raw = storage.getItem("staff_auth");
     if (raw) return (JSON.parse(raw) as { email?: string }).email ?? "default";
   } catch {}
   return "default";
@@ -78,10 +79,10 @@ function getDoctorEmail(): string {
 
 function loadAdmissionDate(patientId: string): string | null {
   try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
+    for (let i = 0; i < storage.length; i++) {
+      const k = storage.key(i);
       if (!k?.startsWith("admissionHistory_")) continue;
-      const arr = JSON.parse(localStorage.getItem(k) ?? "[]") as Array<{
+      const arr = JSON.parse(storage.getItem(k) ?? "[]") as Array<{
         patientId?: string;
         admittedOn?: string;
         status?: string;
@@ -97,7 +98,7 @@ function loadAdmissionDate(patientId: string): string | null {
 
 function loadProcedureLogs(patientId: string): string {
   try {
-    const raw = localStorage.getItem(`procedureLogs_${patientId}`);
+    const raw = storage.getItem(`procedureLogs_${patientId}`);
     if (!raw) return "No major procedures documented.";
     const logs = JSON.parse(raw) as Array<{
       name?: string;
@@ -144,10 +145,10 @@ function loadSOAPSummary(patientId: string, notes: ClinicalNote[]): string {
   }
   // Fallback: scan localStorage for SOAP notes
   try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
+    for (let i = 0; i < storage.length; i++) {
+      const k = storage.key(i);
       if (!k?.includes("soapNote") && !k?.includes("daily_progress")) continue;
-      const arr = JSON.parse(localStorage.getItem(k) ?? "[]") as Array<{
+      const arr = JSON.parse(storage.getItem(k) ?? "[]") as Array<{
         patientId?: string;
         plan?: string;
         date?: string;
@@ -200,7 +201,7 @@ export default function DischargeSummaryTab({
   const savedKey = `dischargeSummaries_${doctorEmail}_${patientId}`;
   const existingSaved = (() => {
     try {
-      const raw = localStorage.getItem(savedKey);
+      const raw = storage.getItem(savedKey);
       return raw ? (JSON.parse(raw) as SavedDischargeSummary) : null;
     } catch {
       return null;
@@ -277,7 +278,7 @@ export default function DischargeSummaryTab({
     }> = [];
     for (const v of sortedVisits) {
       try {
-        const raw = localStorage.getItem(
+        const raw = storage.getItem(
           `visit_form_data_${v.id}_${doctorEmail}`,
         );
         if (!raw) continue;
@@ -325,7 +326,7 @@ export default function DischargeSummaryTab({
       finalizedBy: doctorEmail,
     };
     try {
-      localStorage.setItem(savedKey, JSON.stringify(summary));
+      storage.setItem(savedKey, JSON.stringify(summary));
     } catch {}
     setFinalized(true);
     toast.success("Discharge summary finalized and saved");

@@ -18,11 +18,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { DEFAULT_SITE_CONFIG } from "@/hooks/useSiteConfig";
 import { AlertTriangle, Phone, Search, Send } from "lucide-react";
 import { useEffect, useState } from "react";
+import { storage } from "../lib/storageAdapter";
 
 // Load emergency contacts from siteConfig localStorage
 function loadEmergencyContacts() {
   try {
-    const raw = localStorage.getItem("siteConfig");
+    const raw = storage.getItem("siteConfig");
     if (!raw) return DEFAULT_SITE_CONFIG.emergencyContacts;
     const cfg = JSON.parse(raw);
     if (cfg?.emergencyContacts?.length) return cfg.emergencyContacts;
@@ -58,11 +59,11 @@ function findPatientByRegNumber(regNum: string): PatientRecord | null {
   const norm = normalizeRegNo(regNum);
   try {
     // Scan all keys starting with patients_
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
+    for (let i = 0; i < storage.length; i++) {
+      const key = storage.key(i);
       if (!key?.startsWith("patients_")) continue;
       try {
-        const raw = localStorage.getItem(key);
+        const raw = storage.getItem(key);
         if (!raw) continue;
         const arr = JSON.parse(raw);
         if (!Array.isArray(arr)) continue;
@@ -75,7 +76,7 @@ function findPatientByRegNumber(regNum: string): PatientRecord | null {
       } catch {}
     }
     // Also try the default medicare key
-    const raw = localStorage.getItem("medicare_patients");
+    const raw = storage.getItem("medicare_patients");
     if (raw) {
       const arr = JSON.parse(raw);
       if (Array.isArray(arr)) {

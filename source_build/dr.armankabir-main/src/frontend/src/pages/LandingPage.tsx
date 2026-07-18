@@ -110,7 +110,7 @@ interface PublicBooking {
 function loadPublicBookings(): PublicBooking[] {
   try {
     return JSON.parse(
-      localStorage.getItem("public_appointment_requests") || "[]",
+      storage.getItem("public_appointment_requests") || "[]",
     );
   } catch {
     return [];
@@ -118,7 +118,7 @@ function loadPublicBookings(): PublicBooking[] {
 }
 
 function savePublicBookings(data: PublicBooking[]) {
-  localStorage.setItem("public_appointment_requests", JSON.stringify(data));
+  storage.setItem("public_appointment_requests", JSON.stringify(data));
 }
 
 // ─── Classroom helpers ────────────────────────────────────────────────────────
@@ -2485,21 +2485,21 @@ function ProfileEditDialog({
 function TreatmentReferencePDFAdmin() {
   const LS_KEY = "treatmentReferencePDF";
   const [stored, setStored] = useState<string | null>(() =>
-    localStorage.getItem(LS_KEY),
+    storage.getItem(LS_KEY),
   );
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    localStorage.setItem(LS_KEY, file.name);
+    storage.setItem(LS_KEY, file.name);
     setStored(file.name);
     toast.success(`Treatment reference PDF "${file.name}" uploaded`);
     if (fileRef.current) fileRef.current.value = "";
   };
 
   const handleDelete = () => {
-    localStorage.removeItem(LS_KEY);
+    storage.removeItem(LS_KEY);
     setStored(null);
     toast.success("Treatment reference PDF removed");
   };
@@ -2574,21 +2574,21 @@ function TreatmentReferencePDFAdmin() {
 function DifferentialDiagnosisPDFAdmin() {
   const LS_KEY = "ddReferencePDF";
   const [stored, setStored] = useState<string | null>(() =>
-    localStorage.getItem(LS_KEY),
+    storage.getItem(LS_KEY),
   );
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    localStorage.setItem(LS_KEY, file.name);
+    storage.setItem(LS_KEY, file.name);
     setStored(file.name);
     toast.success(`DD reference PDF "${file.name}" uploaded`);
     if (fileRef.current) fileRef.current.value = "";
   };
 
   const handleDelete = () => {
-    localStorage.removeItem(LS_KEY);
+    storage.removeItem(LS_KEY);
     setStored(null);
     toast.success("DD reference PDF removed");
   };
@@ -2677,7 +2677,7 @@ function StaffApprovalsAdmin() {
       const idx = registry.findIndex((d: any) => d.id === id);
       if (idx >= 0) {
         registry[idx] = { ...registry[idx], status: "approved" };
-        localStorage.setItem(
+        storage.setItem(
           "medicare_doctors_registry",
           JSON.stringify(registry),
         );
@@ -2695,7 +2695,7 @@ function StaffApprovalsAdmin() {
       const idx = registry.findIndex((d: any) => d.id === id);
       if (idx >= 0) {
         registry[idx] = { ...registry[idx], status: "rejected" };
-        localStorage.setItem(
+        storage.setItem(
           "medicare_doctors_registry",
           JSON.stringify(registry),
         );
@@ -2757,7 +2757,7 @@ function StaffApprovalsAdmin() {
 function InterpretationRefPDFAdmin() {
   const LS_KEY = "interpretationReferencePDF";
   const [stored, setStored] = useState<string | null>(() =>
-    localStorage.getItem(LS_KEY),
+    storage.getItem(LS_KEY),
   );
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -2766,14 +2766,14 @@ function InterpretationRefPDFAdmin() {
     if (!file) return;
     // Store file name as reference (real apps would upload to blob storage)
     const ref = file.name;
-    localStorage.setItem(LS_KEY, ref);
+    storage.setItem(LS_KEY, ref);
     setStored(ref);
     toast.success("Investigation interpretation reference PDF saved.");
     if (fileRef.current) fileRef.current.value = "";
   };
 
   const handleDelete = () => {
-    localStorage.removeItem(LS_KEY);
+    storage.removeItem(LS_KEY);
     setStored(null);
     toast.success("Reference PDF removed.");
   };
@@ -3178,11 +3178,11 @@ export default function LandingPage({
     };
     const isPhone =
       /^[0-9+\-() ]{7,}$/.test(query.trim()) && !query.includes("/");
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
+    for (let i = 0; i < storage.length; i++) {
+      const key = storage.key(i);
       if (!key?.startsWith("patients_")) continue;
       try {
-        const arr = JSON.parse(localStorage.getItem(key) || "[]") as any[];
+        const arr = JSON.parse(storage.getItem(key) || "[]") as any[];
         let found: any;
         if (isPhone) {
           found = arr.find((p) =>
@@ -3274,7 +3274,7 @@ export default function LandingPage({
   function getOrAssignSerial(name: string, date: string): number {
     try {
       const existing = JSON.parse(
-        localStorage.getItem("clinic_appointments") || "[]",
+        storage.getItem("clinic_appointments") || "[]",
       ) as any[];
       const match = existing.find(
         (a: any) =>
@@ -3288,7 +3288,7 @@ export default function LandingPage({
         .map((a: any) => a.serialNumber as number);
       // Also check public bookings
       const pub = JSON.parse(
-        localStorage.getItem("public_appointment_requests") || "[]",
+        storage.getItem("public_appointment_requests") || "[]",
       ) as any[];
       const pubDay = pub
         .filter(
@@ -3769,7 +3769,7 @@ export default function LandingPage({
                             key === "arman"
                               ? "medicare_doctor_photo_arman"
                               : "medicare_doctor_photo_samia";
-                          const savedPhoto = localStorage.getItem(photoKey);
+                          const savedPhoto = storage.getItem(photoKey);
                           return savedPhoto ? (
                             <div className="w-16 h-16 rounded-2xl shrink-0 overflow-hidden border-2 border-border">
                               <img
@@ -3869,7 +3869,7 @@ export default function LandingPage({
                                       key === "arman"
                                         ? "medicare_doctor_photo_arman"
                                         : "medicare_doctor_photo_samia";
-                                    localStorage.setItem(
+                                    storage.setItem(
                                       photoKey,
                                       ev.target?.result as string,
                                     );
@@ -5007,7 +5007,7 @@ export default function LandingPage({
                                   (() => {
                                     try {
                                       return JSON.parse(
-                                        localStorage.getItem(
+                                        storage.getItem(
                                           "public_appointment_requests",
                                         ) || "[]",
                                       );

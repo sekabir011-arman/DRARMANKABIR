@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { CheckCircle2, Clock, Pill, RefreshCw, XCircle } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { storage } from "../lib/storageAdapter";
 
 export interface MedAdminRecord {
   id: string;
@@ -53,7 +54,7 @@ export const ESCALATION_KEY = "missed_dose_escalations";
 
 export function loadEscalations(): MissedDoseEscalation[] {
   try {
-    const raw = localStorage.getItem(ESCALATION_KEY);
+    const raw = storage.getItem(ESCALATION_KEY);
     if (raw) return JSON.parse(raw) as MissedDoseEscalation[];
   } catch {}
   return [];
@@ -69,7 +70,7 @@ export function saveEscalation(esc: MissedDoseEscalation) {
   } else {
     all.push(esc);
   }
-  localStorage.setItem(ESCALATION_KEY, JSON.stringify(all));
+  storage.setItem(ESCALATION_KEY, JSON.stringify(all));
 }
 
 export function acknowledgeEscalation(
@@ -82,7 +83,7 @@ export function acknowledgeEscalation(
   );
   if (idx >= 0) {
     all[idx].acknowledged = true;
-    localStorage.setItem(ESCALATION_KEY, JSON.stringify(all));
+    storage.setItem(ESCALATION_KEY, JSON.stringify(all));
   }
 }
 
@@ -95,7 +96,7 @@ export function loadMedAdminRecords(
   date: string,
 ): MedAdminRecord[] {
   try {
-    const raw = localStorage.getItem(getMedAdminKey(patientId, date));
+    const raw = storage.getItem(getMedAdminKey(patientId, date));
     if (raw) return JSON.parse(raw) as MedAdminRecord[];
   } catch {}
   return [];
@@ -114,18 +115,18 @@ export function saveMedAdminRecord(record: MedAdminRecord) {
   } else {
     existing.push(record);
   }
-  localStorage.setItem(key, JSON.stringify(existing));
+  storage.setItem(key, JSON.stringify(existing));
 }
 
 /** Count consecutive "not_given" entries across all dates for a drug/patient */
 function countConsecutiveNotGiven(patientId: string, drugName: string): number {
   const allRecords: MedAdminRecord[] = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
+  for (let i = 0; i < storage.length; i++) {
+    const k = storage.key(i);
     if (!k?.startsWith(`medAdminRecord_${patientId}_`)) continue;
     try {
       const arr = JSON.parse(
-        localStorage.getItem(k) || "[]",
+        storage.getItem(k) || "[]",
       ) as MedAdminRecord[];
       allRecords.push(...arr.filter((r) => r.drugName === drugName));
     } catch {}
@@ -219,12 +220,12 @@ interface AllPatientData {
 
 function loadAdmittedPatients(): Array<{ id: string; fullName: string }> {
   const patients: Array<{ id: string; fullName: string }> = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
+  for (let i = 0; i < storage.length; i++) {
+    const k = storage.key(i);
     if (!k?.startsWith("patients_")) continue;
     try {
       const arr = JSON.parse(
-        localStorage.getItem(k) || "[]",
+        storage.getItem(k) || "[]",
       ) as AllPatientData[];
       for (const p of arr) {
         if (
@@ -266,7 +267,7 @@ function loadAllReminders(): ReminderRecord[] {
 
   // Format 1: medicare_drug_reminders (App.tsx format)
   try {
-    const raw = localStorage.getItem("medicare_drug_reminders");
+    const raw = storage.getItem("medicare_drug_reminders");
     if (raw) {
       const arr = JSON.parse(raw) as ReminderRecord[];
       for (const r of arr) {
@@ -280,12 +281,12 @@ function loadAllReminders(): ReminderRecord[] {
   } catch {}
 
   // Format 2: drugReminders_[patientId] (useQueries.ts format)
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
+  for (let i = 0; i < storage.length; i++) {
+    const k = storage.key(i);
     if (!k?.startsWith("drugReminders_")) continue;
     try {
       const arr = JSON.parse(
-        localStorage.getItem(k) || "[]",
+        storage.getItem(k) || "[]",
       ) as ReminderRecord[];
       for (const r of arr) {
         const key = `${r.patientId}::${r.drugName}`;
@@ -304,7 +305,7 @@ function loadAllReminders(): ReminderRecord[] {
 function getConsultantEmail(patientId: string): string {
   try {
     const key = `patient_consultant_${patientId}`;
-    return localStorage.getItem(key) ?? "consultant@clinic";
+    return storage.getItem(key) ?? "consultant@clinic";
   } catch {}
   return "consultant@clinic";
 }

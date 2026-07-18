@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import {
+import { storage } from "../lib/storageAdapter";
   Component,
   type ErrorInfo,
   type ReactNode,
@@ -59,7 +60,7 @@ function todayKeyLocal(): string {
 /** Returns true if the current logged-in user is a Consultant Doctor or Staff */
 function canAddWalkIn(): boolean {
   try {
-    const raw = localStorage.getItem("medicare_current_doctor");
+    const raw = storage.getItem("medicare_current_doctor");
     if (!raw) return false;
     const user = JSON.parse(raw) as { role?: string };
     const allowedRoles = ["doctor", "consultant_doctor", "staff", "admin"];
@@ -73,10 +74,10 @@ function canAddWalkIn(): boolean {
 function getAllPatientNames(): Array<{ name: string; phone: string }> {
   const results: Array<{ name: string; phone: string }> = [];
   try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
+    for (let i = 0; i < storage.length; i++) {
+      const key = storage.key(i);
       if (!key?.startsWith("patients_")) continue;
-      const arr = JSON.parse(localStorage.getItem(key) || "[]") as Array<{
+      const arr = JSON.parse(storage.getItem(key) || "[]") as Array<{
         fullName?: string;
         phone?: string;
       }>;
@@ -95,16 +96,16 @@ function getAllPatientNames(): Array<{ name: string; phone: string }> {
  */
 function resolveVideoUrl(): string {
   try {
-    const email = localStorage.getItem("app_current_user_email");
+    const email = storage.getItem("app_current_user_email");
     if (email) {
-      const custom = localStorage.getItem(`serialDisplayVideoUrl_${email}`);
+      const custom = storage.getItem(`serialDisplayVideoUrl_${email}`);
       if (custom?.trim()) return toDisplayEmbedUrl(custom.trim());
     }
     // Also try a scan for any saved key as fallback (e.g. when display is open without login)
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
+    for (let i = 0; i < storage.length; i++) {
+      const k = storage.key(i);
       if (k?.startsWith("serialDisplayVideoUrl_")) {
-        const v = localStorage.getItem(k);
+        const v = storage.getItem(k);
         if (v?.trim()) return toDisplayEmbedUrl(v.trim());
       }
     }
@@ -677,7 +678,7 @@ function SerialDisplayInner() {
     const load = async () => {
       try {
         // 1. Read localStorage (fast, always)
-        const raw = localStorage.getItem(todayKeyLocal());
+        const raw = storage.getItem(todayKeyLocal());
         const localEntries = safeParseQueue(raw);
 
         // 2. Try canister every 5 seconds for cross-device sync
@@ -690,7 +691,7 @@ function SerialDisplayInner() {
             merged = mergeQueues(localEntries, remoteEntries);
             // Write back merged result to localStorage so future local reads are up-to-date
             try {
-              localStorage.setItem(todayKey(), JSON.stringify(merged));
+              storage.setItem(todayKey(), JSON.stringify(merged));
             } catch {
               // localStorage full or unavailable
             }
@@ -763,7 +764,7 @@ function SerialDisplayInner() {
     setSerials(updated);
     // Persist to localStorage
     try {
-      localStorage.setItem(todayKeyLocal(), JSON.stringify(updated));
+      storage.setItem(todayKeyLocal(), JSON.stringify(updated));
       // Broadcast to other tabs
       const bc = new BroadcastChannel("clinic_queue_sync");
       bc.postMessage(updated);

@@ -26,6 +26,7 @@ import type { PatientFormData } from "../../components/PatientForm";
 import { useEmailAuth } from "../../hooks/useEmailAuth";
 import { useCreatePatient } from "../../hooks/useQueries";
 import type { Patient } from "../../types";
+import { storage } from "../../lib/storageAdapter";
 
 interface LocalPatient extends Patient {
   bedNumber?: string;
@@ -63,11 +64,11 @@ function loadBedSummary() {
     patientName: string;
     status: "occupied" | "available";
   }[] = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
+  for (let i = 0; i < storage.length; i++) {
+    const k = storage.key(i);
     if (!k?.startsWith("patients_")) continue;
     try {
-      const arr = JSON.parse(localStorage.getItem(k) || "[]") as LocalPatient[];
+      const arr = JSON.parse(storage.getItem(k) || "[]") as LocalPatient[];
       for (const p of arr) {
         if (
           p.isAdmitted ||
@@ -91,7 +92,7 @@ function loadTodayAppointments(): AppointmentRecord[] {
   const today = new Date().toISOString().split("T")[0];
   try {
     const all = JSON.parse(
-      localStorage.getItem("medicare_appointments") || "[]",
+      storage.getItem("medicare_appointments") || "[]",
     ) as AppointmentRecord[];
     return all.filter(
       (a) => a.preferredDate === today || a.createdAt?.startsWith(today),
@@ -103,11 +104,11 @@ function loadTodayAppointments(): AppointmentRecord[] {
 
 function getTotalPatients(): number {
   let count = 0;
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
+  for (let i = 0; i < storage.length; i++) {
+    const k = storage.key(i);
     if (!k?.startsWith("patients_")) continue;
     try {
-      const arr = JSON.parse(localStorage.getItem(k) || "[]") as unknown[];
+      const arr = JSON.parse(storage.getItem(k) || "[]") as unknown[];
       count += arr.length;
     } catch {}
   }
@@ -117,7 +118,7 @@ function getTotalPatients(): number {
 function loadUnpaidInvoices(): MoneyReceipt[] {
   try {
     const all = JSON.parse(
-      localStorage.getItem("moneyReceipts") || "[]",
+      storage.getItem("moneyReceipts") || "[]",
     ) as MoneyReceipt[];
     return all.filter((r) => r.paymentStatus !== "paid").slice(0, 10);
   } catch {
@@ -127,11 +128,11 @@ function loadUnpaidInvoices(): MoneyReceipt[] {
 
 function loadPendingPatients(): LocalPatient[] {
   const results: LocalPatient[] = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
+  for (let i = 0; i < storage.length; i++) {
+    const k = storage.key(i);
     if (!k?.startsWith("patients_")) continue;
     try {
-      const arr = JSON.parse(localStorage.getItem(k) || "[]") as LocalPatient[];
+      const arr = JSON.parse(storage.getItem(k) || "[]") as LocalPatient[];
       for (const p of arr) {
         const st = String((p as Record<string, unknown>).status ?? "");
         if (st === "pending_approval" || st === "pending") {
@@ -148,15 +149,15 @@ function updatePatientStatus(
   newStatus: string,
 ) {
   const idStr = String(patientId);
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
+  for (let i = 0; i < storage.length; i++) {
+    const k = storage.key(i);
     if (!k?.startsWith("patients_")) continue;
     try {
-      const arr = JSON.parse(localStorage.getItem(k) || "[]") as LocalPatient[];
+      const arr = JSON.parse(storage.getItem(k) || "[]") as LocalPatient[];
       const idx = arr.findIndex((p) => String(p.id) === idStr);
       if (idx >= 0) {
         (arr[idx] as Record<string, unknown>).status = newStatus;
-        localStorage.setItem(k, JSON.stringify(arr));
+        storage.setItem(k, JSON.stringify(arr));
         return true;
       }
     } catch {}

@@ -20,6 +20,7 @@ import {
 import { motion } from "motion/react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { storage } from "../lib/storageAdapter";
 
 export interface Testimonial {
   id: string;
@@ -63,7 +64,7 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
 
 function loadTestimonials(): Testimonial[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = storage.getItem(STORAGE_KEY);
     return raw ? (JSON.parse(raw) as Testimonial[]) : DEFAULT_TESTIMONIALS;
   } catch {
     return DEFAULT_TESTIMONIALS;
@@ -71,11 +72,11 @@ function loadTestimonials(): Testimonial[] {
 }
 
 function saveTestimonials(list: Testimonial[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  storage.setItem(STORAGE_KEY, JSON.stringify(list));
 }
 
 function loadHeading(): string {
-  return localStorage.getItem(HEADING_KEY) || DEFAULT_HEADING;
+  return storage.getItem(HEADING_KEY) || DEFAULT_HEADING;
 }
 
 function StarRating({
@@ -178,7 +179,7 @@ export default function TestimonialsSection({
 
   const saveHeading = () => {
     const h = headingDraft.trim() || DEFAULT_HEADING;
-    localStorage.setItem(HEADING_KEY, h);
+    storage.setItem(HEADING_KEY, h);
     setHeading(h);
     setEditHeading(false);
     toast.success("Heading updated.");

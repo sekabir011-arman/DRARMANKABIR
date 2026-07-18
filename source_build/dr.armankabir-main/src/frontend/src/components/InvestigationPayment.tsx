@@ -29,6 +29,7 @@ import type {
   RefundRecord,
 } from "../types";
 import {
+import { storage } from "../lib/storageAdapter";
   DownloadOptionsDialog,
   InvoiceStateBadge,
   PartialPaymentFields,
@@ -47,7 +48,7 @@ const RATES_KEY = "investigation_rates";
 
 export function loadInvestigationRates(): InvestigationRate[] {
   try {
-    return JSON.parse(localStorage.getItem(RATES_KEY) || "[]");
+    return JSON.parse(storage.getItem(RATES_KEY) || "[]");
   } catch {
     return [];
   }

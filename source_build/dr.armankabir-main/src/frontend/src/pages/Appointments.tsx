@@ -62,6 +62,7 @@ import {
 } from "../hooks/useQueries";
 import { enqueueSync } from "../lib/hybridStorage";
 import { buildFollowUpMessage } from "../lib/whatsappTemplates";
+import { storage } from "../lib/storageAdapter";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -123,14 +124,14 @@ function todayStr() {
 
 function loadSerials(): SerialEntry[] {
   try {
-    return JSON.parse(localStorage.getItem(todayKey()) || "[]");
+    return JSON.parse(storage.getItem(todayKey()) || "[]");
   } catch {
     return [];
   }
 }
 
 function saveSerials(data: SerialEntry[]) {
-  localStorage.setItem(todayKey(), JSON.stringify(data));
+  storage.setItem(todayKey(), JSON.stringify(data));
 }
 
 // ─── Canister sync helpers ────────────────────────────────────────────────────
@@ -207,10 +208,10 @@ async function syncQueueEntryToCanister(
 function loadAppointments(): AppointmentEntry[] {
   try {
     const a = JSON.parse(
-      localStorage.getItem("clinic_appointments") || "[]",
+      storage.getItem("clinic_appointments") || "[]",
     ) as AppointmentEntry[];
     const b = JSON.parse(
-      localStorage.getItem("public_appointment_requests") || "[]",
+      storage.getItem("public_appointment_requests") || "[]",
     );
     // Merge: public requests that have preferredDate → convert to AppointmentEntry
     const converted = b
@@ -254,7 +255,7 @@ function loadAppointments(): AppointmentEntry[] {
 }
 
 function saveAppointments(data: AppointmentEntry[]) {
-  localStorage.setItem(
+  storage.setItem(
     "clinic_appointments",
     JSON.stringify(
       data.filter((d) => !(d as unknown as Record<string, unknown>)._isPublic),
@@ -336,12 +337,12 @@ function lookupPatientByRegOrPhone(query: string): PatientLookup | null {
   const isPhone =
     /^[0-9+\-() ]{7,}$/.test(query.trim()) && !query.includes("/");
 
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
+  for (let i = 0; i < storage.length; i++) {
+    const key = storage.key(i);
     if (!key?.startsWith("patients_")) continue;
     try {
       const arr = JSON.parse(
-        localStorage.getItem(key) || "[]",
+        storage.getItem(key) || "[]",
       ) as PatientLookup[];
       let found: PatientLookup | undefined;
       if (isPhone) {
@@ -506,7 +507,7 @@ function DoctorSerialTab() {
     saveSerials(data);
     const nowServing = data.find((s) => s.status === "in-progress") || null;
     const queue = data.filter((s) => s.status === "waiting");
-    localStorage.setItem(
+    storage.setItem(
       "medicare_serial_queue",
       JSON.stringify({ nowServing, queue }),
     );
@@ -1802,13 +1803,13 @@ function AdmittedPatientsTab() {
     const updated = [...currentAll];
     for (const key of admittedVisitKeys) {
       try {
-        const visits = JSON.parse(localStorage.getItem(key) || "[]");
+        const visits = JSON.parse(storage.getItem(key) || "[]");
         for (const visit of visits) {
           if (visit.visitType !== "admitted" && visit.isAdmitted !== true)
             continue;
           // Find the patient
           const patKey = key.replace("visits_", "patients_");
-          const patients = JSON.parse(localStorage.getItem(patKey) || "[]");
+          const patients = JSON.parse(storage.getItem(patKey) || "[]");
           const patient = patients.find(
             (p: PatientLookup) => String(p.id) === String(visit.patientId),
           );
@@ -2490,7 +2491,7 @@ interface PublicBooking {
 function loadPublicBookings(): PublicBooking[] {
   try {
     return JSON.parse(
-      localStorage.getItem("public_appointment_requests") || "[]",
+      storage.getItem("public_appointment_requests") || "[]",
     );
   } catch {
     return [];
@@ -2498,7 +2499,7 @@ function loadPublicBookings(): PublicBooking[] {
 }
 
 function savePublicBookings(data: PublicBooking[]) {
-  localStorage.setItem("public_appointment_requests", JSON.stringify(data));
+  storage.setItem("public_appointment_requests", JSON.stringify(data));
 }
 
 function PublicBookingRequestsTab() {

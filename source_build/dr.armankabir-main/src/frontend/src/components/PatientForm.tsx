@@ -20,6 +20,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { loadFromStorage } from "../hooks/useQueries";
 import type { Patient } from "../types";
+import { storage } from "../lib/storageAdapter";
 
 function cmToFeetInches(cm: number): string {
   const totalInches = cm / 2.54;
@@ -69,11 +70,11 @@ function ageToApproxDob(age: string): string {
 /** Scan all localStorage patient keys across all doctor emails */
 function loadAllPatients(): Patient[] {
   const results: Patient[] = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
+  for (let i = 0; i < storage.length; i++) {
+    const key = storage.key(i);
     if (!key?.startsWith("patients_")) continue;
     try {
-      const raw = localStorage.getItem(key);
+      const raw = storage.getItem(key);
       if (!raw) continue;
       const items = JSON.parse(raw) as Patient[];
       if (Array.isArray(items)) results.push(...items);

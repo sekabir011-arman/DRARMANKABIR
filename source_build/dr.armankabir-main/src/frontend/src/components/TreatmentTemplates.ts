@@ -1,3 +1,4 @@
+import { storage } from "../lib/storageAdapter";
 // Treatment Templates — Common Bangladeshi clinical conditions
 // Each template has diagnosis + array of drugs that can be bulk-inserted
 
@@ -421,7 +422,7 @@ const CUSTOM_KEY = "medicare_custom_treatment_templates";
 
 export function getCustomTreatmentTemplates(): TreatmentTemplate[] {
   try {
-    const raw = localStorage.getItem(CUSTOM_KEY);
+    const raw = storage.getItem(CUSTOM_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -583,7 +584,7 @@ export function getAllTreatmentTemplates(): TreatmentTemplate[] {
 export function saveTreatmentTemplate(template: TreatmentTemplate): void {
   const existing = getCustomTreatmentTemplates();
   const updated = [...existing.filter((t) => t.id !== template.id), template];
-  localStorage.setItem(CUSTOM_KEY, JSON.stringify(updated));
+  storage.setItem(CUSTOM_KEY, JSON.stringify(updated));
 }
 
 export function getTreatmentCategories(): string[] {

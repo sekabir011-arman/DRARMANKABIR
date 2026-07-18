@@ -33,6 +33,7 @@ import {
 } from "../hooks/useQueries";
 import { useRolePermissions } from "../hooks/useRolePermissions";
 import type { Patient } from "../types";
+import { storage } from "../lib/storageAdapter";
 
 const SKELETON_KEYS = ["sk1", "sk2", "sk3", "sk4", "sk5", "sk6"];
 
@@ -48,7 +49,7 @@ function getAge(dateOfBirth?: bigint): string {
 function isIncompleteRegistration(patientId: bigint | string): boolean {
   try {
     return (
-      localStorage.getItem(`patient_reg_incomplete_${String(patientId)}`) ===
+      storage.getItem(`patient_reg_incomplete_${String(patientId)}`) ===
       "true"
     );
   } catch {
