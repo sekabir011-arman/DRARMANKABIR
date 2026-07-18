@@ -1693,7 +1693,7 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
       const sessionId = localStorage.getItem("medicare_current_doctor");
       if (sessionId) {
         const registry = JSON.parse(
-          localStorage.getItem("medicare_doctors_registry") || "[]",
+          storageAdapter.getItem("medicare_doctors_registry") || "[]",
         ) as Array<{ id: string; email: string }>;
         const doctor = registry.find((d) => d.id === sessionId);
         if (doctor?.email) {

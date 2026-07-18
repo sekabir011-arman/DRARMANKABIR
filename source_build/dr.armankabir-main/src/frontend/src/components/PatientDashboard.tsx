@@ -3612,7 +3612,7 @@ export default function PatientDashboardInner({
                         if (!session) return "default";
                         const registry: Array<{ id: string; email: string }> =
                           JSON.parse(
-                            localStorage.getItem("medicare_doctors_registry") ||
+                            storageAdapter.getItem("medicare_doctors_registry") ||
                               "[]",
                           );
                         return (
@@ -4431,7 +4431,7 @@ export default function PatientDashboardInner({
                       if (!session) return "default";
                       const registry: Array<{ id: string; email: string }> =
                         JSON.parse(
-                          localStorage.getItem("medicare_doctors_registry") ||
+                          storageAdapter.getItem("medicare_doctors_registry") ||
                             "[]",
                         );
                       return (
@@ -4453,7 +4453,7 @@ export default function PatientDashboardInner({
                           : "Unknown";
                       const registry: Array<{ id: string; name: string }> =
                         JSON.parse(
-                          localStorage.getItem("medicare_doctors_registry") ||
+                          storageAdapter.getItem("medicare_doctors_registry") ||
                             "[]",
                         );
                       return (
@@ -4491,7 +4491,7 @@ export default function PatientDashboardInner({
                     if (!session) return "default";
                     const registry: Array<{ id: string; email: string }> =
                       JSON.parse(
-                        localStorage.getItem("medicare_doctors_registry") ||
+                        storageAdapter.getItem("medicare_doctors_registry") ||
                           "[]",
                       );
                     const doc = registry.find((d) => d.id === session);
@@ -4513,7 +4513,7 @@ export default function PatientDashboardInner({
                         : "Unknown";
                     const registry: Array<{ id: string; name: string }> =
                       JSON.parse(
-                        localStorage.getItem("medicare_doctors_registry") ||
+                        storageAdapter.getItem("medicare_doctors_registry") ||
                           "[]",
                       );
                     const doc = registry.find((d) => d.id === session);
@@ -4570,7 +4570,7 @@ export default function PatientDashboardInner({
                         : "Unknown";
                     const registry: Array<{ id: string; name: string }> =
                       JSON.parse(
-                        localStorage.getItem("medicare_doctors_registry") ||
+                        storageAdapter.getItem("medicare_doctors_registry") ||
                           "[]",
                       );
                     return (
@@ -4592,7 +4592,7 @@ export default function PatientDashboardInner({
                           : "Unknown";
                       const registry: Array<{ id: string; name: string }> =
                         JSON.parse(
-                          localStorage.getItem("medicare_doctors_registry") ||
+                          storageAdapter.getItem("medicare_doctors_registry") ||
                             "[]",
                         );
                       return (
@@ -4612,7 +4612,7 @@ export default function PatientDashboardInner({
                       if (!session) return "";
                       const registry: Array<{ id: string; email?: string }> =
                         JSON.parse(
-                          localStorage.getItem("medicare_doctors_registry") ||
+                          storageAdapter.getItem("medicare_doctors_registry") ||
                             "[]",
                         );
                       return (

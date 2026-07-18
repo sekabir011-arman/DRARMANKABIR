@@ -173,7 +173,7 @@ function HeaderBlock({
       const sessionId = localStorage.getItem("medicare_current_doctor");
       if (sessionId) {
         const registry = JSON.parse(
-          localStorage.getItem("medicare_doctors_registry") || "[]",
+          storageAdapter.getItem("medicare_doctors_registry") || "[]",
         ) as Array<{ id: string; email: string }>;
         const doc = registry.find((d) => d.id === sessionId);
         if (doc?.email) {
@@ -355,7 +355,7 @@ export default function PrescriptionPadPreview({
       const sessionId = localStorage.getItem("medicare_current_doctor");
       if (sessionId) {
         const registry = JSON.parse(
-          localStorage.getItem("medicare_doctors_registry") || "[]",
+          storageAdapter.getItem("medicare_doctors_registry") || "[]",
         ) as Array<{ id: string; email: string }>;
         const doc = registry.find((d) => d.id === sessionId);
         if (doc?.email) {

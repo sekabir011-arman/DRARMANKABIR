@@ -2659,7 +2659,7 @@ function StaffApprovalsAdmin() {
   const refresh = useCallback(() => {
     try {
       const registry = JSON.parse(
-        localStorage.getItem("medicare_doctors_registry") || "[]",
+        storageAdapter.getItem("medicare_doctors_registry") || "[]",
       );
       setAccounts(registry.filter((d: any) => d.status === "pending"));
     } catch {}
@@ -2672,7 +2672,7 @@ function StaffApprovalsAdmin() {
   const approve = (id: string) => {
     try {
       const registry = JSON.parse(
-        localStorage.getItem("medicare_doctors_registry") || "[]",
+        storageAdapter.getItem("medicare_doctors_registry") || "[]",
       );
       const idx = registry.findIndex((d: any) => d.id === id);
       if (idx >= 0) {
@@ -2690,7 +2690,7 @@ function StaffApprovalsAdmin() {
   const reject = (id: string) => {
     try {
       const registry = JSON.parse(
-        localStorage.getItem("medicare_doctors_registry") || "[]",
+        storageAdapter.getItem("medicare_doctors_registry") || "[]",
       );
       const idx = registry.findIndex((d: any) => d.id === id);
       if (idx >= 0) {
