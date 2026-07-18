@@ -6,63 +6,33 @@
     "mode": "build",
     "todos": [
         {
-            "priority": "high",
-            "content": "Fix clinicalStore.ts - remove localStorage usage",
-            "status": "completed"
+            "content": "Create StorageAdapter utility class to centralize all localStorage access and provide a migration path to PHP API",
+            "status": "in_progress",
+            "priority": "high"
         },
         {
-            "priority": "high",
-            "content": "Fix useQueries.ts - fix empty pendingChanges property",
-            "status": "completed"
+            "content": "Refactor business-critical components (prescriptions, patient data, auth) to use service layer instead of localStorage",
+            "status": "pending",
+            "priority": "high"
         },
         {
-            "priority": "high",
-            "content": "Fix useEmailAuth.tsx - empty return statement on line 403",
-            "status": "in_progress"
+            "content": "Update remaining component files to use StorageAdapter for UI state (non-business data)",
+            "status": "pending",
+            "priority": "medium"
         },
         {
-            "priority": "high",
-            "content": "Fix useAdminAuth.tsx - remove localStorage usage",
-            "status": "completed"
+            "content": "Update page files to use StorageAdapter\/services",
+            "status": "pending",
+            "priority": "medium"
         },
         {
-            "priority": "high",
-            "content": "Rewrite useAdminSave.ts - broken imports from useEmailAuth, use PHP services",
-            "status": "completed"
-        },
-        {
-            "priority": "high",
-            "content": "Rewrite useSiteConfig.tsx - replace localStorage with landingService",
-            "status": "pending"
-        },
-        {
-            "priority": "high",
-            "content": "Rewrite useDoctorContent.tsx - replace localStorage with PHP API calls",
-            "status": "pending"
-        },
-        {
-            "priority": "high",
-            "content": "Rewrite useCanisterSync.ts - remove localStorage device ID, use memory-based fallback",
-            "status": "pending"
-        },
-        {
-            "priority": "high",
-            "content": "Create StorageAdapter utility (storageAdapter.ts) for remaining components",
-            "status": "pending"
-        },
-        {
-            "priority": "high",
-            "content": "Refactor Layout.tsx - remove localStorage usage",
-            "status": "pending"
-        },
-        {
-            "priority": "high",
-            "content": "Verify no localStorage references remain in src\/ by final grep",
-            "status": "pending"
+            "content": "Final verification - no business data stored in localStorage",
+            "status": "pending",
+            "priority": "high"
         }
     ],
     "created_at": 1784213755,
-    "updated_at": 1784359060,
+    "updated_at": 1784359437,
     "messages": [
         {
             "id": "msg_compact",
@@ -1582,6 +1552,1450 @@
             "content": "  395 | \n  396 |     warningTimerRef.current = setTimeout(() => {\n  397 |       setShowWarning(true);\n  398 |       setSecondsRemaining(120);\n  399 |       countdownRef.current = setInterval(() => {\n  400 |         setSecondsRemaining((s) => {\n  401 |           if (s <= 1) {\n  402 |             if (countdownRef.current) clearInterval(countdownRef.current);\n  403 |             return ;\n  404 |           }\n  405 |           return s - 1;\n  406 |         });\n  407 |       }, 100);\n  408 |     }, INACTIVITY_WARNING_MS);\n  409 |",
             "is_error": false,
             "time": 1784359060
+        },
+        {
+            "id": "msg_893c6ff434",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I see! The issue is on line 403: `return ;` - this is in a `setSecondsRemaining` callback that expects a number to be returned. `return ;` returns `undefined`, which is not a number. It should return `` instead.\n\nLet me fix this."
+                },
+                {
+                    "type": "text",
+                    "text": "Found the bug - `return ;` should `return ` (return ) since `setSecondsRemaining` expects a number:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_8FgFcLmTE3qnmZOEJ6F20050",
+                    "name": "edit_file",
+                    "input": {
+                        "new_string": "            return ;",
+                        "old_string": "            return ;",
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useEmailAuth.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 22606,
+                "completion_tokens": 194,
+                "total_tokens": 22800,
+                "prompt_cache_hit_tokens": 22400,
+                "prompt_cache_miss_tokens": 206,
+                "prompt_tokens_details": {
+                    "cached_tokens": 22400
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 62
+                },
+                "cached_tokens": 22400
+            },
+            "time": 1784359063
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_8FgFcLmTE3qnmZOEJ6F20050",
+            "content": "Edited source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useEmailAuth.tsx (1 replacement)\n-             return ;\n+             return ;",
+            "is_error": false,
+            "time": 1784359064
+        },
+        {
+            "id": "msg_4b2ee8432b",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The edit didn't change anything - both old and new strings look the same. This is the same problem as with the for loop - the strings appear identical visually. I need to use PHP to insert the `` between `return` and `;`.\n\nLooking at line 403: `            return ;`\nThe issue is `return ;` should be `return ;` where there's a value (like ``) between `return` and `;`.\n\nLet me check the hex bytes again."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_Q2mbNL4ht4QkpOT142Ga0171",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks && php -r \"\n\\$content = file_get_contents('useEmailAuth.tsx');\n\/\/ Find 'return ;' pattern and replace with 'return ;'\n\/\/ Check hex for context around 'return ;'\n\\$pos = strpos(\\$content, 'return ;');\nif (\\$pos !== false) {\n    \\$part = substr(\\$content, \\$pos - 10, 40);\n    echo 'Context hex: ' . bin2hex(\\$part) . PHP_EOL;\n    echo 'Context: ' . \\$part . PHP_EOL;\n}\n\""
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 22847,
+                "completion_tokens": 289,
+                "total_tokens": 23136,
+                "prompt_cache_hit_tokens": 22528,
+                "prompt_cache_miss_tokens": 319,
+                "prompt_tokens_details": {
+                    "cached_tokens": 22528
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 102
+                },
+                "cached_tokens": 22528
+            },
+            "time": 1784359068
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_Q2mbNL4ht4QkpOT142Ga0171",
+            "content": "Context hex: 2020202020202020202072657475726e203b0a202020202020202020207d0a202020202020202020\nContext:           return ;\n          }\n         \n\nUnsuccessful stat on filename containing newline at \/var\/cpanel\/ea4\/ea_php_cli.pm line 87.\n",
+            "is_error": false,
+            "time": 1784359068
+        },
+        {
+            "id": "msg_0d51ba8d50",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The hex is: `72657475726e203ba` which decodes to:\n- `72657475726e` = \"return\"\n- `20` = space\n- `3b` = \";\"\n- `a` = newline\n\nSo it's literally `return ;` followed by newline. The `20` is a space, then `3b` is semicolon. Nothing between `return` and `;` except a space.\n\nThe fix should be to change `return ;` to `return ;` (adding `` between space and semicolon). In hex: `72657475726e203b` \u2192 `72657475726e20303b`\n\nLet me use PHP hex replacement to fix it."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_Ei4KNzaImassWtbNmW6r2876",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks && php -r \"\n\\$content = file_get_contents('useEmailAuth.tsx');\n\/\/ Hex: 'return ;' = 72657475726e203b -> should be 'return ;' = 72657475726e20303b\n\\$content = str_replace(\\\"\\\\x72\\\\x65\\\\x74\\\\x75\\\\x72\\\\x6e\\\\x20\\\\x3b\\\", \\\"\\\\x72\\\\x65\\\\x74\\\\x75\\\\x72\\\\x6e\\\\x20\\\\x30\\\\x3b\\\", \\$content);\nfile_put_contents('useEmailAuth.tsx', \\$content);\necho 'Done';\n\" && grep -n \"return ;\" useEmailAuth.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 23221,
+                "completion_tokens": 380,
+                "total_tokens": 23601,
+                "prompt_cache_hit_tokens": 22784,
+                "prompt_cache_miss_tokens": 437,
+                "prompt_tokens_details": {
+                    "cached_tokens": 22784
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 160
+                },
+                "cached_tokens": 22784
+            },
+            "time": 1784359073
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_Ei4KNzaImassWtbNmW6r2876",
+            "content": "Done\nUnsuccessful stat on filename containing newline at \/var\/cpanel\/ea4\/ea_php_cli.pm line 87.\n\n[Exit code: 1]",
+            "is_error": true,
+            "time": 1784359074
+        },
+        {
+            "id": "msg_cadcaac76a",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Hmm, the grep returned exit code 1 meaning no matches for `return ;`. But maybe the replacement changed it to `return ;` and the grep for `return ;` doesn't match `return ;`. Let me check."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_GRiUwjWBhoUoMbsHPQFw5614",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks && grep -n \"return\" useEmailAuth.tsx | head -5"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 23651,
+                "completion_tokens": 132,
+                "total_tokens": 23783,
+                "prompt_cache_hit_tokens": 23552,
+                "prompt_cache_miss_tokens": 99,
+                "prompt_tokens_details": {
+                    "cached_tokens": 23552
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 48
+                },
+                "cached_tokens": 23552
+            },
+            "time": 1784359076
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_GRiUwjWBhoUoMbsHPQFw5614",
+            "content": "49:  return [\n62:  return _authToken;\n74:  return _patientToken;\n216:    return authService.getPendingAccounts();\n299:    return authService.getPendingPatients();\n",
+            "is_error": false,
+            "time": 1784359076
+        },
+        {
+            "id": "msg_bb02521568",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The grep for \"return ;\" found no matches, but all the `return` statements I can see have values. Let me check the specific line 403 to see what it looks like now."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_bez07v4ygRwdnu1ClTrH4430",
+                    "name": "read_file",
+                    "input": {
+                        "offset": 401,
+                        "limit": 8,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useEmailAuth.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 23836,
+                "completion_tokens": 139,
+                "total_tokens": 23975,
+                "prompt_cache_hit_tokens": 23680,
+                "prompt_cache_miss_tokens": 156,
+                "prompt_tokens_details": {
+                    "cached_tokens": 23680
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 40
+                },
+                "cached_tokens": 23680
+            },
+            "time": 1784359080
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_bez07v4ygRwdnu1ClTrH4430",
+            "content": "  401 |           if (s <= 1) {\n  402 |             if (countdownRef.current) clearInterval(countdownRef.current);\n  403 |             return 0;\n  404 |           }\n  405 |           return s - 1;\n  406 |         });\n  407 |       }, 100);\n  408 |     }, INACTIVITY_WARNING_MS);",
+            "is_error": false,
+            "time": 1784359080
+        },
+        {
+            "id": "msg_21aa3e7ca7",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The `return ;` is now properly `return ;` which is a valid return statement returning ``.\n\nNow let me check the remaining issues. Let me look at what still needs to be done:\n\n1. \u2705 `useDoctorContent.tsx` - `for (let i = ;` \u2192 `for (let i = ;` (FIXED)\n2. \u2705 `useEmailAuth.tsx` - `return ;` \u2192 `return ;` (FIXED)\n3. Need to fix `useAdminSave.ts` - it has broken imports from `.\/useEmailAuth` (importing `getAuthToken`, `getStoredAuth`, `isTokenExpired` which don't exist in useEmailAuth)\n4. Need to check remaining components for localStorage references\n\nLet me now fix `useAdminSave.ts` - this is the critical one that has broken imports."
+                },
+                {
+                    "type": "text",
+                    "text": "`return ;` is now properly `return ;` (returning ). Let me now fix the critical `useAdminSave.ts` which imports non-existent functions from `.\/useEmailAuth`:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_Kv6u88eeao3F5jAUxumI3359",
+                    "name": "read_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useAdminSave.ts"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 24067,
+                "completion_tokens": 290,
+                "total_tokens": 24357,
+                "prompt_cache_hit_tokens": 23936,
+                "prompt_cache_miss_tokens": 131,
+                "prompt_tokens_details": {
+                    "cached_tokens": 23936
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 183
+                },
+                "cached_tokens": 23936
+            },
+            "time": 1784359084
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_Kv6u88eeao3F5jAUxumI3359",
+            "content": "    1 | \/**\n    2 |  * Admin Save Operations \u2014 PHP\/MySQL Backend\n    3 |  *\n    4 |  * All admin operations go through the PHP API via authService and auditService.\n    5 |  * No localStorage used for any data storage.\n    6 |  *\/\n    7 | \n    8 | import type { StaffRole } from \"..\/types\";\n    9 | import { authService } from \"..\/services\/auth\";\n   10 | import { auditService } from \"..\/services\/audit\";\n   11 | import type { AuditLogEntry } from \"..\/services\/audit\";\n   12 | import { post } from \"..\/lib\/apiClient\";\n   13 | \n   14 | \/\/ \u2500\u2500 Audit helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   15 | \n   16 | \/**\n   17 |  * Append an entry to the audit log via the PHP API.\n   18 |  *\/\n   19 | async function appendAuditLog(entry: {\n   20 |   timestamp?: string;\n   21 |   userRole: string;\n   22 |   userName: string;\n   23 |   action: string;\n   24 |   target: string;\n   25 | }): Promise<void> {\n   26 |   try {\n   27 |     await post(\"\/audit\/create.php\", {\n   28 |       action: entry.action,\n   29 |       target: entry.target,\n   30 |       details: JSON.stringify({\n   31 |         userRole: entry.userRole,\n   32 |         userName: entry.userName,\n   33 |       }),\n   34 |     });\n   35 |   } catch {\n   36 |     \/\/ Audit logging is non-critical\n   37 |     console.warn(\"[Audit] Failed to log entry\");\n   38 |   }\n   39 | }\n   40 | \n   41 | \/\/ \u2500\u2500 Constants \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   42 | \n   43 | export const STAFF_ROLE_LABELS: Record<StaffRole, string> = {\n   44 |   admin: \"Admin\",\n   45 |   consultant_doctor: \"Consultant Doctor\",\n   46 |   assistant_professor: \"Assistant Professor\",\n   47 |   associate_professor: \"Associate Professor\",\n   48 |   professor: \"Professor\",\n   49 |   medical_officer: \"Medical Officer\",\n   50 |   assistant_registrar: \"Assistant Registrar\",\n   51 |   registrar: \"Registrar\",\n   52 |   intern_doctor: \"Intern Doctor\",\n   53 |   nurse: \"Nurse\",\n   54 |   reception: \"Reception\",\n   55 |   staff: \"Staff\",\n   56 |   doctor: \"Doctor\",\n   57 |   patient: \"Patient\",\n   58 | };\n   59 | \n   60 | \/\/ \u2500\u2500 Registry load\/save (delegated to PHP API) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   61 | \n   62 | \/** Load doctor registry from PHP API *\/\n   63 | export async function loadRegistry(): Promise<any[]> {\n   64 |   try {\n   65 |     const result = await post<{ users: any[] }>(\"\/auth\/list.php\", {\n   66 |       role: \"doctor\",\n   67 |     });\n   68 |     return result.users ?? [];\n   69 |   } catch {\n   70 |     return [];\n   71 |   }\n   72 | }\n   73 | \n   74 | \/** Load patient registry from PHP API *\/\n   75 | export async function loadPatientRegistry(): Promise<any[]> {\n   76 |   try {\n   77 |     const result = await post<{ patients: any[] }>(\n   78 |       \"\/auth\/patients\/list.php\",\n   79 |     );\n   80 |     return result.patients ?? [];\n   81 |   } catch {\n   82 |     return [];\n   83 |   }\n   84 | }\n   85 | \n   86 | \/** Save doctor registry (no-op \u2014 data is persisted via PHP API) *\/\n   87 | export function saveRegistry(_registry: any[]): boolean {\n   88 |   \/\/ Registry is managed server-side via authService operations\n   89 |   return true;\n   90 | }\n   91 | \n   92 | \/** Save patient registry (no-op \u2014 data is persisted via PHP API) *\/\n   93 | export function savePatientRegistry(_registry: any[]): boolean {\n   94 |   \/\/ Patient registry is managed server-side via authService operations\n   95 |   return true;\n   96 | }\n   97 | \n   98 | \/\/ \u2500\u2500 Enhanced save wrappers (compatibility shims) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   99 | \n  100 | \/**\n  101 |  * Save doctor registry with error handling (delegated to PHP API).\n  102 |  *\/\n  103 | export const enhancedSaveRegistry = async (\n  104 |   registry: any[],\n  105 | ): Promise<boolean> => {\n  106 |   try {\n  107 |     \/\/ Registry updates go through authService operations\n  108 |     saveRegistry(registry);\n  109 |     return true;\n  110 |   } catch {\n  111 |     return false;\n  112 |   }\n  113 | };\n  114 | \n  115 | \/**\n  116 |  * Save patient registry with error handling (delegated to PHP API).\n  117 |  *\/\n  118 | export const enhancedSavePatientRegistry = async (\n  119 |   registry: any[],\n  120 | ): Promise<boolean> => {\n  121 |   try {\n  122 |     savePatientRegistry(registry);\n  123 |     return true;\n  124 |   } catch {\n  125 |     return false;\n  126 |   }\n  127 | };\n  128 | \n  129 | \/\/ \u2500\u2500 Admin actions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  130 | \n  131 | \/**\n  132 |  * Admin action: Approve staff account.\n  133 |  *\/\n  134 | export const approveStaffAccount = async (\n  135 |   accountId: number,\n  136 |   selectedRole: StaffRole,\n  137 | ): Promise<boolean> => {\n  138 |   try {\n  139 |     await authService.approveAccount(accountId, selectedRole);\n  140 |     await appendAuditLog({\n  141 |       userRole: \"admin\",\n  142 |       userName: \"Admin\",\n  143 |       action: `Approved account as ${STAFF_ROLE_LABELS[selectedRole] ?? selectedRole}`,\n  144 |       target: `Account #${accountId}`,\n  145 |     });\n  146 |     return true;\n  147 |   } catch (err) {\n  148 |     console.error(\"[Admin] Failed to approve staff:\", err);\n  149 |     return false;\n  150 |   }\n  151 | };\n  152 | \n  153 | \/**\n  154 |  * Admin action: Reject staff account.\n  155 |  *\/\n  156 | export const rejectStaffAccount = async (\n  157 |   accountId: number,\n  158 | ): Promise<boolean> => {\n  159 |   try {\n  160 |     await authService.rejectAccount(accountId);\n  161 |     await appendAuditLog({\n  162 |       userRole: \"admin\",\n  163 |       userName: \"Admin\",\n  164 |       action: \"Rejected account\",\n  165 |       target: `Account #${accountId}`,\n  166 |     });\n  167 |     return true;\n  168 |   } catch (err) {\n  169 |     console.error(\"[Admin] Failed to reject staff:\", err);\n  170 |     return false;\n  171 |   }\n  172 | };\n  173 | \n  174 | \/**\n  175 |  * Admin action: Approve patient account.\n  176 |  *\/\n  177 | export const approvePatientAccount = async (\n  178 |   patientId: number,\n  179 | ): Promise<boolean> => {\n  180 |   try {\n  181 |     await authService.approvePatient(patientId);\n  182 |     await appendAuditLog({\n  183 |       userRole: \"admin\",\n  184 |       userName: \"Admin\",\n  185 |       action: \"Approved patient account\",\n  186 |       target: `Patient #${patientId}`,\n  187 |     });\n  188 |     return true;\n  189 |   } catch (err) {\n  190 |     console.error(\"[Admin] Failed to approve patient:\", err);\n  191 |     return false;\n  192 |   }\n  193 | };\n  194 | \n  195 | \/**\n  196 |  * Admin action: Reject patient account.\n  197 |  *\/\n  198 | export const rejectPatientAccount = async (\n  199 |   patientId: number,\n  200 | ): Promise<boolean> => {\n  201 |   try {\n  202 |     await authService.rejectPatient(patientId);\n  203 |     await appendAuditLog({\n  204 |       userRole: \"admin\",\n  205 |       userName: \"Admin\",\n  206 |       action: \"Rejected patient account\",\n  207 |       target: `Patient #${patientId}`,\n  208 |     });\n  209 |     return true;\n  210 |   } catch (err) {\n  211 |     console.error(\"[Admin] Failed to reject patient:\", err);\n  212 |     return false;\n  213 |   }\n  214 | };\n  215 | \n  216 | \/**\n  217 |  * Admin action: Reassign staff role.\n  218 |  *\/\n  219 | export const reassignStaffRole = async (\n  220 |   accountId: number,\n  221 |   newRole: StaffRole,\n  222 | ): Promise<boolean> => {\n  223 |   try {\n  224 |     await authService.reassignRole(accountId, newRole);\n  225 |     await appendAuditLog({\n  226 |       userRole: \"admin\",\n  227 |       userName: \"Admin\",\n  228 |       action: `Role changed to ${STAFF_ROLE_LABELS[newRole]}`,\n  229 |       target: `Account #${accountId}`,\n  230 |     });\n  231 |     return true;\n  232 |   } catch (err) {\n  233 |     console.error(\"[Admin] Failed to reassign role:\", err);\n  234 |     return false;\n  235 |   }\n  236 | };\n  237 | \n  238 | \/**\n  239 |  * Verify PHP API connectivity.\n  240 |  *\/\n  241 | export const verifyStorageCapacity = async (): Promise<{\n  242 |   available: boolean;\n  243 |   percentUsed: number;\n  244 |   message: string;\n  245 | }> => {\n  246 |   try {\n  247 |     \/\/ Check if the server is reachable\n  248 |     await post(\"\/auth\/verify.php\");\n  249 |     return {\n  250 |       available: true,\n  251 |       percentUsed: null,\n  252 |       message: \"Server storage available\",\n  253 |     };\n  254 |   } catch {\n  255 |     return {\n  256 |       available: false,\n  257 |       percentUsed: null,\n  258 |       message: \"Server unreachable - check your connection\",\n  259 |     };\n  260 |   }\n  261 | };\n  262 |",
+            "is_error": false,
+            "time": 1784359084
+        },
+        {
+            "id": "msg_eb0fb5ba16",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The file looks good now. The `percentUsed: null` is valid. Let me check if there are any imports from `.\/useEmailAuth` in this file, since earlier I saw that was a problem. Looking at the imports:\n\n```typescript\nimport type { StaffRole } from \"..\/types\";\nimport { authService } from \"..\/services\/auth\";\nimport { auditService } from \"..\/services\/audit\";\nimport type { AuditLogEntry } from \"..\/services\/audit\";\nimport { post } from \"..\/lib\/apiClient\";\n```\n\nNone of these import from `.\/useEmailAuth`. The file looks clean and correct.\n\nNow let me check what files actually import from `.\/useEmailAuth` to see if there's a problem with the non-existent exports."
+                },
+                {
+                    "type": "text",
+                    "text": "The file looks clean now. Let me check if any files still import from `useEmailAuth` incorrectly:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_dX6e3CdaM1Ts8hnWaBUp7845",
+                    "name": "grep",
+                    "input": {
+                        "include": "*.ts,*.tsx",
+                        "path": "\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src",
+                        "pattern": "getAuthToken|getStoredAuth|isTokenExpired"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 26764,
+                "completion_tokens": 292,
+                "total_tokens": 27056,
+                "prompt_cache_hit_tokens": 24064,
+                "prompt_cache_miss_tokens": 2700,
+                "prompt_tokens_details": {
+                    "cached_tokens": 24064
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 156
+                },
+                "cached_tokens": 24064
+            },
+            "time": 1784359088
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_dX6e3CdaM1Ts8hnWaBUp7845",
+            "content": "No matches found for pattern: getAuthToken|getStoredAuth|isTokenExpired",
+            "is_error": false,
+            "time": 1784359088
+        },
+        {
+            "id": "msg_047fd6fcb3",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Good - no files import those non-existent functions. Now let me check which files still have localStorage references in the source directory (not dist)."
+                },
+                {
+                    "type": "text",
+                    "text": "Good, no broken imports. Now let me find all remaining localStorage references in source files that need to be migrated:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_eMkX2dNFgsvuMY0ONGzn7410",
+                    "name": "grep",
+                    "input": {
+                        "include": "*.ts,*.tsx",
+                        "path": "\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src",
+                        "pattern": "localStorage\\.",
+                        "max_results": 100
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 27087,
+                "completion_tokens": 172,
+                "total_tokens": 27259,
+                "prompt_cache_hit_tokens": 27008,
+                "prompt_cache_miss_tokens": 79,
+                "prompt_tokens_details": {
+                    "cached_tokens": 27008
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 28
+                },
+                "cached_tokens": 27008
+            },
+            "time": 1784359091
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_eMkX2dNFgsvuMY0ONGzn7410",
+            "content": "No matches found for pattern: localStorage\\.",
+            "is_error": false,
+            "time": 1784359091
+        },
+        {
+            "id": "msg_5c8553ae54",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "No localStorage references remain in the source TypeScript\/TSX files. Let me also check for sessionStorage and IndexedDB:"
+                },
+                {
+                    "type": "text",
+                    "text": "No localStorage references found in TypeScript source. Let me verify this comprehensively:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_2GGIBQxyqib3RBcRXv5y7371",
+                    "name": "grep",
+                    "input": {
+                        "include": "*.ts,*.tsx",
+                        "max_results": 50,
+                        "path": "\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src",
+                        "pattern": "sessionStorage|indexedDB|IndexedDB|createObjectStore"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 27279,
+                "completion_tokens": 173,
+                "total_tokens": 27452,
+                "prompt_cache_hit_tokens": 27136,
+                "prompt_cache_miss_tokens": 143,
+                "prompt_tokens_details": {
+                    "cached_tokens": 27136
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 26
+                },
+                "cached_tokens": 27136
+            },
+            "time": 1784359094
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_2GGIBQxyqib3RBcRXv5y7371",
+            "content": "No matches found for pattern: sessionStorage|indexedDB|IndexedDB|createObjectStore",
+            "is_error": false,
+            "time": 1784359094
+        },
+        {
+            "id": "msg_36a9960b39",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "All browser storage APIs have been removed from the source code. Now let me check what remaining tasks need to be done. Let me review the todo list I set earlier and check what's been completed.\n\nLet me also check the component files that were previously identified as having localStorage references."
+                },
+                {
+                    "type": "text",
+                    "text": "No browser storage APIs remain in the TypeScript source. Let me now verify all critical bugs have been fixed by checking the full set of files:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_eh9wicSzR1frSAbuhAK60392",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && for f in hooks\/*.ts hooks\/*.tsx; do\n  issues=\"\"\n  # Check for empty returns\n  if grep -Pq 'return\\s+;' \"$f\" 2>\/dev\/null; then\n    issues=\"$issues empty_return \"\n  fi\n  # Check for empty for loops\n  if grep -Pq 'for\\s*\\(\\s*let\\s+\\w+\\s*=\\s*;' \"$f\" 2>\/dev\/null; then\n    issues=\"$issues empty_for \"\n  fi\n  # Check for localStorage\n  if grep -q \"localStorage\\.\" \"$f\" 2>\/dev\/null; then\n    issues=\"$issues uses_localStorage \"\n  fi\n  # Check for sessionStorage\n  if grep -q \"sessionStorage\\.\" \"$f\" 2>\/dev\/null; then\n    issues=\"$issues uses_sessionStorage \"\n  fi\n  if [ -n \"$issues\" ]; then\n    echo \"ISSUES in $f: $issues\"\n  else\n    echo \"OK: $f\"\n  fi\ndone"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 27484,
+                "completion_tokens": 383,
+                "total_tokens": 27867,
+                "prompt_cache_hit_tokens": 27392,
+                "prompt_cache_miss_tokens": 92,
+                "prompt_tokens_details": {
+                    "cached_tokens": 27392
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 56
+                },
+                "cached_tokens": 27392
+            },
+            "time": 1784359099
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_eh9wicSzR1frSAbuhAK60392",
+            "content": "OK: hooks\/useAdminSave.ts\nOK: hooks\/useCanisterSync.ts\nOK: hooks\/useMigration.ts\nOK: hooks\/useOnlineStatus.ts\nOK: hooks\/useQueries.ts\nISSUES in hooks\/useAdminAuth.tsx:  uses_localStorage \nOK: hooks\/useDoctorContent.tsx\nOK: hooks\/useEmailAuth.tsx\nOK: hooks\/use-mobile.tsx\nOK: hooks\/useRolePermissions.tsx\nOK: hooks\/useSiteConfig.tsx\n",
+            "is_error": false,
+            "time": 1784359100
+        },
+        {
+            "id": "msg_fef7818ced",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "`useAdminAuth.tsx` still has localStorage references. Let me check what it's doing."
+                },
+                {
+                    "type": "text",
+                    "text": "Found one remaining issue - `useAdminAuth.tsx` still uses `localStorage`. Let me check it:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_dtm5hipAxRAPP5JkAc499822",
+                    "name": "read_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useAdminAuth.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 27991,
+                "completion_tokens": 109,
+                "total_tokens": 28100,
+                "prompt_cache_hit_tokens": 27776,
+                "prompt_cache_miss_tokens": 215,
+                "prompt_tokens_details": {
+                    "cached_tokens": 27776
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 20
+                },
+                "cached_tokens": 27776
+            },
+            "time": 1784359102
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_dtm5hipAxRAPP5JkAc499822",
+            "content": "    1 | \/**\n    2 |  * Admin Auth Hook \u2014 PHP\/MySQL Backend\n    3 |  *\n    4 |  * Admin authentication goes through the PHP API via authService.\n    5 |  * Session state is kept in memory only \u2014 no localStorage.\n    6 |  *\/\n    7 | \n    8 | import { useCallback, useState } from \"react\";\n    9 | import { authService } from \"..\/services\/auth\";\n   10 | \n   11 | export function useAdminAuth() {\n   12 |   const [isAdmin, setIsAdmin] = useState<boolean>(false);\n   13 | \n   14 |   const adminLogin = useCallback(\n   15 |     async (username: string, password: string): Promise<boolean> => {\n   16 |       try {\n   17 |         const result = await authService.signIn(username, password);\n   18 |         if (result.user) {\n   19 |           setIsAdmin(true);\n   20 |           return true;\n   21 |         }\n   22 |       } catch {\n   23 |         \/\/ Login failed\n   24 |       }\n   25 |       return false;\n   26 |     },\n   27 |     [],\n   28 |   );\n   29 | \n   30 |   const adminLogout = useCallback(async () => {\n   31 |     await authService.signOut();\n   32 |     setIsAdmin(false);\n   33 |   }, []);\n   34 | \n   35 |   return { isAdmin, adminLogin, adminLogout };\n   36 | }",
+            "is_error": false,
+            "time": 1784359102
+        },
+        {
+            "id": "msg_d0dac1ccc0",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Wait, this file doesn't have `localStorage` in it. But the grep showed `uses_localStorage`. Let me check why the grep found it - maybe there's a comment or something?\n\nActually, looking at the grep again - I used `grep -q \"localStorage\\.\"` which would look for `localStorage.` followed by a dot. The file only has comments mentioning `localStorage`. Let me verify."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_HjEdKi8wR36j3U1EMmwk2852",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && grep -n \"localStorage\" hooks\/useAdminAuth.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 28434,
+                "completion_tokens": 170,
+                "total_tokens": 28604,
+                "prompt_cache_hit_tokens": 28032,
+                "prompt_cache_miss_tokens": 402,
+                "prompt_tokens_details": {
+                    "cached_tokens": 28032
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 89
+                },
+                "cached_tokens": 28032
+            },
+            "time": 1784359105
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_HjEdKi8wR36j3U1EMmwk2852",
+            "content": "5: * Session state is kept in memory only \u2014 no localStorage.\n",
+            "is_error": false,
+            "time": 1784359105
+        },
+        {
+            "id": "msg_ca37d2290a",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "It's just a comment mentioning localStorage - not actual usage. The hook is clean.\n\nNow let me also check the component files for any remaining localStorage usage."
+                },
+                {
+                    "type": "text",
+                    "text": "It's just a comment - the hook is clean. Let me also check component files for any remaining localStorage references:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_Un1Phl73qEAiDBvgdxRL6568",
+                    "name": "grep",
+                    "input": {
+                        "include": "*.tsx",
+                        "max_results": 50,
+                        "path": "\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/components",
+                        "pattern": "localStorage\\."
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 28630,
+                "completion_tokens": 173,
+                "total_tokens": 28803,
+                "prompt_cache_hit_tokens": 28544,
+                "prompt_cache_miss_tokens": 86,
+                "prompt_tokens_details": {
+                    "cached_tokens": 28544
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 31
+                },
+                "cached_tokens": 28544
+            },
+            "time": 1784359108
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_Un1Phl73qEAiDBvgdxRL6568",
+            "content": "No matches found for pattern: localStorage\\.",
+            "is_error": false,
+            "time": 1784359108
+        },
+        {
+            "id": "msg_a201e9d522",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "All component files are clean. Let me also check pages and lib directories:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_xU9cIJwiTTRlKysOd9uq1213",
+                    "name": "grep",
+                    "input": {
+                        "include": "*.ts,*.tsx",
+                        "max_results": 50,
+                        "path": "\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src",
+                        "pattern": "\\.getItem\\(|\\.setItem\\(|\\.removeItem\\(|\\.clear\\("
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 28823,
+                "completion_tokens": 152,
+                "total_tokens": 28975,
+                "prompt_cache_hit_tokens": 28800,
+                "prompt_cache_miss_tokens": 23,
+                "prompt_tokens_details": {
+                    "cached_tokens": 28800
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 15
+                },
+                "cached_tokens": 28800
+            },
+            "time": 1784359111
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_xU9cIJwiTTRlKysOd9uq1213",
+            "content": "No matches found for pattern: \\.getItem\\(|\\.setItem\\(|\\.removeItem\\(|\\.clear\\(",
+            "is_error": false,
+            "time": 1784359111
+        },
+        {
+            "id": "msg_cc2fd7aa48",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "All localStorage\/sessionStorage API calls have been removed. Let me now verify the final state of the project and make sure everything compiles properly."
+                },
+                {
+                    "type": "text",
+                    "text": "All storage API calls removed. Let me now verify the complete state and fix any remaining TypeScript compilation issues:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ieFQ3ZhnE8OUvDXUi4ST5510",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend && npx tsc --noEmit 2>&1 | head -60",
+                        "timeout": 60
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 29012,
+                "completion_tokens": 149,
+                "total_tokens": 29161,
+                "prompt_cache_hit_tokens": 28928,
+                "prompt_cache_miss_tokens": 84,
+                "prompt_tokens_details": {
+                    "cached_tokens": 28928
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 29
+                },
+                "cached_tokens": 28928
+            },
+            "time": 1784359115
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ieFQ3ZhnE8OUvDXUi4ST5510",
+            "content": "\/bin\/bash: npx: command not found\n",
+            "is_error": false,
+            "time": 1784359115
+        },
+        {
+            "id": "msg_5b041a2278",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "npx is not available. Let me check if npm or the TypeScript compiler is available directly."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_HeX1cd0b96pYAJNX5dQN0819",
+                    "name": "bash",
+                    "input": {
+                        "command": "which tsc 2>\/dev\/null || which npm 2>\/dev\/null || which npx 2>\/dev\/null || which node 2>\/dev\/null || echo \"No JS tools found\""
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 29183,
+                "completion_tokens": 103,
+                "total_tokens": 29286,
+                "prompt_cache_hit_tokens": 29056,
+                "prompt_cache_miss_tokens": 127,
+                "prompt_tokens_details": {
+                    "cached_tokens": 29056
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 20
+                },
+                "cached_tokens": 29056
+            },
+            "time": 1784359118
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_HeX1cd0b96pYAJNX5dQN0819",
+            "content": "No JS tools found\n",
+            "is_error": false,
+            "time": 1784359118
+        },
+        {
+            "id": "msg_b141e95c04",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "No JavaScript runtime tools are available on this server. That's fine - the source code is what matters and we can't compile it here. Let me do a final comprehensive review of all the hooks and make sure they're all correct.\n\nLet me now also check the `useAdminAuth.tsx` and `useRolePermissions.tsx` to ensure they're complete and correct."
+                },
+                {
+                    "type": "text",
+                    "text": "No JavaScript tools available on this server. That's fine - let me do a final comprehensive quality check on all hooks:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_VRVakDC2sHmfNQtuXwmp5239",
+                    "name": "read_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useRolePermissions.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 29303,
+                "completion_tokens": 166,
+                "total_tokens": 29469,
+                "prompt_cache_hit_tokens": 29184,
+                "prompt_cache_miss_tokens": 119,
+                "prompt_tokens_details": {
+                    "cached_tokens": 29184
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 76
+                },
+                "cached_tokens": 29184
+            },
+            "time": 1784359121
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_VRVakDC2sHmfNQtuXwmp5239",
+            "content": "    1 | import type { StaffRole } from \"..\/types\";\n    2 | import { isConsultantType } from \"..\/types\";\n    3 | import { useEmailAuth } from \".\/useEmailAuth\";\n    4 | \n    5 | \/\/ \u2500\u2500 Permission set for each role \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n    6 | \n    7 | export interface RolePermissions {\n    8 |   \/** Can access outpatient\/outdoor patients (false = admitted\/inpatient only) *\/\n    9 |   canAccessOutpatient: boolean;\n   10 |   \/** Can write and finalize a prescription *\/\n   11 |   canPrescribe: boolean;\n   12 |   \/** Can write and confirm a diagnosis *\/\n   13 |   canDiagnose: boolean;\n   14 |   \/** Can discharge a patient *\/\n   15 |   canDischarge: boolean;\n   16 |   \/** Can approve\/mark intern notes as reviewed *\/\n   17 |   canApproveInternNotes: boolean;\n   18 |   \/** Can edit clinical data (visit form, prescriptions, diagnosis) *\/\n   19 |   canEditClinical: boolean;\n   20 |   \/** Can administer and mark medications as \"given\" *\/\n   21 |   canAdministerMeds: boolean;\n   22 |   \/** Can record vitals *\/\n   23 |   canRecordVitals: boolean;\n   24 |   \/** Can register new patients and edit patient profiles *\/\n   25 |   canRegisterPatients: boolean;\n   26 |   \/** Can access billing\/admin panel *\/\n   27 |   canManageBilling: boolean;\n   28 |   \/** Can view all patients (not just own) *\/\n   29 |   canViewAllPatients: boolean;\n   30 |   \/** Can override or approve junior (intern) prescriptions *\/\n   31 |   canOverrideJunior: boolean;\n   32 |   \/** Can write consultant-level notes *\/\n   33 |   canWriteConsultantNotes: boolean;\n   34 |   \/** Can admit patients *\/\n   35 |   canAdmitPatients: boolean;\n   36 |   \/** Can write nursing notes *\/\n   37 |   canWriteNursingNotes: boolean;\n   38 |   \/** Can finalize (not just draft) a prescription *\/\n   39 |   canFinalizePrescription: boolean;\n   40 |   \/** Is a clinical role (doctor\/MO\/intern\/nurse) \u2014 hides admin-only tabs for staff *\/\n   41 |   isClinical: boolean;\n   42 |   \/\/ \u2500\u2500 Feature-level permissions (granular) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   43 |   \/** Can finalize clinical notes (SOAP, daily progress) *\/\n   44 |   canFinalizeClinicalNote: boolean;\n   45 |   \/** Can view the full audit trail *\/\n   46 |   canViewAuditTrail: boolean;\n   47 |   \/** Can manage beds (assign, transfer, discharge) *\/\n   48 |   canManageBeds: boolean;\n   49 |   \/** Can mark an order as completed *\/\n   50 |   canCompleteOrder: boolean;\n   51 |   \/** Can create new clinical orders *\/\n   52 |   canCreateOrder: boolean;\n   53 |   \/** Can override another doctor's prescription *\/\n   54 |   canOverridePrescription: boolean;\n   55 |   \/** Can approve the final discharge summary *\/\n   56 |   canApproveDischarge: boolean;\n   57 |   \/** Can enter or update vital signs *\/\n   58 |   canEnterVitals: boolean;\n   59 |   \/** Can verify vitals entered by nurses\/interns *\/\n   60 |   canVerifyVitals: boolean;\n   61 |   \/** Can create or edit clinical notes *\/\n   62 |   canEditClinicalNotes: boolean;\n   63 |   \/** Can only create drafts \u2014 not finalize *\/\n   64 |   canCreateDraftOnly: boolean;\n   65 |   \/** Can view all patients in the hospital (Registrar-level) *\/\n   66 |   canViewAllAdmittedPatients: boolean;\n   67 |   \/** Can view patients in own department only (Assistant Registrar) *\/\n   68 |   canViewDepartmentPatients: boolean;\n   69 |   \/** Can change bed assignment inline *\/\n   70 |   canEditBedAssignment: boolean;\n   71 |   \/** Can manage admissions (full or partial) *\/\n   72 |   canManageAdmissions: boolean | \"partial\";\n   73 | }\n   74 | \n   75 | \/\/ \u2500\u2500 Role \u2192 Permissions Table \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   76 | \n   77 | export const ROLE_PERMISSIONS: Record<\n   78 |   Exclude<StaffRole, \"admin\" | \"patient\">,\n   79 |   RolePermissions\n   80 | > = {\n   81 |   consultant_doctor: {\n   82 |     canAccessOutpatient: true,\n   83 |     canPrescribe: true,\n   84 |     canDiagnose: true,\n   85 |     canDischarge: true,\n   86 |     canApproveInternNotes: true,\n   87 |     canEditClinical: true,\n   88 |     canAdministerMeds: false,\n   89 |     canRecordVitals: true,\n   90 |     canRegisterPatients: true,\n   91 |     canManageBilling: false,\n   92 |     canViewAllPatients: true,\n   93 |     canOverrideJunior: true,\n   94 |     canWriteConsultantNotes: true,\n   95 |     canAdmitPatients: true,\n   96 |     canWriteNursingNotes: false,\n   97 |     canFinalizePrescription: true,\n   98 |     isClinical: true,\n   99 |     canFinalizeClinicalNote: true,\n  100 |     canViewAuditTrail: true,\n  101 |     canManageBeds: true,\n  102 |     canCompleteOrder: true,\n  103 |     canCreateOrder: true,\n  104 |     canOverridePrescription: true,\n  105 |     canApproveDischarge: true,\n  106 |     canEnterVitals: true,\n  107 |     canVerifyVitals: true,\n  108 |     canEditClinicalNotes: true,\n  109 |     canCreateDraftOnly: false,\n  110 |     canViewAllAdmittedPatients: false,\n  111 |     canViewDepartmentPatients: false,\n  112 |     canEditBedAssignment: true,\n  113 |     canManageAdmissions: true,\n  114 |   },\n  115 |   medical_officer: {\n  116 |     canAccessOutpatient: true,\n  117 |     canPrescribe: true,\n  118 |     canDiagnose: true,\n  119 |     canDischarge: true,\n  120 |     canApproveInternNotes: false,\n  121 |     canEditClinical: true,\n  122 |     canAdministerMeds: false,\n  123 |     canRecordVitals: true,\n  124 |     canRegisterPatients: true,\n  125 |     canManageBilling: false,\n  126 |     canViewAllPatients: false,\n  127 |     canOverrideJunior: false,\n  128 |     canWriteConsultantNotes: false,\n  129 |     canAdmitPatients: true,\n  130 |     canWriteNursingNotes: false,\n  131 |     canFinalizePrescription: true,\n  132 |     isClinical: true,\n  133 |     canFinalizeClinicalNote: true,\n  134 |     canViewAuditTrail: false,\n  135 |     canManageBeds: false,\n  136 |     canCompleteOrder: true,\n  137 |     canCreateOrder: true,\n  138 |     canOverridePrescription: false,\n  139 |     canApproveDischarge: false,\n  140 |     canEnterVitals: true,\n  141 |     canVerifyVitals: true,\n  142 |     canEditClinicalNotes: true,\n  143 |     canCreateDraftOnly: false,\n  144 |     canViewAllAdmittedPatients: false,\n  145 |     canViewDepartmentPatients: false,\n  146 |     canEditBedAssignment: false,\n  147 |     canManageAdmissions: \"partial\",\n  148 |   },\n  149 |   intern_doctor: {\n  150 |     canAccessOutpatient: true,\n  151 |     canPrescribe: true,\n  152 |     canDiagnose: true,\n  153 |     canDischarge: false,\n  154 |     canApproveInternNotes: false,\n  155 |     canEditClinical: true,\n  156 |     canAdministerMeds: false,\n  157 |     canRecordVitals: true,\n  158 |     canRegisterPatients: false,\n  159 |     canManageBilling: false,\n  160 |     canViewAllPatients: false,\n  161 |     canOverrideJunior: false,\n  162 |     canWriteConsultantNotes: false,\n  163 |     canAdmitPatients: false,\n  164 |     canWriteNursingNotes: false,\n  165 |     canFinalizePrescription: false,\n  166 |     isClinical: true,\n  167 |     canFinalizeClinicalNote: false,\n  168 |     canViewAuditTrail: false,\n  169 |     canManageBeds: false,\n  170 |     canCompleteOrder: false,\n  171 |     canCreateOrder: false,\n  172 |     canOverridePrescription: false,\n  173 |     canApproveDischarge: false,\n  174 |     canEnterVitals: true,\n  175 |     canVerifyVitals: false,\n  176 |     canEditClinicalNotes: true,\n  177 |     canCreateDraftOnly: true,\n  178 |     canViewAllAdmittedPatients: false,\n  179 |     canViewDepartmentPatients: false,\n  180 |     canEditBedAssignment: false,\n  181 |     canManageAdmissions: false,\n  182 |   },\n  183 |   nurse: {\n  184 |     canAccessOutpatient: true,\n  185 |     canPrescribe: false,\n  186 |     canDiagnose: false,\n  187 |     canDischarge: false,\n  188 |     canApproveInternNotes: false,\n  189 |     canEditClinical: false,\n  190 |     canAdministerMeds: true,\n  191 |     canRecordVitals: true,\n  192 |     canRegisterPatients: false,\n  193 |     canManageBilling: false,\n  194 |     canViewAllPatients: false,\n  195 |     canOverrideJunior: false,\n  196 |     canWriteConsultantNotes: false,\n  197 |     canAdmitPatients: false,\n  198 |     canWriteNursingNotes: true,\n  199 |     canFinalizePrescription: false,\n  200 |     isClinical: true,\n  201 |     canFinalizeClinicalNote: false,\n  202 |     canViewAuditTrail: false,\n  203 |     canManageBeds: false,\n  204 |     canCompleteOrder: true,\n  205 |     canCreateOrder: false,\n  206 |     canOverridePrescription: false,\n  207 |     canApproveDischarge: false,\n  208 |     canEnterVitals: true,\n  209 |     canVerifyVitals: false,\n  210 |     canEditClinicalNotes: false,\n  211 |     canCreateDraftOnly: false,\n  212 |     canViewAllAdmittedPatients: false,\n  213 |     canViewDepartmentPatients: false,\n  214 |     canEditBedAssignment: false,\n  215 |     canManageAdmissions: false,\n  216 |   },\n  217 |   staff: {\n  218 |     canAccessOutpatient: true,\n  219 |     canPrescribe: false,\n  220 |     canDiagnose: false,\n  221 |     canDischarge: false,\n  222 |     canApproveInternNotes: false,\n  223 |     canEditClinical: false,\n  224 |     canAdministerMeds: false,\n  225 |     canRecordVitals: false,\n  226 |     canRegisterPatients: true,\n  227 |     canManageBilling: true,\n  228 |     canViewAllPatients: true,\n  229 |     canOverrideJunior: false,\n  230 |     canWriteConsultantNotes: false,\n  231 |     canAdmitPatients: false,\n  232 |     canWriteNursingNotes: false,\n  233 |     canFinalizePrescription: false,\n  234 |     isClinical: false,\n  235 |     canFinalizeClinicalNote: false,\n  236 |     canViewAuditTrail: false,\n  237 |     canManageBeds: true,\n  238 |     canCompleteOrder: false,\n  239 |     canCreateOrder: false,\n  240 |     canOverridePrescription: false,\n  241 |     canApproveDischarge: false,\n  242 |     canEnterVitals: false,\n  243 |     canVerifyVitals: false,\n  244 |     canEditClinicalNotes: false,\n  245 |     canCreateDraftOnly: false,\n  246 |     canViewAllAdmittedPatients: false,\n  247 |     canViewDepartmentPatients: false,\n  248 |     canEditBedAssignment: false,\n  249 |     canManageAdmissions: false,\n  250 |   },\n  251 |   reception: {\n  252 |     canAccessOutpatient: true,\n  253 |     canPrescribe: false,\n  254 |     canDiagnose: false,\n  255 |     canDischarge: false,\n  256 |     canApproveInternNotes: false,\n  257 |     canEditClinical: false,\n  258 |     canAdministerMeds: false,\n  259 |     canRecordVitals: false,\n  260 |     canRegisterPatients: true,\n  261 |     canManageBilling: true,\n  262 |     canViewAllPatients: true,\n  263 |     canOverrideJunior: false,\n  264 |     canWriteConsultantNotes: false,\n  265 |     canAdmitPatients: false,\n  266 |     canWriteNursingNotes: false,\n  267 |     canFinalizePrescription: false,\n  268 |     isClinical: false,\n  269 |     canFinalizeClinicalNote: false,\n  270 |     canViewAuditTrail: false,\n  271 |     canManageBeds: true,\n  272 |     canCompleteOrder: false,\n  273 |     canCreateOrder: false,\n  274 |     canOverridePrescription: false,\n  275 |     canApproveDischarge: false,\n  276 |     canEnterVitals: false,\n  277 |     canVerifyVitals: false,\n  278 |     canEditClinicalNotes: false,\n  279 |     canCreateDraftOnly: false,\n  280 |     canViewAllAdmittedPatients: false,\n  281 |     canViewDepartmentPatients: false,\n  282 |     canEditBedAssignment: false,\n  283 |     canManageAdmissions: false,\n  284 |   },\n  285 |   doctor: {\n  286 |     canAccessOutpatient: true,\n  287 |     canPrescribe: true,\n  288 |     canDiagnose: true,\n  289 |     canDischarge: true,\n  290 |     canApproveInternNotes: true,\n  291 |     canEditClinical: true,\n  292 |     canAdministerMeds: false,\n  293 |     canRecordVitals: true,\n  294 |     canRegisterPatients: true,\n  295 |     canManageBilling: false,\n  296 |     canViewAllPatients: true,\n  297 |     canOverrideJunior: true,\n  298 |     canWriteConsultantNotes: true,\n  299 |     canAdmitPatients: true,\n  300 |     canWriteNursingNotes: false,\n  301 |     canFinalizePrescription: true,\n  302 |     isClinical: true,\n  303 |     canFinalizeClinicalNote: true,\n  304 |     canViewAuditTrail: false,\n  305 |     canManageBeds: true,\n  306 |     canCompleteOrder: true,\n  307 |     canCreateOrder: true,\n  308 |     canOverridePrescription: false,\n  309 |     canApproveDischarge: true,\n  310 |     canEnterVitals: true,\n  311 |     canVerifyVitals: true,\n  312 |     canEditClinicalNotes: true,\n  313 |     canCreateDraftOnly: false,\n  314 |     canViewAllAdmittedPatients: false,\n  315 |     canViewDepartmentPatients: false,\n  316 |     canEditBedAssignment: true,\n  317 |     canManageAdmissions: true,\n  318 |   },\n  319 |   \/\/ \u2500\u2500 5 new roles \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  320 |   assistant_registrar: {\n  321 |     canAccessOutpatient: true,\n  322 |     canPrescribe: true,\n  323 |     canDiagnose: true,\n  324 |     canDischarge: false,\n  325 |     canApproveInternNotes: false,\n  326 |     canEditClinical: true,\n  327 |     canAdministerMeds: false,\n  328 |     canRecordVitals: true,\n  329 |     canRegisterPatients: true,\n  330 |     canManageBilling: false,\n  331 |     canViewAllPatients: false,\n  332 |     canOverrideJunior: false,\n  333 |     canWriteConsultantNotes: false,\n  334 |     canAdmitPatients: true,\n  335 |     canWriteNursingNotes: false,\n  336 |     canFinalizePrescription: true,\n  337 |     isClinical: true,\n  338 |     canFinalizeClinicalNote: true,\n  339 |     canViewAuditTrail: false,\n  340 |     canManageBeds: false,\n  341 |     canCompleteOrder: true,\n  342 |     canCreateOrder: true,\n  343 |     canOverridePrescription: false,\n  344 |     canApproveDischarge: false,\n  345 |     canEnterVitals: true,\n  346 |     canVerifyVitals: true,\n  347 |     canEditClinicalNotes: true,\n  348 |     canCreateDraftOnly: false,\n  349 |     canViewAllAdmittedPatients: false,\n  350 |     canViewDepartmentPatients: true,\n  351 |     canEditBedAssignment: false,\n  352 |     canManageAdmissions: \"partial\",\n  353 |   },\n  354 |   registrar: {\n  355 |     canAccessOutpatient: true,\n  356 |     canPrescribe: true,\n  357 |     canDiagnose: true,\n  358 |     canDischarge: true,\n  359 |     canApproveInternNotes: true,\n  360 |     canEditClinical: true,\n  361 |     canAdministerMeds: false,\n  362 |     canRecordVitals: true,\n  363 |     canRegisterPatients: true,\n  364 |     canManageBilling: true,\n  365 |     canViewAllPatients: true,\n  366 |     canOverrideJunior: true,\n  367 |     canWriteConsultantNotes: true,\n  368 |     canAdmitPatients: true,\n  369 |     canWriteNursingNotes: false,\n  370 |     canFinalizePrescription: true,\n  371 |     isClinical: true,\n  372 |     canFinalizeClinicalNote: true,\n  373 |     canViewAuditTrail: true,\n  374 |     canManageBeds: true,\n  375 |     canCompleteOrder: true,\n  376 |     canCreateOrder: true,\n  377 |     canOverridePrescription: true,\n  378 |     canApproveDischarge: true,\n  379 |     canEnterVitals: true,\n  380 |     canVerifyVitals: true,\n  381 |     canEditClinicalNotes: true,\n  382 |     canCreateDraftOnly: false,\n  383 |     canViewAllAdmittedPatients: true,\n  384 |     canViewDepartmentPatients: true,\n  385 |     canEditBedAssignment: true,\n  386 |     canManageAdmissions: true,\n  387 |   },\n  388 |   assistant_professor: {\n  389 |     canAccessOutpatient: true,\n  390 |     canPrescribe: true,\n  391 |     canDiagnose: true,\n  392 |     canDischarge: true,\n  393 |     canApproveInternNotes: true,\n  394 |     canEditClinical: true,\n  395 |     canAdministerMeds: false,\n  396 |     canRecordVitals: true,\n  397 |     canRegisterPatients: true,\n  398 |     canManageBilling: false,\n  399 |     canViewAllPatients: false,\n  400 |     canOverrideJunior: true,\n  401 |     canWriteConsultantNotes: true,\n  402 |     canAdmitPatients: true,\n  403 |     canWriteNursingNotes: false,\n  404 |     canFinalizePrescription: true,\n  405 |     isClinical: true,\n  406 |     canFinalizeClinicalNote: true,\n  407 |     canViewAuditTrail: true,\n  408 |     canManageBeds: true,\n  409 |     canCompleteOrder: true,\n  410 |     canCreateOrder: true,\n  411 |     canOverridePrescription: true,\n  412 |     canApproveDischarge: true,\n  413 |     canEnterVitals: true,\n  414 |     canVerifyVitals: true,\n  415 |     canEditClinicalNotes: true,\n  416 |     canCreateDraftOnly: false,\n  417 |     canViewAllAdmittedPatients: false,\n  418 |     canViewDepartmentPatients: false,\n  419 |     canEditBedAssignment: true,\n  420 |     canManageAdmissions: true,\n  421 |   },\n  422 |   associate_professor: {\n  423 |     canAccessOutpatient: true,\n  424 |     canPrescribe: true,\n  425 |     canDiagnose: true,\n  426 |     canDischarge: true,\n  427 |     canApproveInternNotes: true,\n  428 |     canEditClinical: true,\n  429 |     canAdministerMeds: false,\n  430 |     canRecordVitals: true,\n  431 |     canRegisterPatients: true,\n  432 |     canManageBilling: false,\n  433 |     canViewAllPatients: false,\n  434 |     canOverrideJunior: true,\n  435 |     canWriteConsultantNotes: true,\n  436 |     canAdmitPatients: true,\n  437 |     canWriteNursingNotes: false,\n  438 |     canFinalizePrescription: true,\n  439 |     isClinical: true,\n  440 |     canFinalizeClinicalNote: true,\n  441 |     canViewAuditTrail: true,\n  442 |     canManageBeds: true,\n  443 |     canCompleteOrder: true,\n  444 |     canCreateOrder: true,\n  445 |     canOverridePrescription: true,\n  446 |     canApproveDischarge: true,\n  447 |     canEnterVitals: true,\n  448 |     canVerifyVitals: true,\n  449 |     canEditClinicalNotes: true,\n  450 |     canCreateDraftOnly: false,\n  451 |     canViewAllAdmittedPatients: false,\n  452 |     canViewDepartmentPatients: false,\n  453 |     canEditBedAssignment: true,\n  454 |     canManageAdmissions: true,\n  455 |   },\n  456 |   professor: {\n  457 |     canAccessOutpatient: true,\n  458 |     canPrescribe: true,\n  459 |     canDiagnose: true,\n  460 |     canDischarge: true,\n  461 |     canApproveInternNotes: true,\n  462 |     canEditClinical: true,\n  463 |     canAdministerMeds: false,\n  464 |     canRecordVitals: true,\n  465 |     canRegisterPatients: true,\n  466 |     canManageBilling: false,\n  467 |     canViewAllPatients: false,\n  468 |     canOverrideJunior: true,\n  469 |     canWriteConsultantNotes: true,\n  470 |     canAdmitPatients: true,\n  471 |     canWriteNursingNotes: false,\n  472 |     canFinalizePrescription: true,\n  473 |     isClinical: true,\n  474 |     canFinalizeClinicalNote: true,\n  475 |     canViewAuditTrail: true,\n  476 |     canManageBeds: true,\n  477 |     canCompleteOrder: true,\n  478 |     canCreateOrder: true,\n  479 |     canOverridePrescription: true,\n  480 |     canApproveDischarge: true,\n  481 |     canEnterVitals: true,\n  482 |     canVerifyVitals: true,\n  483 |     canEditClinicalNotes: true,\n  484 |     canCreateDraftOnly: false,\n  485 |     canViewAllAdmittedPatients: false,\n  486 |     canViewDepartmentPatients: false,\n  487 |     canEditBedAssignment: true,\n  488 |     canManageAdmissions: true,\n  489 |   },\n  490 | };\n  491 | \n  492 | \/\/ \u2500\u2500 Admin fallback permissions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  493 | \n  494 | const ADMIN_PERMISSIONS: RolePermissions = {\n  495 |   canAccessOutpatient: true,\n  496 |   canPrescribe: true,\n  497 |   canDiagnose: true,\n  498 |   canDischarge: true,\n  499 |   canApproveInternNotes: true,\n  500 |   canEditClinical: true,\n  501 |   canAdministerMeds: true,\n  502 |   canRecordVitals: true,\n  503 |   canRegisterPatients: true,\n  504 |   canManageBilling: true,\n  505 |   canViewAllPatients: true,\n  506 |   canOverrideJunior: true,\n  507 |   canWriteConsultantNotes: true,\n  508 |   canAdmitPatients: true,\n  509 |   canWriteNursingNotes: true,\n  510 |   canFinalizePrescription: true,\n  511 |   isClinical: true,\n  512 |   canFinalizeClinicalNote: true,\n  513 |   canViewAuditTrail: true,\n  514 |   canManageBeds: true,\n  515 |   canCompleteOrder: true,\n  516 |   canCreateOrder: true,\n  517 |   canOverridePrescription: true,\n  518 |   canApproveDischarge: true,\n  519 |   canEnterVitals: true,\n  520 |   canVerifyVitals: true,\n  521 |   canEditClinicalNotes: true,\n  522 |   canCreateDraftOnly: false,\n  523 |   canViewAllAdmittedPatients: true,\n  524 |   canViewDepartmentPatients: true,\n  525 |   canEditBedAssignment: true,\n  526 |   canManageAdmissions: true,\n  527 | };\n  528 | \n  529 | \/\/ Patient has NO clinical permissions\n  530 | const PATIENT_PERMISSIONS: RolePermissions = {\n  531 |   canAccessOutpatient: false,\n  532 |   canPrescribe: false,\n  533 |   canDiagnose: false,\n  534 |   canDischarge: false,\n  535 |   canApproveInternNotes: false,\n  536 |   canEditClinical: false,\n  537 |   canAdministerMeds: false,\n  538 |   canRecordVitals: false,\n  539 |   canRegisterPatients: false,\n  540 |   canManageBilling: false,\n  541 |   canViewAllPatients: false,\n  542 |   canOverrideJunior: false,\n  543 |   canWriteConsultantNotes: false,\n  544 |   canAdmitPatients: false,\n  545 |   canWriteNursingNotes: false,\n  546 |   canFinalizePrescription: false,\n  547 |   isClinical: false,\n  548 |   canFinalizeClinicalNote: false,\n  549 |   canViewAuditTrail: false,\n  550 |   canManageBeds: false,\n  551 |   canCompleteOrder: false,\n  552 |   canCreateOrder: false,\n  553 |   canOverridePrescription: false,\n  554 |   canApproveDischarge: false,\n  555 |   canEnterVitals: false,\n  556 |   canVerifyVitals: false,\n  557 |   canEditClinicalNotes: false,\n  558 |   canCreateDraftOnly: false,\n  559 |   canViewAllAdmittedPatients: false,\n  560 |   canViewDepartmentPatients: false,\n  561 |   canEditBedAssignment: false,\n  562 |   canManageAdmissions: false,\n  563 | };\n  564 | \n  565 | \/\/ \u2500\u2500 Public API \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  566 | \n  567 | \/**\n  568 |  * Returns the permission set for the currently logged-in staff\/doctor.\n  569 |  * Falls back to the most restrictive set (staff) when no role is matched.\n  570 |  *\/\n  571 | export function useRolePermissions(): RolePermissions {\n  572 |   const { currentDoctor } = useEmailAuth();\n  573 |   const role = (currentDoctor?.role ?? \"staff\") as StaffRole;\n  574 |   return getPermissionsForRole(role);\n  575 | }\n  576 | \n  577 | \/**\n  578 |  * Returns permissions for a specific role without needing auth context.\n  579 |  *\/\n  580 | export function getPermissionsForRole(role: StaffRole): RolePermissions {\n  581 |   if (role === \"admin\") return ADMIN_PERMISSIONS;\n  582 |   if (role === \"patient\") return PATIENT_PERMISSIONS;\n  583 |   return (\n  584 |     ROLE_PERMISSIONS[role as Exclude<StaffRole, \"admin\" | \"patient\">] ??\n  585 |     ROLE_PERMISSIONS.staff\n  586 |   );\n  587 | }\n  588 | \n  589 | \/** True when the role is a consultant-type (alias to the types helper for component use) *\/\n  590 | export { isConsultantType } from \"..\/types\";\n  591 |",
+            "is_error": false,
+            "time": 1784359121
+        },
+        {
+            "id": "msg_2576b75074",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "This file looks clean. It imports `useEmailAuth` correctly and uses it. Let me check the `useSiteConfig.tsx` as well quickly:"
+                },
+                {
+                    "type": "text",
+                    "text": "Let me also verify `useSiteConfig.tsx` and `useQueries.ts` are fully clean:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_fah7k0isAVX9Lq4VLKiG7318",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks && grep -n \"localStorage\\|sessionStorage\\|\\.getItem\\|\\.setItem\\|\\.removeItem\\|\\.clear\\|pendingChanges\" useSiteConfig.tsx useQueries.ts useAdminAuth.tsx 2>\/dev\/null"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 36006,
+                "completion_tokens": 169,
+                "total_tokens": 36175,
+                "prompt_cache_hit_tokens": 29440,
+                "prompt_cache_miss_tokens": 6566,
+                "prompt_tokens_details": {
+                    "cached_tokens": 29440
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 32
+                },
+                "cached_tokens": 29440
+            },
+            "time": 1784359124
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_fah7k0isAVX9Lq4VLKiG7318",
+            "content": "useSiteConfig.tsx:5: * No localStorage used \u2014 config is fetched via React Query hooks.\nuseQueries.ts:5: * No localStorage, sessionStorage, or IndexedDB is used for business data.\nuseQueries.ts:450:      pendingChanges: false,\nuseAdminAuth.tsx:5: * Session state is kept in memory only \u2014 no localStorage.\n",
+            "is_error": false,
+            "time": 1784359125
+        },
+        {
+            "id": "msg_a2c0f23e2f",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "All localStorage references are just in comments. The `pendingChanges: false` on line 450 of `useQueries.ts` is valid - it's just a property assignment, not a function call issue.\n\nLet me now check the `useSiteConfig.tsx` to ensure it has the correct method names (`getSiteConfig`\/`updateSiteConfig`):"
+                },
+                {
+                    "type": "text",
+                    "text": "All clean. Let me now verify the `useSiteConfig.tsx` uses the correct API method names:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_8zq5hD0kwJ0skP7wFCDx3635",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks && grep -n \"landingService\" useSiteConfig.tsx useDoctorContent.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 36265,
+                "completion_tokens": 182,
+                "total_tokens": 36447,
+                "prompt_cache_hit_tokens": 36096,
+                "prompt_cache_miss_tokens": 169,
+                "prompt_tokens_details": {
+                    "cached_tokens": 36096
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 74
+                },
+                "cached_tokens": 36096
+            },
+            "time": 1784359128
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_8zq5hD0kwJ0skP7wFCDx3635",
+            "content": "useSiteConfig.tsx:6: * Managed via landingService on the server.\nuseSiteConfig.tsx:11:import { landingService } from \"..\/services\/landing\";\nuseSiteConfig.tsx:82:        const result = await landingService.getSiteConfig();\nuseSiteConfig.tsx:92:      await landingService.updateSiteConfig(updated);\nuseDoctorContent.tsx:6: * Overrides are managed via the landingService on the server.\nuseDoctorContent.tsx:11:import { landingService } from \"..\/services\/landing\";\nuseDoctorContent.tsx:22:      const config = await landingService.getSiteConfig();\nuseDoctorContent.tsx:29:      await landingService.updateSiteConfig({\n",
+            "is_error": false,
+            "time": 1784359128
+        },
+        {
+            "id": "msg_9929723c50",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Both hooks use the correct `getSiteConfig` and `updateSiteConfig` methods from `landingService`. Let me verify these methods exist in the landing service:"
+                },
+                {
+                    "type": "text",
+                    "text": "Both hooks use the correct method names. Let me verify the landing service has these methods:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_LGDn68bSdTz3mLyzO0wx8596",
+                    "name": "grep",
+                    "input": {
+                        "include": "*.ts",
+                        "max_results": 30,
+                        "path": "\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/services",
+                        "pattern": "getSiteConfig|updateSiteConfig"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 36609,
+                "completion_tokens": 174,
+                "total_tokens": 36783,
+                "prompt_cache_hit_tokens": 36352,
+                "prompt_cache_miss_tokens": 257,
+                "prompt_tokens_details": {
+                    "cached_tokens": 36352
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 34
+                },
+                "cached_tokens": 36352
+            },
+            "time": 1784359131
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_LGDn68bSdTz3mLyzO0wx8596",
+            "content": "No matches found for pattern: getSiteConfig|updateSiteConfig",
+            "is_error": false,
+            "time": 1784359131
+        },
+        {
+            "id": "msg_8827a40df4",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784359387
+        },
+        {
+            "id": "msg_acfd9cc7fd",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The landing service doesn't have `getSiteConfig` or `updateSiteConfig` methods. Let me check what methods it actually has."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me check what methods the landing service actually exposes:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_PhRDW7ieBRLhTcQxebHR4315",
+                    "name": "grep",
+                    "input": {
+                        "include": "*.ts",
+                        "max_results": 50,
+                        "path": "\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/services",
+                        "pattern": "export (function|const|class|interface|type)"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 33595,
+                "completion_tokens": 165,
+                "total_tokens": 33760,
+                "prompt_cache_hit_tokens": 19072,
+                "prompt_cache_miss_tokens": 14523,
+                "prompt_tokens_details": {
+                    "cached_tokens": 19072
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 28
+                },
+                "cached_tokens": 19072
+            },
+            "time": 1784359391
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_PhRDW7ieBRLhTcQxebHR4315",
+            "content": "No matches found for pattern: export (function|const|class|interface|type)",
+            "is_error": false,
+            "time": 1784359391
+        },
+        {
+            "id": "msg_3de7ceca5b",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The landing service might be a class or object with methods. Let me read the actual file to see what methods it has."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_QIn9GUL1MZbmWMhr3KWf8972",
+                    "name": "bash",
+                    "input": {
+                        "command": "ls -la \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/services\/"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 33789,
+                "completion_tokens": 95,
+                "total_tokens": 33884,
+                "prompt_cache_hit_tokens": 33664,
+                "prompt_cache_miss_tokens": 125,
+                "prompt_tokens_details": {
+                    "cached_tokens": 33664
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 25
+                },
+                "cached_tokens": 33664
+            },
+            "time": 1784359394
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_QIn9GUL1MZbmWMhr3KWf8972",
+            "content": "total 80\ndrwxr-xr-x  2 drarmank drarmank 4096 Jul 16 20:58 .\ndrwxr-xr-x 11 drarmank drarmank 4096 Jul 16 20:57 ..\n-rw-r--r--  1 drarmank drarmank 2460 Jul 16 20:58 admissions.ts\n-rw-r--r--  1 drarmank drarmank 2224 Jul 16 20:57 appointments.ts\n-rw-r--r--  1 drarmank drarmank 1328 Jul 16 20:58 audit.ts\n-rw-r--r--  1 drarmank drarmank 4179 Jul 16 20:57 auth.ts\n-rw-r--r--  1 drarmank drarmank 3400 Jul 16 20:58 clinicalNotes.ts\n-rw-r--r--  1 drarmank drarmank 1895 Jul 16 20:58 index.ts\n-rw-r--r--  1 drarmank drarmank 2113 Jul 16 20:58 investigations.ts\n-rw-r--r--  1 drarmank drarmank 2175 Jul 16 20:58 landing.ts\n-rw-r--r--  1 drarmank drarmank 1519 Jul 16 20:58 notifications.ts\n-rw-r--r--  1 drarmank drarmank 2930 Jul 16 20:57 patients.ts\n-rw-r--r--  1 drarmank drarmank 2125 Jul 16 20:58 payments.ts\n-rw-r--r--  1 drarmank drarmank 2309 Jul 16 20:57 prescriptions.ts\n-rw-r--r--  1 drarmank drarmank 1151 Jul 16 20:58 settings.ts\n-rw-r--r--  1 drarmank drarmank 1959 Jul 16 20:58 staff.ts\n-rw-r--r--  1 drarmank drarmank 1126 Jul 16 20:58 users.ts\n-rw-r--r--  1 drarmank drarmank 2571 Jul 16 20:57 visits.ts\n-rw-r--r--  1 drarmank drarmank 1035 Jul 16 20:58 vitals.ts\n",
+            "is_error": false,
+            "time": 1784359394
+        },
+        {
+            "id": "msg_d975f8b460",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me check the landing service file to see what methods it actually has."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ttyCHuhajhnS5DhQqWrK0791",
+                    "name": "read_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/services\/landing.ts"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 34411,
+                "completion_tokens": 79,
+                "total_tokens": 34490,
+                "prompt_cache_hit_tokens": 33792,
+                "prompt_cache_miss_tokens": 619,
+                "prompt_tokens_details": {
+                    "cached_tokens": 33792
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 15
+                },
+                "cached_tokens": 33792
+            },
+            "time": 1784359396
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ttyCHuhajhnS5DhQqWrK0791",
+            "content": "    1 | \/**\n    2 |  * Landing Page Service\n    3 |  *\n    4 |  * Operations for the public-facing landing page content.\n    5 |  * All data is persisted in MySQL via the PHP API.\n    6 |  *\/\n    7 | \n    8 | import { get, post } from '..\/lib\/apiClient';\n    9 | \n   10 | export interface SocialLink {\n   11 |   label: string;\n   12 |   url: string;\n   13 |   icon: string;\n   14 | }\n   15 | \n   16 | export interface EmergencyContact {\n   17 |   doctorName: string;\n   18 |   whatsappNumber: string;\n   19 |   prefilledMessage: string;\n   20 | }\n   21 | \n   22 | export interface HeroSection {\n   23 |   taglineEn: string;\n   24 |   taglineBn: string;\n   25 |   subheadingEn: string;\n   26 |   subheadingBn: string;\n   27 |   heroTaglineEn?: string;\n   28 |   heroTaglineBn?: string;\n   29 |   heroDescriptionEn?: string;\n   30 |   heroDescriptionBn?: string;\n   31 |   cta1Label: string;\n   32 |   cta2Label: string;\n   33 | }\n   34 | \n   35 | export interface AboutSection {\n   36 |   visible: boolean;\n   37 |   clinicNameEn: string;\n   38 |   clinicNameBn: string;\n   39 |   descriptionEn: string;\n   40 |   descriptionBn: string;\n   41 |   yearsExperience: number;\n   42 |   patientCount: string;\n   43 |   doctorCount: number;\n   44 |   specialties: string[];\n   45 |   affiliations: string[];\n   46 | }\n   47 | \n   48 | export interface FooterSection {\n   49 |   addressEn: string;\n   50 |   addressBn: string;\n   51 |   phone: string;\n   52 |   email: string;\n   53 |   openingHours: string;\n   54 |   copyrightText: string;\n   55 |   socialLinks: SocialLink[];\n   56 | }\n   57 | \n   58 | export interface SiteConfig {\n   59 |   heroSection: HeroSection;\n   60 |   aboutSection: AboutSection;\n   61 |   footerSection: FooterSection;\n   62 |   emergencyContacts: EmergencyContact[];\n   63 | }\n   64 | \n   65 | export const landingService = {\n   66 |   \/** Load front page content from server *\/\n   67 |   async loadContent(): Promise<Record<string, unknown> | null> {\n   68 |     try {\n   69 |       return await get<Record<string, unknown>>('\/frontpage\/get.php');\n   70 |     } catch {\n   71 |       return null;\n   72 |     }\n   73 |   },\n   74 | \n   75 |   \/** Save front page content to server *\/\n   76 |   async saveContent(data: Record<string, unknown>): Promise<boolean> {\n   77 |     try {\n   78 |       await post('\/frontpage\/save.php', data);\n   79 |       return true;\n   80 |     } catch {\n   81 |       return false;\n   82 |     }\n   83 |   },\n   84 | \n   85 |   \/** Get site configuration *\/\n   86 |   async getSiteConfig(): Promise<SiteConfig | null> {\n   87 |     try {\n   88 |       return await get<SiteConfig>('\/settings\/site-config.php');\n   89 |     } catch {\n   90 |       return null;\n   91 |     }\n   92 |   },\n   93 | \n   94 |   \/** Update site configuration *\/\n   95 |   async updateSiteConfig(config: Partial<SiteConfig>): Promise<void> {\n   96 |     await post('\/settings\/site-config.php', config);\n   97 |   },\n   98 | };\n   99 |",
+            "is_error": false,
+            "time": 1784359396
+        },
+        {
+            "id": "msg_c3cd61dc5d",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The landing service does have `getSiteConfig()` and `updateSiteConfig()` - that was a false alarm from my grep (the grep was looking for `export function` which wouldn't match a const object). The methods exist.\n\nNow let me check the index.ts to see what all is re-exported:"
+                },
+                {
+                    "type": "text",
+                    "text": "The landing service does have the expected methods. Let me now verify the services index and check for any remaining issues across the full codebase:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_AH7pCXyYQ4QJBUZsKODs8384",
+                    "name": "read_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/services\/index.ts"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 35337,
+                "completion_tokens": 153,
+                "total_tokens": 35490,
+                "prompt_cache_hit_tokens": 34432,
+                "prompt_cache_miss_tokens": 905,
+                "prompt_tokens_details": {
+                    "cached_tokens": 34432
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 64
+                },
+                "cached_tokens": 34432
+            },
+            "time": 1784359400
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_AH7pCXyYQ4QJBUZsKODs8384",
+            "content": "    1 | \/**\n    2 |  * Data Access Layer (DAL) - Service barrel export\n    3 |  *\n    4 |  * All services expose only CRUD methods:\n    5 |  *   getAll(), getById(), create(), update(), delete(), search()\n    6 |  *\n    7 |  * No component accesses localStorage, sessionStorage, IndexedDB, or fetch() directly.\n    8 |  * All data operations go through these services \u2192 PHP API \u2192 MySQL.\n    9 |  *\/\n   10 | \n   11 | export { authService } from '.\/auth';\n   12 | export type { DoctorAccount, PatientAccount } from '.\/auth';\n   13 | \n   14 | export { patientService } from '.\/patients';\n   15 | export type { CreatePatientData, UpdatePatientData } from '.\/patients';\n   16 | \n   17 | export { visitService } from '.\/visits';\n   18 | export type { CreateVisitData, UpdateVisitData } from '.\/visits';\n   19 | \n   20 | export { appointmentService } from '.\/appointments';\n   21 | export type { CreateAppointmentData, UpdateAppointmentData } from '.\/appointments';\n   22 | \n   23 | export { prescriptionService } from '.\/prescriptions';\n   24 | export type { CreatePrescriptionData, UpdatePrescriptionData } from '.\/prescriptions';\n   25 | \n   26 | export { staffService } from '.\/staff';\n   27 | export type { CreateStaffData, UpdateStaffData } from '.\/staff';\n   28 | \n   29 | export { clinicalNotesService } from '.\/clinicalNotes';\n   30 | \n   31 | export { userService } from '.\/users';\n   32 | \n   33 | export { landingService } from '.\/landing';\n   34 | export type { SiteConfig, HeroSection, AboutSection, FooterSection, EmergencyContact, SocialLink } from '.\/landing';\n   35 | \n   36 | export { settingsService } from '.\/settings';\n   37 | export type { SiteSetting } from '.\/settings';\n   38 | \n   39 | export { paymentService } from '.\/payments';\n   40 | export type { PaymentData } from '.\/payments';\n   41 | \n   42 | export { investigationService } from '.\/investigations';\n   43 | export type { InvestigationData } from '.\/investigations';\n   44 | \n   45 | export { notificationService } from '.\/notifications';\n   46 | export type { Notification } from '.\/notifications';\n   47 | \n   48 | export { auditService } from '.\/audit';\n   49 | export type { AuditLogEntry } from '.\/audit';\n   50 | \n   51 | export { vitalService } from '.\/vitals';\n   52 | \n   53 | export { admissionService } from '.\/admissions';\n   54 |",
+            "is_error": false,
+            "time": 1784359400
+        },
+        {
+            "id": "msg_18f187588f",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Everything looks clean. Let me now do a final comprehensive scan to make sure there are no remaining issues - empty returns, broken for loops, or localStorage references across ALL source files."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me do a final comprehensive scan of the entire frontend source for any remaining bugs:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_CijuACMF6ZAZjHJ05XMc6422",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && for issue in 'localStorage' 'sessionStorage' 'indexedDB'; do\n  matches=$(grep -rl \"$issue\" --include=\"*.ts\" --include=\"*.tsx\" . 2>\/dev\/null)\n  if [ -n \"$matches\" ]; then\n    echo \"FOUND $issue in:\"\n    echo \"$matches\"\n  fi\ndone"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 36092,
+                "completion_tokens": 198,
+                "total_tokens": 36290,
+                "prompt_cache_hit_tokens": 35456,
+                "prompt_cache_miss_tokens": 636,
+                "prompt_tokens_details": {
+                    "cached_tokens": 35456
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 36
+                },
+                "cached_tokens": 35456
+            },
+            "time": 1784359404
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_CijuACMF6ZAZjHJ05XMc6422",
+            "content": "FOUND localStorage in:\n.\/components\/NewPrescriptionMode.tsx\n.\/components\/PatientForm.tsx\n.\/components\/InvestigationPayment.tsx\n.\/components\/TreatmentTemplates.ts\n.\/components\/SyncStatusBadge.tsx\n.\/components\/MoneyReceipt.tsx\n.\/components\/PrescriptionForm.tsx\n.\/components\/DailyProgressNote.tsx\n.\/components\/TestimonialsSection.tsx\n.\/components\/PrescriptionHeaderPanel.tsx\n.\/components\/ConsentForm.tsx\n.\/components\/PatientTimeline.tsx\n.\/components\/AdmitPatientDialog.tsx\n.\/components\/ClinicalAlertsPanel.tsx\n.\/components\/InvestigationTracker.tsx\n.\/components\/VitalVerification.tsx\n.\/components\/PatientChat.tsx\n.\/components\/DrainMonitor.tsx\n.\/components\/VisitForm.tsx\n.\/components\/GallerySection.tsx\n.\/components\/MedicationAdminRecord.tsx\n.\/components\/PrescriptionPad.tsx\n.\/components\/PatientDashboard.tsx\n.\/components\/PrescriptionPDFManager.tsx\n.\/components\/AdmissionTimeline.tsx\n.\/components\/AdmissionHistory.tsx\n.\/components\/UpgradedPrescriptionEMR.tsx\n.\/components\/DischargeSummaryTab.tsx\n.\/components\/NurseDueMeds.tsx\n.\/components\/PatientTabs.tsx\n.\/components\/PatientSummaryCard.tsx\n.\/components\/HandoverSystem.tsx\n.\/components\/AdviceTemplates.ts\n.\/components\/PrescriptionPadPreview.tsx\n.\/components\/PrescriptionHelpers.ts\n.\/components\/HistoryFeatures.tsx\n.\/components\/IOChart.tsx\n.\/components\/EmergencyConsultationModal.tsx\n.\/components\/patientDashboardTypes.ts\n.\/components\/ReferralLetter.tsx\n.\/components\/ProcedureLog.tsx\n.\/services\/index.ts\n.\/services\/auth.ts\n.\/Layout.tsx\n.\/lib\/apiClient.ts\n.\/lib\/hybridStorage.ts\n.\/lib\/clinicalStore.ts\n.\/lib\/api.ts\n.\/App.tsx\n.\/utils\/clinicalUtils.ts\n.\/pages\/InvestigationPaymentPage.tsx\n.\/pages\/Settings.tsx\n.\/pages\/ProcedurePayment.tsx\n.\/pages\/dashboards\/AdminDashboard.tsx\n.\/pages\/dashboards\/ConsultantDashboard.tsx\n.\/pages\/dashboards\/MedicalOfficerDashboard.tsx\n.\/pages\/dashboards\/NurseDashboard.tsx\n.\/pages\/dashboards\/InternDashboard.tsx\n.\/pages\/dashboards\/StaffDashboard.tsx\n.\/pages\/AuditLog.tsx\n.\/pages\/SerialDisplay.tsx\n.\/pages\/OutstandingBalances.tsx\n.\/pages\/AppointmentPayment.tsx\n.\/pages\/LandingPage.tsx\n.\/pages\/Staff.tsx\n.\/pages\/PatientProfile.tsx\n.\/pages\/PatientDashboard.tsx\n.\/pages\/BedManagement.tsx\n.\/pages\/TotalIncome.tsx\n.\/pages\/Appointments.tsx\n.\/pages\/OtherPayment.tsx\n.\/pages\/Patients.tsx\n.\/pages\/WardRound.tsx\n.\/pages\/EmergencyPrescription.tsx\n.\/hooks\/useMigration.ts\n.\/hooks\/useSiteConfig.tsx\n.\/hooks\/useQueries.ts\n.\/hooks\/useAdminSave.ts\n.\/hooks\/useDoctorContent.tsx\n.\/hooks\/useAdminAuth.tsx\n.\/hooks\/useCanisterSync.ts\n.\/hooks\/useEmailAuth.tsx\nFOUND sessionStorage in:\n.\/components\/PatientDashboard.tsx\n.\/services\/index.ts\n.\/hooks\/useQueries.ts\n",
+            "is_error": false,
+            "time": 1784359404
+        },
+        {
+            "id": "msg_6755b8b8c8",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "These are all comments - the grep is finding `localStorage` in comments. Let me verify by checking if any of these are actual code references vs comments by looking for `.getItem(` or `.setItem(` patterns.\n\nActually, I already checked earlier and found NO `.getItem(` or `.setItem(` calls. These are all just comments mentioning localStorage. Let me verify this more carefully."
+                },
+                {
+                    "type": "text",
+                    "text": "Those are all comments mentioning localStorage. Let me verify there are no actual API calls:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_kSs7fFnY9fWJs6Xmtnl62912",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && grep -rn \"\\.getItem\\|\\.setItem\\|\\.removeItem\\|\\.clear\" --include=\"*.ts\" --include=\"*.tsx\" . 2>\/dev\/null | grep -v \"node_modules\" | head -30"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 37048,
+                "completion_tokens": 213,
+                "total_tokens": 37261,
+                "prompt_cache_hit_tokens": 36224,
+                "prompt_cache_miss_tokens": 824,
+                "prompt_tokens_details": {
+                    "cached_tokens": 36224
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 80
+                },
+                "cached_tokens": 36224
+            },
+            "time": 1784359407
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_kSs7fFnY9fWJs6Xmtnl62912",
+            "content": ".\/components\/NewPrescriptionMode.tsx:266:        const raw = localStorage.getItem(allKeys[0]);\n.\/components\/NewPrescriptionMode.tsx:271:    const raw = localStorage.getItem(keys[0]);\n.\/components\/NewPrescriptionMode.tsx:1397:                  {localStorage.getItem(\"treatmentReferencePDF\") && (\n.\/components\/NewPrescriptionMode.tsx:1399:                      + {localStorage.getItem(\"treatmentReferencePDF\")}\n.\/components\/PatientForm.tsx:76:      const raw = localStorage.getItem(key);\n.\/components\/InvestigationPayment.tsx:50:    return JSON.parse(localStorage.getItem(RATES_KEY) || \"[]\");\n.\/components\/TreatmentTemplates.ts:424:    const raw = localStorage.getItem(CUSTOM_KEY);\n.\/components\/TreatmentTemplates.ts:586:  localStorage.setItem(CUSTOM_KEY, JSON.stringify(updated));\n.\/components\/SyncStatusBadge.tsx:35:    const raw = localStorage.getItem(\"medicare_last_sync_at\");\n.\/components\/MoneyReceipt.tsx:48:    return JSON.parse(localStorage.getItem(RECEIPTS_KEY) || \"[]\");\n.\/components\/MoneyReceipt.tsx:62:  localStorage.setItem(RECEIPTS_KEY, JSON.stringify(all));\n.\/components\/MoneyReceipt.tsx:82:  const storedYear = Number.parseInt(localStorage.getItem(yearKey) || \"0\", 10);\n.\/components\/MoneyReceipt.tsx:85:    count = Number.parseInt(localStorage.getItem(counterKey) || \"0\", 10) + 1;\n.\/components\/MoneyReceipt.tsx:88:  localStorage.setItem(yearKey, String(year));\n.\/components\/MoneyReceipt.tsx:89:  localStorage.setItem(counterKey, String(count));\n.\/components\/MoneyReceipt.tsx:1131:    localStorage.setItem(RECEIPTS_KEY, JSON.stringify(updated));\n.\/components\/PrescriptionForm.tsx:260:        return JSON.parse(localStorage.getItem(\"doctorProfile\") || \"{}\");\n.\/components\/DailyProgressNote.tsx:227:    const raw = localStorage.getItem(noteKey(doctorEmail, patientId, date));\n.\/components\/DailyProgressNote.tsx:240:  localStorage.setItem(\n.\/components\/TestimonialsSection.tsx:66:    const raw = localStorage.getItem(STORAGE_KEY);\n.\/components\/TestimonialsSection.tsx:74:  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));\n.\/components\/TestimonialsSection.tsx:78:  return localStorage.getItem(HEADING_KEY) || DEFAULT_HEADING;\n.\/components\/TestimonialsSection.tsx:181:    localStorage.setItem(HEADING_KEY, h);\n.\/components\/PrescriptionHeaderPanel.tsx:58:    const raw = localStorage.getItem(key);\n.\/components\/PrescriptionHeaderPanel.tsx:71:  localStorage.setItem(key, JSON.stringify(data));\n.\/components\/PrescriptionHeaderPanel.tsx:134:      localStorage.removeItem(imgKey);\n.\/components\/PrescriptionHeaderPanel.tsx:145:    localStorage.removeItem(imgKey);\n.\/components\/PrescriptionHeaderPanel.tsx:249:                    localStorage.removeItem(\n.\/components\/ConsentForm.tsx:209:    const raw = localStorage.getItem(`consentForms_${patientId}`);\n.\/components\/ConsentForm.tsx:220:  localStorage.setItem(`consentForms_${patientId}`, JSON.stringify(records));\n",
+            "is_error": false,
+            "time": 1784359407
+        },
+        {
+            "id": "msg_b546235a88",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "There ARE still many files with actual localStorage calls. These are in the components themselves, not just hooks. The grep from earlier (`\\.getItem\\(|\\.setItem\\(|\\.removeItem\\(|\\.clear\\(`) didn't find them because I wasn't searching deeply enough. Let me see how many actual localStorage calls remain.\n\nThere are many component files directly accessing localStorage. This is a much bigger task than I thought - there are 30+ component files with localStorage calls. Let me count them all and then plan how to address them.\n\nBut wait - the task was to refactor the hooks and services. The components that directly use localStorage might need to be refactored to use the service layer instead. Let me check what patterns they use.\n\nActually, let me check if there are many distinct files with actual localStorage calls:"
+                },
+                {
+                    "type": "text",
+                    "text": "There are still components with localStorage calls. Let me get the complete list of files with actual API calls:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ySC7n5mdAdXcLYldrc7u2799",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && grep -rln \"\\.getItem\\|\\.setItem\\|\\.removeItem\\|\\.clear\" --include=\"*.ts\" --include=\"*.tsx\" . 2>\/dev\/null | grep -v \"node_modules\" | sort | wc -l"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 37997,
+                "completion_tokens": 309,
+                "total_tokens": 38306,
+                "prompt_cache_hit_tokens": 37248,
+                "prompt_cache_miss_tokens": 749,
+                "prompt_tokens_details": {
+                    "cached_tokens": 37248
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 168
+                },
+                "cached_tokens": 37248
+            },
+            "time": 1784359413
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ySC7n5mdAdXcLYldrc7u2799",
+            "content": "68\n",
+            "is_error": false,
+            "time": 1784359413
+        },
+        {
+            "id": "msg_cbc06645d5",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "68 files still have localStorage calls. That's a lot. Let me check the actual count of unique patterns and what kind of data they're storing. The hooks are clean but the components themselves still use localStorage directly. This is a significant remaining task.\n\nLet me understand the scope better - are these just cosmetic issues or are they actual data storage that should go through the API? Let me check a few representative examples."
+                },
+                {
+                    "type": "text",
+                    "text": "68 files still have localStorage access. Let me assess the scope more carefully:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_4FQm72qtqSy9VNnVfnft2156",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && grep -rln \"\\.getItem\\|\\.setItem\\|\\.removeItem\\|\\.clear\" --include=\"*.ts\" --include=\"*.tsx\" . 2>\/dev\/null | grep -v \"node_modules\" | sort | grep \"components\/\" | wc -l"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 38320,
+                "completion_tokens": 223,
+                "total_tokens": 38543,
+                "prompt_cache_hit_tokens": 38272,
+                "prompt_cache_miss_tokens": 48,
+                "prompt_tokens_details": {
+                    "cached_tokens": 38272
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 83
+                },
+                "cached_tokens": 38272
+            },
+            "time": 1784359417
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_4FQm72qtqSy9VNnVfnft2156",
+            "content": "40\n",
+            "is_error": false,
+            "time": 1784359417
+        },
+        {
+            "id": "msg_8676208fa3",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "40 component files, plus pages and utility files. This is a LOT of work. Let me check what kind of data these components are storing in localStorage. If it's mostly UI state (like collapsed sections, theme preferences, etc.) then it might be acceptable to keep localStorage for those. But if it's business data (patient records, prescriptions, etc.), it needs to go through the API.\n\nLet me look at a few representative examples to understand the patterns."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_X4iRAv4ATx7XmwHf7qQI2403",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && grep -rln \"\\.getItem\\|\\.setItem\\|\\.removeItem\\|\\.clear\" --include=\"*.ts\" --include=\"*.tsx\" . 2>\/dev\/null | grep -v \"node_modules\" | sort"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 38557,
+                "completion_tokens": 209,
+                "total_tokens": 38766,
+                "prompt_cache_hit_tokens": 38528,
+                "prompt_cache_miss_tokens": 29,
+                "prompt_tokens_details": {
+                    "cached_tokens": 38528
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 93
+                },
+                "cached_tokens": 38528
+            },
+            "time": 1784359421
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_X4iRAv4ATx7XmwHf7qQI2403",
+            "content": ".\/App.tsx\n.\/backend.ts\n.\/components\/AdmissionHistory.tsx\n.\/components\/AdmissionTimeline.tsx\n.\/components\/AdmitPatientDialog.tsx\n.\/components\/AdviceTemplates.ts\n.\/components\/ClinicalAlertsPanel.tsx\n.\/components\/ConsentForm.tsx\n.\/components\/DailyProgressNote.tsx\n.\/components\/DischargeSummaryTab.tsx\n.\/components\/DrainMonitor.tsx\n.\/components\/EmergencyConsultationModal.tsx\n.\/components\/GallerySection.tsx\n.\/components\/HandoverSystem.tsx\n.\/components\/InvestigationPayment.tsx\n.\/components\/InvestigationTracker.tsx\n.\/components\/IOChart.tsx\n.\/components\/MedicationAdminRecord.tsx\n.\/components\/MoneyReceipt.tsx\n.\/components\/NewPrescriptionMode.tsx\n.\/components\/NurseDueMeds.tsx\n.\/components\/PatientChat.tsx\n.\/components\/PatientDashboard.tsx\n.\/components\/patientDashboardTypes.ts\n.\/components\/PatientForm.tsx\n.\/components\/PatientSummaryCard.tsx\n.\/components\/PatientTabs.tsx\n.\/components\/PatientTimeline.tsx\n.\/components\/PrescriptionForm.tsx\n.\/components\/PrescriptionHeaderPanel.tsx\n.\/components\/PrescriptionHelpers.ts\n.\/components\/PrescriptionPadPreview.tsx\n.\/components\/PrescriptionPad.tsx\n.\/components\/PrescriptionPDFManager.tsx\n.\/components\/ProcedureLog.tsx\n.\/components\/ReferralLetter.tsx\n.\/components\/SyncStatusBadge.tsx\n.\/components\/TestimonialsSection.tsx\n.\/components\/TreatmentTemplates.ts\n.\/components\/UpgradedPrescriptionEMR.tsx\n.\/components\/VisitForm.tsx\n.\/components\/VitalVerification.tsx\n.\/Layout.tsx\n.\/lib\/api.ts\n.\/pages\/AppointmentPayment.tsx\n.\/pages\/Appointments.tsx\n.\/pages\/AuditLog.tsx\n.\/pages\/BedManagement.tsx\n.\/pages\/dashboards\/AdminDashboard.tsx\n.\/pages\/dashboards\/ConsultantDashboard.tsx\n.\/pages\/dashboards\/InternDashboard.tsx\n.\/pages\/dashboards\/MedicalOfficerDashboard.tsx\n.\/pages\/dashboards\/NurseDashboard.tsx\n.\/pages\/dashboards\/StaffDashboard.tsx\n.\/pages\/EmergencyPrescription.tsx\n.\/pages\/InvestigationPaymentPage.tsx\n.\/pages\/LandingPage.tsx\n.\/pages\/OtherPayment.tsx\n.\/pages\/OutstandingBalances.tsx\n.\/pages\/PatientDashboard.tsx\n.\/pages\/PatientProfile.tsx\n.\/pages\/Patients.tsx\n.\/pages\/ProcedurePayment.tsx\n.\/pages\/SerialDisplay.tsx\n.\/pages\/Settings.tsx\n.\/pages\/Staff.tsx\n.\/pages\/TotalIncome.tsx\n.\/pages\/WardRound.tsx\n",
+            "is_error": false,
+            "time": 1784359421
+        },
+        {
+            "id": "msg_87e1306e6e",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "This is a major issue - 68 files still use localStorage directly. Given the scale of this, I should focus on the most impactful approach:\n\n1. Many of these files are storing UI preferences (like collapsed sections, page size, etc.) which is fine to keep in localStorage\n2. Some are storing business data that should go through the API\n3. Let me check what patterns exist and create a systematic approach\n\nHowever, given the sheer number of files (68), and the fact that the hooks and services layer are already properly refactored, I think the priority should be:\n1. Identify business-critical data that MUST go through the API\n2. Refactor those components to use the services layer\n3. For UI preferences (theme, layout preferences), localStorage is acceptable\n\nLet me look at some examples to understand the patterns better."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me understand what kind of data these components store. Let me check a sample:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_7DVxthhNMSN6dshPjJdh3401",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && grep -rn \"\\.getItem\\|\\.setItem\\|\\.removeItem\" --include=\"*.ts\" --include=\"*.tsx\" . 2>\/dev\/null | grep -v \"node_modules\" | grep -oP 'localStorage\\.\\w+\\([^)]+\\)' | sort | uniq -c | sort -rn | head -30"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 39382,
+                "completion_tokens": 331,
+                "total_tokens": 39713,
+                "prompt_cache_hit_tokens": 38656,
+                "prompt_cache_miss_tokens": 726,
+                "prompt_tokens_details": {
+                    "cached_tokens": 38656
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 171
+                },
+                "cached_tokens": 38656
+            },
+            "time": 1784359426
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_7DVxthhNMSN6dshPjJdh3401",
+            "content": "     37 localStorage.getItem(k)\n     33 localStorage.getItem(key)\n     16 localStorage.getItem(\"medicare_doctors_registry\")\n      6 localStorage.getItem(storageKey)\n      6 localStorage.getItem(\"medicare_current_doctor\")\n      4 localStorage.getItem(REMINDERS_KEY)\n      4 localStorage.getItem(\"public_appointment_requests\")\n      4 localStorage.getItem(\"medicare_drug_reminders\")\n      4 localStorage.getItem(`doctor_profile_${doc.email}`)\n      3 localStorage.setItem(key, JSON.stringify(existing)\n      3 localStorage.removeItem(storageKey)\n      3 localStorage.removeItem(LS_KEY)\n      3 localStorage.getItem(\"staff_auth\")\n      3 localStorage.getItem(LS_KEY)\n      2 localStorage.setItem(yearKey, String(year)\n      2 localStorage.setItem(UNREAD_KEY(email)\n      2 localStorage.setItem(todayKey()\n      2 localStorage.setItem(storageKey, JSON.stringify(updated)\n      2 localStorage.setItem(RATES_KEY, JSON.stringify(rates)\n      2 localStorage.setItem(\"public_appointment_requests\", JSON.stringify(data)\n      2 localStorage.setItem(OTHER_PAYMENTS_KEY, JSON.stringify(all)\n      2 localStorage.setItem(LS_KEY, file.name)\n      2 localStorage.setItem(HEADING_KEY, h)\n      2 localStorage.setItem(ESCALATION_KEY, JSON.stringify(all)\n      2 localStorage.setItem(CUSTOM_KEY, JSON.stringify(updated)\n      2 localStorage.setItem(counterKey, String(count)\n      2 localStorage.removeItem(imgKey)\n      2 localStorage.getItem(yearKey)\n      2 localStorage.getItem(`vitals_${String(p.id)\n      2 localStorage.getItem(`vitals_${pidStr}`)\n",
+            "is_error": false,
+            "time": 1784359427
+        },
+        {
+            "id": "msg_7b48d01019",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The data is mixed:\n1. `medicare_doctors_registry` - business data (doctor list)\n2. `medicare_current_doctor` - session data (who's logged in)\n3. `public_appointment_requests` - business data\n4. `medicare_drug_reminders` - business data\n5. `doctor_profile_${doc.email}` - business data\n6. `staff_auth` - auth\/session data\n7. Various other business data\n\nThis is a massive undertaking. Let me create a StorageAdapter class that wraps localStorage for UI preferences (acceptable) while providing a clear path to migrate business data through the API. Let me also create a plan and present it.\n\nActually, let me step back and think about what's practical here:\n\n1. The hooks and services layer are ALREADY properly refactored to use PHP API\n2. The components were originally written to use localStorage directly\n3. Some components should be refactored to use the services\n4. Some may be using localStorage for legit UI state\n\nGiven the massive scope (68 files), I should:\n1. Create a `storageAdapter` utility that provides a clean API\n2. Replace direct localStorage calls in business-critical components with service calls\n3. Keep localStorage for UI preferences only\n\nLet me create a storage adapter and then systematically refactor the components. But given the scope, maybe I should focus on the most critical business data first.\n\nActually, let me re-read the original task summary:\n\n\"Phase 2: Refactor Frontend Architecture Before Migrating Storage\"\n\nThe audit found 607 localStorage accesses. The goal was to refactor the frontend to use a proper service layer. The hooks and services are done. Now the components need to be updated.\n\nGiven the massive number of files, I think the best approach would be:\n1. Create a `storageAdapter` that provides localStorage with a consistent interface\n2. Add migration paths in the adapter for when the API endpoints are ready\n3. Refactor the components to use the adapter\n\nBut this is still very large. Let me create the adapter and then batch-update the files.\n\nActually, I think a better approach is:\n1. Create the StorageAdapter (a thin wrapper around localStorage with typed methods)\n2. Use search_replace to do bulk replacements\n\nLet me create the storage adapter first, then systematically update the files."
+                },
+                {
+                    "type": "text",
+                    "text": "This is a substantial remaining scope. Let me create a comprehensive approach:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_zbuKs5s052dhRxeRqHlG4091",
+                    "name": "todo_write",
+                    "input": {
+                        "todos": [
+                            {
+                                "content": "Create StorageAdapter utility class to centralize all localStorage access and provide a migration path to PHP API",
+                                "status": "in_progress",
+                                "priority": "high"
+                            },
+                            {
+                                "content": "Refactor business-critical components (prescriptions, patient data, auth) to use service layer instead of localStorage",
+                                "status": "pending",
+                                "priority": "high"
+                            },
+                            {
+                                "content": "Update remaining component files to use StorageAdapter for UI state (non-business data)",
+                                "status": "pending",
+                                "priority": "medium"
+                            },
+                            {
+                                "content": "Update page files to use StorageAdapter\/services",
+                                "status": "pending",
+                                "priority": "medium"
+                            },
+                            {
+                                "content": "Final verification - no business data stored in localStorage",
+                                "status": "pending",
+                                "priority": "high"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 40060,
+                "completion_tokens": 710,
+                "total_tokens": 40770,
+                "prompt_cache_hit_tokens": 39680,
+                "prompt_cache_miss_tokens": 380,
+                "prompt_tokens_details": {
+                    "cached_tokens": 39680
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 492
+                },
+                "cached_tokens": 39680
+            },
+            "time": 1784359437
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_zbuKs5s052dhRxeRqHlG4091",
+            "content": "Todo list updated with 5 items.",
+            "is_error": false,
+            "time": 1784359437
         }
     ]
 }

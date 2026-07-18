@@ -400,7 +400,7 @@ export function useInactivityTimer(onLogout: () => void): InactivityTimerState {
         setSecondsRemaining((s) => {
           if (s <= 1) {
             if (countdownRef.current) clearInterval(countdownRef.current);
-            return ;
+            return 0;
           }
           return s - 1;
         });
