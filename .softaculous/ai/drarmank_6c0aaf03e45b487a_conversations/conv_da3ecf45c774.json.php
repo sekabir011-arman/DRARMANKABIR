@@ -37,7 +37,7 @@
         }
     ],
     "created_at": 1784312191,
-    "updated_at": 1784382710,
+    "updated_at": 1784382720,
     "messages": [
         {
             "id": "msg_cc5f52c264",
@@ -1677,6 +1677,53 @@
             "content": "    1 | \/\/ \u2500\u2500\u2500 Hybrid Storage Layer (PHP+MySQL) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n    2 | \/\/ All data is now persisted server-side via the PHP\/MySQL API.\n    3 | \/\/ This file acts as a thin compatibility shim \u2014 it provides the same exports\n    4 | \/\/ that components expect, but delegates reads\/writes to the PHP backend.\n    5 | \/\/ localStorage is no longer the primary data store.\n    6 | \n    7 | import { get, post, del as apiDelete } from '.\/api';\n    8 | \n    9 | \/\/ \u2500\u2500\u2500 Queue item types (kept for type compatibility) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   10 |",
             "is_error": false,
             "time": 1784382710
+        },
+        {
+            "id": "msg_786f6d3904",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Good - `hybridStorage.ts` imports from `.\/api` which now re-exports from `apiClient.ts`. This is fine since `api.ts` no longer uses localStorage for auth tokens. The `hybridStorage.ts` already has all its functions stubbed to no-ops.\n\nNow let me move to Step 3: Update storageAdapter.ts to remove business data helpers."
+                },
+                {
+                    "type": "text",
+                    "text": "Good - `hybridStorage.ts` imports from `.\/api` which now just re-exports from `apiClient.ts`. No localStorage auth token. Now let me proceed with updating `storageAdapter.ts`:\n\n## Step 3: Update storageAdapter.ts - Remove Business Data Helpers"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_HxHGD4sGvJpVQRZNRo8s8432",
+                    "name": "write_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/lib\/storageAdapter.ts",
+                        "content": "\/**\n * Storage Adapter \u2014 UI Preferences Only\n *\n * This module is the ONLY allowed interface to browser storage.\n * Business data must NEVER be stored here.\n *\n * ALLOWED: Theme, language, sidebar collapsed state, table layout prefs, non-sensitive UI settings.\n * FORBIDDEN: Patients, doctors, staff, appointments, prescriptions, clinical notes,\n *            payments, invoices, notifications, auth tokens, audit logs, registries.\n *\n * Migration complete. Business data now goes through services\/ -> PHP API -> MySQL.\n * React Query handles caching and refresh.\n *\n * Usage:\n *   import { storage } from '..\/lib\/storageAdapter';\n *   const lang = storage.getItem('patient_language');\n *   storage.setItem('sidebar_collapsed', 'true');\n *\/\n\n\/\/ \u2500\u2500\u2500 Allowed UI Preference Keys \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\/\/ Only these keys are permitted in browser storage.\n\/\/ Any other key indicates business data leakage and must be removed.\n\nconst ALLOWED_UI_KEYS = new Set([\n  'patient_language',\n  'sidebar_collapsed',\n  'theme',\n  'table_page_size',\n  'table_compact_view',\n  'classroom_arman',\n  'classroom_samia',\n  'chamber_arman',\n  'chamber_samia',\n  'profile_arman',\n  'profile_samia',\n  'prescriptionHeaders_chamber',\n  'prescriptionHeaders_hospital',\n  'app_current_user_email',\n]);\n\nfunction isAllowedKey(key: string): boolean {\n  if (ALLOWED_UI_KEYS.has(key)) return true;\n  \/\/ Temporary UI state keys (draft autosave, scroll position, etc.)\n  if (key.startsWith('autosave_')) return true;\n  if (key.startsWith('draft_')) return true;\n  if (key.startsWith('scroll_')) return true;\n  return false;\n}\n\n\/\/ \u2500\u2500\u2500 Core storage wrapper \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nexport const storage = {\n  getItem(key: string): string | null {\n    if (!isAllowedKey(key)) {\n      console.warn(`[StorageAdapter] Blocked read of non-UI key \"${key}\". Business data must come from PHP API.`);\n      return null;\n    }\n    try {\n      return localStorage.getItem(key);\n    } catch {\n      return null;\n    }\n  },\n\n  setItem(key: string, value: string): void {\n    if (!isAllowedKey(key)) {\n      console.warn(`[StorageAdapter] Blocked write of non-UI key \"${key}\". Business data must go to PHP API.`);\n      return;\n    }\n    try {\n      localStorage.setItem(key, value);\n    } catch (err) {\n      console.warn(`[StorageAdapter] Failed to write key \"${key}\":`, err);\n    }\n  },\n\n  removeItem(key: string): void {\n    if (!isAllowedKey(key)) {\n      console.warn(`[StorageAdapter] Blocked remove of non-UI key \"${key}\". Business data must come from PHP API.`);\n      return;\n    }\n    try {\n      localStorage.removeItem(key);\n    } catch {\n      \/\/ ignore\n    }\n  },\n\n  clear(): void {\n    \/\/ Only clear allowed UI keys\n    try {\n      for (const key of ALLOWED_UI_KEYS) {\n        try {\n          localStorage.removeItem(key);\n        } catch {\n          \/\/ ignore\n        }\n      }\n    } catch {\n      \/\/ ignore\n    }\n  },\n\n  get length(): number {\n    try {\n      return localStorage.length;\n    } catch {\n      return ;\n    }\n  },\n\n  key(index: number): string | null {\n    try {\n      return localStorage.key(index);\n    } catch {\n      return null;\n    }\n  },\n};\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 70698,
+                "completion_tokens": 1007,
+                "total_tokens": 71705,
+                "prompt_cache_hit_tokens": 70528,
+                "prompt_cache_miss_tokens": 170,
+                "prompt_tokens_details": {
+                    "cached_tokens": 70528
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 79
+                },
+                "cached_tokens": 70528
+            },
+            "time": 1784382719
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_HxHGD4sGvJpVQRZNRo8s8432",
+            "content": "Successfully wrote 3391 bytes (120 lines) to source_build\/dr.armankabir-main\/src\/frontend\/src\/lib\/storageAdapter.ts",
+            "is_error": false,
+            "time": 1784382720
         }
     ]
 }
