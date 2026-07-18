@@ -1,21 +1,29 @@
 /**
- * Storage Adapter — Central Access Layer for Client-Side Persistence
+ * Storage Adapter — UI Preferences Only
  *
- * This adapter replaces direct localStorage access in components.
- * It mirrors the localStorage API exactly so existing code works without changes.
+ * This adapter is now limited to non-sensitive UI preferences only.
+ * All business data (patients, doctors, appointments, prescriptions,
+ * payments, etc.) MUST be loaded/saved through the PHP API and MySQL.
  *
- * Migration path:
- *   When a PHP API endpoint becomes available for a data type, change the
- *   component to use the service/hook instead of this adapter. No other
- *   changes needed in the component.
+ * Authentication tokens MUST NOT be stored in browser storage.
+ * Only PHP sessions and HttpOnly secure cookies are used for auth.
+ *
+ * ALLOWED KEYS (UI Preferences only):
+ *   - patient_language
+ *   - theme
+ *   - sidebar_collapsed
+ *   - table_layout_*
+ *   - classroom_arman, classroom_samia
+ *   - chamber_arman, chamber_samia
+ *   - profile_arman, profile_samia
+ *   - prescriptionHeaders_chamber, prescriptionHeaders_hospital
  *
  * Usage:
  *   import { storage } from '../lib/storageAdapter';
- *   const data = storage.getItem('key');
- *   storage.setItem('key', 'value');
+ *   const lang = storage.getItem('patient_language');
  */
 
-// ── Core storage wrapper ───────────────────────────────────────────────────
+// ── Core storage wrapper (UI preferences only) ─────────────────────────────
 
 export const storage = {
   getItem(key: string): string | null {
@@ -54,7 +62,7 @@ export const storage = {
     try {
       return localStorage.length;
     } catch {
-      return 0;
+      return ;
     }
   },
 
@@ -67,11 +75,13 @@ export const storage = {
   },
 };
 
-// ── Typed helpers for common business data patterns ─────────────────────
-// These provide structured access and a migration path to the PHP API.
+// ── UI Preference Helpers (the only data allowed in browser storage) ──────
+// Business data helpers have been removed.
+// Doctor registry, current doctor, and other business data must go through
+// the PHP API via services/*.ts
 
 export const storageHelpers = {
-  /** Get a parsed JSON value */
+  /** Get a parsed JSON value (for UI prefs only) */
   getJSON<T = unknown>(key: string, fallback: T): T {
     const raw = storage.getItem(key);
     if (raw === null) return fallback;
@@ -82,43 +92,8 @@ export const storageHelpers = {
     }
   },
 
-  /** Set a value as JSON string */
+  /** Set a value as JSON string (for UI prefs only) */
   setJSON(key: string, value: unknown): void {
     storage.setItem(key, JSON.stringify(value));
-  },
-
-  /** Get an array (parsed from JSON) */
-  getArray<T = unknown>(key: string): T[] {
-    return this.getJSON<T[]>(key, []);
-  },
-
-  /** Get doctor registry */
-  getDoctorsRegistry<T = Record<string, unknown>>(): T[] {
-    return this.getArray<T>('medicare_doctors_registry');
-  },
-
-  /** Set doctor registry */
-  setDoctorsRegistry(data: unknown[]): void {
-    this.setJSON('medicare_doctors_registry', data);
-  },
-
-  /** Get current doctor */
-  getCurrentDoctor<T = Record<string, unknown>>(): T | null {
-    const raw = storage.getItem('medicare_current_doctor');
-    if (!raw) return null;
-    try {
-      return JSON.parse(raw) as T;
-    } catch {
-      return null;
-    }
-  },
-
-  /** Set current doctor */
-  setCurrentDoctor(data: Record<string, unknown> | null): void {
-    if (data === null) {
-      storage.removeItem('medicare_current_doctor');
-    } else {
-      this.setJSON('medicare_current_doctor', data);
-    }
   },
 };
