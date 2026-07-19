@@ -67,7 +67,7 @@
         }
     ],
     "created_at": 1784426742,
-    "updated_at": 1784427228,
+    "updated_at": 1784427281,
     "messages": [
         {
             "id": "msg_4fa937f4ab",
@@ -937,6 +937,229 @@
             "content": "    1 | # \u2500\u2500\u2500 API Security & Routing \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n    2 | \n    3 | # Enable rewrite engine\n    4 | RewriteEngine On\n    5 | \n    6 | # Protect sensitive files\n    7 | <FilesMatch \"\\.(env|config|sql|md|gitignore)$\">\n    8 |     Require all denied\n    9 | <\/FilesMatch>\n   10 | \n   11 | # Protect config.php from direct access (only allow includes)\n   12 | <Files \"config.php\">\n   13 |     Require all denied\n   14 | <\/Files>\n   15 | \n   16 | # Protect database.php\n   17 | <Files \"database.php\">\n   18 |     Require all denied\n   19 | <\/Files>\n   20 | \n   21 | # CORS headers\n   22 | <IfModule mod_headers.c>\n   23 |     Header always set Access-Control-Allow-Origin \"https:\/\/drarmankabir.com\"\n   24 |     Header always set Access-Control-Allow-Methods \"GET, POST, PUT, DELETE, OPTIONS\"\n   25 |     Header always set Access-Control-Allow-Headers \"Content-Type, Authorization, X-CSRF-Token\"\n   26 |     Header always set Access-Control-Allow-Credentials \"true\"\n   27 |     Header always set X-Content-Type-Options \"nosniff\"\n   28 |     Header always set X-Frame-Options \"DENY\"\n   29 |     Header always set X-XSS-Protection \"1; mode=block\"\n   30 | <\/IfModule>\n   31 | \n   32 | # Handle preflight OPTIONS requests\n   33 | RewriteCond %{REQUEST_METHOD} OPTIONS\n   34 | RewriteRule ^(.*)$ $1 [R=200,L]\n   35 | \n   36 | # Block PHP execution in uploads directory\n   37 | RewriteRule ^uploads\/.*\\.php$ - [F,L]\n   38 | \n   39 | # Route .php requests normally\n   40 | RewriteCond %{REQUEST_FILENAME} -f\n   41 | RewriteRule ^ - [L]\n   42 |",
             "is_error": false,
             "time": 1784427228
+        },
+        {
+            "id": "msg_b0cf269b26",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I have a complete picture. Let me start implementing the fixes systematically.\n\nKey observations:\n1. The `content\/save.php` uses `getAuthUser()` but doesn't require authentication (it's optional). This is a security concern for write operations but let me focus on the core auth issues first.\n2. The `.htaccess` sets good security headers at the directory level.\n\nLet me now implement the fixes. I'll start with the most critical issues and work down.\n\n## Implementation Plan\n\n### Fix 1: admin_login.php - Add server-side session storage\nCreate an `admin_sessions` table and modify admin_login to store sessions.\n\n### Fix 2: checkRateLimit - Fix function signature to accept custom limits\n\n### Fix 3: getAuthUser() - Support patient_sessions\n\n### Fix 4: cleanupExpiredSessions() - Add patient sessions cleanup\n\n### Fix 5: destroySession() - Handle patient sessions\n\n### Fix 6: sendSecurityHeaders() - Integrate into middleware flow\n\n### Fix 7: Deduplicate CSRF functions\n\n### Fix 8: Password complexity\n\n### Fix 9: Account lockout\n\n### Fix 10: Email verification enforcement\n\n### Fix 11: Password reset endpoint\n\n### Fix 12: setup.php security\n\nLet me start implementing. I'll work through the most critical ones first.\n\nLet me think about each fix carefully before implementing:\n\n**Fix 1: admin_login.php server-side sessions**\n- Need to add admin_sessions table (via migration SQL file)\n- Modify admin_login.php to INSERT into admin_sessions\n- Modify middleware.php getBearerToken() to also check admin accounts? Or create a separate middleware for admin content?\n- Actually, the content\/save.php uses getAuthUser() which checks user_sessions. Admin content accounts are different from users table.\n- I think the best approach is:\n  1. Create admin_sessions table\n  2. In admin_login.php, store the session in admin_sessions\n  3. Create middleware functions for admin content auth (requireAdminContent())\n  4. Or simpler: just make admin_login.php store the session, and add a function to verify admin sessions\n\nActually, looking at the flow more carefully:\n- admin_login.php returns a token, which the frontend stores in localStorage\n- The frontend then sends this token as Authorization: Bearer header to \/api\/content\/save.php\n- content\/save.php calls getAuthUser() which checks user_sessions (not admin_accounts)\n- So the admin token would never validate through getAuthUser()!\n\nSo either:\nA. We need a separate verify function for admin accounts\nB. Or we need to add admin accounts to the getAuthUser() flow\n\nWait, but looking at content\/save.php line 24: `$user = getAuthUser();` - this gets the user from user_sessions. If no user, $userId is null. The save still proceeds...! This means content\/save.php currently operates with NO authentication at all! Anyone can POST to save content!\n\nThis is a MASSIVE security issue. The content\/save API is wide open.\n\nOK let me re-evaluate. Looking at the admin auth flow:\n1. admin_accounts table stores content admin credentials\n2. admin_login.php validates and returns a token (but doesn't store it)\n3. Frontend stores token in localStorage\n4. Frontend sends token to content\/save.php\n5. But content\/save.php uses getAuthUser() which checks user_sessions - so it ALWAYS returns null for admin tokens\n6. Content save proceeds with userId=null\n\nSo the content save is completely unauthenticated! This is critical.\n\nI need to:\n1. Create admin_sessions table\n2. Store sessions in admin_login.php\n3. Add admin session verification\n4. Require auth for content\/save.php\n\nLet me implement all of this.\n\nActually, let me re-think the architecture. We have two separate auth systems:\n- System A: `users` + `user_sessions` (for hospital staff - doctors, nurses, etc.)\n- System B: `admin_accounts` + `admin_sessions` (for content management)\n- System C: `patient_login` + `patient_sessions` (for patients)\n\nLet me implement the fixes:\n\n### Step 1: Add admin_sessions migration\n### Step 2: Modify admin_login.php to store sessions\n### Step 3: Add admin session verification to middleware\n### Step 4: Fix content\/save.php to require proper auth\n### Step 5: Fix checkRateLimit signature\n### Step 6: Add patient_sessions support to getAuthUser()\n### Step 7: Fix other issues\n\nLet me start coding."
+                },
+                {
+                    "type": "text",
+                    "text": "Now I have a complete picture of the authentication system. Let me implement all the fixes systematically.\n\n### CRITICAL FIX: admin_login.php - No server-side session storage\nThe admin_login endpoint generates a token but never stores it, making it impossible to verify or revoke. Also, `content\/save.php` uses `getAuthUser()` which only checks `user_sessions`, so admin tokens never validate - meaning content save is completely unauthenticated.\n\nLet me start with the schema migration, then fix each file."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_eQ6J77QH1MXMniaRyz5H4844",
+                    "name": "write_file",
+                    "input": {
+                        "path": "server-data\/migrations\/009_admin_sessions.sql",
+                        "content": "-- ============================================================================\n-- Migration 009: Admin Sessions for Content Management Auth\n-- ============================================================================\n-- Adds an admin_sessions table so admin_login tokens are stored server-side,\n-- can be verified, revoked, and have expiration.\n-- ============================================================================\n\n-- \u2500\u2500\u2500 1. Admin sessions table \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n-- Token-based sessions for admin content management accounts.\n-- This mirrors user_sessions but for admin_accounts.\n\nCREATE TABLE IF NOT EXISTS admin_sessions (\n    id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,\n    admin_id        BIGINT UNSIGNED NOT NULL,\n    token           VARCHAR(255) NOT NULL UNIQUE,\n    ip_address      VARCHAR(45) DEFAULT NULL,\n    user_agent      TEXT DEFAULT NULL,\n    expires_at      TIMESTAMP NOT NULL,\n    last_activity   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n    INDEX idx_as_admin (admin_id),\n    INDEX idx_as_token (token),\n    INDEX idx_as_expires (expires_at),\n    FOREIGN KEY (admin_id) REFERENCES admin_accounts(id) ON DELETE CASCADE\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n\n-- \u2500\u2500\u2500 2. Add updated_at column to site_settings if not exists \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n-- The content API uses updated_at but some schemas may not have it.\nALTER TABLE site_settings\n    ADD COLUMN IF NOT EXISTS updated_by BIGINT UNSIGNED DEFAULT NULL AFTER updated_at;\n\n-- ============================================================================\n-- END OF MIGRATION 009\n-- ============================================================================\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 56188,
+                "completion_tokens": 1508,
+                "total_tokens": 57696,
+                "prompt_cache_hit_tokens": 53376,
+                "prompt_cache_miss_tokens": 2812,
+                "prompt_tokens_details": {
+                    "cached_tokens": 53376
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 989
+                },
+                "cached_tokens": 53376
+            },
+            "time": 1784427245
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_eQ6J77QH1MXMniaRyz5H4844",
+            "content": "Successfully wrote 1914 bytes (35 lines) to server-data\/migrations\/009_admin_sessions.sql",
+            "is_error": false,
+            "time": 1784427245
+        },
+        {
+            "id": "msg_dedc8b7d45",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now let me fix the middleware.php file which is the core of the auth system. This is the most important file to get right.\n\nLet me plan the changes to middleware.php:\n1. Add admin session verification to getAuthUser() or create a separate function\n2. Add patient_sessions support to getAuthUser()\n3. Fix createSession() to also create for admins? No, we need separate functions.\n4. Add admin-specific functions\n5. Fix destroySession() to handle patient_sessions\n6. Fix cleanupExpiredSessions() to handle patient_sessions and admin_sessions\n7. Add sendSecurityHeaders() integration\n8. Remove duplicate CSRF functions (keep the ones in middleware, remove from helpers)\n\nActually, let me think about this more carefully. The getAuthUser() function currently checks `user_sessions` joined with `users`. It should also check:\n- `patient_sessions` joined with `patient_login` and `patients`\n- `admin_sessions` joined with `admin_accounts`\n\nBut these return different data structures (different columns). So either:\nA. Return a unified structure with type indicator\nB. Create separate functions\n\nLet me go with option B - separate functions for clarity, and a unified requireAuth() that tries all.\n\nActually, looking at how getAuthUser() is used:\n- content\/save.php: `$user = getAuthUser();` - uses userId if available\n- verify.php: `$user = requireAuth();` - returns user info\n- Other endpoints use requireAuth(), requireRole(), requirePermission()\n\nSo I need to be careful about the return type. Let me create:\n- `getAuthUser()` - for hospital staff (users table)\n- `getPatientAuth()` - for patient auth\n- `getAdminAuth()` - for admin content auth\n- `requireAuth()` - for hospital staff\n- `requireAdminContent()` - for content management\n\nBut actually, for the content\/save.php, the simplest approach is:\n1. Add admin session validation\n2. Create a function getAdminContentUser() that verifies admin sessions\n3. Update content\/save.php to use it\n\nLet me refactor middleware.php properly.\n\nActually, a cleaner approach: make getAuthUser() return a result that includes a 'type' field ('user', 'patient', 'admin'), and adjust requireAuth() to handle it.\n\nHmm, but this changes the interface for all existing callers. Let me look at what properties are accessed on the returned user:\n- $user['id'] - common\n- $user['role'] - for staff\n- $user['email'], $user['full_name'], etc.\n\nFor patients, the structure is different (patient_id, phone, etc.)\nFor admin, the structure is different (username, display_name)\n\nI think the cleanest approach is to keep separate functions:\n\n```php\nfunction getAuthUser(): ?array  \/\/ staff users\nfunction getPatientUser(): ?array  \/\/ patients\nfunction getAdminUser(): ?array  \/\/ admin content accounts\n```\n\nAnd then have:\n```php\nfunction requireAuth(): array  \/\/ staff auth\nfunction requirePatient(): array  \/\/ patient auth  \nfunction requireAdminContent(): array  \/\/ admin content auth\n```\n\nOr even simpler - just add what's needed:\n1. Fix admin_login.php to store sessions\n2. Add admin session verification function\n3. Fix content\/save.php to require admin auth\n4. Add patient session support to getBearerToken() (it already reads the same cookie\/header)\n\nLet me keep it simple and focused. The main changes:\n\n### middleware.php changes:\n1. Add `getPatientAuthUser()` - checks patient_sessions\n2. Add `getAdminAuthUser()` - checks admin_sessions  \n3. Add `requirePatientAuth()` - requires patient auth\n4. Add `requireAdminContent()` - requires admin content auth\n5. Fix `destroySession()` to handle patient_sessions and admin_sessions\n6. Fix `cleanupExpiredSessions()` to handle patient_sessions and admin_sessions\n7. Remove duplicate CSRF functions (the ones in helpers.php)\n8. Add auto-call to sendSecurityHeaders() - call at the top of middleware when included\n\nActually, the CSRF functions are duplicated between helpers.php and middleware.php. Both files get included, so the second one would cause a \"cannot redeclare\" fatal error! Let me check...\n\nIn login.php line 14: `require_once __DIR__ . '\/middleware.php';`\nmiddleware.php line 14: `require_once __DIR__ . '\/..\/helpers.php';`\n\nSo helpers.php is loaded first (from login.php line 13), then middleware.php loads it again (but require_once prevents re-inclusion).\n\nThen middleware.php defines `generateCsrfToken()` and `validateCsrfToken()` at lines 318 and 330.\nBut helpers.php ALSO defines `generateCsrfToken()` and `validateCsrfToken()` at lines 177 and 181!\n\nThis would cause a fatal error: \"Cannot redeclare generateCsrfToken()\"!\n\nWait, let me check the order again:\n1. login.php line 12: `require_once __DIR__ . '\/..\/database.php';`\n2. login.php line 13: `require_once __DIR__ . '\/..\/helpers.php';` - defines CSRF functions\n3. login.php line 14: `require_once __DIR__ . '\/..\/middleware.php';` - tries to redefine CSRF functions \u2192 FATAL ERROR\n\nUnless... the middleware.php functions are only defined when that file is NOT already included? No, require_once prevents double inclusion from the SAME file, but these are different files.\n\nActually wait - the CSRF functions in middleware.php were probably added first, and the ones in helpers.php were added later as a refactoring that forgot to remove the originals. Or vice versa.\n\nThis means the current code would CRASH on any page that includes both helpers.php and middleware.php... but maybe it doesn't crash because PHP might not actually reach the function definitions if they're already defined? No, PHP would fatal error on redeclaration.\n\nActually, let me re-read the code more carefully. In middleware.php, the CSRF functions are at lines 318-336. In helpers.php, they're at lines 177-184.\n\nIf helpers.php is loaded first (login.php line 13), then middleware.php line 14 loads middleware.php which includes helpers.php again via `require_once` (no issue, already loaded), then middleware.php tries to define `generateCsrfToken()` and `validateCsrfToken()` - but these are already defined! This would be a fatal error.\n\nBut the application is apparently running, so either:\n1. The code path never reaches middleware.php with helpers.php already loaded? No, login.php loads both.\n2. PHP 8+ handles this differently? No, function redeclaration is still a fatal error in PHP 8.\n\nWait, let me check if there's a PHP version issue or if there's something I'm missing. Let me look at the file modification times - middleware.php was modified most recently (1784426303). Maybe the duplicate functions were added later and no one has actually tested the login flow?\n\nActually, I bet the CSRF functions in helpers.php are a newer refactoring that duplicated what was in middleware.php, and the middleware.php copies haven't been removed yet. The system might still work if the flow that uses middleware.php doesn't include helpers.php separately... but login.php DOES include both.\n\nHmm, but PHP will still throw a fatal error on any request to login.php because it would see the function definitions twice. Unless... PHP has function autoloading? No, that's for classes.\n\nLet me just check if there are conditionals...\n\nLooking at middleware.php lines 318-336:\n```php\nfunction generateCsrfToken(): string {\n    if (session_status() === PHP_SESSION_NONE) {\n        session_start();\n    }\n    ...\n}\nfunction validateCsrfToken(string $token): bool {\n    if (session_status() === PHP_SESSION_NONE) {\n        session_start();\n    }\n    ...\n}\n```\n\nhelpers.php lines 177-184:\n```php\nfunction generateCsrfToken(): string {\n    return bin2hex(random_bytes(32));\n}\nfunction validateCsrfToken(string $token): bool {\n    $sessionToken = $_SESSION['csrf_token'] ?? '';\n    return hash_equals($sessionToken, $token);\n}\n```\n\nYes, these would cause a fatal error. But maybe the app actually has error suppression or something? Let me just fix it by removing the duplicates from middleware.php (the helpers.php versions are simpler and don't start sessions automatically).\n\nOK let me now write all the fixes. I'll create a comprehensive update to middleware.php since that's the core file.\n\nLet me plan the complete middleware.php rewrite carefully:"
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me check if there's a CSRF function conflict (both helpers.php and middleware.php define them):"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_Bo8ChIgnNFexaRN2eBiw1367",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && php -r \"\nrequire_once 'public_html\/api\/helpers.php';\nrequire_once 'public_html\/api\/auth\/middleware.php';\necho 'No conflict';\n\" 2>&1"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 57730,
+                "completion_tokens": 1961,
+                "total_tokens": 59691,
+                "prompt_cache_hit_tokens": 57600,
+                "prompt_cache_miss_tokens": 130,
+                "prompt_tokens_details": {
+                    "cached_tokens": 57600
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 1854
+                },
+                "cached_tokens": 57600
+            },
+            "time": 1784427270
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_Bo8ChIgnNFexaRN2eBiw1367",
+            "content": "Unsuccessful stat on filename containing newline at \/var\/cpanel\/ea4\/ea_php_cli.pm line 87.\n\n[Exit code: 255]",
+            "is_error": true,
+            "time": 1784427270
+        },
+        {
+            "id": "msg_b5b8ad16bb",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The PHP command failed because of the path handling. Let me try differently."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_9KZb2eTDVhejXAFburab9511",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html && php -r \"\nrequire_once 'api\/helpers.php';\nrequire_once 'api\/auth\/middleware.php';\necho 'No conflict';\n\" 2>&1"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 59739,
+                "completion_tokens": 99,
+                "total_tokens": 59838,
+                "prompt_cache_hit_tokens": 59648,
+                "prompt_cache_miss_tokens": 91,
+                "prompt_tokens_details": {
+                    "cached_tokens": 59648
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 15
+                },
+                "cached_tokens": 59648
+            },
+            "time": 1784427273
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_9KZb2eTDVhejXAFburab9511",
+            "content": "Unsuccessful stat on filename containing newline at \/var\/cpanel\/ea4\/ea_php_cli.pm line 87.\n\n[Exit code: 255]",
+            "is_error": true,
+            "time": 1784427273
+        },
+        {
+            "id": "msg_8f66f67c90",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The bash tool seems to have an issue. Let me try a different approach."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_xnvL5AxULLlY67UA8dVm2657",
+                    "name": "php_eval",
+                    "input": {
+                        "code": "require_once '\/home\/drarmank\/public_html\/api\/helpers.php';\nrequire_once '\/home\/drarmank\/public_html\/api\/auth\/middleware.php';\necho 'No conflict';\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 59886,
+                "completion_tokens": 97,
+                "total_tokens": 59983,
+                "prompt_cache_hit_tokens": 59776,
+                "prompt_cache_miss_tokens": 110,
+                "prompt_tokens_details": {
+                    "cached_tokens": 59776
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 16
+                },
+                "cached_tokens": 59776
+            },
+            "time": 1784427276
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_xnvL5AxULLlY67UA8dVm2657",
+            "content": "Could not open input file: \/tmp\/ai_php_73s350n3arh54o7aUOy\n[Exit code: 1]",
+            "is_error": true,
+            "time": 1784427276
+        },
+        {
+            "id": "msg_a9da15c1c1",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The php_eval tool doesn't seem to work properly with the path. Let me try using read_file to check if there's a conflict by looking at the error_log.\n\nActually, maybe the system has LD_PRELOAD or some other issue. Let me just focus on fixing the code. I already know the CSRF functions are duplicated in both files. Let me fix them.\n\nLet me now implement all the changes. I'll do them in order of priority."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me now implement all fixes. I'll start with the most critical changes to `middleware.php` (which is the core of the auth system)."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_BP3SY49imnEwXeXojUoy5685",
+                    "name": "read_file",
+                    "input": {
+                        "path": "public_html\/api\/auth\/middleware.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 60029,
+                "completion_tokens": 175,
+                "total_tokens": 60204,
+                "prompt_cache_hit_tokens": 59904,
+                "prompt_cache_miss_tokens": 125,
+                "prompt_tokens_details": {
+                    "cached_tokens": 59904
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 94
+                },
+                "cached_tokens": 59904
+            },
+            "time": 1784427281
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_BP3SY49imnEwXeXojUoy5685",
+            "content": "    1 | <?php\n    2 | \/**\n    3 |  * Authentication Middleware\n    4 |  * \n    5 |  * Validates session tokens and provides current user context.\n    6 |  * Include this at the top of any protected API endpoint.\n    7 |  * \n    8 |  * Authentication sources (in order):\n    9 |  * 1. Authorization: Bearer <token> header\n   10 |  * 2. X-Session-Token header\n   11 |  * 3. session_token cookie (HttpOnly, Secure)\n   12 |  *\/\n   13 | \n   14 | require_once __DIR__ . '\/..\/database.php';\n   15 | require_once __DIR__ . '\/..\/helpers.php';\n   16 | \n   17 | \/**\n   18 |  * Get the authenticated user from the session token.\n   19 |  * Returns user array or null if not authenticated.\n   20 |  *\/\n   21 | function getAuthUser(): ?array {\n   22 |     $token = getBearerToken();\n   23 |     if (!$token) return null;\n   24 |     \n   25 |     try {\n   26 |         $db = Database::getInstance();\n   27 |         \n   28 |         \/\/ Find valid session (check both user_sessions and patient_sessions)\n   29 |         $stmt = $db->prepare('\n   30 |             SELECT u.*, s.token, s.expires_at \n   31 |             FROM user_sessions s \n   32 |             JOIN users u ON s.user_id = u.id \n   33 |             WHERE s.token = :token \n   34 |               AND s.expires_at > NOW() \n   35 |               AND u.is_active = 1\n   36 |             LIMIT 1\n   37 |         ');\n   38 |         $stmt->execute([':token' => $token]);\n   39 |         $user = $stmt->fetch();\n   40 |         \n   41 |         if ($user) {\n   42 |             \/\/ Update last activity\n   43 |             $updateStmt = $db->prepare('UPDATE user_sessions SET last_activity = NOW() WHERE token = :token');\n   44 |             $updateStmt->execute([':token' => $token]);\n   45 |             return $user;\n   46 |         }\n   47 |         \n   48 |         return null;\n   49 |     } catch (\\Exception $e) {\n   50 |         error_log('Auth middleware error: ' . $e->getMessage());\n   51 |         return null;\n   52 |     }\n   53 | }\n   54 | \n   55 | \/**\n   56 |  * Require authentication. Sends 401 if not authenticated.\n   57 |  *\/\n   58 | function requireAuth(): array {\n   59 |     $user = getAuthUser();\n   60 |     if (!$user) {\n   61 |         errorResponse('Authentication required. Please log in.', 401);\n   62 |     }\n   63 |     return $user;\n   64 | }\n   65 | \n   66 | \/**\n   67 |  * Require specific role(s). Sends 403 if not authorized.\n   68 |  *\/\n   69 | function requireRole(array $allowedRoles): array {\n   70 |     $user = requireAuth();\n   71 |     \n   72 |     if (!in_array($user['role'], $allowedRoles)) {\n   73 |         errorResponse('Access denied. Insufficient permissions.', 403, [\n   74 |             'required_roles' => $allowedRoles,\n   75 |             'your_role' => $user['role'],\n   76 |         ]);\n   77 |     }\n   78 |     \n   79 |     return $user;\n   80 | }\n   81 | \n   82 | \/**\n   83 |  * Require admin role.\n   84 |  *\/\n   85 | function requireAdmin(): array {\n   86 |     return requireRole(['admin']);\n   87 | }\n   88 | \n   89 | \/**\n   90 |  * Check if user has a specific permission based on role.\n   91 |  *\/\n   92 | function hasPermission(array $user, string $permission): bool {\n   93 |     \/\/ Role-based permissions\n   94 |     $permissions = [\n   95 |         'admin' => [\n   96 |             'manage_users', 'manage_settings', 'view_all_patients',\n   97 |             'view_all_finances', 'manage_beds', 'view_audit_logs',\n   98 |             'export_data', 'delete_data',\n   99 |         ],\n  100 |         'consultant_doctor' => [\n  101 |             'view_assigned_patients', 'view_all_patients',\n  102 |             'create_prescription', 'edit_prescription',\n  103 |             'view_appointments', 'manage_appointments',\n  104 |             'create_visit', 'edit_visit',\n  105 |             'order_investigations', 'view_results',\n  106 |             'finalize_diagnosis', 'admit_patient', 'discharge_patient',\n  107 |         ],\n  108 |         'medical_officer' => [\n  109 |             'view_assigned_patients', 'view_all_patients',\n  110 |             'create_prescription', 'edit_prescription',\n  111 |             'view_appointments',\n  112 |             'create_visit', 'edit_visit',\n  113 |             'order_investigations', 'view_results',\n  114 |             'verify_vitals',\n  115 |         ],\n  116 |         'assistant_registrar' => [\n  117 |             'view_assigned_patients', 'view_all_patients',\n  118 |             'create_prescription', 'edit_prescription',\n  119 |             'view_appointments',\n  120 |             'create_visit',\n  121 |             'order_investigations', 'view_results',\n  122 |             'verify_vitals',\n  123 |         ],\n  124 |         'registrar' => [\n  125 |             'view_assigned_patients', 'view_all_patients',\n  126 |             'create_prescription', 'edit_prescription',\n  127 |             'view_appointments', 'manage_appointments',\n  128 |             'create_visit', 'edit_visit',\n  129 |             'order_investigations', 'view_results',\n  130 |             'verify_vitals',\n  131 |         ],\n  132 |         'assistant_professor' => [\n  133 |             'view_assigned_patients', 'view_all_patients',\n  134 |             'create_prescription', 'edit_prescription',\n  135 |             'view_appointments', 'manage_appointments',\n  136 |             'create_visit', 'edit_visit',\n  137 |             'order_investigations', 'view_results',\n  138 |             'finalize_diagnosis', 'admit_patient', 'discharge_patient',\n  139 |         ],\n  140 |         'associate_professor' => [\n  141 |             'view_assigned_patients', 'view_all_patients',\n  142 |             'create_prescription', 'edit_prescription',\n  143 |             'view_appointments', 'manage_appointments',\n  144 |             'create_visit', 'edit_visit',\n  145 |             'order_investigations', 'view_results',\n  146 |             'finalize_diagnosis', 'admit_patient', 'discharge_patient',\n  147 |         ],\n  148 |         'professor' => [\n  149 |             'view_assigned_patients', 'view_all_patients',\n  150 |             'create_prescription', 'edit_prescription',\n  151 |             'view_appointments', 'manage_appointments',\n  152 |             'create_visit', 'edit_visit',\n  153 |             'order_investigations', 'view_results',\n  154 |             'finalize_diagnosis', 'admit_patient', 'discharge_patient',\n  155 |         ],\n  156 |         'intern_doctor' => [\n  157 |             'view_assigned_patients',\n  158 |             'create_prescription',\n  159 |             'view_appointments',\n  160 |             'create_visit',\n  161 |             'record_vitals',\n  162 |             'view_results',\n  163 |         ],\n  164 |         'nurse' => [\n  165 |             'view_assigned_patients',\n  166 |             'view_appointments',\n  167 |             'record_vitals',\n  168 |             'administer_medication',\n  169 |             'view_prescriptions',\n  170 |             'record_mar',\n  171 |             'create_handover',\n  172 |         ],\n  173 |         'staff' => [\n  174 |             'view_patients',\n  175 |             'register_patient',\n  176 |             'view_appointments',\n  177 |             'manage_appointments',\n  178 |             'process_payments',\n  179 |             'view_finances',\n  180 |         ],\n  181 |         'reception' => [\n  182 |             'view_patients',\n  183 |             'register_patient',\n  184 |             'view_appointments',\n  185 |             'manage_appointments',\n  186 |             'process_payments',\n  187 |         ],\n  188 |         'doctor' => [\n  189 |             'view_assigned_patients', 'view_all_patients',\n  190 |             'create_prescription', 'edit_prescription',\n  191 |             'view_appointments', 'manage_appointments',\n  192 |             'create_visit', 'edit_visit',\n  193 |             'order_investigations', 'view_results',\n  194 |             'finalize_diagnosis',\n  195 |         ],\n  196 |     ];\n  197 |     \n  198 |     return in_array($permission, $permissions[$user['role']] ?? []);\n  199 | }\n  200 | \n  201 | \/**\n  202 |  * Require a specific permission.\n  203 |  *\/\n  204 | function requirePermission(string $permission): array {\n  205 |     $user = requireAuth();\n  206 |     if (!hasPermission($user, $permission)) {\n  207 |         errorResponse('Access denied. You do not have the \"' . $permission . '\" permission.', 403);\n  208 |     }\n  209 |     return $user;\n  210 | }\n  211 | \n  212 | \/**\n  213 |  * Get Bearer token from Authorization header, custom header, or secure cookie.\n  214 |  * NEVER accepts tokens from URL parameters ($_GET).\n  215 |  *\/\n  216 | function getBearerToken(): ?string {\n  217 |     \/\/ 1. Check Authorization: Bearer header\n  218 |     $headers = '';\n  219 |     \n  220 |     if (isset($_SERVER['HTTP_AUTHORIZATION'])) {\n  221 |         $headers = $_SERVER['HTTP_AUTHORIZATION'];\n  222 |     } elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {\n  223 |         $headers = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];\n  224 |     } elseif (function_exists('apache_request_headers')) {\n  225 |         $requestHeaders = apache_request_headers();\n  226 |         $headers = $requestHeaders['Authorization'] ?? $requestHeaders['authorization'] ?? '';\n  227 |     }\n  228 |     \n  229 |     if (!empty($headers)) {\n  230 |         if (preg_match('\/Bearer\\s(\\S+)\/', $headers, $matches)) {\n  231 |             return $matches[1];\n  232 |         }\n  233 |     }\n  234 |     \n  235 |     \/\/ 2. Check X-Session-Token custom header\n  236 |     $sessionHeader = $_SERVER['HTTP_X_SESSION_TOKEN'] ?? '';\n  237 |     if (!empty($sessionHeader)) {\n  238 |         return $sessionHeader;\n  239 |     }\n  240 |     \n  241 |     \/\/ 3. Check secure HttpOnly cookie\n  242 |     if (isset($_COOKIE['session_token']) && !empty($_COOKIE['session_token'])) {\n  243 |         return $_COOKIE['session_token'];\n  244 |     }\n  245 |     \n  246 |     return null;\n  247 | }\n  248 | \n  249 | \/**\n  250 |  * Create a new session for a user.\n  251 |  *\/\n  252 | function createSession(int $userId): string {\n  253 |     $db = Database::getInstance();\n  254 |     \n  255 |     \/\/ Generate secure token (no refresh_token - using rotation via re-auth instead)\n  256 |     $token = bin2hex(random_bytes(64));\n  257 |     $expiresAt = date('Y-m-d H:i:s', time() + SESSION_LIFETIME);\n  258 |     \n  259 |     $stmt = $db->prepare('\n  260 |         INSERT INTO user_sessions (user_id, token, ip_address, user_agent, expires_at)\n  261 |         VALUES (:user_id, :token, :ip_address, :user_agent, :expires_at)\n  262 |     ');\n  263 |     $stmt->execute([\n  264 |         ':user_id' => $userId,\n  265 |         ':token' => $token,\n  266 |         ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? null,\n  267 |         ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,\n  268 |         ':expires_at' => $expiresAt,\n  269 |     ]);\n  270 |     \n  271 |     return $token;\n  272 | }\n  273 | \n  274 | \/**\n  275 |  * Destroy a session (logout).\n  276 |  *\/\n  277 | function destroySession(string $token): void {\n  278 |     $db = Database::getInstance();\n  279 |     $stmt = $db->prepare('DELETE FROM user_sessions WHERE token = :token');\n  280 |     $stmt->execute([':token' => $token]);\n  281 |     \n  282 |     \/\/ Also clear the session cookie\n  283 |     if (isset($_COOKIE['session_token'])) {\n  284 |         setcookie('session_token', '', [\n  285 |             'expires' => 1,\n  286 |             'path' => '\/',\n  287 |             'domain' => '',\n  288 |             'secure' => true,\n  289 |             'httponly' => true,\n  290 |             'samesite' => 'Lax',\n  291 |         ]);\n  292 |         unset($_COOKIE['session_token']);\n  293 |     }\n  294 | }\n  295 | \n  296 | \/**\n  297 |  * Clean up expired sessions.\n  298 |  *\/\n  299 | function cleanupExpiredSessions(): void {\n  300 |     try {\n  301 |         $db = Database::getInstance();\n  302 |         $stmt = $db->query('SELECT user_id FROM user_sessions WHERE expires_at < NOW()');\n  303 |         $expired = $stmt->fetchAll();\n  304 |         \n  305 |         foreach ($expired as $session) {\n  306 |             logAudit($session['user_id'], null, 'session_expired', 'session', $session['user_id']);\n  307 |         }\n  308 |         \n  309 |         $db->query('DELETE FROM user_sessions WHERE expires_at < NOW()');\n  310 |     } catch (\\Exception $e) {\n  311 |         error_log('Session cleanup error: ' . $e->getMessage());\n  312 |     }\n  313 | }\n  314 | \n  315 | \/**\n  316 |  * Generate and store a CSRF token in the session.\n  317 |  *\/\n  318 | function generateCsrfToken(): string {\n  319 |     if (session_status() === PHP_SESSION_NONE) {\n  320 |         session_start();\n  321 |     }\n  322 |     $token = bin2hex(random_bytes(32));\n  323 |     $_SESSION['csrf_token'] = $token;\n  324 |     return $token;\n  325 | }\n  326 | \n  327 | \/**\n  328 |  * Validate a CSRF token against the session token.\n  329 |  *\/\n  330 | function validateCsrfToken(string $token): bool {\n  331 |     if (session_status() === PHP_SESSION_NONE) {\n  332 |         session_start();\n  333 |     }\n  334 |     $sessionToken = $_SESSION['csrf_token'] ?? '';\n  335 |     return !empty($sessionToken) && hash_equals($sessionToken, $token);\n  336 | }\n  337 | \n  338 | \/**\n  339 |  * Require a valid CSRF token for state-changing requests.\n  340 |  * Always validates for POST, PUT, PATCH, DELETE methods.\n  341 |  *\/\n  342 | function requireCsrfToken(): void {\n  343 |     $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';\n  344 |     \n  345 |     \/\/ Only enforce on state-changing methods\n  346 |     if (!in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'])) {\n  347 |         return;\n  348 |     }\n  349 |     \n  350 |     $token = '';\n  351 |     \n  352 |     \/\/ Check X-CSRF-Token header first\n  353 |     if (isset($_SERVER['HTTP_X_CSRF_TOKEN'])) {\n  354 |         $token = $_SERVER['HTTP_X_CSRF_TOKEN'];\n  355 |     }\n  356 |     \n  357 |     \/\/ Fall back to POST field\n  358 |     if (empty($token) && isset($_POST['csrf_token'])) {\n  359 |         $token = $_POST['csrf_token'];\n  360 |     }\n  361 |     \n  362 |     if (empty($token) || !validateCsrfToken($token)) {\n  363 |         errorResponse('CSRF token validation failed. Please refresh and try again.', 403);\n  364 |     }\n  365 |     \n  366 |     \/\/ Invalidate token after use (one-time use)\n  367 |     if (session_status() === PHP_SESSION_NONE) {\n  368 |         session_start();\n  369 |     }\n  370 |     unset($_SESSION['csrf_token']);\n  371 | }\n  372 | \n  373 | \/**\n  374 |  * Send security headers to protect against common attacks.\n  375 |  *\/\n  376 | function sendSecurityHeaders(): void {\n  377 |     \/\/ Prevent MIME-type sniffing\n  378 |     header('X-Content-Type-Options: nosniff');\n  379 |     \n  380 |     \/\/ Prevent clickjacking\n  381 |     header('X-Frame-Options: DENY');\n  382 |     \n  383 |     \/\/ Referrer policy\n  384 |     header('Referrer-Policy: strict-origin-when-cross-origin');\n  385 |     \n  386 |     \/\/ Permissions policy\n  387 |     header('Permissions-Policy: geolocation=(), microphone=(), camera=()');\n  388 |     \n  389 |     \/\/ Content Security Policy\n  390 |     header(\"Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https:\/\/fonts.googleapis.com; img-src 'self' data: blob: https: https:\/\/maps.gstatic.com https:\/\/maps.googleapis.com; font-src 'self' data: https:\/\/fonts.gstatic.com; connect-src 'self' https:; frame-src 'self' https:\/\/maps.google.com https:\/\/www.google.com; media-src 'self' data: blob:; worker-src 'self' blob:;\");\n  391 |     \n  392 |     \/\/ HSTS (6 months) - only over HTTPS\n  393 |     if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {\n  394 |         header('Strict-Transport-Security: max-age=15768000; includeSubDomains');\n  395 |     }\n  396 | }\n  397 |",
+            "is_error": false,
+            "time": 1784427281
         }
     ]
 }
