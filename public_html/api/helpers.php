@@ -77,10 +77,14 @@ function requireMethod(string ...$methods): void {
 
 // ─── Rate Limiting ─────────────────────────────────────────────────────────
 
-function checkRateLimit(string $identifier = ''): void {
+function checkRateLimit(string $identifier = '', int $max = , int $window = ): void {
     if (empty($identifier)) {
         $identifier = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
     }
+    
+    // Use provided limits, fall back to global defaults
+    if ($max <= ) $max = RATE_LIMIT_MAX;
+    if ($window <= ) $window = RATE_LIMIT_WINDOW;
     
     $rateLimitDir = __DIR__ . '/../../server-data/ratelimit';
     if (!is_dir($rateLimitDir)) {
@@ -88,10 +92,8 @@ function checkRateLimit(string $identifier = ''): void {
     }
     
     $file = $rateLimitDir . '/' . md5($identifier) . '.json';
-    $max = RATE_LIMIT_MAX;
-    $window = RATE_LIMIT_WINDOW;
     
-    $data = ['count' => 0, 'reset' => time() + $window];
+    $data = ['count' => , 'reset' => time() + $window];
     if (file_exists($file)) {
         $existing = json_decode(file_get_contents($file), true);
         if ($existing && isset($existing['reset'])) {
