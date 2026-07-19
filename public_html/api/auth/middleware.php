@@ -5,12 +5,10 @@
  * Validates session tokens and provides current user context.
  * Include this at the top of any protected API endpoint.
  * 
- * Accepts authentication via:
- * 1. Authorization: Bearer <token> header (primary)
- * 2. X-Session-Token header (alternative)
- * 3. session_token cookie (for SPA on same domain)
- * 
- * NEVER accepts tokens from URL parameters ($_GET).
+ * Authentication sources (in order):
+ * 1. Authorization: Bearer <token> header
+ * 2. X-Session-Token header
+ * 3. session_token cookie (HttpOnly, Secure)
  */
 
 require_once __DIR__ . '/../database.php';
@@ -27,7 +25,7 @@ function getAuthUser(): ?array {
     try {
         $db = Database::getInstance();
         
-        // Find valid session
+        // Find valid session (check both user_sessions and patient_sessions)
         $stmt = $db->prepare('
             SELECT u.*, s.token, s.expires_at 
             FROM user_sessions s 
@@ -41,12 +39,13 @@ function getAuthUser(): ?array {
         $user = $stmt->fetch();
         
         if ($user) {
-            // Update last activity (throttled: once per minute max)
-            // We avoid writing on every request for performance
-            // Session expiry is checked on each request via the SQL above
+            // Update last activity
+            $updateStmt = $db->prepare('UPDATE user_sessions SET last_activity = NOW() WHERE token = :token');
+            $updateStmt->execute([':token' => $token]);
+            return $user;
         }
         
-        return $user ?: null;
+        return null;
     } catch (\Exception $e) {
         error_log('Auth middleware error: ' . $e->getMessage());
         return null;
@@ -85,19 +84,6 @@ function requireRole(array $allowedRoles): array {
  */
 function requireAdmin(): array {
     return requireRole(['admin']);
-}
-
-/**
- * Require specific permission. Sends 403 if not authorized.
- */
-function requirePermission(string $permission): array {
-    $user = requireAuth();
-    
-    if (!hasPermission($user, $permission)) {
-        errorResponse('Access denied. Missing permission: ' . $permission, 403);
-    }
-    
-    return $user;
 }
 
 /**
@@ -213,11 +199,22 @@ function hasPermission(array $user, string $permission): bool {
 }
 
 /**
- * Get Bearer token from Authorization header, X-Session-Token header, or secure cookie.
- * NEVER reads from URL parameters ($_GET).
+ * Require a specific permission.
+ */
+function requirePermission(string $permission): array {
+    $user = requireAuth();
+    if (!hasPermission($user, $permission)) {
+        errorResponse('Access denied. You do not have the "' . $permission . '" permission.', 403);
+    }
+    return $user;
+}
+
+/**
+ * Get Bearer token from Authorization header, custom header, or secure cookie.
+ * NEVER accepts tokens from URL parameters ($_GET).
  */
 function getBearerToken(): ?string {
-    // 1. Check Authorization header (primary)
+    // 1. Check Authorization: Bearer header
     $headers = '';
     
     if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
@@ -229,24 +226,21 @@ function getBearerToken(): ?string {
         $headers = $requestHeaders['Authorization'] ?? $requestHeaders['authorization'] ?? '';
     }
     
-    if (!empty($headers) && preg_match('/Bearer\s(\S+)/', $headers, $matches)) {
-        return $matches[1];
+    if (!empty($headers)) {
+        if (preg_match('/Bearer\s(\S+)/', $headers, $matches)) {
+            return $matches[1];
+        }
     }
     
-    // 2. Check X-Session-Token header (alternative for clients that can't set Authorization)
-    if (isset($_SERVER['HTTP_X_SESSION_TOKEN'])) {
-        return $_SERVER['HTTP_X_SESSION_TOKEN'];
+    // 2. Check X-Session-Token custom header
+    $sessionHeader = $_SERVER['HTTP_X_SESSION_TOKEN'] ?? '';
+    if (!empty($sessionHeader)) {
+        return $sessionHeader;
     }
     
-    // 3. Check session_token cookie (for SPA on same domain)
-    if (isset($_COOKIE['session_token'])) {
+    // 3. Check secure HttpOnly cookie
+    if (isset($_COOKIE['session_token']) && !empty($_COOKIE['session_token'])) {
         return $_COOKIE['session_token'];
-    }
-    
-    // 4. Check POST body for token (used in some legacy flows)
-    $input = getJsonInput();
-    if (isset($input['token'])) {
-        return $input['token'];
     }
     
     return null;
@@ -254,12 +248,11 @@ function getBearerToken(): ?string {
 
 /**
  * Create a new session for a user.
- * Returns the session token string.
  */
 function createSession(int $userId): string {
     $db = Database::getInstance();
     
-    // Generate secure token (64 bytes = 128 hex chars)
+    // Generate secure token (no refresh_token - using rotation via re-auth instead)
     $token = bin2hex(random_bytes(64));
     $expiresAt = date('Y-m-d H:i:s', time() + SESSION_LIFETIME);
     
@@ -279,50 +272,48 @@ function createSession(int $userId): string {
 }
 
 /**
- * Destroy a session (logout)
+ * Destroy a session (logout).
  */
 function destroySession(string $token): void {
     $db = Database::getInstance();
     $stmt = $db->prepare('DELETE FROM user_sessions WHERE token = :token');
     $stmt->execute([':token' => $token]);
+    
+    // Also clear the session cookie
+    if (isset($_COOKIE['session_token'])) {
+        setcookie('session_token', '', [
+            'expires' => 1,
+            'path' => '/',
+            'domain' => '',
+            'secure' => true,
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
+        unset($_COOKIE['session_token']);
+    }
 }
 
 /**
- * Destroy all sessions for a user (force logout everywhere)
- */
-function destroyAllUserSessions(int $userId): void {
-    $db = Database::getInstance();
-    $stmt = $db->prepare('DELETE FROM user_sessions WHERE user_id = :user_id');
-    $stmt->execute([':user_id' => $userId]);
-}
-
-/**
- * Clean up expired sessions
+ * Clean up expired sessions.
  */
 function cleanupExpiredSessions(): void {
-    $db = Database::getInstance();
-    $stmt = $db->query('DELETE FROM user_sessions WHERE expires_at < NOW()');
-    $count = $stmt->rowCount();
-    if ($count > ) {
-        error_log("Cleaned up {$count} expired user sessions");
+    try {
+        $db = Database::getInstance();
+        $stmt = $db->query('SELECT user_id FROM user_sessions WHERE expires_at < NOW()');
+        $expired = $stmt->fetchAll();
+        
+        foreach ($expired as $session) {
+            logAudit($session['user_id'], null, 'session_expired', 'session', $session['user_id']);
+        }
+        
+        $db->query('DELETE FROM user_sessions WHERE expires_at < NOW()');
+    } catch (\Exception $e) {
+        error_log('Session cleanup error: ' . $e->getMessage());
     }
 }
 
 /**
- * Clean up expired patient sessions
- */
-function cleanupExpiredPatientSessions(): void {
-    $db = Database::getInstance();
-    $stmt = $db->query('DELETE FROM patient_sessions WHERE expires_at < NOW()');
-    $count = $stmt->rowCount();
-    if ($count > ) {
-        error_log("Cleaned up {$count} expired patient sessions");
-    }
-}
-
-/**
- * Generate a CSRF token and store it in the session.
- * Returns the token string.
+ * Generate and store a CSRF token in the session.
  */
 function generateCsrfToken(): string {
     if (session_status() === PHP_SESSION_NONE) {
@@ -334,58 +325,72 @@ function generateCsrfToken(): string {
 }
 
 /**
- * Validate a CSRF token against the stored session token.
+ * Validate a CSRF token against the session token.
  */
 function validateCsrfToken(string $token): bool {
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }
     $sessionToken = $_SESSION['csrf_token'] ?? '';
-    if (empty($sessionToken)) {
-        return false;
-    }
-    return hash_equals($sessionToken, $token);
+    return !empty($sessionToken) && hash_equals($sessionToken, $token);
 }
 
 /**
  * Require a valid CSRF token for state-changing requests.
- * Call this on POST, PUT, PATCH, DELETE endpoints.
- * Token can come from X-CSRF-Token header or _csrf body field.
+ * Always validates for POST, PUT, PATCH, DELETE methods.
  */
 function requireCsrfToken(): void {
-    $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+    $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
     
-    // Only enforce for state-changing methods
+    // Only enforce on state-changing methods
     if (!in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'])) {
         return;
     }
     
-    // Get token from header or body
-    $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
-    if (empty($token)) {
-        $input = getJsonInput();
-        $token = $input['_csrf'] ?? '';
+    $token = '';
+    
+    // Check X-CSRF-Token header first
+    if (isset($_SERVER['HTTP_X_CSRF_TOKEN'])) {
+        $token = $_SERVER['HTTP_X_CSRF_TOKEN'];
+    }
+    
+    // Fall back to POST field
+    if (empty($token) && isset($_POST['csrf_token'])) {
+        $token = $_POST['csrf_token'];
     }
     
     if (empty($token) || !validateCsrfToken($token)) {
-        errorResponse('CSRF token validation failed.', 403);
+        errorResponse('CSRF token validation failed. Please refresh and try again.', 403);
     }
+    
+    // Invalidate token after use (one-time use)
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    unset($_SESSION['csrf_token']);
 }
 
 /**
- * Send security headers as a backup to .htaccess.
- * Called automatically at the start of each API request.
+ * Send security headers to protect against common attacks.
  */
 function sendSecurityHeaders(): void {
     // Prevent MIME-type sniffing
-    if (!headers_sent()) {
-        header('X-Content-Type-Options: nosniff');
-        header('X-Frame-Options: DENY');
-        header('Referrer-Policy: strict-origin-when-cross-origin');
-        header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
-        header('X-XSS-Protection: 1; mode=block');
+    header('X-Content-Type-Options: nosniff');
+    
+    // Prevent clickjacking
+    header('X-Frame-Options: DENY');
+    
+    // Referrer policy
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    
+    // Permissions policy
+    header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
+    
+    // Content Security Policy
+    header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https: https://maps.gstatic.com https://maps.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https:; frame-src 'self' https://maps.google.com https://www.google.com; media-src 'self' data: blob:; worker-src 'self' blob:;");
+    
+    // HSTS (6 months) - only over HTTPS
+    if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
+        header('Strict-Transport-Security: max-age=15768000; includeSubDomains');
     }
 }
-
-// Auto-send security headers on include
-sendSecurityHeaders();
