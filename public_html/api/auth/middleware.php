@@ -14,9 +14,14 @@
 require_once __DIR__ . '/../database.php';
 require_once __DIR__ . '/../helpers.php';
 
+// Auto-send security headers when middleware is loaded
+sendSecurityHeaders();
+
+// ─── Staff User Authentication (users table) ───────────────────────────────
+
 /**
- * Get the authenticated user from the session token.
- * Returns user array or null if not authenticated.
+ * Get the authenticated staff user from the session token.
+ * Checks user_sessions joined with users table.
  */
 function getAuthUser(): ?array {
     $token = getBearerToken();
@@ -25,7 +30,6 @@ function getAuthUser(): ?array {
     try {
         $db = Database::getInstance();
         
-        // Find valid session (check both user_sessions and patient_sessions)
         $stmt = $db->prepare('
             SELECT u.*, s.token, s.expires_at 
             FROM user_sessions s 
@@ -53,7 +57,7 @@ function getAuthUser(): ?array {
 }
 
 /**
- * Require authentication. Sends 401 if not authenticated.
+ * Require staff authentication. Sends 401 if not authenticated.
  */
 function requireAuth(): array {
     $user = getAuthUser();
@@ -62,6 +66,139 @@ function requireAuth(): array {
     }
     return $user;
 }
+
+// ─── Patient Authentication (patient_login + patient_sessions) ─────────────
+
+/**
+ * Get the authenticated patient from the session token.
+ * Checks patient_sessions joined with patient_login and patients tables.
+ */
+function getPatientAuthUser(): ?array {
+    $token = getBearerToken();
+    if (!$token) return null;
+    
+    try {
+        $db = Database::getInstance();
+        
+        $stmt = $db->prepare('
+            SELECT pl.*, p.full_name, p.name_bn, p.gender, p.date_of_birth, 
+                   p.register_number, p.photo_url, p.id as patient_record_id,
+                   s.token, s.expires_at
+            FROM patient_sessions s 
+            JOIN patient_login pl ON s.patient_login_id = pl.id
+            JOIN patients p ON pl.patient_id = p.id
+            WHERE s.token = :token 
+              AND s.expires_at > NOW() 
+              AND pl.status = "approved"
+            LIMIT 1
+        ');
+        $stmt->execute([':token' => $token]);
+        $patient = $stmt->fetch();
+        
+        if ($patient) {
+            // Update last activity
+            $updateStmt = $db->prepare('UPDATE patient_sessions SET last_activity = NOW() WHERE token = :token');
+            $updateStmt->execute([':token' => $token]);
+            return $patient;
+        }
+        
+        return null;
+    } catch (\Exception $e) {
+        error_log('Patient auth middleware error: ' . $e->getMessage());
+        return null;
+    }
+}
+
+/**
+ * Require patient authentication. Sends 401 if not authenticated.
+ */
+function requirePatientAuth(): array {
+    $patient = getPatientAuthUser();
+    if (!$patient) {
+        errorResponse('Patient authentication required. Please log in.', 401);
+    }
+    return $patient;
+}
+
+// ─── Admin Content Authentication (admin_accounts + admin_sessions) ─────────
+
+/**
+ * Create a new admin session (used by admin_login.php).
+ */
+function createAdminSession(int $adminId): string {
+    $db = Database::getInstance();
+    
+    $token = bin2hex(random_bytes(64));
+    $expiresAt = date('Y-m-d H:i:s', time() + SESSION_LIFETIME);
+    
+    $stmt = $db->prepare('
+        INSERT INTO admin_sessions (admin_id, token, ip_address, user_agent, expires_at)
+        VALUES (:admin_id, :token, :ip_address, :user_agent, :expires_at)
+    ');
+    $stmt->execute([
+        ':admin_id' => $adminId,
+        ':token' => $token,
+        ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? null,
+        ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,
+        ':expires_at' => $expiresAt,
+    ]);
+    
+    return $token;
+}
+
+/**
+ * Get the authenticated admin content user from the session token.
+ * Checks admin_sessions joined with admin_accounts.
+ */
+function getAdminAuthUser(): ?array {
+    $token = getBearerToken();
+    if (!$token) return null;
+    
+    try {
+        $db = Database::getInstance();
+        
+        $stmt = $db->prepare('
+            SELECT a.*, s.token, s.expires_at 
+            FROM admin_sessions s 
+            JOIN admin_accounts a ON s.admin_id = a.id 
+            WHERE s.token = :token 
+              AND s.expires_at > NOW() 
+              AND a.is_active = 1
+            LIMIT 1
+        ');
+        $stmt->execute([':token' => $token]);
+        $admin = $stmt->fetch();
+        
+        if ($admin) {
+            // Update last activity
+            $updateStmt = $db->prepare('UPDATE admin_sessions SET last_activity = NOW() WHERE token = :token');
+            $updateStmt->execute([':token' => $token]);
+            return $admin;
+        }
+        
+        return null;
+    } catch (\Exception $e) {
+        error_log('Admin auth middleware error: ' . $e->getMessage());
+        return null;
+    }
+}
+
+/**
+ * Require admin content authentication. Sends 401 if not authenticated.
+ */
+function requireAdminContent(): array {
+    $admin = getAdminAuthUser();
+    if (!$admin) {
+        errorResponse('Admin authentication required. Please log in.', 401);
+    }
+    // Ensure the user is an active admin
+    if (empty($admin['is_active'])) {
+        errorResponse('Admin account is deactivated.', 403);
+    }
+    return $admin;
+}
+
+// ─── Role & Permission Verification (staff users) ──────────────────────────
 
 /**
  * Require specific role(s). Sends 403 if not authorized.
@@ -80,7 +217,7 @@ function requireRole(array $allowedRoles): array {
 }
 
 /**
- * Require admin role.
+ * Require admin role (hospital system admin).
  */
 function requireAdmin(): array {
     return requireRole(['admin']);
@@ -209,6 +346,8 @@ function requirePermission(string $permission): array {
     return $user;
 }
 
+// ─── Token Extraction ──────────────────────────────────────────────────────
+
 /**
  * Get Bearer token from Authorization header, custom header, or secure cookie.
  * NEVER accepts tokens from URL parameters ($_GET).
@@ -246,8 +385,10 @@ function getBearerToken(): ?string {
     return null;
 }
 
+// ─── Session Management ────────────────────────────────────────────────────
+
 /**
- * Create a new session for a user.
+ * Create a new session for a staff user.
  */
 function createSession(int $userId): string {
     $db = Database::getInstance();
@@ -272,12 +413,23 @@ function createSession(int $userId): string {
 }
 
 /**
- * Destroy a session (logout).
+ * Destroy a session token across all session types (logout).
+ * Checks user_sessions, patient_sessions, and admin_sessions.
  */
 function destroySession(string $token): void {
     $db = Database::getInstance();
-    $stmt = $db->prepare('DELETE FROM user_sessions WHERE token = :token');
-    $stmt->execute([':token' => $token]);
+    
+    // Try to delete from all session tables
+    $tables = ['user_sessions', 'patient_sessions', 'admin_sessions'];
+    foreach ($tables as $table) {
+        try {
+            $stmt = $db->prepare("DELETE FROM $table WHERE token = :token");
+            $stmt->execute([':token' => $token]);
+        } catch (\Exception $e) {
+            // Table might not exist - ignore
+            error_log("Session delete error on $table: " . $e->getMessage());
+        }
+    }
     
     // Also clear the session cookie
     if (isset($_COOKIE['session_token'])) {
@@ -294,46 +446,34 @@ function destroySession(string $token): void {
 }
 
 /**
- * Clean up expired sessions.
+ * Clean up expired sessions across all session types.
  */
 function cleanupExpiredSessions(): void {
-    try {
-        $db = Database::getInstance();
-        $stmt = $db->query('SELECT user_id FROM user_sessions WHERE expires_at < NOW()');
-        $expired = $stmt->fetchAll();
-        
-        foreach ($expired as $session) {
-            logAudit($session['user_id'], null, 'session_expired', 'session', $session['user_id']);
+    $sessionTables = [
+        'user_sessions' => 'user_id',
+        'patient_sessions' => 'patient_login_id',
+        'admin_sessions' => 'admin_id',
+    ];
+    
+    foreach ($sessionTables as $table => $idColumn) {
+        try {
+            $db = Database::getInstance();
+            $stmt = $db->query("SELECT $idColumn FROM $table WHERE expires_at < NOW()");
+            $expired = $stmt->fetchAll();
+            
+            foreach ($expired as $session) {
+                logAudit($session[$idColumn] ?? null, null, 'session_expired', 'session', $session[$idColumn] ?? null);
+            }
+            
+            $db->query("DELETE FROM $table WHERE expires_at < NOW()");
+        } catch (\Exception $e) {
+            error_log("Session cleanup error on $table: " . $e->getMessage());
         }
-        
-        $db->query('DELETE FROM user_sessions WHERE expires_at < NOW()');
-    } catch (\Exception $e) {
-        error_log('Session cleanup error: ' . $e->getMessage());
     }
 }
 
-/**
- * Generate and store a CSRF token in the session.
- */
-function generateCsrfToken(): string {
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-    $token = bin2hex(random_bytes(32));
-    $_SESSION['csrf_token'] = $token;
-    return $token;
-}
-
-/**
- * Validate a CSRF token against the session token.
- */
-function validateCsrfToken(string $token): bool {
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-    $sessionToken = $_SESSION['csrf_token'] ?? '';
-    return !empty($sessionToken) && hash_equals($sessionToken, $token);
-}
+// ─── CSRF Protection ───────────────────────────────────────────────────────
+// NOTE: generateCsrfToken() and validateCsrfToken() are defined in helpers.php
 
 /**
  * Require a valid CSRF token for state-changing requests.
@@ -372,6 +512,7 @@ function requireCsrfToken(): void {
 
 /**
  * Send security headers to protect against common attacks.
+ * Called automatically when middleware.php is loaded.
  */
 function sendSecurityHeaders(): void {
     // Prevent MIME-type sniffing
