@@ -32,7 +32,7 @@
         }
     ],
     "created_at": 1784563981,
-    "updated_at": 1784568216,
+    "updated_at": 1784568224,
     "messages": [
         {
             "id": "msg_compact",
@@ -4564,6 +4564,49 @@
             "content": "No syntax errors detected in \/home\/drarmank\/public_html\/api\/settings\/save.php\n",
             "is_error": false,
             "time": 1784568216
+        },
+        {
+            "id": "msg_7fd5ba8548",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now create save-multiple.php:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_HcXuHNjmoe7HMcvXjwLx8279",
+                    "name": "write_file",
+                    "input": {
+                        "content": "<?php\n\/**\n * Settings API - Save Multiple\n * \n * POST \/api\/settings\/save-multiple.php\n * Headers: Authorization: Bearer <token>\n * Body: { \"settings\": { \"clinic_name\": \"My Clinic\", \"clinic_phone\": \"123456789\" } }\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\nrequire_once __DIR__ . '\/..\/auth\/middleware.php';\n\nhandleCors();\nrequireMethod('POST');\n\n$user = requireAuth();\n\n$input = getJsonInput();\nif (!isset($input['settings']) || !is_array($input['settings']) || empty($input['settings'])) {\n    errorResponse('Settings object is required', 400);\n}\n\n$settings = $input['settings'];\n$saved = ;\n\ntry {\n    $db = Database::getInstance();\n    $db->beginTransaction();\n    \n    foreach ($settings as $key => $value) {\n        $key = sanitizeString($key);\n        \n        \/\/ Encode value as JSON if it's an array\/object\n        if (is_array($value) || is_object($value)) {\n            $storedValue = json_encode($value, JSON_UNESCAPED_UNICODE);\n        } else {\n            $storedValue = $value;\n        }\n        \n        \/\/ Check if setting exists\n        $stmt = $db->prepare('SELECT id FROM site_settings WHERE setting_key = :key LIMIT 1');\n        $stmt->execute([':key' => $key]);\n        $existing = $stmt->fetch();\n        \n        if ($existing) {\n            $stmt = $db->prepare('UPDATE site_settings SET setting_value = :value, updated_by = :updated_by, updated_at = NOW() WHERE setting_key = :key');\n            $stmt->execute([\n                ':value' => $storedValue,\n                ':updated_by' => $user['id'],\n                ':key' => $key,\n            ]);\n        } else {\n            $stmt = $db->prepare('INSERT INTO site_settings (setting_key, setting_value, setting_group, updated_by, created_at, updated_at) VALUES (:key, :value, :sgroup, :updated_by, NOW(), NOW())');\n            $stmt->execute([\n                ':key' => $key,\n                ':value' => $storedValue,\n                ':sgroup' => 'general',\n                ':updated_by' => $user['id'],\n            ]);\n        }\n        \n        $saved++;\n    }\n    \n    $db->commit();\n    \n    successResponse([\n        'saved_count' => $saved,\n    ], \"$saved setting(s) saved successfully\");\n    \n} catch (\\Exception $e) {\n    if (isset($db) && $db->inTransaction()) {\n        $db->rollBack();\n    }\n    error_log('Save multiple settings error: ' . $e->getMessage());\n    errorResponse('Failed to save settings', 500);\n}\n",
+                        "path": "\/public_html\/api\/settings\/save-multiple.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 89805,
+                "completion_tokens": 708,
+                "total_tokens": 90513,
+                "prompt_cache_hit_tokens": 89728,
+                "prompt_cache_miss_tokens": 77,
+                "prompt_tokens_details": {
+                    "cached_tokens": 89728
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 7
+                },
+                "cached_tokens": 89728
+            },
+            "time": 1784568223
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_HcXuHNjmoe7HMcvXjwLx8279",
+            "content": "Successfully wrote 2446 bytes (79 lines) to \/public_html\/api\/settings\/save-multiple.php",
+            "is_error": false,
+            "time": 1784568224
         }
     ]
 }
