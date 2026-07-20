@@ -74,12 +74,15 @@ function requireMethod(string ...$methods): void {
         errorResponse('Method not allowed. Allowed: ' . implode(', ', $methods), 405);
     }
 }
+
+// ─── Rate Limiting ─────────────────────────────────────────────────────────
+
 function checkRateLimit(string $identifier = '', int $maxAttempts = , int $windowSeconds = ): void {
     if (empty($identifier)) {
         $identifier = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
     }
     
-    // Use defaults if not overridden
+    // Use provided limits or fall back to configuration defaults
     if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;
     if ($windowSeconds <= ) $windowSeconds = RATE_LIMIT_WINDOW;
     
@@ -106,14 +109,9 @@ function checkRateLimit(string $identifier = '', int $maxAttempts = , int $windo
         $retryAfter = $data['reset'] - time();
         header('Retry-After: ' . $retryAfter);
         errorResponse('Rate limit exceeded. Try again later.', 429, [
-            'retry_after' => max(, $retryAfter),
+            'retry_after' => $retryAfter,
             'limit' => $maxAttempts,
             'window' => $windowSeconds,
-        ]);
-    }
-    
-    file_put_contents($file, json_encode($data), LOCK_EX);
-}
         ]);
     }
     
@@ -144,7 +142,28 @@ function sanitizeEmail(string $email): string {
 }
 
 function sanitizePhone(string $phone): string {
-    return preg_replace('/[^0-9+\-\(\) ]/', '', trim($phone));
+    return preg_replace('/[^-9+\-\(\) ]/', '', trim($phone));
+}
+
+// ─── Password Validation ───────────────────────────────────────────────────
+
+function validatePasswordStrength(string $password): ?string {
+    if (strlen($password) < 8) {
+        return 'Password must be at least 8 characters long';
+    }
+    if (!preg_match('/[A-Z]/', $password)) {
+        return 'Password must contain at least one uppercase letter';
+    }
+    if (!preg_match('/[a-z]/', $password)) {
+        return 'Password must contain at least one lowercase letter';
+    }
+    if (!preg_match('/[-9]/', $password)) {
+        return 'Password must contain at least one number';
+    }
+    if (!preg_match('/[!@#$%^&*()_\-+={}[\]|:;"\'<>,.?\/~`]/', $password)) {
+        return 'Password must contain at least one special character';
+    }
+    return null; // Password is strong
 }
 
 // ─── Pagination ────────────────────────────────────────────────────────────
@@ -174,17 +193,6 @@ function paginatedResponse(array $items, int $total, int $page, int $limit): voi
             'has_more' => $page < $totalPages,
         ],
     ]);
-}
-
-// ─── CSRF Protection ───────────────────────────────────────────────────────
-
-function generateCsrfToken(): string {
-    return bin2hex(random_bytes(32));
-}
-
-function validateCsrfToken(string $token): bool {
-    $sessionToken = $_SESSION['csrf_token'] ?? '';
-    return hash_equals($sessionToken, $token);
 }
 
 // ─── File Upload Helpers ───────────────────────────────────────────────────
@@ -262,7 +270,7 @@ function logAudit(
             ':entity_id' => $entityId,
             ':old_values' => $oldValues ? json_encode($oldValues) : null,
             ':new_values' => $newValues ? json_encode($newValues) : null,
-            ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? ($_SERVER['SERVER_ADDR'] ?? '127.0.0.1'),
+            ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? ($_SERVER['SERVER_ADDR'] ?? '127...1'),
             ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'CLI',
         ]);
     } catch (\Exception $e) {
