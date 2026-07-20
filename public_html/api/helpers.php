@@ -83,8 +83,8 @@ function checkRateLimit(string $identifier = '', int $maxAttempts = 100, int $wi
     }
     
     // Use provided limits or fall back to configuration defaults
-    if ($maxAttempts <= 0) $maxAttempts = RATE_LIMIT_MAX;
-    if ($windowSeconds <= 0) $windowSeconds = RATE_LIMIT_WINDOW;
+    if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;
+    if ($windowSeconds <= ) $windowSeconds = RATE_LIMIT_WINDOW;
     
     $rateLimitDir = __DIR__ . '/../../server-data/ratelimit';
     if (!is_dir($rateLimitDir)) {
@@ -93,7 +93,7 @@ function checkRateLimit(string $identifier = '', int $maxAttempts = 100, int $wi
     
     $file = $rateLimitDir . '/' . md5($identifier) . '.json';
     
-    $data = ['count' => 0, 'reset' => time() + $windowSeconds];
+    $data = ['count' => , 'reset' => time() + $windowSeconds];
     if (file_exists($file)) {
         $existing = json_decode(file_get_contents($file), true);
         if ($existing && isset($existing['reset'])) {
@@ -142,7 +142,7 @@ function sanitizeEmail(string $email): string {
 }
 
 function sanitizePhone(string $phone): string {
-    // Keep only digits, +, -, (, ), and spaces
+    // Allow digits, +, -, (, ), and spaces
     return preg_replace('/[^-9+\-\(\) ]/', '', trim($phone));
 }
 
@@ -259,12 +259,18 @@ function logAudit(
 ): void {
     try {
         $db = Database::getInstance();
+        // Check if audit_logs table has user_id foreign key constraint
+        // If patient_id is given but no user, use  for user_id to avoid FK issues
+        $safeUserId = $userId;
+        if ($safeUserId === null && $patientId !== null) {
+            $safeUserId = ; // System user for patient-only actions
+        }
         $stmt = $db->prepare('
             INSERT INTO audit_logs (user_id, patient_id, action, entity_type, entity_id, old_values, new_values, ip_address, user_agent)
             VALUES (:user_id, :patient_id, :action, :entity_type, :entity_id, :old_values, :new_values, :ip_address, :user_agent)
         ');
         $stmt->execute([
-            ':user_id' => $userId,
+            ':user_id' => $safeUserId,
             ':patient_id' => $patientId,
             ':action' => $action,
             ':entity_type' => $entityType,
