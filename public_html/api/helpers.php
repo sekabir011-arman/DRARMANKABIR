@@ -83,8 +83,8 @@ function checkRateLimit(string $identifier = '', int $maxAttempts = 100, int $wi
     }
     
     // Use provided limits or fall back to configuration defaults
-    if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;
-    if ($windowSeconds <= ) $windowSeconds = RATE_LIMIT_WINDOW;
+    if ($maxAttempts <= 0) $maxAttempts = RATE_LIMIT_MAX;
+    if ($windowSeconds <= 0) $windowSeconds = RATE_LIMIT_WINDOW;
     
     $rateLimitDir = __DIR__ . '/../../server-data/ratelimit';
     if (!is_dir($rateLimitDir)) {
@@ -93,7 +93,7 @@ function checkRateLimit(string $identifier = '', int $maxAttempts = 100, int $wi
     
     $file = $rateLimitDir . '/' . md5($identifier) . '.json';
     
-    $data = ['count' => , 'reset' => time() + $windowSeconds];
+    $data = ['count' => 0, 'reset' => time() + $windowSeconds];
     if (file_exists($file)) {
         $existing = json_decode(file_get_contents($file), true);
         if ($existing && isset($existing['reset'])) {
@@ -260,7 +260,7 @@ function logAudit(
     try {
         $db = Database::getInstance();
         // Use  for null user_id to avoid FK constraint issues with audit_logs
-        $safeUserId = $userId ?? ;
+        $safeUserId = $userId ?? 0;
         $stmt = $db->prepare('
             INSERT INTO audit_logs (user_id, patient_id, action, entity_type, entity_id, old_values, new_values, ip_address, user_agent)
             VALUES (:user_id, :patient_id, :action, :entity_type, :entity_id, :old_values, :new_values, :ip_address, :user_agent)
@@ -273,7 +273,7 @@ function logAudit(
             ':entity_id' => $entityId,
             ':old_values' => $oldValues ? json_encode($oldValues) : null,
             ':new_values' => $newValues ? json_encode($newValues) : null,
-            ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? ($_SERVER['SERVER_ADDR'] ?? '127...1'),
+            ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? ($_SERVER['SERVER_ADDR'] ?? '127.0.0.1'),
             ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'CLI',
         ]);
     } catch (\Exception $e) {
