@@ -1,6 +1,6 @@
 <?php exit(); ?>
 {
-    "fetched_at": 1784398522,
+    "fetched_at": 1784540929,
     "models": {
         "deepseek-v4-flash-free": {
             "name": "deepseek-v4-flash-free",
