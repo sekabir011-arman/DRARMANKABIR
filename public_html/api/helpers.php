@@ -83,8 +83,8 @@ function checkRateLimit(string $identifier = '', int $maxAttempts = 100, int $wi
     }
     
     // Use provided limits or fall back to configuration defaults
-    if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;
-    if ($windowSeconds <= ) $windowSeconds = RATE_LIMIT_WINDOW;
+    if ($maxAttempts <= 0) $maxAttempts = RATE_LIMIT_MAX;
+    if ($windowSeconds <= 0) $windowSeconds = RATE_LIMIT_WINDOW;
     
     $rateLimitDir = __DIR__ . '/../../server-data/ratelimit';
     if (!is_dir($rateLimitDir)) {
@@ -93,7 +93,7 @@ function checkRateLimit(string $identifier = '', int $maxAttempts = 100, int $wi
     
     $file = $rateLimitDir . '/' . md5($identifier) . '.json';
     
-    $data = ['count' => , 'reset' => time() + $windowSeconds];
+    $data = ['count' => 0, 'reset' => time() + $windowSeconds];
     if (file_exists($file)) {
         $existing = json_decode(file_get_contents($file), true);
         if ($existing && isset($existing['reset'])) {
