@@ -66,7 +66,7 @@ try {
             } else {
                 $value = sanitizeString($input[$inputKey]);
             }
-            $updates[] = "$db_field = :$dbField";
+            $updates[] = "$dbField = :$dbField";
             $params[":$dbField"] = $value ?: null;
         }
     }
