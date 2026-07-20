@@ -6,7 +6,7 @@
     "mode": "build",
     "todos": [],
     "created_at": 1784555801,
-    "updated_at": 1784556296,
+    "updated_at": 1784556334,
     "messages": [
         {
             "id": "msg_ae1cb3b6bb",
@@ -868,6 +868,314 @@
             "content": "Successfully wrote 10558 bytes (291 lines) to public_html\/api\/helpers.php",
             "is_error": false,
             "time": 1784556296
+        },
+        {
+            "id": "msg_730a81a324",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Wait, I see the file was written but looking at the content I wrote, it still has the same issues! Let me check the content that was written - it has `<= )` and `'count' => ,` still. That's because I copied the same broken lines in my write_file content.\n\nLet me look at this more carefully. The original file has `<= )` which is invalid. I need to change it to proper PHP. Let me check what the original intent was.\n\nThe function signature was:\n```php\nfunction checkRateLimit(string $identifier = '', int $maxAttempts = 100, int $windowSeconds = 60): void {\n```\n\nThen:\n```php\nif ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;\nif ($windowSeconds <= ) $windowSeconds = RATE_LIMIT_WINDOW;\n```\n\nThis looks like incomplete code. The intent seems to be: if `$maxAttempts <= ` (i.e., not provided or zero), use the default constant. But wait, the function signature already has defaults `= 100` and `= 60`. So the conditions `$maxAttempts <= ` would never be true... unless the original intent was to allow overriding with  to use defaults.\n\nActually wait - looking at the function signature again: the function has default values, but someone might call `checkRateLimit('some_id', , )` to use the defaults. In that case, `$maxAttempts <= ` would be true and use the constant.\n\nBut also line 96: `$data = ['count' => , 'reset' => time() + $windowSeconds];` - this has `'count' => ` with no value. This should probably be `'count' => `.\n\nLet me rewrite the file with proper syntax."
+                },
+                {
+                    "type": "text",
+                    "text": "I see the file was written but still contains the broken syntax. Let me fix it properly now:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_P2WZCMtwwtdJB8U7MWV89308",
+                    "name": "edit_file",
+                    "input": {
+                        "path": "public_html\/api\/helpers.php",
+                        "old_string": "    if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;\n    if ($windowSeconds <= ) $windowSeconds = RATE_LIMIT_WINDOW;",
+                        "new_string": "    if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;\n    if ($windowSeconds <= ) $windowSeconds = RATE_LIMIT_WINDOW;"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 47367,
+                "completion_tokens": 569,
+                "total_tokens": 47936,
+                "prompt_cache_hit_tokens": 44544,
+                "prompt_cache_miss_tokens": 2823,
+                "prompt_tokens_details": {
+                    "cached_tokens": 44544
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 391
+                },
+                "cached_tokens": 44544
+            },
+            "time": 1784556303
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_P2WZCMtwwtdJB8U7MWV89308",
+            "content": "Edited public_html\/api\/helpers.php (1 replacement)\n-     if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;\n-     if ($windowSeconds <= ) $windowSeconds = RATE_LIMIT_WINDOW;\n+     if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;\n+     if ($windowSeconds <= ) $windowSeconds = RATE_LIMIT_WINDOW;",
+            "is_error": false,
+            "time": 1784556304
+        },
+        {
+            "id": "msg_d8865cc546",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "OK, the edit_file tool is definitely not making changes even though it says it did. There must be some encoding issue. Let me try a completely different approach - use bash sed to fix these."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_RySHenAkc9jpq8kbbJ4H6910",
+                    "name": "bash",
+                    "input": {
+                        "command": "sed -i 's\/if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;\/if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;\/' \/home\/drarmank\/public_html\/api\/helpers.php && sed -i 's\/if ($windowSeconds <= ) $windowSeconds = RATE_LIMIT_WINDOW;\/if ($windowSeconds <= ) $windowSeconds = RATE_LIMIT_WINDOW;\/' \/home\/drarmank\/public_html\/api\/helpers.php && sed -i \"s\/\\\\\\$data = \\['count' => , 'reset' => time() + \\\\\\$windowSeconds\\];\/\\$data = ['count' => , 'reset' => time() + \\$windowSeconds];\/\" \/home\/drarmank\/public_html\/api\/helpers.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 48042,
+                "completion_tokens": 266,
+                "total_tokens": 48308,
+                "prompt_cache_hit_tokens": 47872,
+                "prompt_cache_miss_tokens": 170,
+                "prompt_tokens_details": {
+                    "cached_tokens": 47872
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 40
+                },
+                "cached_tokens": 47872
+            },
+            "time": 1784556308
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_RySHenAkc9jpq8kbbJ4H6910",
+            "content": "[Command completed successfully with no output]",
+            "is_error": false,
+            "time": 1784556308
+        },
+        {
+            "id": "msg_1189142e3b",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "OK, the sed commands ran without output but that's because they're replacing the same text. Let me try using bash to actually fix the issues. The problem is identifying what characters are actually in these lines. Let me use od\/xxd to check."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_oCiLWS2R1Jxxjwgujddm4084",
+                    "name": "bash",
+                    "input": {
+                        "command": "awk 'NR==86' \/home\/drarmank\/public_html\/api\/helpers.php | xxd | head -5"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 48321,
+                "completion_tokens": 119,
+                "total_tokens": 48440,
+                "prompt_cache_hit_tokens": 48000,
+                "prompt_cache_miss_tokens": 321,
+                "prompt_tokens_details": {
+                    "cached_tokens": 48000
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 52
+                },
+                "cached_tokens": 48000
+            },
+            "time": 1784556312
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_oCiLWS2R1Jxxjwgujddm4084",
+            "content": "00000000: 2020 2020 6966 2028 246d 6178 4174 7465      if ($maxAtte\n00000010: 6d70 7473 203c 3d20 2920 246d 6178 4174  mpts <= ) $maxAt\n00000020: 7465 6d70 7473 203d 2052 4154 455f 4c49  tempts = RATE_LI\n00000030: 4d49 545f 4d41 583b 0a                   MIT_MAX;.\n",
+            "is_error": false,
+            "time": 1784556312
+        },
+        {
+            "id": "msg_16660f8d71",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I can see the hex. The line is:\n`    if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;`\n\nLooking at hex: `3c 3d 20 29` = `<` `=` ` ` `)`\n\nSo the issue is that `<= )` is literally `<= )`. The `<=` operator requires two operands: `$maxAttempts <= )` is trying to use `)` as the second operand, which is invalid.\n\nThe original intent is probably `if ($maxAttempts <= )` - i.e., if maxAttempts is  or less (meaning the caller passed  or the default was ), use the config default.\n\nBut actually looking at the function signature: `int $maxAttempts = 100` - it defaults to 100, so `$maxAttempts <= ` would never trigger with the default. Maybe the intent was `if ($maxAttempts <= )` where something was supposed to be between `<=` and `)`.\n\nGiven the pattern and the constants `RATE_LIMIT_MAX` (100) and `RATE_LIMIT_WINDOW` (60), I think the intent was:\n- `if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;` - if zero or negative, use default\n- `if ($windowSeconds <= ) $windowSeconds = RATE_LIMIT_WINDOW;` - if zero or negative, use default\n\nAnd for line 96: `'count' =>` should be `'count' => `\n\nLet me use sed with proper escaping to fix these."
+                },
+                {
+                    "type": "text",
+                    "text": "Now I can see the exact bytes. Let me fix all the syntax errors using sed:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_tRStjgRQTF5dEgr9jM4D1798",
+                    "name": "bash",
+                    "input": {
+                        "command": "sed -i 's\/if (\\$maxAttempts <= ) \\$maxAttempts = RATE_LIMIT_MAX;\/if (\\$maxAttempts <= ) \\$maxAttempts = RATE_LIMIT_MAX;\/' \/home\/drarmank\/public_html\/api\/helpers.php\nsed -i 's\/if (\\$windowSeconds <= ) \\$windowSeconds = RATE_LIMIT_WINDOW;\/if (\\$windowSeconds <= ) \\$windowSeconds = RATE_LIMIT_WINDOW;\/' \/home\/drarmank\/public_html\/api\/helpers.php\nsed -i \"s\/'count' => ,\/'count' => ,\/\" \/home\/drarmank\/public_html\/api\/helpers.php\necho \"--- After sed ---\"\nawk 'NR==86 || NR==87 || NR==96' \/home\/drarmank\/public_html\/api\/helpers.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 48591,
+                "completion_tokens": 599,
+                "total_tokens": 49190,
+                "prompt_cache_hit_tokens": 48384,
+                "prompt_cache_miss_tokens": 207,
+                "prompt_tokens_details": {
+                    "cached_tokens": 48384
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 358
+                },
+                "cached_tokens": 48384
+            },
+            "time": 1784556320
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_tRStjgRQTF5dEgr9jM4D1798",
+            "content": "--- After sed ---\n    if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;\n    if ($windowSeconds <= ) $windowSeconds = RATE_LIMIT_WINDOW;\n    $data = ['count' => , 'reset' => time() + $windowSeconds];\n",
+            "is_error": false,
+            "time": 1784556320
+        },
+        {
+            "id": "msg_2908eae8cf",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The sed didn't change anything because it's matching the same pattern and replacing with the same. I need to actually replace them with different content. Let me try:\n\n```bash\nsed -i 's\/if (\\$maxAttempts <= ) \\$maxAttempts = RATE_LIMIT_MAX;\/if (\\$maxAttempts <= ) \\$maxAttempts = RATE_LIMIT_MAX;\/' \/home\/drarmank\/public_html\/api\/helpers.php\n```\n\nThis will match `<= )` and replace with `<= )`."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_81swnyTbIIOrTvsacMfw0680",
+                    "name": "bash",
+                    "input": {
+                        "command": "sed -i 's\/if (\\$maxAttempts <= ) \\$maxAttempts = RATE_LIMIT_MAX;\/if (\\$maxAttempts <= ) \\$maxAttempts = RATE_LIMIT_MAX;\/' \/home\/drarmank\/public_html\/api\/helpers.php\nsed -i 's\/if (\\$windowSeconds <= ) \\$windowSeconds = RATE_LIMIT_WINDOW;\/if (\\$windowSeconds <= ) \\$windowSeconds = RATE_LIMIT_WINDOW;\/' \/home\/drarmank\/public_html\/api\/helpers.php\nsed -i \"s\/'count' => ,\/'count' => ,\/\" \/home\/drarmank\/public_html\/api\/helpers.php\necho \"--- After fix ---\"\nawk 'NR==86 || NR==87 || NR==96' \/home\/drarmank\/public_html\/api\/helpers.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 49267,
+                "completion_tokens": 345,
+                "total_tokens": 49612,
+                "prompt_cache_hit_tokens": 49152,
+                "prompt_cache_miss_tokens": 115,
+                "prompt_tokens_details": {
+                    "cached_tokens": 49152
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 115
+                },
+                "cached_tokens": 49152
+            },
+            "time": 1784556325
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_81swnyTbIIOrTvsacMfw0680",
+            "content": "--- After fix ---\n    if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;\n    if ($windowSeconds <= ) $windowSeconds = RATE_LIMIT_WINDOW;\n    $data = ['count' => , 'reset' => time() + $windowSeconds];\n",
+            "is_error": false,
+            "time": 1784556325
+        },
+        {
+            "id": "msg_c142977013",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "It seems the sed is not working, probably because there are special characters or the pattern isn't matching exactly. Let me try a different approach - use printf to write the exact bytes.\n\nActually, looking at the hexdump again:\n```\n3c 3d 20 29\n```\nThis is `<` `=` ` ` `)` - that's normal ASCII. Let me try with a more specific sed pattern.\n\nWait, I see the issue now. Looking at the hex more carefully:\n- `3c` = `<`\n- `3d` = `=`\n- `20` = ` ` (space)\n- `29` = `)`\n\nSo the pattern is `<= )` which is indeed `<=` then `)` with a space between. But maybe sed is not matching because the `$` signs need escaping differently or there's something else.\n\nLet me try using `sed -i` with the `|` delimiter and different escaping."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_vVtYj5r8NPxUB9suhKy45880",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && python3 -c \"\nwith open('public_html\/api\/helpers.php', 'r') as f:\n    content = f.read()\n\n# Fix line 86: $maxAttempts <= ) -> $maxAttempts <= )\ncontent = content.replace('\\$maxAttempts <= ) \\$maxAttempts = RATE_LIMIT_MAX;', '\\$maxAttempts <= ) \\$maxAttempts = RATE_LIMIT_MAX;')\n\n# Fix line 87: $windowSeconds <= ) -> $windowSeconds <= )\ncontent = content.replace('\\$windowSeconds <= ) \\$windowSeconds = RATE_LIMIT_WINDOW;', '\\$windowSeconds <= ) \\$windowSeconds = RATE_LIMIT_WINDOW;')\n\n# Fix line 96: 'count' => , -> 'count' => ,\ncontent = content.replace(\\\"'count' => ,\\\", \\\"'count' => ,\\\")\n\nwith open('public_html\/api\/helpers.php', 'w') as f:\n    f.write(content)\nprint('Done')\n\""
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 49683,
+                "completion_tokens": 470,
+                "total_tokens": 50153,
+                "prompt_cache_hit_tokens": 49152,
+                "prompt_cache_miss_tokens": 531,
+                "prompt_tokens_details": {
+                    "cached_tokens": 49152
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 196
+                },
+                "cached_tokens": 49152
+            },
+            "time": 1784556331
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_vVtYj5r8NPxUB9suhKy45880",
+            "content": "This command is blocked for safety reasons.",
+            "is_error": true,
+            "time": 1784556331
+        },
+        {
+            "id": "msg_126e4915f4",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "OK, blocked. Let me try a different approach. Let me read the whole file, modify it in memory, and write it back using the write_file tool. But first let me properly construct the corrected function.\n\nActually, the simplest approach is to just read the whole file, fix the problems, and write it back."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me read the current file, construct the corrected version, and write it back:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_7QM9qSwkXw7TTi6WhAFN2605",
+                    "name": "read_file",
+                    "input": {
+                        "path": "public_html\/api\/helpers.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 50161,
+                "completion_tokens": 130,
+                "total_tokens": 50291,
+                "prompt_cache_hit_tokens": 49664,
+                "prompt_cache_miss_tokens": 497,
+                "prompt_tokens_details": {
+                    "cached_tokens": 49664
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 65
+                },
+                "cached_tokens": 49664
+            },
+            "time": 1784556334
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_7QM9qSwkXw7TTi6WhAFN2605",
+            "content": "    1 | <?php\n    2 | \/**\n    3 |  * API Helper Functions\n    4 |  * \n    5 |  * Common utilities for all API endpoints.\n    6 |  *\/\n    7 | \n    8 | require_once __DIR__ . '\/..\/config.php';\n    9 | \n   10 | \/\/ \u2500\u2500\u2500 Response Helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   11 | \n   12 | function jsonResponse(mixed $data, int $statusCode = 200): void {\n   13 |     http_response_code($statusCode);\n   14 |     header('Content-Type: application\/json; charset=utf-8');\n   15 |     echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);\n   16 |     exit;\n   17 | }\n   18 | \n   19 | function successResponse(mixed $data = null, string $message = 'Success'): void {\n   20 |     jsonResponse([\n   21 |         'success' => true,\n   22 |         'message' => $message,\n   23 |         'data' => $data,\n   24 |         'timestamp' => date('c'),\n   25 |     ]);\n   26 | }\n   27 | \n   28 | function errorResponse(string $message, int $statusCode = 400, mixed $errors = null): void {\n   29 |     $response = [\n   30 |         'success' => false,\n   31 |         'message' => $message,\n   32 |         'timestamp' => date('c'),\n   33 |     ];\n   34 |     if ($errors !== null) {\n   35 |         $response['errors'] = $errors;\n   36 |     }\n   37 |     jsonResponse($response, $statusCode);\n   38 | }\n   39 | \n   40 | \/\/ \u2500\u2500\u2500 Request Helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   41 | \n   42 | function getJsonInput(): array {\n   43 |     $raw = file_get_contents('php:\/\/input');\n   44 |     if (empty($raw)) return [];\n   45 |     $data = json_decode($raw, true);\n   46 |     if (json_last_error() !== JSON_ERROR_NONE) {\n   47 |         errorResponse('Invalid JSON input', 400);\n   48 |     }\n   49 |     return $data ?? [];\n   50 | }\n   51 | \n   52 | function getParam(string $key, mixed $default = null): mixed {\n   53 |     \/\/ Check GET, POST, then JSON body\n   54 |     if (isset($_GET[$key])) return $_GET[$key];\n   55 |     if (isset($_POST[$key])) return $_POST[$key];\n   56 |     \n   57 |     static $jsonInput = null;\n   58 |     if ($jsonInput === null) {\n   59 |         $jsonInput = getJsonInput();\n   60 |     }\n   61 |     return $jsonInput[$key] ?? $default;\n   62 | }\n   63 | \n   64 | function getMethod(): string {\n   65 |     \/\/ For CLI (php -r, cron jobs), return 'CLI' so requireMethod() passes through\n   66 |     return $_SERVER['REQUEST_METHOD'] ?? 'CLI';\n   67 | }\n   68 | \n   69 | function requireMethod(string ...$methods): void {\n   70 |     $method = getMethod();\n   71 |     \/\/ Allow CLI mode to pass through for cron jobs \/ maintenance scripts\n   72 |     if ($method === 'CLI') return;\n   73 |     if (!in_array($method, $methods)) {\n   74 |         errorResponse('Method not allowed. Allowed: ' . implode(', ', $methods), 405);\n   75 |     }\n   76 | }\n   77 | \n   78 | \/\/ \u2500\u2500\u2500 Rate Limiting \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   79 | \n   80 | function checkRateLimit(string $identifier = '', int $maxAttempts = 100, int $windowSeconds = 60): void {\n   81 |     if (empty($identifier)) {\n   82 |         $identifier = $_SERVER['REMOTE_ADDR'] ?? 'unknown';\n   83 |     }\n   84 |     \n   85 |     \/\/ Use provided limits or fall back to configuration defaults\n   86 |     if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;\n   87 |     if ($windowSeconds <= ) $windowSeconds = RATE_LIMIT_WINDOW;\n   88 |     \n   89 |     $rateLimitDir = __DIR__ . '\/..\/..\/server-data\/ratelimit';\n   90 |     if (!is_dir($rateLimitDir)) {\n   91 |         mkdir($rateLimitDir, 0755, true);\n   92 |     }\n   93 |     \n   94 |     $file = $rateLimitDir . '\/' . md5($identifier) . '.json';\n   95 |     \n   96 |     $data = ['count' => , 'reset' => time() + $windowSeconds];\n   97 |     if (file_exists($file)) {\n   98 |         $existing = json_decode(file_get_contents($file), true);\n   99 |         if ($existing && isset($existing['reset'])) {\n  100 |             if (time() < $existing['reset']) {\n  101 |                 $data = $existing;\n  102 |             }\n  103 |         }\n  104 |     }\n  105 |     \n  106 |     $data['count']++;\n  107 |     \n  108 |     if ($data['count'] > $maxAttempts) {\n  109 |         $retryAfter = $data['reset'] - time();\n  110 |         header('Retry-After: ' . $retryAfter);\n  111 |         errorResponse('Rate limit exceeded. Try again later.', 429, [\n  112 |             'retry_after' => $retryAfter,\n  113 |             'limit' => $maxAttempts,\n  114 |             'window' => $windowSeconds,\n  115 |         ]);\n  116 |     }\n  117 |     \n  118 |     file_put_contents($file, json_encode($data), LOCK_EX);\n  119 | }\n  120 | \n  121 | \/\/ \u2500\u2500\u2500 Input Validation \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  122 | \n  123 | function validateRequired(array $data, array $fields): ?array {\n  124 |     $missing = [];\n  125 |     foreach ($fields as $field) {\n  126 |         if (!isset($data[$field]) || (is_string($data[$field]) && trim($data[$field]) === '')) {\n  127 |             $missing[] = $field;\n  128 |         }\n  129 |     }\n  130 |     return empty($missing) ? null : $missing;\n  131 | }\n  132 | \n  133 | function sanitizeString(string $value): string {\n  134 |     $value = strip_tags($value);\n  135 |     $value = trim($value);\n  136 |     return htmlspecialchars($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');\n  137 | }\n  138 | \n  139 | function sanitizeEmail(string $email): string {\n  140 |     $email = filter_var($email, FILTER_SANITIZE_EMAIL);\n  141 |     return filter_var($email, FILTER_VALIDATE_EMAIL) ? strtolower($email) : '';\n  142 | }\n  143 | \n  144 | function sanitizePhone(string $phone): string {\n  145 |     return preg_replace('\/[^-9+\\-\\(\\) ]\/', '', trim($phone));\n  146 | }\n  147 | \n  148 | \/\/ \u2500\u2500\u2500 Password Validation \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  149 | \n  150 | function validatePasswordStrength(string $password): ?string {\n  151 |     if (strlen($password) < 8) {\n  152 |         return 'Password must be at least 8 characters long';\n  153 |     }\n  154 |     if (!preg_match('\/[A-Z]\/', $password)) {\n  155 |         return 'Password must contain at least one uppercase letter';\n  156 |     }\n  157 |     if (!preg_match('\/[a-z]\/', $password)) {\n  158 |         return 'Password must contain at least one lowercase letter';\n  159 |     }\n  160 |     if (!preg_match('\/[-9]\/', $password)) {\n  161 |         return 'Password must contain at least one number';\n  162 |     }\n  163 |     if (!preg_match('\/[!@#$%^&*()_\\-+={}[\\]|:;\"\\'<>,.?\\\/~`]\/', $password)) {\n  164 |         return 'Password must contain at least one special character';\n  165 |     }\n  166 |     return null; \/\/ Password is strong\n  167 | }\n  168 | \n  169 | \/\/ \u2500\u2500\u2500 Pagination \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  170 | \n  171 | function getPaginationParams(): array {\n  172 |     $page = max(1, (int) getParam('page', 1));\n  173 |     $limit = min(100, max(1, (int) getParam('limit', 20)));\n  174 |     $offset = ($page - 1) * $limit;\n  175 |     \n  176 |     return [\n  177 |         'page' => $page,\n  178 |         'limit' => $limit,\n  179 |         'offset' => $offset,\n  180 |     ];\n  181 | }\n  182 | \n  183 | function paginatedResponse(array $items, int $total, int $page, int $limit): void {\n  184 |     $totalPages = ceil($total \/ $limit);\n  185 |     \n  186 |     successResponse([\n  187 |         'items' => $items,\n  188 |         'pagination' => [\n  189 |             'page' => $page,\n  190 |             'limit' => $limit,\n  191 |             'total' => $total,\n  192 |             'total_pages' => $totalPages,\n  193 |             'has_more' => $page < $totalPages,\n  194 |         ],\n  195 |     ]);\n  196 | }\n  197 | \n  198 | \/\/ \u2500\u2500\u2500 File Upload Helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  199 | \n  200 | function handleFileUpload(string $fieldName, string $subDir = ''): ?string {\n  201 |     if (!isset($_FILES[$fieldName]) || $_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) {\n  202 |         return null;\n  203 |     }\n  204 |     \n  205 |     $file = $_FILES[$fieldName];\n  206 |     \n  207 |     \/\/ Validate file size\n  208 |     if ($file['size'] > MAX_UPLOAD_SIZE) {\n  209 |         errorResponse('File too large. Maximum: ' . (MAX_UPLOAD_SIZE \/ 1024 \/ 1024) . 'MB', 413);\n  210 |     }\n  211 |     \n  212 |     \/\/ Validate extension\n  213 |     $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));\n  214 |     if (!in_array($ext, ALLOWED_EXTENSIONS)) {\n  215 |         errorResponse('File type not allowed. Allowed: ' . implode(', ', ALLOWED_EXTENSIONS), 415);\n  216 |     }\n  217 |     \n  218 |     \/\/ Validate MIME type\n  219 |     $allowedMimes = [\n  220 |         'image\/jpeg', 'image\/png', 'image\/gif', 'image\/webp',\n  221 |         'application\/pdf', 'application\/msword',\n  222 |         'application\/vnd.openxmlformats-officedocument.wordprocessingml.document',\n  223 |     ];\n  224 |     $finfo = finfo_open(FILEINFO_MIME_TYPE);\n  225 |     $mimeType = finfo_file($finfo, $file['tmp_name']);\n  226 |     finfo_close($finfo);\n  227 |     if (!in_array($mimeType, $allowedMimes)) {\n  228 |         errorResponse('Invalid file type (MIME: ' . $mimeType . ')', 415);\n  229 |     }\n  230 |     \n  231 |     \/\/ Create upload directory\n  232 |     $uploadDir = UPLOAD_DIR . '\/' . ($subDir ? $subDir . '\/' : '');\n  233 |     if (!is_dir($uploadDir)) {\n  234 |         mkdir($uploadDir, 0755, true);\n  235 |     }\n  236 |     \n  237 |     \/\/ Generate unique filename\n  238 |     $filename = uniqid() . '_' . bin2hex(random_bytes(8)) . '.' . $ext;\n  239 |     $filepath = $uploadDir . $filename;\n  240 |     \n  241 |     if (!move_uploaded_file($file['tmp_name'], $filepath)) {\n  242 |         errorResponse('Failed to save uploaded file', 500);\n  243 |     }\n  244 |     \n  245 |     return UPLOAD_URL . '\/' . ($subDir ? $subDir . '\/' : '') . $filename;\n  246 | }\n  247 | \n  248 | \/\/ \u2500\u2500\u2500 Logging \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  249 | \n  250 | function logAudit(\n  251 |     int|null $userId,\n  252 |     int|null $patientId,\n  253 |     string $action,\n  254 |     string $entityType,\n  255 |     int|null $entityId = null,\n  256 |     mixed $oldValues = null,\n  257 |     mixed $newValues = null\n  258 | ): void {\n  259 |     try {\n  260 |         $db = Database::getInstance();\n  261 |         $stmt = $db->prepare('\n  262 |             INSERT INTO audit_logs (user_id, patient_id, action, entity_type, entity_id, old_values, new_values, ip_address, user_agent)\n  263 |             VALUES (:user_id, :patient_id, :action, :entity_type, :entity_id, :old_values, :new_values, :ip_address, :user_agent)\n  264 |         ');\n  265 |         $stmt->execute([\n  266 |             ':user_id' => $userId,\n  267 |             ':patient_id' => $patientId,\n  268 |             ':action' => $action,\n  269 |             ':entity_type' => $entityType,\n  270 |             ':entity_id' => $entityId,\n  271 |             ':old_values' => $oldValues ? json_encode($oldValues) : null,\n  272 |             ':new_values' => $newValues ? json_encode($newValues) : null,\n  273 |             ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? ($_SERVER['SERVER_ADDR'] ?? '127...1'),\n  274 |             ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'CLI',\n  275 |         ]);\n  276 |     } catch (\\Exception $e) {\n  277 |         error_log('Audit log failed: ' . $e->getMessage());\n  278 |     }\n  279 | }\n  280 | \n  281 | \/\/ \u2500\u2500\u2500 CORS & Pre-flight \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  282 | \n  283 | function handleCors(): void {\n  284 |     \/\/ CORS is handled in .htaccess, but ensure pre-flight works\n  285 |     $method = $_SERVER['REQUEST_METHOD'] ?? '';\n  286 |     if ($method === 'OPTIONS') {\n  287 |         http_response_code(204);\n  288 |         exit;\n  289 |     }\n  290 | }\n  291 |",
+            "is_error": false,
+            "time": 1784556334
         }
     ]
 }
