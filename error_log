@@ -41,3 +41,4 @@ Stack trace:
 [14-Jul-2026 17:49:14 UTC] PHP Warning:  file_exists(): open_basedir restriction in effect. File(/tmp/../.env) is not within the allowed path(s): (/home/drarmank:/tmp) in /tmp/ai_php_i31qr9fs6j4q9M81oBc on line 7
 [14-Jul-2026 17:49:23 UTC] PHP Warning:  file_exists(): open_basedir restriction in effect. File(/tmp/../.env) is not within the allowed path(s): (/home/drarmank:/tmp) in /tmp/ai_php_uso8g50vakkd4GaEr6e on line 7
 [19-Jul-2026 02:14:30 UTC] PHP Parse error:  syntax error, unexpected token "," in /home/drarmank/public_html/api/helpers.php on line 80
+[20-Jul-2026 14:04:34 UTC] PHP Parse error:  syntax error, unexpected token ")" in /home/drarmank/public_html/api/helpers.php on line 86

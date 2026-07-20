@@ -75,25 +75,25 @@ function requireMethod(string ...$methods): void {
     }
 }
 
-// ─── Rate Limiting ─────────────────────────────────────────────────────────
+    // ─── Rate Limiting ─────────────────────────────────────────────────────────
 
-function checkRateLimit(string $identifier = '', int $maxAttempts = 100, int $windowSeconds = 60): void {
-    if (empty($identifier)) {
-        $identifier = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-    }
-    
-    // Use provided limits or fall back to configuration defaults
-    if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;
-    if ($windowSeconds <= ) $windowSeconds = RATE_LIMIT_WINDOW;
-    
-    $rateLimitDir = __DIR__ . '/../../server-data/ratelimit';
-    if (!is_dir($rateLimitDir)) {
-        mkdir($rateLimitDir, 0755, true);
-    }
-    
-    $file = $rateLimitDir . '/' . md5($identifier) . '.json';
-    
-    $data = ['count' => , 'reset' => time() + $windowSeconds];
+    function checkRateLimit(string $identifier = '', int $maxAttempts = 100, int $windowSeconds = 60): void {
+        if (empty($identifier)) {
+            $identifier = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        }
+        
+        // Use provided limits or fall back to configuration defaults
+        if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;
+        if ($windowSeconds <= ) $windowSeconds = RATE_LIMIT_WINDOW;
+        
+        $rateLimitDir = __DIR__ . '/../../server-data/ratelimit';
+        if (!is_dir($rateLimitDir)) {
+            mkdir($rateLimitDir, 0755, true);
+        }
+        
+        $file = $rateLimitDir . '/' . md5($identifier) . '.json';
+        
+        $data = ['count' => , 'reset' => time() + $windowSeconds];
     if (file_exists($file)) {
         $existing = json_decode(file_get_contents($file), true);
         if ($existing && isset($existing['reset'])) {
