@@ -74,17 +74,14 @@ function requireMethod(string ...$methods): void {
         errorResponse('Method not allowed. Allowed: ' . implode(', ', $methods), 405);
     }
 }
-
-// ─── Rate Limiting ─────────────────────────────────────────────────────────
-
-function checkRateLimit(string $identifier = '', int $max = , int $window = ): void {
+function checkRateLimit(string $identifier = '', int $maxAttempts = , int $windowSeconds = ): void {
     if (empty($identifier)) {
         $identifier = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
     }
     
-    // Use provided limits, fall back to global defaults
-    if ($max <= ) $max = RATE_LIMIT_MAX;
-    if ($window <= ) $window = RATE_LIMIT_WINDOW;
+    // Use defaults if not overridden
+    if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;
+    if ($windowSeconds <= ) $windowSeconds = RATE_LIMIT_WINDOW;
     
     $rateLimitDir = __DIR__ . '/../../server-data/ratelimit';
     if (!is_dir($rateLimitDir)) {
@@ -93,7 +90,7 @@ function checkRateLimit(string $identifier = '', int $max = , int $window = ): v
     
     $file = $rateLimitDir . '/' . md5($identifier) . '.json';
     
-    $data = ['count' => , 'reset' => time() + $window];
+    $data = ['count' => , 'reset' => time() + $windowSeconds];
     if (file_exists($file)) {
         $existing = json_decode(file_get_contents($file), true);
         if ($existing && isset($existing['reset'])) {
@@ -105,13 +102,18 @@ function checkRateLimit(string $identifier = '', int $max = , int $window = ): v
     
     $data['count']++;
     
-    if ($data['count'] > $max) {
+    if ($data['count'] > $maxAttempts) {
         $retryAfter = $data['reset'] - time();
         header('Retry-After: ' . $retryAfter);
         errorResponse('Rate limit exceeded. Try again later.', 429, [
-            'retry_after' => $retryAfter,
-            'limit' => $max,
-            'window' => $window,
+            'retry_after' => max(, $retryAfter),
+            'limit' => $maxAttempts,
+            'window' => $windowSeconds,
+        ]);
+    }
+    
+    file_put_contents($file, json_encode($data), LOCK_EX);
+}
         ]);
     }
     
