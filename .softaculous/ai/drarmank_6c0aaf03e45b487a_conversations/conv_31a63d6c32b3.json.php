@@ -32,7 +32,7 @@
         }
     ],
     "created_at": 1784563981,
-    "updated_at": 1784567405,
+    "updated_at": 1784567421,
     "messages": [
         {
             "id": "msg_compact",
@@ -4018,6 +4018,139 @@
             "content": "30:function getAuthUser(): ?array {\n114:function requireAuth(): array {\n125:function requireRole(array $allowedRoles): array {\n141:function requireAdmin(): array {\n148:function hasPermission(array $user, string $permission): bool {\n260:function requirePermission(string $permission): array {\n272:function getBearerToken(): ?string {\n308:function createSession(int $userId): string {\n333:function createAdminSession(int $adminId): string {\n357:function destroySession(string $token): void {\n387:function cleanupExpiredSessions(): void {\n412:function generateCsrfToken(): string {\n424:function validateCsrfToken(string $token): bool {\n436:function requireCsrfToken(): void {\n470:function sendSecurityHeaders(): void {\n498:function deactivateUserSessions(int $userId): void {\n",
             "is_error": false,
             "time": 1784567405
+        },
+        {
+            "id": "msg_78388d3328",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "There's no `requirePatientAuth()` function. Let me fix the update.php - for now, I'll just use `requireAuth()` for staff and allow patient token via bearer token check. Actually, let me simplify it to just use requireAuth() since that's what the existing code uses."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_xnj1saoBRcnJMpaZvMep7891",
+                    "name": "write_file",
+                    "input": {
+                        "content": "<?php\n\/**\n * Update Patient Credentials API\n * \n * POST \/api\/auth\/patients\/update.php\n * Headers: Authorization: Bearer <staff-or-patient-token>\n * Body: { \"register_number\": \"RN-001\", \"phone\": \"01XXXXXXXXX\", \"password\": \"newpass\" }\n * \n * Patients can update their own phone number and\/or password.\n * Staff\/Admin can also update patient credentials.\n *\/\n\nrequire_once __DIR__ . '\/..\/..\/database.php';\nrequire_once __DIR__ . '\/..\/..\/helpers.php';\nrequire_once __DIR__ . '\/..\/middleware.php';\n\nhandleCors();\nrequireMethod('POST');\n\n$user = requireAuth();\n\n$input = getJsonInput();\n$missing = validateRequired($input, ['register_number']);\nif ($missing) {\n    errorResponse('Missing required fields', 400, ['missing_fields' => $missing]);\n}\n\n$registerNumber = sanitizeString($input['register_number']);\n$newPhone = isset($input['phone']) ? sanitizePhone($input['phone']) : null;\n$newPassword = isset($input['password']) ? $input['password'] : null;\n\nif (!$newPhone && !$newPassword) {\n    errorResponse('At least one of phone or password must be provided', 400);\n}\n\nif ($newPassword) {\n    $passwordError = validatePasswordStrength($newPassword);\n    if ($passwordError) {\n        errorResponse($passwordError, 400);\n    }\n}\n\ntry {\n    $db = Database::getInstance();\n    \n    \/\/ Find the patient by register number\n    $stmt = $db->prepare('SELECT id FROM patients WHERE register_number = :rn LIMIT 1');\n    $stmt->execute([':rn' => $registerNumber]);\n    $patient = $stmt->fetch();\n    \n    if (!$patient) {\n        errorResponse('Patient not found with this register number', 404);\n    }\n    \n    $patientId = (int)$patient['id'];\n    \n    \/\/ Find the patient login record\n    $stmt = $db->prepare('SELECT * FROM patient_login WHERE patient_id = :pid LIMIT 1');\n    $stmt->execute([':pid' => $patientId]);\n    $loginRecord = $stmt->fetch();\n    \n    if (!$loginRecord) {\n        errorResponse('Patient login record not found', 404);\n    }\n    \n    \/\/ Build update\n    $updates = [];\n    $params = [':id' => $loginRecord['id']];\n    \n    if ($newPhone) {\n        $updates[] = 'phone = :phone';\n        $params[':phone'] = $newPhone;\n    }\n    \n    if ($newPassword) {\n        $updates[] = 'password_hash = :password_hash';\n        $params[':password_hash'] = password_hash($newPassword, PASSWORD_BCRYPT);\n    }\n    \n    if (!empty($updates)) {\n        $updates[] = 'updated_at = NOW()';\n        $updateStr = implode(', ', $updates);\n        $stmt = $db->prepare(\"UPDATE patient_login SET $updateStr WHERE id = :id\");\n        $stmt->execute($params);\n    }\n    \n    successResponse([\n        'register_number' => $registerNumber,\n        'phone_updated' => $newPhone !== null,\n        'password_updated' => $newPassword !== null,\n    ], 'Patient credentials updated successfully');\n    \n} catch (\\Exception $e) {\n    error_log('Update patient credentials error: ' . $e->getMessage());\n    errorResponse('Failed to update patient credentials', 500);\n}\n",
+                        "path": "\/public_html\/api\/auth\/patients\/update.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 83113,
+                "completion_tokens": 887,
+                "total_tokens": 84000,
+                "prompt_cache_hit_tokens": 82816,
+                "prompt_cache_miss_tokens": 297,
+                "prompt_tokens_details": {
+                    "cached_tokens": 82816
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 60
+                },
+                "cached_tokens": 82816
+            },
+            "time": 1784567413
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_xnj1saoBRcnJMpaZvMep7891",
+            "content": "Successfully wrote 2950 bytes (97 lines) to \/public_html\/api\/auth\/patients\/update.php",
+            "is_error": false,
+            "time": 1784567413
+        },
+        {
+            "id": "msg_1fa4cdc0b0",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Wait, I need to check if `requireAuth()` works for patient tokens too. Let me check the middleware to see how authentication works."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_zCj4sCFXPJyUHrVPozpw3769",
+                    "name": "read_file",
+                    "input": {
+                        "path": "\/public_html\/api\/auth\/middleware.php",
+                        "limit": 50,
+                        "offset": 30
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 84034,
+                "completion_tokens": 112,
+                "total_tokens": 84146,
+                "prompt_cache_hit_tokens": 83968,
+                "prompt_cache_miss_tokens": 66,
+                "prompt_tokens_details": {
+                    "cached_tokens": 83968
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 28
+                },
+                "cached_tokens": 83968
+            },
+            "time": 1784567416
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_zCj4sCFXPJyUHrVPozpw3769",
+            "content": "   30 | function getAuthUser(): ?array {\n   31 |     $token = getBearerToken();\n   32 |     if (!$token) return null;\n   33 |     \n   34 |     try {\n   35 |         $db = Database::getInstance();\n   36 |         \n   37 |         \/\/ 1. Check user_sessions (doctor\/staff\/admin)\n   38 |         $stmt = $db->prepare('\n   39 |             SELECT u.*, s.token, s.expires_at, \\'user\\' AS session_type\n   40 |             FROM user_sessions s \n   41 |             JOIN users u ON s.user_id = u.id \n   42 |             WHERE s.token = :token \n   43 |               AND s.expires_at > NOW() \n   44 |               AND u.is_active = 1\n   45 |             LIMIT 1\n   46 |         ');\n   47 |         $stmt->execute([':token' => $token]);\n   48 |         $user = $stmt->fetch();\n   49 |         \n   50 |         if ($user) {\n   51 |             \/\/ Update last activity\n   52 |             $updateStmt = $db->prepare('UPDATE user_sessions SET last_activity = NOW() WHERE token = :token');\n   53 |             $updateStmt->execute([':token' => $token]);\n   54 |             return $user;\n   55 |         }\n   56 |         \n   57 |         \/\/ 2. Check patient_sessions\n   58 |         $stmt = $db->prepare('\n   59 |             SELECT pl.*, p.full_name, p.name_bn, p.gender, p.date_of_birth, \n   60 |                    p.register_number, p.photo_url, p.id AS patient_id,\n   61 |                    s.token, s.expires_at, \\'patient\\' AS session_type\n   62 |             FROM patient_sessions s \n   63 |             JOIN patient_login pl ON s.patient_login_id = pl.id\n   64 |             JOIN patients p ON pl.patient_id = p.id\n   65 |             WHERE s.token = :token \n   66 |               AND s.expires_at > NOW() \n   67 |               AND pl.status = \\'approved\\'\n   68 |             LIMIT 1\n   69 |         ');\n   70 |         $stmt->execute([':token' => $token]);\n   71 |         $patient = $stmt->fetch();\n   72 |         \n   73 |         if ($patient) {\n   74 |             \/\/ Update last activity\n   75 |             $updateStmt = $db->prepare('UPDATE patient_sessions SET last_activity = NOW() WHERE token = :token');\n   76 |             $updateStmt->execute([':token' => $token]);\n   77 |             \/\/ Add a role field for compatibility with requireRole\/requirePermission\n   78 |             $patient['role'] = 'patient';\n   79 |             return $patient;",
+            "is_error": false,
+            "time": 1784567416
+        },
+        {
+            "id": "msg_0a6f72d309",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Good, `getAuthUser()` handles both staff and patient tokens. So `requireAuth()` will work for both. The update.php should be fine.\n\nNow let me create the settings endpoints. Let me check the `site_settings` table structure first."
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me create the settings API endpoints:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_cBKBd6TqiW6C7L5irwQf2103",
+                    "name": "bash",
+                    "input": {
+                        "command": "php << 'PHPEOF'\n<?php\nrequire_once '\/home\/drarmank\/public_html\/api\/database.php';\ntry {\n    $db = Database::getInstance();\n    $stmt = $db->query(\"DESCRIBE site_settings\");\n    echo \"=== site_settings ===\\n\";\n    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {\n        echo $row['Field'] . \" - \" . $row['Type'] . \"\\n\";\n    }\n} catch (Exception $e) {\n    echo \"Error: \" . $e->getMessage() . \"\\n\";\n    echo \"Table might not exist\\n\";\n}\nPHPEOF\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 84788,
+                "completion_tokens": 242,
+                "total_tokens": 85030,
+                "prompt_cache_hit_tokens": 84096,
+                "prompt_cache_miss_tokens": 692,
+                "prompt_tokens_details": {
+                    "cached_tokens": 84096
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 51
+                },
+                "cached_tokens": 84096
+            },
+            "time": 1784567420
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_cBKBd6TqiW6C7L5irwQf2103",
+            "content": "=== site_settings ===\nid - bigint(20) unsigned\nsetting_key - varchar(255)\nsetting_value - longtext\nsetting_group - varchar(100)\ndescription - text\nupdated_by - bigint(20) unsigned\ncreated_at - timestamp\nupdated_at - timestamp\n",
+            "is_error": false,
+            "time": 1784567421
         }
     ]
 }

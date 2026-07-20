@@ -3,7 +3,7 @@
  * Update Patient Credentials API
  * 
  * POST /api/auth/patients/update.php
- * Headers: Authorization: Bearer <patient-token>
+ * Headers: Authorization: Bearer <staff-or-patient-token>
  * Body: { "register_number": "RN-001", "phone": "01XXXXXXXXX", "password": "newpass" }
  * 
  * Patients can update their own phone number and/or password.
@@ -17,14 +17,7 @@ require_once __DIR__ . '/../middleware.php';
 handleCors();
 requireMethod('POST');
 
-// Allow both patient tokens and staff tokens
-$user = requireAuth(); // For staff updates
-$patientUser = null;
-
-// If the auth token doesn't correspond to a staff user, try patient token
-if (!$user || !isset($user['id'])) {
-    $patientUser = requirePatientAuth(); // From middleware
-}
+$user = requireAuth();
 
 $input = getJsonInput();
 $missing = validateRequired($input, ['register_number']);
