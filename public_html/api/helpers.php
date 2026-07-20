@@ -77,7 +77,7 @@ function requireMethod(string ...$methods): void {
 
 // ─── Rate Limiting ─────────────────────────────────────────────────────────
 
-function checkRateLimit(string $identifier = '', int $maxAttempts = , int $windowSeconds = ): void {
+function checkRateLimit(string $identifier = '', int $maxAttempts = 100, int $windowSeconds = 60): void {
     if (empty($identifier)) {
         $identifier = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
     }
