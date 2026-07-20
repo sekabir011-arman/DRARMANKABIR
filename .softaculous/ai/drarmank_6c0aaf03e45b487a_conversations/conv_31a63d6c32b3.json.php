@@ -32,7 +32,7 @@
         }
     ],
     "created_at": 1784563981,
-    "updated_at": 1784567960,
+    "updated_at": 1784568203,
     "messages": [
         {
             "id": "msg_compact",
@@ -4468,6 +4468,13 @@
             "content": "    1 | <?php\n    2 | \/**\n    3 |  * Settings API - Save\n    4 |  * \n    5 |  * POST \/api\/settings\/save.php\n    6 |  * Headers: Authorization: Bearer <token>\n    7 |  * Body: { \"key\": \"clinic_name\", \"value\": \"My Clinic\" }\n    8 |  *\/\n    9 | \n   10 | require_once __DIR__ . '\/..\/database.php';\n   11 | require_once __DIR__ . '\/..\/helpers.php';\n   12 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   13 | \n   14 | handleCors();\n   15 | requireMethod('POST');\n   16 | \n   17 | $user = requireAuth();\n   18 | \/\/ Encode value as JSON if it's an array\/object, otherwise store as-is\n   19 | if (is_array($value) || is_object($value)) {\n   20 |     $storedValue = json_encode($value, JSON_UNESCAPED_UNICODE);\n   21 | } else {\n   22 |     \/\/ Plain string - store as-is (it might already be JSON, or a regular string)\n   23 |     $storedValue = $value;\n   24 | }\n   25 | \n   26 | try {\n   27 |     $db = Database::getInstance();\n   28 |     \n   29 |     \/\/ Check if setting exists\n   30 |     $stmt = $db->prepare('SELECT id FROM site_settings WHERE setting_key = :key LIMIT 1');\n   31 |     $stmt->execute([':key' => $key]);\n   32 |     $existing = $stmt->fetch();\n   33 |     \n   34 |     if ($existing) {\n   35 |         \/\/ Update existing\n   36 |         $stmt = $db->prepare('UPDATE site_settings SET setting_value = :value, setting_group = :sgroup, updated_by = :updated_by, updated_at = NOW() WHERE setting_key = :key');\n   37 |         $stmt->execute([\n   38 |             ':value' => $storedValue,\n   39 |             ':sgroup' => $group,\n   40 |             ':updated_by' => $user['id'],\n   41 |             ':key' => $key,\n   42 |         ]);\n   43 |     } else {\n   44 |         \/\/ Insert new\n   45 |         $stmt = $db->prepare('INSERT INTO site_settings (setting_key, setting_value, setting_group, updated_by, created_at, updated_at) VALUES (:key, :value, :sgroup, :updated_by, NOW(), NOW())');\n   46 |         $stmt->execute([\n   47 |             ':key' => $key,\n   48 |             ':value' => $storedValue,\n   49 |             ':sgroup' => $group,\n   50 |             ':updated_by' => $user['id'],\n   51 |         ]);\n   52 |     }\n   53 |         ]);\n   54 |     } else {\n   55 |         \/\/ Insert new\n   56 |         $stmt = $db->prepare('INSERT INTO site_settings (setting_key, setting_value, setting_group, updated_by, created_at, updated_at) VALUES (:key, :value, :sgroup, :updated_by, NOW(), NOW())');\n   57 |         $stmt->execute([\n   58 |             ':key' => $key,\n   59 |             ':value' => is_string($valueJson) ? $valueJson : json_encode($valueJson, JSON_UNESCAPED_UNICODE),\n   60 |             ':sgroup' => $group,\n   61 |             ':updated_by' => $user['id'],\n   62 |         ]);\n   63 |     }\n   64 |     \n   65 |     successResponse([\n   66 |         'key' => $key,\n   67 |         'value' => $value,\n   68 |         'group' => $group,\n   69 |     ], 'Setting saved successfully');\n   70 |     \n   71 | } catch (\\Exception $e) {\n   72 |     error_log('Save settings error: ' . $e->getMessage());\n   73 |     errorResponse('Failed to save setting', 500);\n   74 | }\n   75 |",
             "is_error": false,
             "time": 1784567960
+        },
+        {
+            "id": "msg_8aa35811a5",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784568203
         }
     ]
 }
