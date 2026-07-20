@@ -32,13 +32,13 @@
         }
     ],
     "created_at": 1784563981,
-    "updated_at": 1784566190,
+    "updated_at": 1784566354,
     "messages": [
         {
             "id": "msg_compact",
             "role": "user",
             "content": "[Previous conversation summary]:\nUser: [Previous conversation summary]:\nUser: [Previous conversation summary]:\nUser: [Previous conversation summary]:\nUser: [Previous conversation summary]:\n",
-            "time": 1784566186
+            "time": 1784566199
         },
         {
             "id": "msg_ada54dcd2b",
@@ -2542,6 +2542,148 @@
             "content": "public_html\/api\/helpers.php:263:        $safeUserId = $userId ?? ;\n\/home\/drarmank\/public_html\/api\/helpers.php:269:            ':user_id' => $safeUserId,",
             "is_error": false,
             "time": 1784566190
+        },
+        {
+            "id": "msg_006ba09664",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Good, now I can fix each issue. Let me use edit_file for each fix."
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me fix each corruption:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_AImrYrpZDlN2D2fKmSh01506",
+                    "name": "edit_file",
+                    "input": {
+                        "old_string": "    if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;\n    if ($windowSeconds <= ) $windowSeconds = RATE_LIMIT_WINDOW;",
+                        "new_string": "    if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;\n    if ($windowSeconds <= ) $windowSeconds = RATE_LIMIT_WINDOW;",
+                        "path": "\/public_html\/api\/helpers.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 153701,
+                "completion_tokens": 188,
+                "total_tokens": 153889,
+                "prompt_cache_hit_tokens": 153600,
+                "prompt_cache_miss_tokens": 101,
+                "prompt_tokens_details": {
+                    "cached_tokens": 153600
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 18
+                },
+                "cached_tokens": 153600
+            },
+            "time": 1784566194
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_AImrYrpZDlN2D2fKmSh01506",
+            "content": "Edited \/public_html\/api\/helpers.php (1 replacement)\n-     if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;\n-     if ($windowSeconds <= ) $windowSeconds = RATE_LIMIT_WINDOW;\n+     if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;\n+     if ($windowSeconds <= ) $windowSeconds = RATE_LIMIT_WINDOW;",
+            "is_error": false,
+            "time": 1784566195
+        },
+        {
+            "id": "msg_267bfd9c97",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Again the edit_file isn't working because the old and new strings are the same. The problem seems to be that the tool is having trouble with the zero character. Let me try a completely different approach - using search_replace with regex."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_M4617T5YDqaUsFCKvLDJ1813",
+                    "name": "search_replace",
+                    "input": {
+                        "include": "helpers.php",
+                        "regex": true,
+                        "search": "if \\(\\$maxAttempts <= \\) ",
+                        "replace": "if ($maxAttempts <= ) "
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 153992,
+                "completion_tokens": 155,
+                "total_tokens": 154147,
+                "prompt_cache_hit_tokens": 153600,
+                "prompt_cache_miss_tokens": 392,
+                "prompt_tokens_details": {
+                    "cached_tokens": 153600
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 47
+                },
+                "cached_tokens": 153600
+            },
+            "time": 1784566199
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_M4617T5YDqaUsFCKvLDJ1813",
+            "content": "Invalid regex pattern: if \\(\\$maxAttempts <= \\) ",
+            "is_error": true,
+            "time": 1784566199
+        },
+        {
+            "id": "msg_091fb5ca05",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784566348
+        },
+        {
+            "id": "msg_ccf927587e",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The user is asking me to continue. Let me take stock of what's happened and what needs to be done.\n\nLooking at the corrupted helpers.php file, I need to restore it properly. The file has several corrupted lines where the number `` was stripped out, leaving empty values. Let me use bash to fix this properly.\n\nLet me check the current state of the file and fix each issue one by one."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_8cCUgtZRS5QGOtYhQpOY4886",
+                    "name": "read_file",
+                    "input": {
+                        "path": "\/public_html\/api\/helpers.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 145699,
+                "completion_tokens": 134,
+                "total_tokens": 145833,
+                "prompt_cache_hit_tokens": 98304,
+                "prompt_cache_miss_tokens": 47395,
+                "prompt_tokens_details": {
+                    "cached_tokens": 98304
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 84
+                },
+                "cached_tokens": 98304
+            },
+            "time": 1784566354
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_8cCUgtZRS5QGOtYhQpOY4886",
+            "content": "    1 | <?php\n    2 | \/**\n    3 |  * API Helper Functions\n    4 |  * \n    5 |  * Common utilities for all API endpoints.\n    6 |  *\/\n    7 | \n    8 | require_once __DIR__ . '\/..\/config.php';\n    9 | \n   10 | \/\/ \u2500\u2500\u2500 Response Helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   11 | \n   12 | function jsonResponse(mixed $data, int $statusCode = 200): void {\n   13 |     http_response_code($statusCode);\n   14 |     header('Content-Type: application\/json; charset=utf-8');\n   15 |     echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);\n   16 |     exit;\n   17 | }\n   18 | \n   19 | function successResponse(mixed $data = null, string $message = 'Success'): void {\n   20 |     jsonResponse([\n   21 |         'success' => true,\n   22 |         'message' => $message,\n   23 |         'data' => $data,\n   24 |         'timestamp' => date('c'),\n   25 |     ]);\n   26 | }\n   27 | \n   28 | function errorResponse(string $message, int $statusCode = 400, mixed $errors = null): void {\n   29 |     $response = [\n   30 |         'success' => false,\n   31 |         'message' => $message,\n   32 |         'timestamp' => date('c'),\n   33 |     ];\n   34 |     if ($errors !== null) {\n   35 |         $response['errors'] = $errors;\n   36 |     }\n   37 |     jsonResponse($response, $statusCode);\n   38 | }\n   39 | \n   40 | \/\/ \u2500\u2500\u2500 Request Helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   41 | \n   42 | function getJsonInput(): array {\n   43 |     $raw = file_get_contents('php:\/\/input');\n   44 |     if (empty($raw)) return [];\n   45 |     $data = json_decode($raw, true);\n   46 |     if (json_last_error() !== JSON_ERROR_NONE) {\n   47 |         errorResponse('Invalid JSON input', 400);\n   48 |     }\n   49 |     return $data ?? [];\n   50 | }\n   51 | \n   52 | function getParam(string $key, mixed $default = null): mixed {\n   53 |     \/\/ Check GET, POST, then JSON body\n   54 |     if (isset($_GET[$key])) return $_GET[$key];\n   55 |     if (isset($_POST[$key])) return $_POST[$key];\n   56 |     \n   57 |     static $jsonInput = null;\n   58 |     if ($jsonInput === null) {\n   59 |         $jsonInput = getJsonInput();\n   60 |     }\n   61 |     return $jsonInput[$key] ?? $default;\n   62 | }\n   63 | \n   64 | function getMethod(): string {\n   65 |     \/\/ For CLI (php -r, cron jobs), return 'CLI' so requireMethod() passes through\n   66 |     return $_SERVER['REQUEST_METHOD'] ?? 'CLI';\n   67 | }\n   68 | \n   69 | function requireMethod(string ...$methods): void {\n   70 |     $method = getMethod();\n   71 |     \/\/ Allow CLI mode to pass through for cron jobs \/ maintenance scripts\n   72 |     if ($method === 'CLI') return;\n   73 |     if (!in_array($method, $methods)) {\n   74 |         errorResponse('Method not allowed. Allowed: ' . implode(', ', $methods), 405);\n   75 |     }\n   76 | }\n   77 | \n   78 | \/\/ \u2500\u2500\u2500 Rate Limiting \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   79 | \n   80 | function checkRateLimit(string $identifier = '', int $maxAttempts = 100, int $windowSeconds = 60): void {\n   81 |     if (empty($identifier)) {\n   82 |         $identifier = $_SERVER['REMOTE_ADDR'] ?? 'unknown';\n   83 |     }\n   84 |     \n   85 |     \/\/ Use provided limits or fall back to configuration defaults\n   86 |     if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;\n   87 |     if ($windowSeconds <= ) $windowSeconds = RATE_LIMIT_WINDOW;\n   88 |     \n   89 |     $rateLimitDir = __DIR__ . '\/..\/..\/server-data\/ratelimit';\n   90 |     if (!is_dir($rateLimitDir)) {\n   91 |         mkdir($rateLimitDir, 0755, true);\n   92 |     }\n   93 |     \n   94 |     $file = $rateLimitDir . '\/' . md5($identifier) . '.json';\n   95 |     \n   96 |     $data = ['count' => , 'reset' => time() + $windowSeconds];\n   97 |     if (file_exists($file)) {\n   98 |         $existing = json_decode(file_get_contents($file), true);\n   99 |         if ($existing && isset($existing['reset'])) {\n  100 |             if (time() < $existing['reset']) {\n  101 |                 $data = $existing;\n  102 |             }\n  103 |         }\n  104 |     }\n  105 |     \n  106 |     $data['count']++;\n  107 |     \n  108 |     if ($data['count'] > $maxAttempts) {\n  109 |         $retryAfter = $data['reset'] - time();\n  110 |         header('Retry-After: ' . $retryAfter);\n  111 |         errorResponse('Rate limit exceeded. Try again later.', 429, [\n  112 |             'retry_after' => $retryAfter,\n  113 |             'limit' => $maxAttempts,\n  114 |             'window' => $windowSeconds,\n  115 |         ]);\n  116 |     }\n  117 |     \n  118 |     file_put_contents($file, json_encode($data), LOCK_EX);\n  119 | }\n  120 | \n  121 | \/\/ \u2500\u2500\u2500 Input Validation \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  122 | \n  123 | function validateRequired(array $data, array $fields): ?array {\n  124 |     $missing = [];\n  125 |     foreach ($fields as $field) {\n  126 |         if (!isset($data[$field]) || (is_string($data[$field]) && trim($data[$field]) === '')) {\n  127 |             $missing[] = $field;\n  128 |         }\n  129 |     }\n  130 |     return empty($missing) ? null : $missing;\n  131 | }\n  132 | \n  133 | function sanitizeString(string $value): string {\n  134 |     $value = strip_tags($value);\n  135 |     $value = trim($value);\n  136 |     return htmlspecialchars($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');\n  137 | }\n  138 | \n  139 | function sanitizeEmail(string $email): string {\n  140 |     $email = filter_var($email, FILTER_SANITIZE_EMAIL);\n  141 |     return filter_var($email, FILTER_VALIDATE_EMAIL) ? strtolower($email) : '';\n  142 | }\n  143 | \n  144 | function sanitizePhone(string $phone): string {\n  145 |     \/\/ Allow digits, +, -, (, ), and spaces\n  146 |     return preg_replace('\/[^-9+\\-\\(\\) ]\/', '', trim($phone));\n  147 | }\n  148 | \n  149 | \/\/ \u2500\u2500\u2500 Password Validation \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  150 | \n  151 | function validatePasswordStrength(string $password): ?string {\n  152 |     if (strlen($password) < 8) {\n  153 |         return 'Password must be at least 8 characters long';\n  154 |     }\n  155 |     if (!preg_match('\/[A-Z]\/', $password)) {\n  156 |         return 'Password must contain at least one uppercase letter';\n  157 |     }\n  158 |     if (!preg_match('\/[a-z]\/', $password)) {\n  159 |         return 'Password must contain at least one lowercase letter';\n  160 |     }\n  161 |     if (!preg_match('\/[-9]\/', $password)) {\n  162 |         return 'Password must contain at least one number';\n  163 |     }\n  164 |     if (!preg_match('\/[!@#$%^&*()_\\-+={}[\\]|:;\"\\'<>,.?\\\/~`]\/', $password)) {\n  165 |         return 'Password must contain at least one special character';\n  166 |     }\n  167 |     return null; \/\/ Password is strong\n  168 | }\n  169 | \n  170 | \/\/ \u2500\u2500\u2500 Pagination \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  171 | \n  172 | function getPaginationParams(): array {\n  173 |     $page = max(1, (int) getParam('page', 1));\n  174 |     $limit = min(100, max(1, (int) getParam('limit', 20)));\n  175 |     $offset = ($page - 1) * $limit;\n  176 |     \n  177 |     return [\n  178 |         'page' => $page,\n  179 |         'limit' => $limit,\n  180 |         'offset' => $offset,\n  181 |     ];\n  182 | }\n  183 | \n  184 | function paginatedResponse(array $items, int $total, int $page, int $limit): void {\n  185 |     $totalPages = ceil($total \/ $limit);\n  186 |     \n  187 |     successResponse([\n  188 |         'items' => $items,\n  189 |         'pagination' => [\n  190 |             'page' => $page,\n  191 |             'limit' => $limit,\n  192 |             'total' => $total,\n  193 |             'total_pages' => $totalPages,\n  194 |             'has_more' => $page < $totalPages,\n  195 |         ],\n  196 |     ]);\n  197 | }\n  198 | \n  199 | \/\/ \u2500\u2500\u2500 File Upload Helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  200 | \n  201 | function handleFileUpload(string $fieldName, string $subDir = ''): ?string {\n  202 |     if (!isset($_FILES[$fieldName]) || $_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) {\n  203 |         return null;\n  204 |     }\n  205 |     \n  206 |     $file = $_FILES[$fieldName];\n  207 |     \n  208 |     \/\/ Validate file size\n  209 |     if ($file['size'] > MAX_UPLOAD_SIZE) {\n  210 |         errorResponse('File too large. Maximum: ' . (MAX_UPLOAD_SIZE \/ 1024 \/ 1024) . 'MB', 413);\n  211 |     }\n  212 |     \n  213 |     \/\/ Validate extension\n  214 |     $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));\n  215 |     if (!in_array($ext, ALLOWED_EXTENSIONS)) {\n  216 |         errorResponse('File type not allowed. Allowed: ' . implode(', ', ALLOWED_EXTENSIONS), 415);\n  217 |     }\n  218 |     \n  219 |     \/\/ Validate MIME type\n  220 |     $allowedMimes = [\n  221 |         'image\/jpeg', 'image\/png', 'image\/gif', 'image\/webp',\n  222 |         'application\/pdf', 'application\/msword',\n  223 |         'application\/vnd.openxmlformats-officedocument.wordprocessingml.document',\n  224 |     ];\n  225 |     $finfo = finfo_open(FILEINFO_MIME_TYPE);\n  226 |     $mimeType = finfo_file($finfo, $file['tmp_name']);\n  227 |     finfo_close($finfo);\n  228 |     if (!in_array($mimeType, $allowedMimes)) {\n  229 |         errorResponse('Invalid file type (MIME: ' . $mimeType . ')', 415);\n  230 |     }\n  231 |     \n  232 |     \/\/ Create upload directory\n  233 |     $uploadDir = UPLOAD_DIR . '\/' . ($subDir ? $subDir . '\/' : '');\n  234 |     if (!is_dir($uploadDir)) {\n  235 |         mkdir($uploadDir, 0755, true);\n  236 |     }\n  237 |     \n  238 |     \/\/ Generate unique filename\n  239 |     $filename = uniqid() . '_' . bin2hex(random_bytes(8)) . '.' . $ext;\n  240 |     $filepath = $uploadDir . $filename;\n  241 |     \n  242 |     if (!move_uploaded_file($file['tmp_name'], $filepath)) {\n  243 |         errorResponse('Failed to save uploaded file', 500);\n  244 |     }\n  245 |     \n  246 |     return UPLOAD_URL . '\/' . ($subDir ? $subDir . '\/' : '') . $filename;\n  247 | }\n  248 | \n  249 | \/\/ \u2500\u2500\u2500 Logging \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  250 | \n  251 | function logAudit(\n  252 |     int|null $userId,\n  253 |     int|null $patientId,\n  254 |     string $action,\n  255 |     string $entityType,\n  256 |     int|null $entityId = null,\n  257 |     mixed $oldValues = null,\n  258 |     mixed $newValues = null\n  259 | ): void {\n  260 |     try {\n  261 |         $db = Database::getInstance();\n  262 |         \/\/ Use  for null user_id to avoid FK constraint issues with audit_logs\n  263 |         $safeUserId = $userId ?? ;\n  264 |         $stmt = $db->prepare('\n  265 |             INSERT INTO audit_logs (user_id, patient_id, action, entity_type, entity_id, old_values, new_values, ip_address, user_agent)\n  266 |             VALUES (:user_id, :patient_id, :action, :entity_type, :entity_id, :old_values, :new_values, :ip_address, :user_agent)\n  267 |         ');\n  268 |         $stmt->execute([\n  269 |             ':user_id' => $safeUserId,\n  270 |             ':patient_id' => $patientId,\n  271 |             ':action' => $action,\n  272 |             ':entity_type' => $entityType,\n  273 |             ':entity_id' => $entityId,\n  274 |             ':old_values' => $oldValues ? json_encode($oldValues) : null,\n  275 |             ':new_values' => $newValues ? json_encode($newValues) : null,\n  276 |             ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? ($_SERVER['SERVER_ADDR'] ?? '127...1'),\n  277 |             ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'CLI',\n  278 |         ]);\n  279 |     } catch (\\Exception $e) {\n  280 |         error_log('Audit log failed: ' . $e->getMessage());\n  281 |     }\n  282 | }\n  283 | \n  284 | \/\/ \u2500\u2500\u2500 CORS & Pre-flight \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  285 | \n  286 | function handleCors(): void {\n  287 |     \/\/ CORS is handled in .htaccess, but ensure pre-flight works\n  288 |     $method = $_SERVER['REQUEST_METHOD'] ?? '';\n  289 |     if ($method === 'OPTIONS') {\n  290 |         http_response_code(204);\n  291 |         exit;\n  292 |     }\n  293 | }\n  294 |",
+            "is_error": false,
+            "time": 1784566354
         }
     ]
 }
