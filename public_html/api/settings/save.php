@@ -15,24 +15,12 @@ handleCors();
 requireMethod('POST');
 
 $user = requireAuth();
-
-$input = getJsonInput();
-$missing = validateRequired($input, ['key']);
-if ($missing) {
-    errorResponse('Missing required fields', 400, ['missing_fields' => $missing]);
-}
-
-$key = sanitizeString($input['key']);
-$value = $input['value'] ?? '';
-$group = isset($input['group']) ? sanitizeString($input['group']) : 'general';
-
-// Encode value as JSON if it's an array/object, otherwise store as string
+// Encode value as JSON if it's an array/object, otherwise store as-is
 if (is_array($value) || is_object($value)) {
-    $valueJson = json_encode($value, JSON_UNESCAPED_UNICODE);
+    $storedValue = json_encode($value, JSON_UNESCAPED_UNICODE);
 } else {
-    // Try to parse as JSON first, otherwise store as plain string
-    $decoded = json_decode($value, true);
-    $valueJson = ($decoded !== null && $value !== $decoded) ? $value : $value;
+    // Plain string - store as-is (it might already be JSON, or a regular string)
+    $storedValue = $value;
 }
 
 try {
@@ -47,10 +35,21 @@ try {
         // Update existing
         $stmt = $db->prepare('UPDATE site_settings SET setting_value = :value, setting_group = :sgroup, updated_by = :updated_by, updated_at = NOW() WHERE setting_key = :key');
         $stmt->execute([
-            ':value' => is_string($valueJson) ? $valueJson : json_encode($valueJson, JSON_UNESCAPED_UNICODE),
+            ':value' => $storedValue,
             ':sgroup' => $group,
             ':updated_by' => $user['id'],
             ':key' => $key,
+        ]);
+    } else {
+        // Insert new
+        $stmt = $db->prepare('INSERT INTO site_settings (setting_key, setting_value, setting_group, updated_by, created_at, updated_at) VALUES (:key, :value, :sgroup, :updated_by, NOW(), NOW())');
+        $stmt->execute([
+            ':key' => $key,
+            ':value' => $storedValue,
+            ':sgroup' => $group,
+            ':updated_by' => $user['id'],
+        ]);
+    }
         ]);
     } else {
         // Insert new
