@@ -22,7 +22,7 @@ if (!isset($input['settings']) || !is_array($input['settings']) || empty($input[
 }
 
 $settings = $input['settings'];
-$saved = ;
+$saved = 0;
 
 try {
     $db = Database::getInstance();
