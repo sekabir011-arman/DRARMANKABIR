@@ -142,6 +142,7 @@ function sanitizeEmail(string $email): string {
 }
 
 function sanitizePhone(string $phone): string {
+    // Keep only digits, +, -, (, ), and spaces
     return preg_replace('/[^-9+\-\(\) ]/', '', trim($phone));
 }
 
