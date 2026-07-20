@@ -259,12 +259,8 @@ function logAudit(
 ): void {
     try {
         $db = Database::getInstance();
-        // Check if audit_logs table has user_id foreign key constraint
-        // If patient_id is given but no user, use  for user_id to avoid FK issues
-        $safeUserId = $userId;
-        if ($safeUserId === null && $patientId !== null) {
-            $safeUserId = ; // System user for patient-only actions
-        }
+        // Use  for null user_id to avoid FK constraint issues with audit_logs
+        $safeUserId = $userId ?? ;
         $stmt = $db->prepare('
             INSERT INTO audit_logs (user_id, patient_id, action, entity_type, entity_id, old_values, new_values, ip_address, user_agent)
             VALUES (:user_id, :patient_id, :action, :entity_type, :entity_id, :old_values, :new_values, :ip_address, :user_agent)
