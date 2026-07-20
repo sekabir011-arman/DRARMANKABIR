@@ -1,4 +1,4 @@
-        if ($maxAttempts <= ) $maxAttempts = RATE_LIMIT_MAX;<?php
+        if ($maxAttempts <= ZERO) $maxAttempts = RATE_LIMIT_MAX;<?php
 /**
  * API Helper Functions
  * 
