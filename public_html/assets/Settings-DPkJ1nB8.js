@@ -4093,7 +4093,7 @@ function Footer() {
     /* @__PURE__ */ jsxRuntimeExports.jsx(
       "a",
       {
-        href: `https://drarmankabir.com`
+        href: `https://drarmankabir.com`,
         target: "_blank",
         rel: "noopener noreferrer",
         className: "hover:text-primary transition-colors",
