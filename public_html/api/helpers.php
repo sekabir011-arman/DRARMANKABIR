@@ -143,7 +143,7 @@ function sanitizeEmail(string $email): string {
 
 function sanitizePhone(string $phone): string {
     // Allow digits, +, -, (, ), and spaces
-    return preg_replace('/[^-9+\-\(\) ]/', '', trim($phone));
+    return preg_replace('/[^0-9+\-\(\) ]/', '', trim($phone));
 }
 
 // ─── Password Validation ───────────────────────────────────────────────────
@@ -158,7 +158,7 @@ function validatePasswordStrength(string $password): ?string {
     if (!preg_match('/[a-z]/', $password)) {
         return 'Password must contain at least one lowercase letter';
     }
-    if (!preg_match('/[-9]/', $password)) {
+    if (!preg_match('/[0-9]/', $password)) {
         return 'Password must contain at least one number';
     }
     if (!preg_match('/[!@#$%^&*()_\-+={}[\]|:;"\'<>,.?\/~`]/', $password)) {
