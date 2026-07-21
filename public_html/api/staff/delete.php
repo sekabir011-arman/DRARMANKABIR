@@ -33,7 +33,7 @@ try {
     }
     
     // Soft delete: deactivate user
-    $stmt = $db->prepare('UPDATE users SET is_active = null, updated_at = NOW() WHERE id = :id');
+    $stmt = $db->prepare('UPDATE users SET is_active = , updated_at = NOW() WHERE id = :id');
     $stmt->execute([':id' => $id]);
     
     logAudit($user['id'], null, 'delete', 'user', $id, $existing, null);
