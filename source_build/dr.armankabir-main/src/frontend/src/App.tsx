@@ -1,4 +1,17 @@
-import { Badge } from "@/components/ui/badge";
+import { useAdminAuth } from "./hooks/useAdminAuth";
+import {
+  appendAuditLog,
+  loadPatientRegistry,
+  loadRegistry,
+  savePatientRegistry,
+  saveRegistry,
+} from "./hooks/useAdminSave";
+import {
+  EmailAuthProvider,
+  useEmailAuth,
+  useInactivityTimer,
+} from "./hooks/useEmailAuth";
+import type { DoctorAccount, PatientAccount } from "./services/auth";import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
