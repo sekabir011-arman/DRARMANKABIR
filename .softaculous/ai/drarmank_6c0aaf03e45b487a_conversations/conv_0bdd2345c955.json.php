@@ -32,7 +32,7 @@
         }
     ],
     "created_at": 1784572470,
-    "updated_at": 1784642695,
+    "updated_at": 1784642701,
     "messages": [
         {
             "id": "msg_compact",
@@ -1488,6 +1488,93 @@
             "content": "    1 | <?php\n    2 | \/**\n    3 |  * Update Staff \/ User API\n    4 |  * \n    5 |  * POST \/api\/staff\/update.php\n    6 |  *\/\n    7 | \n    8 | require_once __DIR__ . '\/..\/database.php';\n    9 | require_once __DIR__ . '\/..\/helpers.php';\n   10 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   11 | \n   12 | handleCors();\n   13 | requireMethod('POST');\n   14 | \n   15 | $user = requireAuth();\n   16 | $input = getJsonInput();\n   17 | \n   18 | $id = (int)($input['id'] ?? );\n   19 | if (!$id) {\n   20 |     errorResponse('User ID is required', 400);\n   21 | }\n   22 | \n   23 | try {\n   24 |     $db = Database::getInstance();\n   25 |     \n   26 |     \/\/ Fetch existing user\n   27 |     $stmt = $db->prepare('SELECT * FROM users WHERE id = :id');\n   28 |     $stmt->execute([':id' => $id]);\n   29 |     $existing = $stmt->fetch();\n   30 |     \n   31 |     if (!$existing) {\n   32 |         errorResponse('User not found', 404);\n   33 |     }\n   34 |     \n   35 |     \/\/ Build update fields\n   36 |     $updates = [];\n   37 |     $params = [':id' => $id];\n   38 |     \n   39 |     $fields = [\n   40 |         'full_name' => 'fullName',\n   41 |         'name_bn' => 'nameBn',\n   42 |         'specialization' => 'specialization',\n   43 |         'phone' => 'phone',\n   44 |         'bmdc_registration' => 'bmdcRegistration',\n   45 |         'photo_url' => 'photoUrl',\n   46 |         'signature_url' => 'signatureUrl',\n   47 |     ];\n   48 |     \n   49 |     foreach ($fields as $dbField => $inputKey) {\n   50 |         if (isset($input[$inputKey])) {\n   51 |             if ($inputKey === 'phone') {\n   52 |                 $value = sanitizePhone($input[$inputKey]);\n   53 |             } else {\n   54 |                 $value = sanitizeString($input[$inputKey]);\n   55 |             }\n   56 |             $updates[] = \"$dbField = :$dbField\";\n   57 |             $params[\":$dbField\"] = $value ?: null;\n   58 |         }\n   59 |     }\n   60 |     \n   61 |     \/\/ Handle role update\n   62 |     if (isset($input['role'])) {\n   63 |         $allowedRoles = ['admin', 'consultant_doctor', 'medical_officer', 'intern_doctor',\n   64 |                          'nurse', 'staff', 'reception', 'doctor',\n   65 |                          'assistant_registrar', 'registrar',\n   66 |                          'assistant_professor', 'associate_professor', 'professor'];\n   67 |         $newRole = $input['role'];\n   68 |         if (!in_array($newRole, $allowedRoles)) {\n   69 |             errorResponse('Invalid role', 400);\n   70 |         }\n   71 |         $updates[] = 'role = :role';\n   72 |         $params[':role'] = $newRole;\n   73 |     }\n   74 |     \n   75 |     \/\/ Handle active status\n   76 |     if (isset($input['isActive'])) {\n   77 |         $updates[] = 'is_active = :is_active';\n   78 |         $params[':is_active'] = (int)$input['isActive'];\n   79 |     }\n   80 |     \n   81 |     if (empty($updates)) {\n   82 |         errorResponse('No fields to update', 400);\n   83 |     }\n   84 |     \n   85 |     $updates[] = 'updated_at = NOW()';\n   86 |     $updateStr = implode(', ', $updates);\n   87 |     \n   88 |     $updateStmt = $db->prepare(\"UPDATE users SET $updateStr WHERE id = :id\");\n   89 |     $updateStmt->execute($params);\n   90 |     \n   91 |     \/\/ Fetch updated user\n   92 |     $fetchStmt = $db->prepare('SELECT id, email, full_name, name_bn, role, specialization, phone, photo_url, signature_url, bmdc_registration, is_active, updated_at FROM users WHERE id = :id');\n   93 |     $fetchStmt->execute([':id' => $id]);\n   94 |     $updated = $fetchStmt->fetch();\n   95 |     \n   96 |     logAudit($user['id'], null, 'update', 'user', $id, $existing, $updated);\n   97 |     \n   98 |     successResponse($updated, 'Staff member updated successfully');\n   99 |     \n  100 | } catch (\\Exception $e) {\n  101 |     error_log('Update staff error: ' . $e->getMessage());\n  102 |     errorResponse('Failed to update staff member', 500);\n  103 | }\n  104 |",
             "is_error": false,
             "time": 1784642695
+        },
+        {
+            "id": "msg_7602e73eb9",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The issue is on line 18: `$id = (int)($input['id'] ?? );` - there's a space between `??` and `)`. Let me fix this by rewriting the file correctly."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_5m7wNbFV28v1JiU01zTx3420",
+                    "name": "edit_file",
+                    "input": {
+                        "path": "public_html\/api\/staff\/update.php",
+                        "old_string": "$id = (int)($input['id'] ?? );",
+                        "new_string": "$id = (int)($input['id'] ?? );"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 47935,
+                "completion_tokens": 155,
+                "total_tokens": 48090,
+                "prompt_cache_hit_tokens": 46720,
+                "prompt_cache_miss_tokens": 1215,
+                "prompt_tokens_details": {
+                    "cached_tokens": 46720
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 46
+                },
+                "cached_tokens": 46720
+            },
+            "time": 1784642698
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_5m7wNbFV28v1JiU01zTx3420",
+            "content": "Edited public_html\/api\/staff\/update.php (1 replacement)\n- $id = (int)($input['id'] ?? );\n+ $id = (int)($input['id'] ?? );",
+            "is_error": false,
+            "time": 1784642698
+        },
+        {
+            "id": "msg_3d09140cbd",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Hmm, it says it replaced but the content looks identical. Let me check what the actual content is now - maybe there's a hidden character issue. Let me use a different approach to fix this - use write_file to rewrite the whole file cleanly.\n\nActually wait, looking at the edit output, before and after look identical but it says 1 replacement. Let me read the file again to see if it's fixed."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_azyZH9rycy1c9Pic8tCO7289",
+                    "name": "read_file",
+                    "input": {
+                        "path": "public_html\/api\/staff\/update.php",
+                        "limit": 20
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 48143,
+                "completion_tokens": 153,
+                "total_tokens": 48296,
+                "prompt_cache_hit_tokens": 48000,
+                "prompt_cache_miss_tokens": 143,
+                "prompt_tokens_details": {
+                    "cached_tokens": 48000
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 86
+                },
+                "cached_tokens": 48000
+            },
+            "time": 1784642701
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_azyZH9rycy1c9Pic8tCO7289",
+            "content": "    1 | <?php\n    2 | \/**\n    3 |  * Update Staff \/ User API\n    4 |  * \n    5 |  * POST \/api\/staff\/update.php\n    6 |  *\/\n    7 | \n    8 | require_once __DIR__ . '\/..\/database.php';\n    9 | require_once __DIR__ . '\/..\/helpers.php';\n   10 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   11 | \n   12 | handleCors();\n   13 | requireMethod('POST');\n   14 | \n   15 | $user = requireAuth();\n   16 | $input = getJsonInput();\n   17 | \n   18 | $id = (int)($input['id'] ?? );\n   19 | if (!$id) {\n   20 |     errorResponse('User ID is required', 400);",
+            "is_error": false,
+            "time": 1784642701
         }
     ]
 }
