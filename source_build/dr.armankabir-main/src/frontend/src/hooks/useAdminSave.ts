@@ -13,6 +13,7 @@ import { post } from "../lib/apiClient";
 
 // Re-export types for convenience
 export type { AuditLogEntry } from "../services/audit";
+export type { DoctorAccount, PatientAccount } from "../services/auth";
 
 // ── In-memory audit log cache ─────────────────────────────────────────────────
 
