@@ -23,9 +23,9 @@ export interface UpdateStaffData extends Partial<CreateStaffData> {
 
 export const staffService = {
   /** Get all staff members */
-  async getAll(): Promise<UserProfile[]> {
-    const result = await get<{ users: UserProfile[] }>('/staff/list.php');
-    return result.users ?? [];
+  async getAll(params?: { role?: string; limit?: number }): Promise<UserProfile[]> {
+    const result = await get<{ items: UserProfile[] }>('/staff/list.php', params as any);
+    return result.items ?? [];
   },
 
   /** Get a single staff member by ID */
