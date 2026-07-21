@@ -58,11 +58,13 @@ import {
 import { toast } from "sonner";
 import {
   isSignUpEnabled,
-  loadPatientRegistry,
   setSignUpEnabled,
   useEmailAuth,
 } from "../hooks/useEmailAuth";
-import type { PatientAccount } from "../hooks/useEmailAuth";
+import {
+  loadPatientRegistry,
+} from "../hooks/useAdminSave";
+import type { PatientAccount } from "../hooks/useAdminSave";
 import { getDoctorEmail, getVisitFormData } from "../hooks/useQueries";
 import {
   useGetClinicalNotesByPatient,
