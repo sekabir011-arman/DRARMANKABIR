@@ -73,7 +73,8 @@ import {
   getAllergiesForPatient,
 } from "../components/UpgradedPrescriptionEMR";
 import { addEmergencyNotification } from "../components/patientDashboardTypes";
-import { appendAuditLog, useEmailAuth } from "../hooks/useEmailAuth";
+import { useEmailAuth } from "../hooks/useEmailAuth";
+import { appendAuditLog } from "../hooks/useAdminSave";
 import {
   generateRegisterNumber,
   getDoctorEmail,
