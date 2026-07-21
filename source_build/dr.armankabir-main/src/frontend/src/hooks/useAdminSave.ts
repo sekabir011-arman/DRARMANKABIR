@@ -1,4 +1,4 @@
-/** Get cached audit log (synchronous — use fetchAuditLog() to refresh) */
+// ── Constants ─────────────────────────────────────────────────────────────────/** Get cached audit log (synchronous — use fetchAuditLog() to refresh) */
 export function getAuditLog(): AuditLogEntry[] {
   return _auditLogCache;
 }

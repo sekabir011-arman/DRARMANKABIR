@@ -72,7 +72,7 @@
         }
     ],
     "created_at": 1784572470,
-    "updated_at": 1784638197,
+    "updated_at": 1784638214,
     "messages": [
         {
             "id": "msg_compact",
@@ -2394,6 +2394,148 @@
             "content": "continue",
             "attachments": [],
             "time": 1784638197
+        },
+        {
+            "id": "msg_bb1c0f46f8",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I need to fix the duplicate `getAuditLog` function. Let me remove the second one (line 67) since it's redundant with the first one (line 33) - actually, I need to think about this more carefully.\n\nThe first `getAuditLog` (line 33) is a synchronous function that returns cached data.\nThe second `getAuditLog` (line 67) is an async function that fetches from the API.\n\nThe callers in the frontend use it synchronously (e.g., `getAuditLog().slice().reverse().slice(, 50)` in Settings.tsx line 1373, and `getAuditLog()` in AuditLog.tsx line 816).\n\nHowever, the new API-based system should fetch from the API. The problem is that `getAuditLog` is called synchronously with `.filter()`, `.slice()`, etc. But in the current code, callers use it like it returns a synchronous array.\n\nGiven that `getAuditLog` is a synchronous function that returns the cached version, and `fetchAuditLog` is the async version that populates the cache, I think the best approach is:\n\n1. Remove the second `getAuditLog` (async version at line 67)\n2. Keep the synchronous cache version at line 33\n\nBut wait - looking at the existing code flow, `getAuditLog()` at Settings.tsx:1373 does `getAuditLog().slice().reverse().slice(, 50)` which means it expects a synchronous array. The cache-based approach works if `fetchAuditLog()` is called first during initialization.\n\nActually, let me reconsider the design. The code has `_auditLogCache` which is populated by `fetchAuditLog()`. But nobody calls `fetchAuditLog()`. The async `getAuditLog` at line 67 was supposed to be the async version that callers await.\n\nThe real issue is that `getAuditLog()` is called synchronously everywhere. Since this is a TypeScript\/React app, we need to handle this properly.\n\nFor now, let me remove the duplicate and keep the synchronous cache version, since that's what all existing callers expect. Then we need to ensure `fetchAuditLog()` is called somewhere during initialization.\n\nActually, looking more carefully:\n- `getAuditLog()` on line 33: synchronous, returns cache\n- `getAuditLog()` on line 67: async, fetches from API\n\nBoth have the same name, which is a TypeScript error. I need to remove one.\n\nThe callers are:\n1. Settings.tsx line 1373: `const auditLog = getAuditLog().slice().reverse().slice(, 50);` - uses sync\n2. AuditLog.tsx line 816: `const logs = getAuditLog();` - uses sync\n3. AdminDashboard.tsx line 104: `const logs = getAuditLog();` - uses sync\n4. AdminDashboard.tsx line 142: `const recentLogs = useMemo(() => getAuditLog().slice(-10).reverse(), []);` - uses sync\n\nAll callers use it synchronously. So I should keep the synchronous version and remove the async duplicate. But I also need to add a mechanism to populate the cache on app initialization.\n\nLet me add a call to `fetchAuditLog()` in the `useAdminSave.ts` module initialization, or better yet, add it to App.tsx's initialization.\n\nActually, for now, let me just:\n1. Remove the duplicate async `getAuditLog` function\n2. Add a module-level initialization to fetch the audit log\n3. The sync `getAuditLog()` will return empty array until `fetchAuditLog()` completes\n\nLet me do this cleanly."
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me remove the duplicate `getAuditLog` async function:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_X7EoC1g0t89h7wovI9hR6377",
+                    "name": "edit_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useAdminSave.ts",
+                        "old_string": "\/**\n * Get audit log entries from PHP API.\n *\/\nexport async function getAuditLog(): Promise<AuditLogEntry[]> {\n  try {\n    return await auditService.getAll();\n  } catch {\n    return [];\n  }\n}\n\n\/\/ \u2500\u2500 Constants \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+                        "new_string": "\/\/ \u2500\u2500 Constants \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 56530,
+                "completion_tokens": 996,
+                "total_tokens": 57526,
+                "prompt_cache_hit_tokens": 56064,
+                "prompt_cache_miss_tokens": 466,
+                "prompt_tokens_details": {
+                    "cached_tokens": 56064
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 815
+                },
+                "cached_tokens": 56064
+            },
+            "time": 1784638207
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_X7EoC1g0t89h7wovI9hR6377",
+            "content": "Edited source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useAdminSave.ts (1 replacement)\n- \n+ \/\/ \u2500\u2500 Constants \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+            "is_error": false,
+            "time": 1784638208
+        },
+        {
+            "id": "msg_884e8c3de1",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Wait, the edit might have removed the line break. Let me check."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me verify the edit looks right:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_r37dtAzeOrR6Mlm3YS8p7210",
+                    "name": "read_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useAdminSave.ts",
+                        "offset": 58,
+                        "limit": 20
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 57580,
+                "completion_tokens": 120,
+                "total_tokens": 57700,
+                "prompt_cache_hit_tokens": 57472,
+                "prompt_cache_miss_tokens": 108,
+                "prompt_tokens_details": {
+                    "cached_tokens": 57472
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 15
+                },
+                "cached_tokens": 57472
+            },
+            "time": 1784638211
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_r37dtAzeOrR6Mlm3YS8p7210",
+            "content": "   58 | export type { AuditLogEntry } from \"..\/services\/audit\";\n   59 | export type { DoctorAccount, PatientAccount } from \"..\/services\/auth\";\n   60 | \n   61 | \/\/ \u2500\u2500 In-memory state \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   62 | \n   63 | \/** In-memory doctor registry (mirrors server state) *\/\n   64 | let _doctorRegistry: any[] = [];\n   65 | \/** In-memory patient registry (mirrors server state) *\/\n   66 | let _patientRegistry: any[] = [];\n   67 | \/** In-memory audit log cache *\/\n   68 | let _auditLogCache: AuditLogEntry[] = [];\n   69 | \n   70 | \/\/ \u2500\u2500 Fetch helpers (async \u2014 call on app start to populate cache) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   71 | \n   72 | \/** Fetch doctor registry from PHP API and populate cache *\/\n   73 | export async function fetchRegistry(): Promise<any[]> {\n   74 |   try {\n   75 |     const result = await post<{ users: any[] }>(\"\/auth\/list.php\", {\n   76 |       role: \"doctor\",\n   77 |     });",
+            "is_error": false,
+            "time": 1784638211
+        },
+        {
+            "id": "msg_b3a01b1f7b",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The file seems to have changed - it now has registry caching too. Let me read the full updated file to understand the current state."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me read the full file to understand the current state:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_sufQH3VkLQU06tyQKyGR6397",
+                    "name": "read_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useAdminSave.ts"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 57959,
+                "completion_tokens": 104,
+                "total_tokens": 58063,
+                "prompt_cache_hit_tokens": 57600,
+                "prompt_cache_miss_tokens": 359,
+                "prompt_tokens_details": {
+                    "cached_tokens": 57600
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 27
+                },
+                "cached_tokens": 57600
+            },
+            "time": 1784638214
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_sufQH3VkLQU06tyQKyGR6397",
+            "content": "    1 | \/\/ \u2500\u2500 Constants \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\/** Get cached audit log (synchronous \u2014 use fetchAuditLog() to refresh) *\/\n    2 | export function getAuditLog(): AuditLogEntry[] {\n    3 |   return _auditLogCache;\n    4 | }\n    5 | \n    6 | \/\/ \u2500\u2500 Audit helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n    7 | \n    8 | \/**\n    9 |  * Append an entry to the audit log via the PHP API.\n   10 |  *\/\n   11 | export async function appendAuditLog(entry: {\n   12 |   timestamp?: string;\n   13 |   userRole: string;\n   14 |   userName: string;\n   15 |   action: string;\n   16 |   target: string;\n   17 | }): Promise<void> {\n   18 |   try {\n   19 |     await post(\"\/audit\/create.php\", {\n   20 |       action: entry.action,\n   21 |       target: entry.target,\n   22 |       details: JSON.stringify({\n   23 |         userRole: entry.userRole,\n   24 |         userName: entry.userName,\n   25 |       }),\n   26 |     });\n   27 |   } catch {\n   28 |     \/\/ Audit logging is non-critical\n   29 |     console.warn(\"[Audit] Failed to log entry\");\n   30 |   }\n   31 | }\n   32 | \n   33 | \/**\n   34 |  * Refresh audit log from PHP API and return fresh data.\n   35 |  *\/\n   36 | export async function fetchAndGetAuditLog(): Promise<AuditLogEntry[]> {\n   37 |   try {\n   38 |     _auditLogCache = await auditService.getAll();\n   39 |   } catch {\n   40 |     _auditLogCache = [];\n   41 |   }\n   42 |   return _auditLogCache;\n   43 | }\n   44 | }\/**\n   45 |  * Admin Save Operations \u2014 PHP\/MySQL Backend\n   46 |  *\n   47 |  * All admin operations go through the PHP API via authService and auditService.\n   48 |  * No localStorage used for any data storage.\n   49 |  *\/\n   50 | \n   51 | import type { StaffRole } from \"..\/types\";\n   52 | import { authService } from \"..\/services\/auth\";\n   53 | import { auditService } from \"..\/services\/audit\";\n   54 | import type { AuditLogEntry } from \"..\/services\/audit\";\n   55 | import { post } from \"..\/lib\/apiClient\";\n   56 | \n   57 | \/\/ Re-export types for convenience\n   58 | export type { AuditLogEntry } from \"..\/services\/audit\";\n   59 | export type { DoctorAccount, PatientAccount } from \"..\/services\/auth\";\n   60 | \n   61 | \/\/ \u2500\u2500 In-memory state \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   62 | \n   63 | \/** In-memory doctor registry (mirrors server state) *\/\n   64 | let _doctorRegistry: any[] = [];\n   65 | \/** In-memory patient registry (mirrors server state) *\/\n   66 | let _patientRegistry: any[] = [];\n   67 | \/** In-memory audit log cache *\/\n   68 | let _auditLogCache: AuditLogEntry[] = [];\n   69 | \n   70 | \/\/ \u2500\u2500 Fetch helpers (async \u2014 call on app start to populate cache) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   71 | \n   72 | \/** Fetch doctor registry from PHP API and populate cache *\/\n   73 | export async function fetchRegistry(): Promise<any[]> {\n   74 |   try {\n   75 |     const result = await post<{ users: any[] }>(\"\/auth\/list.php\", {\n   76 |       role: \"doctor\",\n   77 |     });\n   78 |     _doctorRegistry = result.users ?? [];\n   79 |   } catch {\n   80 |     _doctorRegistry = [];\n   81 |   }\n   82 |   return _doctorRegistry;\n   83 | }\n   84 | \n   85 | \/** Fetch patient registry from PHP API and populate cache *\/\n   86 | export async function fetchPatientRegistry(): Promise<any[]> {\n   87 |   try {\n   88 |     const result = await post<{ patients: any[] }>(\n   89 |       \"\/auth\/patients\/list.php\",\n   90 |     );\n   91 |     _patientRegistry = result.patients ?? [];\n   92 |   } catch {\n   93 |     _patientRegistry = [];\n   94 |   }\n   95 |   return _patientRegistry;\n   96 | }\n   97 | \n   98 | \/** Fetch audit log from PHP API and populate cache *\/\n   99 | export async function fetchAuditLog(): Promise<AuditLogEntry[]> {\n  100 |   try {\n  101 |     _auditLogCache = await auditService.getAll();\n  102 |   } catch {\n  103 |     _auditLogCache = [];\n  104 |   }\n  105 |   return _auditLogCache;\n  106 | }\n  107 | \n  108 | \/\/ \u2500\u2500 Synchronous read accessors (used by existing UI code) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  109 | \n  110 | \/** Get cached doctor registry (synchronous) *\/\n  111 | export function loadRegistry(): any[] {\n  112 |   return _doctorRegistry;\n  113 | }\n  114 | \n  115 | \/** Get cached patient registry (synchronous) *\/\n  116 | export function loadPatientRegistry(): any[] {\n  117 |   return _patientRegistry;\n  118 | }\n  119 | \n  120 | \/** Get cached audit log (synchronous) *\/\n  121 | export function getAuditLog(): AuditLogEntry[] {\n  122 |   return _auditLogCache;\n  123 | }\n  124 | \n  125 | \/\/ \u2500\u2500 Synchronous write helpers (update cache, server persist via API) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  126 | \n  127 | \/** Save doctor registry (updates cache + delegates to PHP API) *\/\n  128 | export function saveRegistry(registry: any[]): boolean {\n  129 |   _doctorRegistry = registry;\n  130 |   \/\/ Fire-and-forget server sync\n  131 |   post(\"\/auth\/list.php\", { users: registry }).catch(() => {});\n  132 |   return true;\n  133 | }\n  134 | \n  135 | \/** Save patient registry (updates cache + delegates to PHP API) *\/\n  136 | export function savePatientRegistry(registry: any[]): boolean {\n  137 |   _patientRegistry = registry;\n  138 |   post(\"\/auth\/patients\/list.php\", { patients: registry }).catch(() => {});\n  139 |   return true;\n  140 | }\n  141 | \n  142 | \/\/ \u2500\u2500 Audit helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  143 | \n  144 | \/** Append an entry to the in-memory audit log cache *\/\n  145 | export function appendAuditLog(entry: {\n  146 |   timestamp?: string;\n  147 |   userRole: string;\n  148 |   userName: string;\n  149 |   action: string;\n  150 |   target: string;\n  151 | }): void {\n  152 |   const logEntry: AuditLogEntry = {\n  153 |     id: Date.now(),\n  154 |     timestamp: entry.timestamp ?? new Date().toISOString(),\n  155 |     userRole: entry.userRole,\n  156 |     userName: entry.userName,\n  157 |     action: entry.action,\n  158 |     target: entry.target,\n  159 |     details: JSON.stringify({\n  160 |       userRole: entry.userRole,\n  161 |       userName: entry.userName,\n  162 |     }),\n  163 |   };\n  164 |   _auditLogCache.push(logEntry);\n  165 |   \/\/ Fire-and-forget persist to PHP API\n  166 |   post(\"\/audit\/create.php\", {\n  167 |     action: entry.action,\n  168 |     target: entry.target,\n  169 |     details: JSON.stringify({\n  170 |       userRole: entry.userRole,\n  171 |       userName: entry.userName,\n  172 |     }),\n  173 |   }).catch(() => {});\n  174 | }\n  175 | \n  176 | \/\/ \u2500\u2500 Constants \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  177 | \n  178 | export const STAFF_ROLE_LABELS: Record<StaffRole, string> = {\n  179 |   admin: \"Admin\",\n  180 |   consultant_doctor: \"Consultant Doctor\",\n  181 |   assistant_professor: \"Assistant Professor\",\n  182 |   associate_professor: \"Associate Professor\",\n  183 |   professor: \"Professor\",\n  184 |   medical_officer: \"Medical Officer\",\n  185 |   assistant_registrar: \"Assistant Registrar\",\n  186 |   registrar: \"Registrar\",\n  187 |   intern_doctor: \"Intern Doctor\",\n  188 |   nurse: \"Nurse\",\n  189 |   reception: \"Reception\",\n  190 |   staff: \"Staff\",\n  191 |   doctor: \"Doctor\",\n  192 |   patient: \"Patient\",\n  193 | };\n  194 | \n  195 | \/\/ \u2500\u2500 Enhanced save wrappers (compatibility shims) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  196 | \n  197 | \/**\n  198 |  * Save doctor registry with error handling (delegated to PHP API).\n  199 |  *\/\n  200 | export const enhancedSaveRegistry = async (\n  201 |   registry: any[],\n  202 | ): Promise<boolean> => {\n  203 |   try {\n  204 |     \/\/ Registry updates go through authService operations\n  205 |     saveRegistry(registry);\n  206 |     return true;\n  207 |   } catch {\n  208 |     return false;\n  209 |   }\n  210 | };\n  211 | \n  212 | \/**\n  213 |  * Save patient registry with error handling (delegated to PHP API).\n  214 |  *\/\n  215 | export const enhancedSavePatientRegistry = async (\n  216 |   registry: any[],\n  217 | ): Promise<boolean> => {\n  218 |   try {\n  219 |     savePatientRegistry(registry);\n  220 |     return true;\n  221 |   } catch {\n  222 |     return false;\n  223 |   }\n  224 | };\n  225 | \n  226 | \/\/ \u2500\u2500 Admin actions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  227 | \n  228 | \/**\n  229 |  * Admin action: Approve staff account.\n  230 |  *\/\n  231 | export const approveStaffAccount = async (\n  232 |   accountId: number,\n  233 |   selectedRole: StaffRole,\n  234 | ): Promise<boolean> => {\n  235 |   try {\n  236 |     await authService.approveAccount(accountId, selectedRole);\n  237 |     await appendAuditLog({\n  238 |       userRole: \"admin\",\n  239 |       userName: \"Admin\",\n  240 |       action: `Approved account as ${STAFF_ROLE_LABELS[selectedRole] ?? selectedRole}`,\n  241 |       target: `Account #${accountId}`,\n  242 |     });\n  243 |     return true;\n  244 |   } catch (err) {\n  245 |     console.error(\"[Admin] Failed to approve staff:\", err);\n  246 |     return false;\n  247 |   }\n  248 | };\n  249 | \n  250 | \/**\n  251 |  * Admin action: Reject staff account.\n  252 |  *\/\n  253 | export const rejectStaffAccount = async (\n  254 |   accountId: number,\n  255 | ): Promise<boolean> => {\n  256 |   try {\n  257 |     await authService.rejectAccount(accountId);\n  258 |     await appendAuditLog({\n  259 |       userRole: \"admin\",\n  260 |       userName: \"Admin\",\n  261 |       action: \"Rejected account\",\n  262 |       target: `Account #${accountId}`,\n  263 |     });\n  264 |     return true;\n  265 |   } catch (err) {\n  266 |     console.error(\"[Admin] Failed to reject staff:\", err);\n  267 |     return false;\n  268 |   }\n  269 | };\n  270 | \n  271 | \/**\n  272 |  * Admin action: Approve patient account.\n  273 |  *\/\n  274 | export const approvePatientAccount = async (\n  275 |   patientId: number,\n  276 | ): Promise<boolean> => {\n  277 |   try {\n  278 |     await authService.approvePatient(patientId);\n  279 |     await appendAuditLog({\n  280 |       userRole: \"admin\",\n  281 |       userName: \"Admin\",\n  282 |       action: \"Approved patient account\",\n  283 |       target: `Patient #${patientId}`,\n  284 |     });\n  285 |     return true;\n  286 |   } catch (err) {\n  287 |     console.error(\"[Admin] Failed to approve patient:\", err);\n  288 |     return false;\n  289 |   }\n  290 | };\n  291 | \n  292 | \/**\n  293 |  * Admin action: Reject patient account.\n  294 |  *\/\n  295 | export const rejectPatientAccount = async (\n  296 |   patientId: number,\n  297 | ): Promise<boolean> => {\n  298 |   try {\n  299 |     await authService.rejectPatient(patientId);\n  300 |     await appendAuditLog({\n  301 |       userRole: \"admin\",\n  302 |       userName: \"Admin\",\n  303 |       action: \"Rejected patient account\",\n  304 |       target: `Patient #${patientId}`,\n  305 |     });\n  306 |     return true;\n  307 |   } catch (err) {\n  308 |     console.error(\"[Admin] Failed to reject patient:\", err);\n  309 |     return false;\n  310 |   }\n  311 | };\n  312 | \n  313 | \/**\n  314 |  * Admin action: Reassign staff role.\n  315 |  *\/\n  316 | export const reassignStaffRole = async (\n  317 |   accountId: number,\n  318 |   newRole: StaffRole,\n  319 | ): Promise<boolean> => {\n  320 |   try {\n  321 |     await authService.reassignRole(accountId, newRole);\n  322 |     await appendAuditLog({\n  323 |       userRole: \"admin\",\n  324 |       userName: \"Admin\",\n  325 |       action: `Role changed to ${STAFF_ROLE_LABELS[newRole]}`,\n  326 |       target: `Account #${accountId}`,\n  327 |     });\n  328 |     return true;\n  329 |   } catch (err) {\n  330 |     console.error(\"[Admin] Failed to reassign role:\", err);\n  331 |     return false;\n  332 |   }\n  333 | };\n  334 | \n  335 | \/**\n  336 |  * Verify PHP API connectivity.\n  337 |  *\/\n  338 | export const verifyStorageCapacity = async (): Promise<{\n  339 |   available: boolean;\n  340 |   percentUsed: number | null;\n  341 |   message: string;\n  342 | }> => {\n  343 |   try {\n  344 |     \/\/ Check if the server is reachable\n  345 |     await post(\"\/auth\/verify.php\");\n  346 |     return {\n  347 |       available: true,\n  348 |       percentUsed: null,\n  349 |       message: \"Server storage available\",\n  350 |     };\n  351 |   } catch {\n  352 |     return {\n  353 |       available: false,\n  354 |       percentUsed: null,\n  355 |       message: \"Server unreachable - check your connection\",\n  356 |     };\n  357 |   }\n  358 | };\n  359 |",
+            "is_error": false,
+            "time": 1784638214
         }
     ]
 }
