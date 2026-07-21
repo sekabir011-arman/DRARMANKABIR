@@ -67,7 +67,7 @@
         }
     ],
     "created_at": 1784572470,
-    "updated_at": 1784657308,
+    "updated_at": 1784657313,
     "messages": [
         {
             "id": "msg_compact",
@@ -2267,6 +2267,49 @@
             "content": "[Command completed successfully with no output]",
             "is_error": false,
             "time": 1784657308
+        },
+        {
+            "id": "msg_6efd3a2424",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me now create all 18 missing endpoints. I'll write them using a compact format to avoid the `?? ` encoding issue."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_XqYcmTMkXbNyDXf00rbP2537",
+                    "name": "write_file",
+                    "input": {
+                        "path": "public_html\/api\/investigations\/update-result.php",
+                        "content": "<?php\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\nrequire_once __DIR__ . '\/..\/auth\/middleware.php';\nhandleCors();\nrequireMethod('POST');\n$user = requireAuth();\n$input = getJsonInput();\n$id = (int)($input['id'] ?? null);\nif (!$id) errorResponse('Investigation ID is required', 400);\n$result = $input['result'] ?? null;\nif (!$result) errorResponse('Result is required', 400);\ntry {\n    $db = Database::getInstance();\n    $stmt = $db->prepare('SELECT * FROM investigations WHERE id = :id');\n    $stmt->execute([':id' => $id]);\n    $existing = $stmt->fetch();\n    if (!$existing) errorResponse('Investigation not found', 404);\n    $stmt = $db->prepare(\"UPDATE investigations SET result = :result, result_date = :result_date, status = 'completed', updated_at = NOW() WHERE id = :id\");\n    $stmt->execute([':result' => $result, ':result_date' => $input['result_date'] ?? date('Y-m-d H:i:s'), ':id' => $id]);\n    $fetchStmt = $db->prepare('SELECT * FROM investigations WHERE id = :id');\n    $fetchStmt->execute([':id' => $id]);\n    $updated = $fetchStmt->fetch();\n    logAudit($user['id'], $existing['patient_id'], 'update', 'investigation', $id, $existing, $updated);\n    successResponse($updated, 'Investigation result updated successfully');\n} catch (\\Exception $e) {\n    error_log('Update investigation result error: ' . $e->getMessage());\n    errorResponse('Failed to update investigation result', 500);\n}\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 37395,
+                "completion_tokens": 490,
+                "total_tokens": 37885,
+                "prompt_cache_hit_tokens": 37376,
+                "prompt_cache_miss_tokens": 19,
+                "prompt_tokens_details": {
+                    "cached_tokens": 37376
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 27
+                },
+                "cached_tokens": 37376
+            },
+            "time": 1784657312
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_XqYcmTMkXbNyDXf00rbP2537",
+            "content": "Successfully wrote 1445 bytes (30 lines) to public_html\/api\/investigations\/update-result.php",
+            "is_error": false,
+            "time": 1784657313
         }
     ]
 }
