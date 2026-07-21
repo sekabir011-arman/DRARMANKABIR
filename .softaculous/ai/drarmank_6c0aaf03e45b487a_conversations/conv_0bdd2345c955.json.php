@@ -72,7 +72,7 @@
         }
     ],
     "created_at": 1784572470,
-    "updated_at": 1784638785,
+    "updated_at": 1784638812,
     "messages": [
         {
             "id": "msg_compact",
@@ -2550,6 +2550,141 @@
             "content": "continue",
             "attachments": [],
             "time": 1784638785
+        },
+        {
+            "id": "msg_ecef22ffaf",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I see the file has been rewritten but there are garbage characters at the very top (lines 1-2 show a mangled comment). Let me look at lines 1-3 more carefully:\n\n```\n1 | \/\/ \u2500\u2500 Constants \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\/** Get cached audit log (synchronous \u2014 use fetchAuditLog() to refresh) *\/\n2 | export function getAuditLog(): AuditLogEntry[] {\n3 |   return _auditLogCache;\n```\n\nThis is clearly corrupted - the comment got merged. And lines 1-43 contain leftover garbage code before the proper file starts at line 44. I need to clean this up entirely.\n\nLet me rewrite the file properly. The file currently has duplicate\/inconsistent code blocks. Let me write a clean version.\n\nActually, let me re-read the full file to understand the structure. It seems like there's a mangled top section (lines 1-43) followed by the proper file starting at line 44.\n\nLines 1-4 have:\n```\n\/\/ \u2500\u2500 Constants \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\/** Get cached audit log (synchronous \u2014 use fetchAuditLog() to refresh) *\/\nexport function getAuditLog(): AuditLogEntry[] {\n  return _auditLogCache;\n}\n```\n\nThen line 44 has `}\/**` which is the closing of something. This is a mess from the previous edit that went wrong.\n\nLet me rewrite the entire file from scratch to be clean."
+                },
+                {
+                    "type": "text",
+                    "text": "The file has been corrupted with garbage concatenation at the top. Lines 1-43 are mangled remnants. I need to rewrite the entire file cleanly:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_zfR109NvKL6L1ZU0S2P57472",
+                    "name": "write_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useAdminSave.ts",
+                        "content": "\/**\n * Admin Save Operations \u2014 PHP\/MySQL Backend\n *\n * All admin operations go through the PHP API via authService and auditService.\n * No localStorage used for any data storage.\n *\/\n\nimport type { StaffRole } from \"..\/types\";\nimport { authService } from \"..\/services\/auth\";\nimport { auditService } from \"..\/services\/audit\";\nimport type { AuditLogEntry } from \"..\/services\/audit\";\nimport { post } from \"..\/lib\/apiClient\";\n\n\/\/ Re-export types for convenience\nexport type { AuditLogEntry } from \"..\/services\/audit\";\nexport type { DoctorAccount, PatientAccount } from \"..\/services\/auth\";\n\n\/\/ \u2500\u2500 In-memory state \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\/** In-memory doctor registry (mirrors server state) *\/\nlet _doctorRegistry: any[] = [];\n\/** In-memory patient registry (mirrors server state) *\/\nlet _patientRegistry: any[] = [];\n\/** In-memory audit log cache *\/\nlet _auditLogCache: AuditLogEntry[] = [];\n\n\/\/ \u2500\u2500 Fetch helpers (async \u2014 call on app start to populate cache) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\/** Fetch doctor registry from PHP API and populate cache *\/\nexport async function fetchRegistry(): Promise<any[]> {\n  try {\n    const result = await post<{ users: any[] }>(\"\/auth\/list.php\", {\n      role: \"doctor\",\n    });\n    _doctorRegistry = result.users ?? [];\n  } catch {\n    _doctorRegistry = [];\n  }\n  return _doctorRegistry;\n}\n\n\/** Fetch patient registry from PHP API and populate cache *\/\nexport async function fetchPatientRegistry(): Promise<any[]> {\n  try {\n    const result = await post<{ patients: any[] }>(\n      \"\/auth\/patients\/list.php\",\n    );\n    _patientRegistry = result.patients ?? [];\n  } catch {\n    _patientRegistry = [];\n  }\n  return _patientRegistry;\n}\n\n\/** Fetch audit log from PHP API and populate cache *\/\nexport async function fetchAuditLog(): Promise<AuditLogEntry[]> {\n  try {\n    _auditLogCache = await auditService.getAll();\n  } catch {\n    _auditLogCache = [];\n  }\n  return _auditLogCache;\n}\n\n\/\/ \u2500\u2500 Synchronous read accessors (used by existing UI code) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\/** Get cached doctor registry (synchronous) *\/\nexport function loadRegistry(): any[] {\n  return _doctorRegistry;\n}\n\n\/** Get cached patient registry (synchronous) *\/\nexport function loadPatientRegistry(): any[] {\n  return _patientRegistry;\n}\n\n\/** Get cached audit log (synchronous) *\/\nexport function getAuditLog(): AuditLogEntry[] {\n  return _auditLogCache;\n}\n\n\/\/ \u2500\u2500 Synchronous write helpers (update cache, server persist via API) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\/** Save doctor registry (updates cache + delegates to PHP API) *\/\nexport function saveRegistry(registry: any[]): boolean {\n  _doctorRegistry = registry;\n  \/\/ Fire-and-forget server sync\n  post(\"\/auth\/list.php\", { users: registry }).catch(() => {});\n  return true;\n}\n\n\/** Save patient registry (updates cache + delegates to PHP API) *\/\nexport function savePatientRegistry(registry: any[]): boolean {\n  _patientRegistry = registry;\n  post(\"\/auth\/patients\/list.php\", { patients: registry }).catch(() => {});\n  return true;\n}\n\n\/\/ \u2500\u2500 Audit helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\/** Append an entry to the in-memory audit log cache *\/\nexport function appendAuditLog(entry: {\n  timestamp?: string;\n  userRole: string;\n  userName: string;\n  action: string;\n  target: string;\n}): void {\n  const logEntry: AuditLogEntry = {\n    id: Date.now(),\n    timestamp: entry.timestamp ?? new Date().toISOString(),\n    userRole: entry.userRole,\n    userName: entry.userName,\n    action: entry.action,\n    target: entry.target,\n    details: JSON.stringify({\n      userRole: entry.userRole,\n      userName: entry.userName,\n    }),\n  };\n  _auditLogCache.push(logEntry);\n  \/\/ Fire-and-forget persist to PHP API\n  post(\"\/audit\/create.php\", {\n    action: entry.action,\n    target: entry.target,\n    details: JSON.stringify({\n      userRole: entry.userRole,\n      userName: entry.userName,\n    }),\n  }).catch(() => {});\n}\n\n\/\/ \u2500\u2500 Constants \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nexport const STAFF_ROLE_LABELS: Record<StaffRole, string> = {\n  admin: \"Admin\",\n  consultant_doctor: \"Consultant Doctor\",\n  assistant_professor: \"Assistant Professor\",\n  associate_professor: \"Associate Professor\",\n  professor: \"Professor\",\n  medical_officer: \"Medical Officer\",\n  assistant_registrar: \"Assistant Registrar\",\n  registrar: \"Registrar\",\n  intern_doctor: \"Intern Doctor\",\n  nurse: \"Nurse\",\n  reception: \"Reception\",\n  staff: \"Staff\",\n  doctor: \"Doctor\",\n  patient: \"Patient\",\n};\n\n\/\/ \u2500\u2500 Enhanced save wrappers (compatibility shims) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\/**\n * Save doctor registry with error handling (delegated to PHP API).\n *\/\nexport const enhancedSaveRegistry = async (\n  registry: any[],\n): Promise<boolean> => {\n  try {\n    \/\/ Registry updates go through authService operations\n    saveRegistry(registry);\n    return true;\n  } catch {\n    return false;\n  }\n};\n\n\/**\n * Save patient registry with error handling (delegated to PHP API).\n *\/\nexport const enhancedSavePatientRegistry = async (\n  registry: any[],\n): Promise<boolean> => {\n  try {\n    savePatientRegistry(registry);\n    return true;\n  } catch {\n    return false;\n  }\n};\n\n\/\/ \u2500\u2500 Admin actions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\/**\n * Admin action: Approve staff account.\n *\/\nexport const approveStaffAccount = async (\n  accountId: number,\n  selectedRole: StaffRole,\n): Promise<boolean> => {\n  try {\n    await authService.approveAccount(accountId, selectedRole);\n    await appendAuditLog({\n      userRole: \"admin\",\n      userName: \"Admin\",\n      action: `Approved account as ${STAFF_ROLE_LABELS[selectedRole] ?? selectedRole}`,\n      target: `Account #${accountId}`,\n    });\n    return true;\n  } catch (err) {\n    console.error(\"[Admin] Failed to approve staff:\", err);\n    return false;\n  }\n};\n\n\/**\n * Admin action: Reject staff account.\n *\/\nexport const rejectStaffAccount = async (\n  accountId: number,\n): Promise<boolean> => {\n  try {\n    await authService.rejectAccount(accountId);\n    await appendAuditLog({\n      userRole: \"admin\",\n      userName: \"Admin\",\n      action: \"Rejected account\",\n      target: `Account #${accountId}`,\n    });\n    return true;\n  } catch (err) {\n    console.error(\"[Admin] Failed to reject staff:\", err);\n    return false;\n  }\n};\n\n\/**\n * Admin action: Approve patient account.\n *\/\nexport const approvePatientAccount = async (\n  patientId: number,\n): Promise<boolean> => {\n  try {\n    await authService.approvePatient(patientId);\n    await appendAuditLog({\n      userRole: \"admin\",\n      userName: \"Admin\",\n      action: \"Approved patient account\",\n      target: `Patient #${patientId}`,\n    });\n    return true;\n  } catch (err) {\n    console.error(\"[Admin] Failed to approve patient:\", err);\n    return false;\n  }\n};\n\n\/**\n * Admin action: Reject patient account.\n *\/\nexport const rejectPatientAccount = async (\n  patientId: number,\n): Promise<boolean> => {\n  try {\n    await authService.rejectPatient(patientId);\n    await appendAuditLog({\n      userRole: \"admin\",\n      userName: \"Admin\",\n      action: \"Rejected patient account\",\n      target: `Patient #${patientId}`,\n    });\n    return true;\n  } catch (err) {\n    console.error(\"[Admin] Failed to reject patient:\", err);\n    return false;\n  }\n};\n\n\/**\n * Admin action: Reassign staff role.\n *\/\nexport const reassignStaffRole = async (\n  accountId: number,\n  newRole: StaffRole,\n): Promise<boolean> => {\n  try {\n    await authService.reassignRole(accountId, newRole);\n    await appendAuditLog({\n      userRole: \"admin\",\n      userName: \"Admin\",\n      action: `Role changed to ${STAFF_ROLE_LABELS[newRole]}`,\n      target: `Account #${accountId}`,\n    });\n    return true;\n  } catch (err) {\n    console.error(\"[Admin] Failed to reassign role:\", err);\n    return false;\n  }\n};\n\n\/**\n * Verify PHP API connectivity.\n *\/\nexport const verifyStorageCapacity = async (): Promise<{\n  available: boolean;\n  percentUsed: number | null;\n  message: string;\n}> => {\n  try {\n    \/\/ Check if the server is reachable\n    await post(\"\/auth\/verify.php\");\n    return {\n      available: true,\n      percentUsed: null,\n      message: \"Server storage available\",\n    };\n  } catch {\n    return {\n      available: false,\n      percentUsed: null,\n      message: \"Server unreachable - check your connection\",\n    };\n  }\n};\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 60638,
+                "completion_tokens": 2424,
+                "total_tokens": 63062,
+                "prompt_cache_hit_tokens": 56448,
+                "prompt_cache_miss_tokens": 4190,
+                "prompt_tokens_details": {
+                    "cached_tokens": 56448
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 302
+                },
+                "cached_tokens": 56448
+            },
+            "time": 1784638802
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_zfR109NvKL6L1ZU0S2P57472",
+            "content": "Successfully wrote 8924 bytes (316 lines) to source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useAdminSave.ts",
+            "is_error": false,
+            "time": 1784638803
+        },
+        {
+            "id": "msg_19ef238b28",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I need to fix the remaining issues:\n\n1. `PatientDashboard.tsx` (pages level, not components level) still imports from `useEmailAuth`\n2. Any other files with wrong imports\n\nLet me also check if `PatientDashboard.tsx` pages level needs fixing.\n\nLet me also check the `Scripts.tsx` fix I did earlier - wait, there's no Scripts.tsx.\n\nLet me re-run the comprehensive check."
+                },
+                {
+                    "type": "text",
+                    "text": "Good, file is clean now. Let me verify there are no more broken imports:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_xPtkO81drcTJ1pmfGtvT8906",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && grep -rn \"import.*\\{.*loadRegistry\\|import.*\\{.*saveRegistry\\|import.*\\{.*loadPatientRegistry\\|import.*\\{.*savePatientRegistry\\|import.*\\{.*appendAuditLog\\|import.*\\{.*getAuditLog\" source_build\/dr.armankabir-main\/src\/frontend\/src\/ --include=\"*.tsx\" --include=\"*.ts\" | grep -v \"useAdminSave\\|\\.bak\\|node_modules\" | sort"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 63109,
+                "completion_tokens": 257,
+                "total_tokens": 63366,
+                "prompt_cache_hit_tokens": 60544,
+                "prompt_cache_miss_tokens": 2565,
+                "prompt_tokens_details": {
+                    "cached_tokens": 60544
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 92
+                },
+                "cached_tokens": 60544
+            },
+            "time": 1784638808
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_xPtkO81drcTJ1pmfGtvT8906",
+            "content": "grep: Unmatched \\{\n",
+            "is_error": false,
+            "time": 1784638808
+        },
+        {
+            "id": "msg_cd20d5afc8",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The grep pattern is failing due to the braces. Let me escape them properly."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_SA8YFbo5EhGBPiV4TKoH6764",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && grep -rn \"from.*\\.\\.\\\/hooks\\\/useEmailAuth\" source_build\/dr.armankabir-main\/src\/frontend\/src\/ --include=\"*.tsx\" --include=\"*.ts\" | grep \"loadRegistry\\|saveRegistry\\|loadPatient\\|savePatient\\|appendAuditLog\\|getAuditLog\\|DoctorAccount\\|PatientAccount\""
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 63385,
+                "completion_tokens": 142,
+                "total_tokens": 63527,
+                "prompt_cache_hit_tokens": 63360,
+                "prompt_cache_miss_tokens": 25,
+                "prompt_tokens_details": {
+                    "cached_tokens": 63360
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 16
+                },
+                "cached_tokens": 63360
+            },
+            "time": 1784638812
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_SA8YFbo5EhGBPiV4TKoH6764",
+            "content": "source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/PatientDashboard.tsx:35:import type { PatientAccount } from \"..\/hooks\/useEmailAuth\";\n",
+            "is_error": false,
+            "time": 1784638812
         }
     ]
 }

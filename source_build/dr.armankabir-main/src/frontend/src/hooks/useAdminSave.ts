@@ -191,7 +191,7 @@ export const approveStaffAccount = async (
 ): Promise<boolean> => {
   try {
     await authService.approveAccount(accountId, selectedRole);
-    appendAuditLog({
+    await appendAuditLog({
       userRole: "admin",
       userName: "Admin",
       action: `Approved account as ${STAFF_ROLE_LABELS[selectedRole] ?? selectedRole}`,
@@ -212,7 +212,7 @@ export const rejectStaffAccount = async (
 ): Promise<boolean> => {
   try {
     await authService.rejectAccount(accountId);
-    appendAuditLog({
+    await appendAuditLog({
       userRole: "admin",
       userName: "Admin",
       action: "Rejected account",
@@ -233,7 +233,7 @@ export const approvePatientAccount = async (
 ): Promise<boolean> => {
   try {
     await authService.approvePatient(patientId);
-    appendAuditLog({
+    await appendAuditLog({
       userRole: "admin",
       userName: "Admin",
       action: "Approved patient account",
@@ -254,7 +254,7 @@ export const rejectPatientAccount = async (
 ): Promise<boolean> => {
   try {
     await authService.rejectPatient(patientId);
-    appendAuditLog({
+    await appendAuditLog({
       userRole: "admin",
       userName: "Admin",
       action: "Rejected patient account",
@@ -276,7 +276,7 @@ export const reassignStaffRole = async (
 ): Promise<boolean> => {
   try {
     await authService.reassignRole(accountId, newRole);
-    appendAuditLog({
+    await appendAuditLog({
       userRole: "admin",
       userName: "Admin",
       action: `Role changed to ${STAFF_ROLE_LABELS[newRole]}`,
