@@ -32,7 +32,7 @@ import PatientDashboardInner from "../components/PatientDashboard";
 import PatientForm from "../components/PatientForm";
 import PrescriptionPadPreview from "../components/PrescriptionPadPreview";
 import UpgradedPrescriptionEMR from "../components/UpgradedPrescriptionEMR";
-import type { PatientAccount } from "../hooks/useEmailAuth";
+import type { PatientAccount } from "../hooks/useAdminSave";
 import { useEmailAuth } from "../hooks/useEmailAuth";
 import {
   getDoctorEmail,
