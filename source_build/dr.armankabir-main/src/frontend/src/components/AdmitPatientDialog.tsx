@@ -16,7 +16,7 @@ import { format } from "date-fns";
 import { BedDouble, Building2, Stethoscope, UserCheck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { loadRegistry } from "../hooks/useEmailAuth";
+import { loadRegistry } from "../hooks/useAdminSave";
 import {
   getDoctorEmail,
   getVisitFormData,
