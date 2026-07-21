@@ -1,4 +1,4 @@
-import { i as createLucideIcon, r as reactExports } from "./index-DJeWhCy-.js";
+import { i as createLucideIcon, r as reactExports, ax as saveFrontPageContentWithSync } from "./index-DJeWhCy-.js";
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -290,22 +290,14 @@ function loadOverrides() {
   }
 }
 function saveOverrides(overrides) {
+  var _a;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
-}
-async function syncOverridesToServer(overrides) {
-  const response = await fetch("/api/frontpage/save.php", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ doctorContentOverrides: overrides })
-  });
-  if (!response.ok) {
-    throw new Error("Server returned " + response.status);
+  try {
+    const mod = require("../hooks/useQueries");
+    saveFrontPageContentWithSync(((_a = mod.getCanisterActor) == null ? void 0 : _a.call(mod)) ?? null);
+  } catch {
+    saveFrontPageContentWithSync(null);
   }
-  const json = await response.json();
-  if (!json.success) {
-    throw new Error(json.message || "Server save failed");
-  }
-  return json;
 }
 function deepMerge(base, overrides) {
   const result = { ...base };
@@ -320,60 +312,10 @@ function deepMerge(base, overrides) {
   }
   return result;
 }
-function addToOfflineQueue(key, value) {
-  const QUEUE_KEY = "medicare_content_offline_queue";
-  let queue = [];
-  try {
-    const raw = localStorage.getItem(QUEUE_KEY);
-    if (raw) queue = JSON.parse(raw);
-  } catch {}
-  queue.push({
-    id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-    payload: { [key]: value },
-    updatedAt: new Date().toISOString(),
-    retryCount: 0,
-    queuedAt: new Date().toISOString()
-  });
-  try {
-    localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
-  } catch {}
-}
 function useDoctorContent() {
-  const [overrides, setOverrides] = reactExports.useState({});
-  reactExports.useEffect(() => {
-    let cancelled = false;
-    const loadFromServer = async () => {
-      if (navigator.onLine) {
-        try {
-          const response = await fetch("/api/frontpage/get.php?key=doctorContentOverrides");
-          if (response.ok) {
-            const json = await response.json();
-            if (json && json.success && json.data) {
-              const serverOverrides = json.data;
-              if (serverOverrides && typeof serverOverrides === "object" && Object.keys(serverOverrides).length > 0) {
-                if (!cancelled) {
-                  localStorage.setItem(STORAGE_KEY, JSON.stringify(serverOverrides));
-                  setOverrides(serverOverrides);
-                }
-                return;
-              }
-            }
-          }
-        } catch (e) {
-          console.warn("[doctorContent] Failed to load from server:", e);
-        }
-      }
-      if (!cancelled) {
-        const local = loadOverrides();
-        if (Object.keys(local).length > 0) {
-          setOverrides(local);
-        }
-      }
-    };
-    loadFromServer();
-    return () => { cancelled = true; };
-  }, []);
+  const [overrides, setOverrides] = reactExports.useState(loadOverrides);
   const getContent = reactExports.useCallback(
+    // returns merged doctor data shape
     (doctorKey) => {
       const base = doctors[doctorKey];
       const docOverrides = overrides[doctorKey] || {};
@@ -382,66 +324,42 @@ function useDoctorContent() {
     [overrides]
   );
   const updateField = reactExports.useCallback(
-    async (doctorKey, path, value) => {
-      const prev = overrides;
-      const updated = { ...prev };
-      if (!updated[doctorKey]) updated[doctorKey] = {};
-      const parts = path.split(".");
-      let obj = updated[doctorKey];
-      for (let i = 0; i < parts.length - 1; i++) {
-        if (!obj[parts[i]] || typeof obj[parts[i]] !== "object") {
-          obj[parts[i]] = {};
+    // dynamic field value
+    (doctorKey, path, value) => {
+      setOverrides((prev) => {
+        const updated = { ...prev };
+        if (!updated[doctorKey]) updated[doctorKey] = {};
+        const parts = path.split(".");
+        let obj = updated[doctorKey];
+        for (let i = 0; i < parts.length - 1; i++) {
+          if (!obj[parts[i]] || typeof obj[parts[i]] !== "object") {
+            obj[parts[i]] = {};
+          }
+          obj = obj[parts[i]];
         }
-        obj = obj[parts[i]];
-      }
-      obj[parts[parts.length - 1]] = value;
-      if (navigator.onLine) {
-        try {
-          await syncOverridesToServer(updated);
-          saveOverrides(updated);
-          setOverrides(updated);
-          return { success: true };
-        } catch (err) {
-          console.error("[doctorContent] Update failed:", err);
-          return { success: false, error: err.message || "Network error" };
-        }
-      } else {
+        obj[parts[parts.length - 1]] = value;
         saveOverrides(updated);
-        setOverrides(updated);
-        addToOfflineQueue("doctorContentOverrides", updated);
-        return { success: true, offline: true };
-      }
+        return updated;
+      });
     },
-    [overrides]
+    []
   );
   const updateChambers = reactExports.useCallback(
-    async (doctorKey, chambers) => {
-      const prev = overrides;
-      const updated = {
-        ...prev,
-        [doctorKey]: {
-          ...prev[doctorKey] || {},
-          chambers
-        }
-      };
-      if (navigator.onLine) {
-        try {
-          await syncOverridesToServer(updated);
-          saveOverrides(updated);
-          setOverrides(updated);
-          return { success: true };
-        } catch (err) {
-          console.error("[doctorContent] Chamber update failed:", err);
-          return { success: false, error: err.message || "Network error" };
-        }
-      } else {
+    // dynamic chambers array
+    (doctorKey, chambers) => {
+      setOverrides((prev) => {
+        const updated = {
+          ...prev,
+          [doctorKey]: {
+            ...prev[doctorKey] || {},
+            chambers
+          }
+        };
         saveOverrides(updated);
-        setOverrides(updated);
-        addToOfflineQueue("doctorContentOverrides", updated);
-        return { success: true, offline: true };
-      }
+        return updated;
+      });
     },
-    [overrides]
+    []
   );
   const getAll = reactExports.useCallback(() => {
     return {

@@ -1,3 +1,4 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/index-DJeWhCy-.js","assets/index-JEdqxkTH.css"])))=>i.map(i=>d[i]);
 import { i as createLucideIcon, j as jsxRuntimeExports, ar as Root, as as Content, at as Close, X, ac as cn, au as Title, av as Portal, aw as Overlay, r as reactExports, T as Tabs, l as TabsList, n as TabsTrigger, p as TabsContent, B as Button, u as ue, L as Label, I as Input, ah as CirclePlus, ax as saveFrontPageContentWithSync, D as Dialog, s as DialogContent, t as DialogHeader, ab as TriangleAlert, v as DialogTitle, S as Select, d as SelectTrigger, e as SelectValue, f as SelectContent, g as SelectItem, m as motion, o as Stethoscope, h as Badge, ay as ShieldCheck, az as Menu, A as AnimatePresence, k as CalendarDays, _ as __vitePreload, z as LoaderCircle, c as Clock, b as CircleCheck, ao as ChevronRight, a3 as Users } from "./index-DJeWhCy-.js";
 import { T as Textarea } from "./textarea-BQiWEu5n.js";
 import { P as Pencil } from "./pencil-BZAaPpo6.js";
@@ -20,7 +21,6 @@ import { B as BookOpen } from "./book-open-Bi6sJ5u3.js";
 import { M as MapPin } from "./map-pin-BVGvB4pd.js";
 import { E as ExternalLink } from "./external-link-YRWS9f1T.js";
 import { D as Download } from "./download-qc_8yQ5r.js";
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/index-DJeWhCy-.js","assets/index-JEdqxkTH.css"])))=>i.map(i=>d[i]);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -1137,151 +1137,68 @@ function loadConfig() {
     return DEFAULT_SITE_CONFIG;
   }
 }
-function saveConfig(cfg) {
+function saveConfig(cfg, actor) {
   localStorage.setItem(STORAGE_KEY$2, JSON.stringify(cfg));
+  saveFrontPageContentWithSync(actor ?? null);
 }
-async function syncSiteConfigToServer(cfg) {
-  const response = await fetch("/api/frontpage/save.php", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ siteConfig: cfg })
-  });
-  if (!response.ok) {
-    throw new Error("Server returned " + response.status);
+function resolveActor() {
+  var _a;
+  try {
+    const mod = require("../hooks/useQueries");
+    return ((_a = mod.getCanisterActor) == null ? void 0 : _a.call(mod)) ?? null;
+  } catch {
+    return null;
   }
-  const json = await response.json();
-  if (!json.success) {
-    throw new Error(json.message || "Server save failed");
-  }
-  return json;
 }
 function useSiteConfig() {
   const [config, setConfig] = reactExports.useState(loadConfig);
-  reactExports.useEffect(() => {
-    let cancelled = false;
-    const loadFromServer = async () => {
-      if (navigator.onLine) {
-        try {
-          const response = await fetch("/api/frontpage/get.php?key=siteConfig");
-          if (response.ok) {
-            const json = await response.json();
-            if (json && json.success && json.data) {
-              const serverCfg = json.data;
-              if (serverCfg && typeof serverCfg === "object" && Object.keys(serverCfg).length > 0) {
-                if (!cancelled) {
-                  localStorage.setItem(STORAGE_KEY$2, JSON.stringify(serverCfg));
-                  setConfig(serverCfg);
-                }
-                return;
-              }
-            }
-          }
-        } catch (e) {
-          console.warn("[landing] Failed to load siteConfig from server:", e);
-        }
-      }
-    };
-    loadFromServer();
-    return () => { cancelled = true; };
+  const updateHero = reactExports.useCallback((hero) => {
+    setConfig((prev) => {
+      const next = { ...prev, heroSection: { ...prev.heroSection, ...hero } };
+      saveConfig(next, resolveActor());
+      return next;
+    });
   }, []);
-  const updateHero = reactExports.useCallback(async (hero) => {
-    const next = { ...config, heroSection: { ...config.heroSection, ...hero } };
-    if (navigator.onLine) {
-      try {
-        await syncSiteConfigToServer(next);
-        saveConfig(next);
-        setConfig(next);
-        return { success: true };
-      } catch (err) {
-        console.error("[landing] Hero update failed:", err);
-        return { success: false, error: err.message || "Network error" };
-      }
-    } else {
-      saveConfig(next);
-      setConfig(next);
-      addToContentOfflineQueue({ siteConfig: next });
-      return { success: true, offline: true };
-    }
-  }, [config]);
-  const updateAbout = reactExports.useCallback(async (about) => {
-    const next = { ...config, aboutSection: { ...config.aboutSection, ...about } };
-    if (navigator.onLine) {
-      try {
-        await syncSiteConfigToServer(next);
-        saveConfig(next);
-        setConfig(next);
-        return { success: true };
-      } catch (err) {
-        console.error("[landing] About update failed:", err);
-        return { success: false, error: err.message || "Network error" };
-      }
-    } else {
-      saveConfig(next);
-      setConfig(next);
-      addToContentOfflineQueue({ siteConfig: next });
-      return { success: true, offline: true };
-    }
-  }, [config]);
-  const updateFooter = reactExports.useCallback(async (footer) => {
-    const next = { ...config, footerSection: { ...config.footerSection, ...footer } };
-    if (navigator.onLine) {
-      try {
-        await syncSiteConfigToServer(next);
-        saveConfig(next);
-        setConfig(next);
-        return { success: true };
-      } catch (err) {
-        console.error("[landing] Footer update failed:", err);
-        return { success: false, error: err.message || "Network error" };
-      }
-    } else {
-      saveConfig(next);
-      setConfig(next);
-      addToContentOfflineQueue({ siteConfig: next });
-      return { success: true, offline: true };
-    }
-  }, [config]);
+  const updateAbout = reactExports.useCallback((about) => {
+    setConfig((prev) => {
+      const next = {
+        ...prev,
+        aboutSection: { ...prev.aboutSection, ...about }
+      };
+      saveConfig(next, resolveActor());
+      return next;
+    });
+  }, []);
+  const updateFooter = reactExports.useCallback((footer) => {
+    setConfig((prev) => {
+      const next = {
+        ...prev,
+        footerSection: { ...prev.footerSection, ...footer }
+      };
+      saveConfig(next, resolveActor());
+      return next;
+    });
+  }, []);
   const updateEmergencyContacts = reactExports.useCallback(
-    async (contacts) => {
-      const next = { ...config, emergencyContacts: contacts };
-      if (navigator.onLine) {
-        try {
-          await syncSiteConfigToServer(next);
-          saveConfig(next);
-          setConfig(next);
-          return { success: true };
-        } catch (err) {
-          console.error("[landing] Emergency contacts update failed:", err);
-          return { success: false, error: err.message || "Network error" };
-        }
-      } else {
-        saveConfig(next);
-        setConfig(next);
-        addToContentOfflineQueue({ siteConfig: next });
-        return { success: true, offline: true };
-      }
+    (contacts) => {
+      setConfig((prev) => {
+        const next = { ...prev, emergencyContacts: contacts };
+        saveConfig(next, resolveActor());
+        return next;
+      });
     },
-    [config]
+    []
   );
-  const resetSection = reactExports.useCallback(async (section) => {
-    const next = { ...config, [section]: DEFAULT_SITE_CONFIG[section] };
-    if (navigator.onLine) {
-      try {
-        await syncSiteConfigToServer(next);
-        saveConfig(next);
-        setConfig(next);
-        return { success: true };
-      } catch (err) {
-        console.error("[landing] Reset failed:", err);
-        return { success: false, error: err.message || "Network error" };
-      }
-    } else {
-      saveConfig(next);
-      setConfig(next);
-      addToContentOfflineQueue({ siteConfig: next });
-      return { success: true, offline: true };
-    }
-  }, [config]);
+  const resetSection = reactExports.useCallback((section) => {
+    setConfig((prev) => {
+      const next = {
+        ...prev,
+        [section]: DEFAULT_SITE_CONFIG[section]
+      };
+      saveConfig(next, resolveActor());
+      return next;
+    });
+  }, []);
   return {
     config,
     updateHero,
@@ -1369,14 +1286,6 @@ function EmergencyConsultationModal({ open, onClose }) {
   reactExports.useEffect(() => {
     if (open) setEmergencyContacts(loadEmergencyContacts());
   }, [open]);
-  reactExports.useEffect(() => {
-    return () => {
-      if (regLookupTimerRef.current) {
-        clearTimeout(regLookupTimerRef.current);
-        regLookupTimerRef.current = null;
-      }
-    };
-  }, []);
   const [registerNumber, setRegisterNumber] = reactExports.useState("");
   const [name, setName] = reactExports.useState("");
   const [age, setAge] = reactExports.useState("");
@@ -1386,7 +1295,6 @@ function EmergencyConsultationModal({ open, onClose }) {
   const [error, setError] = reactExports.useState("");
   const [regLookupMsg, setRegLookupMsg] = reactExports.useState("");
   const [searching, setSearching] = reactExports.useState(false);
-  const regLookupTimerRef = reactExports.useRef(null);
   const handleRegLookup = (val) => {
     setRegisterNumber(val);
     if (!val.trim()) {
@@ -1394,9 +1302,7 @@ function EmergencyConsultationModal({ open, onClose }) {
       return;
     }
     setSearching(true);
-    if (regLookupTimerRef.current) clearTimeout(regLookupTimerRef.current);
-    regLookupTimerRef.current = setTimeout(() => {
-      regLookupTimerRef.current = null;
+    setTimeout(() => {
       const patient = findPatientByRegNumber(val.trim());
       setSearching(false);
       if (patient) {
@@ -7479,11 +7385,11 @@ function LandingPage({
               /* @__PURE__ */ jsxRuntimeExports.jsx(
                 "a",
                 {
-                  href: `https://drarmankabir.com"undefined" ? window.location.hostname : "")}`,
+                  href: `https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(typeof window !== "undefined" ? window.location.hostname : "")}`,
                   target: "_blank",
                   rel: "noopener noreferrer",
                   className: "underline hover:text-slate-200",
-                  children: "Dr. Arman Kabir Care"
+                  children: "caffeine.ai"
                 }
               )
             ] }),
