@@ -43,7 +43,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { type DoctorAccount, loadRegistry } from "../hooks/useEmailAuth";
+import { type DoctorAccount, loadRegistry } from "../hooks/useAdminSave";
 import type { StaffRole } from "../types";
 import { STAFF_ROLE_LABELS } from "../types";
 import type { TrackedInvestigation } from "./InvestigationTracker";
