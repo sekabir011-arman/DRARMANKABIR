@@ -15,9 +15,42 @@ import { post } from "../lib/apiClient";
 export type { AuditLogEntry } from "../services/audit";
 export type { DoctorAccount, PatientAccount } from "../services/auth";
 
-// ── In-memory audit log cache ─────────────────────────────────────────────────
+// ── In-memory state ─────────────────────────────────────────────────────────
 
+/** In-memory doctor registry (mirrors server state) */
+let _doctorRegistry: any[] = [];
+/** In-memory patient registry (mirrors server state) */
+let _patientRegistry: any[] = [];
+/** In-memory audit log cache */
 let _auditLogCache: AuditLogEntry[] = [];
+
+// ── Fetch helpers (async — call on app start to populate cache) ─────────────
+
+/** Fetch doctor registry from PHP API and populate cache */
+export async function fetchRegistry(): Promise<any[]> {
+  try {
+    const result = await post<{ users: any[] }>("/auth/list.php", {
+      role: "doctor",
+    });
+    _doctorRegistry = result.users ?? [];
+  } catch {
+    _doctorRegistry = [];
+  }
+  return _doctorRegistry;
+}
+
+/** Fetch patient registry from PHP API and populate cache */
+export async function fetchPatientRegistry(): Promise<any[]> {
+  try {
+    const result = await post<{ patients: any[] }>(
+      "/auth/patients/list.php",
+    );
+    _patientRegistry = result.patients ?? [];
+  } catch {
+    _patientRegistry = [];
+  }
+  return _patientRegistry;
+}
 
 /** Fetch audit log from PHP API and populate cache */
 export async function fetchAuditLog(): Promise<AuditLogEntry[]> {
@@ -29,47 +62,72 @@ export async function fetchAuditLog(): Promise<AuditLogEntry[]> {
   return _auditLogCache;
 }
 
-/** Get cached audit log (synchronous — use fetchAuditLog() to refresh) */
+// ── Synchronous read accessors (used by existing UI code) ───────────────────
+
+/** Get cached doctor registry (synchronous) */
+export function loadRegistry(): any[] {
+  return _doctorRegistry;
+}
+
+/** Get cached patient registry (synchronous) */
+export function loadPatientRegistry(): any[] {
+  return _patientRegistry;
+}
+
+/** Get cached audit log (synchronous) */
 export function getAuditLog(): AuditLogEntry[] {
   return _auditLogCache;
 }
 
+// ── Synchronous write helpers (update cache, server persist via API) ────────
+
+/** Save doctor registry (updates cache + delegates to PHP API) */
+export function saveRegistry(registry: any[]): boolean {
+  _doctorRegistry = registry;
+  // Fire-and-forget server sync
+  post("/auth/list.php", { users: registry }).catch(() => {});
+  return true;
+}
+
+/** Save patient registry (updates cache + delegates to PHP API) */
+export function savePatientRegistry(registry: any[]): boolean {
+  _patientRegistry = registry;
+  post("/auth/patients/list.php", { patients: registry }).catch(() => {});
+  return true;
+}
+
 // ── Audit helpers ─────────────────────────────────────────────────────────────
 
-/**
- * Append an entry to the audit log via the PHP API.
- */
-export export async function appendAuditLog(entry: {
+/** Append an entry to the in-memory audit log cache */
+export function appendAuditLog(entry: {
   timestamp?: string;
   userRole: string;
   userName: string;
   action: string;
   target: string;
-}): Promise<void> {
-  try {
-    await post("/audit/create.php", {
-      action: entry.action,
-      target: entry.target,
-      details: JSON.stringify({
-        userRole: entry.userRole,
-        userName: entry.userName,
-      }),
-    });
-  } catch {
-    // Audit logging is non-critical
-    console.warn("[Audit] Failed to log entry");
-  }
-}
-
-/**
- * Get audit log entries from PHP API.
- */
-export async function getAuditLog(): Promise<AuditLogEntry[]> {
-  try {
-    return await auditService.getAll();
-  } catch {
-    return [];
-  }
+}): void {
+  const logEntry: AuditLogEntry = {
+    id: Date.now(),
+    timestamp: entry.timestamp ?? new Date().toISOString(),
+    userRole: entry.userRole,
+    userName: entry.userName,
+    action: entry.action,
+    target: entry.target,
+    details: JSON.stringify({
+      userRole: entry.userRole,
+      userName: entry.userName,
+    }),
+  };
+  _auditLogCache.push(logEntry);
+  // Fire-and-forget persist to PHP API
+  post("/audit/create.php", {
+    action: entry.action,
+    target: entry.target,
+    details: JSON.stringify({
+      userRole: entry.userRole,
+      userName: entry.userName,
+    }),
+  }).catch(() => {});
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -90,44 +148,6 @@ export const STAFF_ROLE_LABELS: Record<StaffRole, string> = {
   doctor: "Doctor",
   patient: "Patient",
 };
-
-// ── Registry load/save (delegated to PHP API) ────────────────────────────────
-
-/** Load doctor registry from PHP API */
-export async function loadRegistry(): Promise<any[]> {
-  try {
-    const result = await post<{ users: any[] }>("/auth/list.php", {
-      role: "doctor",
-    });
-    return result.users ?? [];
-  } catch {
-    return [];
-  }
-}
-
-/** Load patient registry from PHP API */
-export async function loadPatientRegistry(): Promise<any[]> {
-  try {
-    const result = await post<{ patients: any[] }>(
-      "/auth/patients/list.php",
-    );
-    return result.patients ?? [];
-  } catch {
-    return [];
-  }
-}
-
-/** Save doctor registry (no-op — data is persisted via PHP API) */
-export function saveRegistry(_registry: any[]): boolean {
-  // Registry is managed server-side via authService operations
-  return true;
-}
-
-/** Save patient registry (no-op — data is persisted via PHP API) */
-export function savePatientRegistry(_registry: any[]): boolean {
-  // Patient registry is managed server-side via authService operations
-  return true;
-}
 
 // ── Enhanced save wrappers (compatibility shims) ─────────────────────────────
 

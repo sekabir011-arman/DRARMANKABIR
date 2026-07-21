@@ -72,7 +72,7 @@
         }
     ],
     "created_at": 1784572470,
-    "updated_at": 1784636316,
+    "updated_at": 1784636859,
     "messages": [
         {
             "id": "msg_compact",
@@ -2318,6 +2318,20 @@
             "content": "\n[Exit code: 1]",
             "is_error": true,
             "time": 1784636316
+        },
+        {
+            "id": "msg_840d5d5d93",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784636522
+        },
+        {
+            "id": "msg_46397bbb77",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784636859
         }
     ]
 }
