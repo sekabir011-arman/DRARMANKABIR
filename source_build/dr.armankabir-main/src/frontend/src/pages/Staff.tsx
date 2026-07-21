@@ -50,13 +50,6 @@ import {
 import type { DoctorAccount } from "../hooks/useAdminSave";
 import { STAFF_ROLE_COLORS, STAFF_ROLE_LABELS } from "../types";
 import type { StaffRole } from "../types";
-import { storage } from "../lib/storageAdapter";
-
-// ── Storage Keys ──────────────────────────────────────────────────────────────
-const SHIFTS_KEY = "staff_shifts";
-const ATTENDANCE_KEY = "staff_attendance";
-const LEAVE_REQUESTS_KEY = "leave_requests";
-
 // ── Local Types ───────────────────────────────────────────────────────────────
 type StatusFilter = "all" | "approved" | "pending" | "rejected";
 type MainTab =
