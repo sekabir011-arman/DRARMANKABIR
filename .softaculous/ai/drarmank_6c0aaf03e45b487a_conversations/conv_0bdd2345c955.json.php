@@ -67,7 +67,7 @@
         }
     ],
     "created_at": 1784572470,
-    "updated_at": 1784644164,
+    "updated_at": 1784650160,
     "messages": [
         {
             "id": "msg_compact",
@@ -3387,6 +3387,13 @@
             "content": "    1 | <?php\n    2 | \/**\n    3 |  * Delete \/ Deactivate Staff API\n    4 |  * \n    5 |  * POST \/api\/staff\/delete.php\n    6 |  * Body: { id }\n    7 |  *\/\n    8 | \n    9 | require_once __DIR__ . '\/..\/database.php';\n   10 | require_once __DIR__ . '\/..\/helpers.php';\n   11 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   12 | \n   13 | handleCors();\n   14 | requireMethod('POST');\n   15 | \n   16 | $user = requireAuth();\n   17 | $input = getJsonInput();\n   18 | \n   19 | $id = (int)($input['id'] ?? null);\n   20 | if (!$id) {\n   21 |     errorResponse('User ID is required', 400);\n   22 | }\n   23 | \n   24 | try {\n   25 |     $db = Database::getInstance();\n   26 |     \n   27 |     $stmt = $db->prepare('SELECT * FROM users WHERE id = :id');\n   28 |     $stmt->execute([':id' => $id]);\n   29 |     $existing = $stmt->fetch();\n   30 |     \n   31 |     if (!$existing) {\n   32 |         errorResponse('User not found', 404);\n   33 |     }\n   34 |     \n   35 |     \/\/ Soft delete: deactivate user\n   36 |     $stmt = $db->prepare('UPDATE users SET is_active = , updated_at = NOW() WHERE id = :id');\n   37 |     $stmt->execute([':id' => $id]);\n   38 |     \n   39 |     logAudit($user['id'], null, 'delete', 'user', $id, $existing, null);\n   40 |",
             "is_error": false,
             "time": 1784644164
+        },
+        {
+            "id": "msg_6f9b9d6528",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784650160
         }
     ]
 }
