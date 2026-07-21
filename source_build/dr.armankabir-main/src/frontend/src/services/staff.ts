@@ -68,7 +68,7 @@ export const staffService = {
 
   /** Search staff members */
   async search(query: string): Promise<UserProfile[]> {
-    const result = await get<{ users: UserProfile[] }>('/staff/list.php', { search: query });
-    return result.users ?? [];
+    const result = await get<{ items: UserProfile[] }>('/staff/list.php', { search: query });
+    return result.items ?? [];
   },
 };
