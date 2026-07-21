@@ -13,12 +13,12 @@
         {
             "priority": "high",
             "content": "1. Fix useAdminSave.ts - export appendAuditLog and add getAuditLog",
-            "status": "in_progress"
+            "status": "completed"
         },
         {
             "priority": "high",
             "content": "2. Fix imports in App.tsx",
-            "status": "pending"
+            "status": "in_progress"
         },
         {
             "priority": "high",
@@ -52,7 +52,7 @@
         }
     ],
     "created_at": 1784572470,
-    "updated_at": 1784610359,
+    "updated_at": 1784610374,
     "messages": [
         {
             "id": "msg_compact",
@@ -3906,6 +3906,142 @@
             "content": "Edited source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useAdminSave.ts (1 replacement)\n- \/\/ \u2500\u2500 Constants \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n- \n- export const STAFF_ROLE_LABELS\n+ \/**\n+  * Get audit log entries from PHP API.\n+  *\/\n+ export async function getAuditLog(): Promise<AuditLogEntry[]> {\n+   try {\n+     return await auditService.getAll();\n+   } catch {\n+     return [];\n+   }\n+ }\n+ \n+ \/\/ \u2500\u2500 Constants \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n+ \n+ export const STAFF_ROLE_LABELS",
             "is_error": false,
             "time": 1784610359
+        },
+        {
+            "id": "msg_e78209b84d",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I need to re-export `AuditLogEntry` type from `useAdminSave.ts` so callers can import it from there. Let me add it at the bottom of the imports."
+                },
+                {
+                    "type": "text",
+                    "text": "Now re-export the `AuditLogEntry` type from `useAdminSave.ts`:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_WlMyJSKYvN3DL1oZa5PF3694",
+                    "name": "edit_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useAdminSave.ts",
+                        "old_string": "import type { StaffRole } from \"..\/types\";\nimport { authService } from \"..\/services\/auth\";\nimport { auditService } from \"..\/services\/audit\";\nimport type { AuditLogEntry } from \"..\/services\/audit\";\nimport { post } from \"..\/lib\/apiClient\";",
+                        "new_string": "import type { StaffRole } from \"..\/types\";\nimport { authService } from \"..\/services\/auth\";\nimport { auditService } from \"..\/services\/audit\";\nimport type { AuditLogEntry } from \"..\/services\/audit\";\nimport { post } from \"..\/lib\/apiClient\";\n\n\/\/ Re-export types for convenience\nexport type { AuditLogEntry } from \"..\/services\/audit\";"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 93314,
+                "completion_tokens": 292,
+                "total_tokens": 93606,
+                "prompt_cache_hit_tokens": 93056,
+                "prompt_cache_miss_tokens": 258,
+                "prompt_tokens_details": {
+                    "cached_tokens": 93056
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 41
+                },
+                "cached_tokens": 93056
+            },
+            "time": 1784610363
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_WlMyJSKYvN3DL1oZa5PF3694",
+            "content": "Edited source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useAdminSave.ts (1 replacement)\n- import type { StaffRole } from \"..\/types\";\n- import { authService } from \"..\/services\/auth\";\n- import { auditService } from \"..\/services\/audit\";\n- import type { AuditLogEntry } from \"..\/services\/audit\";\n- import { post } from \"..\/lib\/apiClient\";\n+ import type { StaffRole } from \"..\/types\";\n+ import { authService } from \"..\/services\/auth\";\n+ import { auditService } from \"..\/services\/audit\";\n+ import type { AuditLogEntry } from \"..\/services\/audit\";\n+ import { post } from \"..\/lib\/apiClient\";\n+ \n+ \/\/ Re-export types for convenience\n+ export type { AuditLogEntry } from \"..\/services\/audit\";",
+            "is_error": false,
+            "time": 1784610364
+        },
+        {
+            "id": "msg_7880570e52",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now let me fix all the imports. I need to do the following changes in each file:\n\n1. **App.tsx**: Move `appendAuditLog`, `loadPatientRegistry`, `loadRegistry`, `savePatientRegistry`, `saveRegistry` from `useEmailAuth` import to `useAdminSave` import. Also change `DoctorAccount, PatientAccount` type imports from `useEmailAuth` to `useAdminSave` or `..\/services\/auth`.\n\nLet me check what the `App.tsx` line 66 imports:\n```ts\nimport type { DoctorAccount, PatientAccount } from \".\/hooks\/useEmailAuth\";\n```\n\nThese types come from `services\/auth.ts`. But since `useEmailAuth.tsx` uses them in its exported interfaces, and since we need to keep `useEmailAuth` import for `EmailAuthProvider`, `useEmailAuth`, `useInactivityTimer`, I can keep the type import from `useEmailAuth`.\n\nWait, the issue is that `DoctorAccount` and `PatientAccount` are not exported from `useEmailAuth.tsx`. But if they're used in the exported types\/interfaces, TypeScript might still allow importing them... Actually no, TypeScript requires explicit export. So this import would fail too.\n\nLet me check what's actually exported from `useEmailAuth.tsx`:\n- `AuditLogEntry` (interface)\n- `isConsultantLevel` (function)\n- `getAuthToken`, `getPatientToken`, `setPatientToken`, `clearPatientToken`\n- `EmailAuthProvider`\n- `useEmailAuth`\n- `InactivityTimerState` (interface)\n- `useInactivityTimer`\n\nSo `DoctorAccount` and `PatientAccount` are NOT exported. However, they're used in the `EmailAuthContextValue` interface. TypeScript should... actually, TypeScript does allow you to import types that are used in exported interfaces when the type originates from another module and is re-exported via the interface. But if the types are defined in another file and just referenced, they might not be importable.\n\nActually in practice, TypeScript would give an error like: `'DoctorAccount' is not exported from '.\/hooks\/useEmailAuth'` because it's not explicitly exported.\n\nBut the project has `noImplicitAny: false` which might suppress some errors. And with `skipLibCheck: true`, some things might be skipped.\n\nLet me be safe and change all type imports to come from `..\/services\/auth`.\n\nFor `DoctorAccount` and `PatientAccount`, they're defined in `services\/auth.ts`. Let me also check `useEmailAuth.tsx` context type to make sure I'm not breaking anything:\n```\ncontext uses: DoctorAccount | null for currentDoctor\ncontext uses: PatientAccount | null for currentPatient\n```\n\nThese are passed through and the types are resolved. If I import `DoctorAccount` from `services\/auth` instead of `useEmailAuth`, it should be the same type.\n\nLet me now execute all the import fixes. I'll do them file by file."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_19CfEjuu9aO1YtKDm0665077",
+                    "name": "todo_write",
+                    "input": {
+                        "todos": [
+                            {
+                                "priority": "high",
+                                "content": "Phase 1A: Fix TypeScript Build Errors",
+                                "status": "in_progress"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "1. Fix useAdminSave.ts - export appendAuditLog and add getAuditLog",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "2. Fix imports in App.tsx",
+                                "status": "in_progress"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "3. Fix imports in Settings.tsx",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "4. Fix imports in Staff.tsx",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "5. Fix imports in AdmitPatientDialog.tsx, HandoverSystem.tsx, PatientProfile.tsx",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "6. Fix imports in AIAssistantPanel.tsx, DailyProgress.tsx, EmergencyPrescription.tsx",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "7. Fix imports in AdminDashboard.tsx, AuditLog.tsx",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "8. Verify build completes",
+                                "status": "pending"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 93794,
+                "completion_tokens": 908,
+                "total_tokens": 94702,
+                "prompt_cache_hit_tokens": 93568,
+                "prompt_cache_miss_tokens": 226,
+                "prompt_tokens_details": {
+                    "cached_tokens": 93568
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 635
+                },
+                "cached_tokens": 93568
+            },
+            "time": 1784610374
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_19CfEjuu9aO1YtKDm0665077",
+            "content": "Todo list updated with 9 items.",
+            "is_error": false,
+            "time": 1784610374
         }
     ]
 }

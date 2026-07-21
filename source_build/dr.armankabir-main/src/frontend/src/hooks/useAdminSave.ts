@@ -11,6 +11,9 @@ import { auditService } from "../services/audit";
 import type { AuditLogEntry } from "../services/audit";
 import { post } from "../lib/apiClient";
 
+// Re-export types for convenience
+export type { AuditLogEntry } from "../services/audit";
+
 // ── In-memory audit log cache ─────────────────────────────────────────────────
 
 let _auditLogCache: AuditLogEntry[] = [];
