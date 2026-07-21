@@ -15,7 +15,7 @@ requireMethod('POST');
 $user = requireAuth();
 $input = getJsonInput();
 
-$id = isset($input['id']) ? (int)$input['id'] : null;
+$id = (int)($input['id'] ?? 0);
 if (!$id) {
     errorResponse('User ID is required', 400);
 }
