@@ -57,16 +57,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { loadInvestigationRates } from "../components/InvestigationPayment";
 import { useAdminAuth } from "../hooks/useAdminAuth";
+import { useEmailAuth } from "../hooks/useEmailAuth";
 import {
-  type DoctorAccount,
-  type PatientAccount,
   getAuditLog,
   loadPatientRegistry,
   loadRegistry,
   savePatientRegistry,
   saveRegistry,
-  useEmailAuth,
-} from "../hooks/useEmailAuth";
+} from "../hooks/useAdminSave";
 import type { InvestigationRate } from "../types";
 import { STAFF_ROLE_LABELS, type StaffRole } from "../types";
 import { storage } from "../lib/storageAdapter";
