@@ -30,8 +30,8 @@ import {
   loadRegistry,
   savePatientRegistry,
   saveRegistry,
-} from "../../hooks/useEmailAuth";
-import type { DoctorAccount, PatientAccount } from "../../hooks/useEmailAuth";
+} from "../../hooks/useAdminSave";
+import type { DoctorAccount, PatientAccount } from "../../hooks/useAdminSave";
 import { STAFF_ROLE_LABELS } from "../../types";
 import type { StaffRole } from "../../types";
 import { storage } from "../../lib/storageAdapter";

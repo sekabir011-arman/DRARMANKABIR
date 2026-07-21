@@ -72,7 +72,7 @@
         }
     ],
     "created_at": 1784572470,
-    "updated_at": 1784635278,
+    "updated_at": 1784635290,
     "messages": [
         {
             "id": "msg_compact",
@@ -1134,6 +1134,143 @@
             "content": "    1 | import { Badge } from \"@\/components\/ui\/badge\";\n    2 | import { Button } from \"@\/components\/ui\/button\";\n    3 | import { Card, CardContent, CardHeader } from \"@\/components\/ui\/card\";\n    4 | import {\n    5 |   Select,\n    6 |   SelectContent,\n    7 |   SelectItem,\n    8 |   SelectTrigger,\n    9 |   SelectValue,\n   10 | } from \"@\/components\/ui\/select\";\n   11 | import {\n   12 |   Activity,\n   13 |   BarChart2,\n   14 |   BedDouble,\n   15 |   CheckCircle2,\n   16 |   Clock,\n   17 |   Database,\n   18 |   RefreshCw,\n   19 |   ShieldAlert,\n   20 |   UserCheck,\n   21 |   UserPlus,\n   22 |   Users,\n   23 |   XCircle,\n   24 | } from \"lucide-react\";\n   25 | import { useCallback, useEffect, useMemo, useState } from \"react\";\n   26 | import { toast } from \"sonner\";\n   27 | import {\n   28 |   getAuditLog,\n   29 |   loadPatientRegistry,\n   30 |   loadRegistry,\n   31 |   savePatientRegistry,\n   32 |   saveRegistry,\n   33 | } from \"..\/..\/hooks\/useEmailAuth\";\n   34 | import type { DoctorAccount, PatientAccount } from \"..\/..\/hooks\/useEmailAuth\";\n   35 | import { STAFF_ROLE_LABELS } from \"..\/..\/types\";\n   36 | import type { StaffRole } from \"..\/..\/types\";\n   37 | import { storage } from \"..\/..\/lib\/storageAdapter\";\n   38 | \n   39 | function getTotalPatients(): number {\n   40 |   let count = 0;",
             "is_error": false,
             "time": 1784635278
+        },
+        {
+            "id": "msg_b99a62f9e8",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "AdminDashboard.tsx still imports from `..\/..\/hooks\/useEmailAuth`. Need to fix."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_vxTjaLd8GYfe46NIZago4682",
+                    "name": "edit_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx",
+                        "old_string": "import {\n  getAuditLog,\n  loadPatientRegistry,\n  loadRegistry,\n  savePatientRegistry,\n  saveRegistry,\n} from \"..\/..\/hooks\/useEmailAuth\";\nimport type { DoctorAccount, PatientAccount } from \"..\/..\/hooks\/useEmailAuth\";\nimport { STAFF_ROLE_LABELS } from \"..\/..\/types\";\nimport type { StaffRole } from \"..\/..\/types\";\nimport { storage } from \"..\/..\/lib\/storageAdapter\";",
+                        "new_string": "import {\n  getAuditLog,\n  loadPatientRegistry,\n  loadRegistry,\n  savePatientRegistry,\n  saveRegistry,\n} from \"..\/..\/hooks\/useAdminSave\";\nimport type { DoctorAccount, PatientAccount } from \"..\/..\/hooks\/useAdminSave\";\nimport { STAFF_ROLE_LABELS } from \"..\/..\/types\";\nimport type { StaffRole } from \"..\/..\/types\";\nimport { storage } from \"..\/..\/lib\/storageAdapter\";"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 39585,
+                "completion_tokens": 294,
+                "total_tokens": 39879,
+                "prompt_cache_hit_tokens": 39168,
+                "prompt_cache_miss_tokens": 417,
+                "prompt_tokens_details": {
+                    "cached_tokens": 39168
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 19
+                },
+                "cached_tokens": 39168
+            },
+            "time": 1784635282
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_vxTjaLd8GYfe46NIZago4682",
+            "content": "Edited source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx (1 replacement)\n- import {\n-   getAuditLog,\n-   loadPatientRegistry,\n-   loadRegistry,\n-   savePatientRegistry,\n-   saveRegistry,\n- } from \"..\/..\/hooks\/useEmailAuth\";\n- import type { DoctorAccount, PatientAccount } from \"..\/..\/hooks\/useEmailAuth\";\n- import { STAFF_ROLE_LABELS } from \"..\/..\/types\";\n- import type { StaffRole } from \"..\/..\/types\";\n- import { storage } from \"..\/..\/lib\/storageAdapter\";\n+ import {\n+   getAuditLog,\n+   loadPatientRegistry,\n+   loadRegistry,\n+   savePatientRegistry,\n+   saveRegistry,\n+ } from \"..\/..\/hooks\/useAdminSave\";\n+ import type { DoctorAccount, PatientAccount } from \"..\/..\/hooks\/useAdminSave\";\n+ import { STAFF_ROLE_LABELS } from \"..\/..\/types\";\n+ import type { StaffRole } from \"..\/..\/types\";\n+ import { storage } from \"..\/..\/lib\/storageAdapter\";",
+            "is_error": false,
+            "time": 1784635282
+        },
+        {
+            "id": "msg_cc8d60effb",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now let me check the remaining files. Let me search for all imports from `..\/hooks\/useEmailAuth` or `..\/..\/hooks\/useEmailAuth` that import things that should be from `useAdminSave`."
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me do a comprehensive search for any remaining wrong imports:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_UdzOmzrAhnD6qbq4Z6OA6500",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && grep -rn \"loadRegistry\\|saveRegistry\\|loadPatientRegistry\\|savePatientRegistry\\|appendAuditLog\\|getAuditLog\" source_build\/dr.armankabir-main\/src\/frontend\/src\/ --include=\"*.tsx\" --include=\"*.ts\" | grep -v \"services\/audit\\|useAdminSave\\|backend\\|declarations\""
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 40118,
+                "completion_tokens": 184,
+                "total_tokens": 40302,
+                "prompt_cache_hit_tokens": 39808,
+                "prompt_cache_miss_tokens": 310,
+                "prompt_tokens_details": {
+                    "cached_tokens": 39808
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 44
+                },
+                "cached_tokens": 39808
+            },
+            "time": 1784635286
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_UdzOmzrAhnD6qbq4Z6OA6500",
+            "content": "source_build\/dr.armankabir-main\/src\/frontend\/src\/components\/AIAssistantPanel.tsx:28:import { appendAuditLog } from \"..\/hooks\/useEmailAuth\";\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/AIAssistantPanel.tsx:572:    appendAuditLog({\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/AdmitPatientDialog.tsx:19:import { loadRegistry } from \"..\/hooks\/useEmailAuth\";\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/AdmitPatientDialog.tsx:86:  const consultants = loadRegistry().filter(\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/DailyProgress.tsx:24:import { appendAuditLog } from \"..\/hooks\/useEmailAuth\";\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/DailyProgress.tsx:517:      appendAuditLog({\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/DailyProgress.tsx:537:      appendAuditLog({\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/DailyProgress.tsx:559:    appendAuditLog({\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/PatientDashboard.tsx:61:  loadPatientRegistry,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/PatientDashboard.tsx:2048:    ? loadPatientRegistry().find(\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/HandoverSystem.tsx:46:import { type DoctorAccount, loadRegistry } from \"..\/hooks\/useEmailAuth\";\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/HandoverSystem.tsx:1009:            const allStaff: DoctorAccount[] = loadRegistry().filter(\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/HandoverSystem.tsx:1431:  const allStaff: DoctorAccount[] = loadRegistry().filter(\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:7:  appendAuditLog,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:8:  loadPatientRegistry,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:9:  loadRegistry,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:10:  savePatientRegistry,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:11:  saveRegistry,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:77:  appendAuditLog,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:78:  loadPatientRegistry,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:79:  loadRegistry,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:80:  savePatientRegistry,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:81:  saveRegistry,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:830:    setStaffAccounts(loadRegistry().filter((d) => d.status === \"pending\"));\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:832:      loadPatientRegistry().filter((p) => p.status === \"pending\"),\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:844:    const reg = loadRegistry();\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:848:      saveRegistry(reg);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:856:    const reg = loadRegistry();\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:860:      saveRegistry(reg);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:866:    const reg = loadPatientRegistry();\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:870:      savePatientRegistry(reg);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:878:    const reg = loadPatientRegistry();\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:882:      savePatientRegistry(reg);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:893:    const reg = loadRegistry();\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:899:      saveRegistry(reg);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:901:      appendAuditLog({\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:919:  const approvedStaff = loadRegistry().filter((d) => d.status === \"approved\");\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:1235:      appendAuditLog({\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:1244:      appendAuditLog({\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:1752:      const staffPending = loadRegistry().filter(\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:1755:      const patientPending = loadPatientRegistry().filter(\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx:1820:      appendAuditLog({\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx:62:  getAuditLog,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx:63:  loadPatientRegistry,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx:64:  loadRegistry,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx:65:  savePatientRegistry,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx:66:  saveRegistry,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx:78:    const registry = loadRegistry();\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx:289:    setStaffList(loadRegistry().filter((d) => d.status === \"pending\"));\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx:290:    setPatientList(loadPatientRegistry().filter((p) => p.status === \"pending\"));\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx:301:    const reg = loadRegistry();\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx:305:      saveRegistry(reg);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx:313:    const reg = loadRegistry();\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx:317:      saveRegistry(reg);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx:323:    const reg = loadPatientRegistry();\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx:327:      savePatientRegistry(reg);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx:333:    const reg = loadPatientRegistry();\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx:337:      savePatientRegistry(reg);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx:345:    const reg = loadRegistry();\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx:349:      saveRegistry(reg);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx:357:  const approvedStaff = loadRegistry().filter((d) => d.status === \"approved\");\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx:613:  const doctors = loadRegistry().filter(\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx:1373:  const auditLog = getAuditLog().slice().reverse().slice(0, 50);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx:28:  getAuditLog,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx:29:  loadPatientRegistry,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx:30:  loadRegistry,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx:31:  savePatientRegistry,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx:32:  saveRegistry,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx:104:    const logs = getAuditLog();\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx:125:    setPendingStaff(loadRegistry().filter((d) => d.status === \"pending\"));\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx:127:      loadPatientRegistry().filter((p) => p.status === \"pending\"),\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx:139:    () => loadRegistry().filter((d) => d.status === \"approved\"),\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx:142:  const recentLogs = useMemo(() => getAuditLog().slice(-10).reverse(), []);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx:151:    const reg = loadRegistry();\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx:155:      saveRegistry(reg);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx:164:    const reg = loadRegistry();\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx:168:      saveRegistry(reg);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx:175:    const reg = loadPatientRegistry();\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx:179:      savePatientRegistry(reg);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx:186:    const reg = loadPatientRegistry();\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx:190:      savePatientRegistry(reg);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/AuditLog.tsx:816:    const logs = getAuditLog();\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Staff.tsx:46:  appendAuditLog,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Staff.tsx:47:  loadRegistry,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Staff.tsx:48:  saveRegistry,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Staff.tsx:348:    const reg = loadRegistry() as (DoctorAccount & { photo?: string })[];\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Staff.tsx:364:    const reg = loadRegistry();\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Staff.tsx:368:      saveRegistry(reg);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Staff.tsx:377:    const reg = loadRegistry();\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Staff.tsx:381:      saveRegistry(reg);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Staff.tsx:390:    const reg = loadRegistry();\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Staff.tsx:395:      saveRegistry(reg);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Staff.tsx:398:      appendAuditLog({\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Staff.tsx:415:      const reg = loadRegistry() as (DoctorAccount & { photo?: string })[];\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Staff.tsx:419:        saveRegistry(reg as DoctorAccount[]);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/PatientProfile.tsx:96:import { loadRegistry } from \"..\/hooks\/useEmailAuth\";\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/PatientProfile.tsx:305:  const consultants = loadRegistry().filter(\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/EmergencyPrescription.tsx:76:import { appendAuditLog, useEmailAuth } from \"..\/hooks\/useEmailAuth\";\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/EmergencyPrescription.tsx:1712:                      appendAuditLog({\n",
+            "is_error": false,
+            "time": 1784635286
+        },
+        {
+            "id": "msg_451f98fd6c",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I still have several files with wrong imports:\n\n1. **AIAssistantPanel.tsx** - imports `appendAuditLog` from `useEmailAuth`\n2. **AdmitPatientDialog.tsx** - imports `loadRegistry` from `useEmailAuth`\n3. **DailyProgress.tsx** - imports `appendAuditLog` from `useEmailAuth`\n4. **PatientDashboard.tsx** - imports `loadPatientRegistry` from `useEmailAuth`\n5. **HandoverSystem.tsx** - imports `type DoctorAccount, loadRegistry` from `useEmailAuth`\n6. **PatientProfile.tsx** - imports `loadRegistry` from `useEmailAuth`\n7. **EmergencyPrescription.tsx** - imports `appendAuditLog` from `useEmailAuth`\n\nAnd App.tsx has duplicate imports (lines 6-12 and 76-82) - but both import from `useAdminSave` which is correct, just duplicated.\n\nLet me fix all these files."
+                },
+                {
+                    "type": "text",
+                    "text": "There are still 7 files with wrong imports. Let me fix them one by one.\n\n**Fixing AIAssistantPanel.tsx:**"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_Z2ilZydz2LGs7vpLx8NT3671",
+                    "name": "read_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/components\/AIAssistantPanel.tsx",
+                        "limit": 35
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 43699,
+                "completion_tokens": 319,
+                "total_tokens": 44018,
+                "prompt_cache_hit_tokens": 40192,
+                "prompt_cache_miss_tokens": 3507,
+                "prompt_tokens_details": {
+                    "cached_tokens": 40192
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 210
+                },
+                "cached_tokens": 40192
+            },
+            "time": 1784635290
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_Z2ilZydz2LGs7vpLx8NT3671",
+            "content": "    1 | \/**\n    2 |  * AIAssistantPanel \u2014 floating AI helper for the PatientProfile page.\n    3 |  * Provides: (a) Summarize Patient, (b) Suggest Diagnosis, (c) Auto-draft SOAP,\n    4 |  *           (d) Analyze Lab Report (PDF\/image upload + value parsing + alerts).\n    5 |  * All outputs are clearly labeled \"AI-Suggested \u2014 Requires Doctor Review\".\n    6 |  * Confidence indicators added for all suggestions.\n    7 |  * Accepted AI suggestions are logged to the audit trail.\n    8 |  *\/\n    9 | import { Button } from \"@\/components\/ui\/button\";\n   10 | import { ScrollArea } from \"@\/components\/ui\/scroll-area\";\n   11 | import { Tabs, TabsContent, TabsList, TabsTrigger } from \"@\/components\/ui\/tabs\";\n   12 | import { format } from \"date-fns\";\n   13 | import {\n   14 |   AlertTriangle,\n   15 |   Bot,\n   16 |   Brain,\n   17 |   Check,\n   18 |   ClipboardList,\n   19 |   Copy,\n   20 |   FileText,\n   21 |   FlaskConical,\n   22 |   Loader2,\n   23 |   Upload,\n   24 |   X,\n   25 | } from \"lucide-react\";\n   26 | import { useRef, useState } from \"react\";\n   27 | import { toast } from \"sonner\";\n   28 | import { appendAuditLog } from \"..\/hooks\/useEmailAuth\";\n   29 | import { useEmailAuth } from \"..\/hooks\/useEmailAuth\";\n   30 | import { checkExtendedClinicalAlerts } from \"..\/lib\/clinicalIntelligence\";\n   31 | import type { ExtendedAlertInput } from \"..\/types\";\n   32 | import type { Patient, Prescription, Visit } from \"..\/types\";\n   33 | \n   34 | interface Props {\n   35 |   patient: Patient;",
+            "is_error": false,
+            "time": 1784635290
         }
     ]
 }
