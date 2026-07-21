@@ -1,4 +1,46 @@
+/** Get cached audit log (synchronous — use fetchAuditLog() to refresh) */
+export function getAuditLog(): AuditLogEntry[] {
+  return _auditLogCache;
+}
+
+// ── Audit helpers ─────────────────────────────────────────────────────────────
+
 /**
+ * Append an entry to the audit log via the PHP API.
+ */
+export async function appendAuditLog(entry: {
+  timestamp?: string;
+  userRole: string;
+  userName: string;
+  action: string;
+  target: string;
+}): Promise<void> {
+  try {
+    await post("/audit/create.php", {
+      action: entry.action,
+      target: entry.target,
+      details: JSON.stringify({
+        userRole: entry.userRole,
+        userName: entry.userName,
+      }),
+    });
+  } catch {
+    // Audit logging is non-critical
+    console.warn("[Audit] Failed to log entry");
+  }
+}
+
+/**
+ * Refresh audit log cache from PHP API.
+ */
+export async function refreshAuditLog(): Promise<AuditLogEntry[]> {
+  try {
+    _auditLogCache = await auditService.getAll();
+    return _auditLogCache;
+  } catch {
+    return [];
+  }
+}/**
  * Admin Save Operations — PHP/MySQL Backend
  *
  * All admin operations go through the PHP API via authService and auditService.
