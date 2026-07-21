@@ -31,15 +31,16 @@ export async function appendAuditLog(entry: {
 }
 
 /**
- * Refresh audit log cache from PHP API.
+ * Refresh audit log from PHP API and return fresh data.
  */
-export async function refreshAuditLog(): Promise<AuditLogEntry[]> {
+export async function fetchAndGetAuditLog(): Promise<AuditLogEntry[]> {
   try {
     _auditLogCache = await auditService.getAll();
-    return _auditLogCache;
   } catch {
-    return [];
+    _auditLogCache = [];
   }
+  return _auditLogCache;
+}
 }/**
  * Admin Save Operations — PHP/MySQL Backend
  *
