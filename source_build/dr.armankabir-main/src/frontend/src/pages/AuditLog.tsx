@@ -47,8 +47,8 @@ import {
   YAxis,
 } from "recharts";
 import { useAdminAuth } from "../hooks/useAdminAuth";
-import { type AuditLogEntry, getAuditLog } from "../hooks/useEmailAuth";
 import { useEmailAuth } from "../hooks/useEmailAuth";
+import { type AuditLogEntry, getAuditLog } from "../hooks/useAdminSave";
 import { useRolePermissions } from "../hooks/useRolePermissions";
 import type { AuditEntry } from "../types";
 import { storage } from "../lib/storageAdapter";
