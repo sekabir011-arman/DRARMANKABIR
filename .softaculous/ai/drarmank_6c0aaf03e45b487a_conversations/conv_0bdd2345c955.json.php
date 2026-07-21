@@ -32,7 +32,7 @@
         }
     ],
     "created_at": 1784572470,
-    "updated_at": 1784642086,
+    "updated_at": 1784642094,
     "messages": [
         {
             "id": "msg_compact",
@@ -831,6 +831,53 @@
             "content": "    1 | <?php\n    2 | \/**\n    3 |  * Authentication Middleware\n    4 |  * \n    5 |  * Validates session tokens and provides current user context.\n    6 |  * Include this at the top of any protected API endpoint.\n    7 |  * \n    8 |  * Authentication sources (in order):\n    9 |  * 1. Authorization: Bearer <token> header\n   10 |  * 2. X-Session-Token header\n   11 |  * 3. session_token cookie (HttpOnly, Secure)\n   12 |  * \n   13 |  * Session types checked:\n   14 |  * - user_sessions (doctor\/staff\/admin users)\n   15 |  * - patient_sessions (patient portal users)\n   16 |  * - admin_sessions (content management admins)\n   17 |  *\/\n   18 | \n   19 | require_once __DIR__ . '\/..\/database.php';\n   20 | require_once __DIR__ . '\/..\/helpers.php';\n   21 | \n   22 | \/\/ Auto-send security headers on every request\n   23 | sendSecurityHeaders();\n   24 | \n   25 | \/**\n   26 |  * Get the authenticated user\/session info from the session token.\n   27 |  * Checks user_sessions, patient_sessions, and admin_sessions.\n   28 |  * Returns array with 'user_type' to distinguish session type, or null.\n   29 |  *\/\n   30 | function getAuthUser(): ?array {\n   31 |     $token = getBearerToken();\n   32 |     if (!$token) return null;\n   33 |     \n   34 |     try {\n   35 |         $db = Database::getInstance();\n   36 |         \n   37 |         \/\/ 1. Check user_sessions (doctor\/staff\/admin)\n   38 |         $stmt = $db->prepare('\n   39 |             SELECT u.*, s.token, s.expires_at, \\'user\\' AS session_type\n   40 |             FROM user_sessions s \n   41 |             JOIN users u ON s.user_id = u.id \n   42 |             WHERE s.token = :token \n   43 |               AND s.expires_at > NOW() \n   44 |               AND u.is_active = 1\n   45 |             LIMIT 1\n   46 |         ');\n   47 |         $stmt->execute([':token' => $token]);\n   48 |         $user = $stmt->fetch();\n   49 |         \n   50 |         if ($user) {",
             "is_error": false,
             "time": 1784642086
+        },
+        {
+            "id": "msg_dcea6c99c1",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Good. Now let me check the existing appointments\/list.php, visits\/list.php, and prescriptions\/list.php to see their patterns for consistency."
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me create the missing PHP endpoints. I'll create them in batches:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_RDjV0kbCYrG1RNQkQDef8371",
+                    "name": "write_file",
+                    "input": {
+                        "path": "public_html\/api\/staff\/create.php",
+                        "content": "<?php\n\/**\n * Create Staff \/ User API\n * \n * POST \/api\/staff\/create.php\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\nrequire_once __DIR__ . '\/..\/auth\/middleware.php';\n\nhandleCors();\nrequireMethod('POST');\n\n$user = requireAuth();\n$input = getJsonInput();\n\n\/\/ Validate required fields\n$missing = validateRequired($input, ['email', 'password', 'fullName', 'role']);\nif ($missing) {\n    errorResponse('Missing required fields', 400, ['missing_fields' => $missing]);\n}\n\n$email = sanitizeEmail($input['email']);\nif (!$email) {\n    errorResponse('Invalid email address', 400);\n}\n\n\/\/ Validate password strength\n$passwordError = validatePasswordStrength($input['password']);\nif ($passwordError) {\n    errorResponse($passwordError, 400);\n}\n\n\/\/ Validate role\n$allowedRoles = ['admin', 'consultant_doctor', 'medical_officer', 'intern_doctor',\n                 'nurse', 'staff', 'reception', 'doctor',\n                 'assistant_registrar', 'registrar',\n                 'assistant_professor', 'associate_professor', 'professor'];\n$role = $input['role'];\nif (!in_array($role, $allowedRoles)) {\n    errorResponse('Invalid role. Allowed: ' . implode(', ', $allowedRoles), 400);\n}\n\n$fullName = sanitizeString($input['fullName']);\n$nameBn = isset($input['nameBn']) ? sanitizeString($input['nameBn']) : null;\n$specialization = isset($input['specialization']) ? sanitizeString($input['specialization']) : null;\n$phone = isset($input['phone']) ? sanitizePhone($input['phone']) : null;\n$bmdcRegistration = isset($input['bmdcRegistration']) ? sanitizeString($input['bmdcRegistration']) : null;\n\ntry {\n    $db = Database::getInstance();\n    \n    \/\/ Check for duplicate email\n    $stmt = $db->prepare('SELECT id FROM users WHERE email = :email LIMIT 1');\n    $stmt->execute([':email' => $email]);\n    if ($stmt->fetch()) {\n        errorResponse('A user with this email already exists', 409);\n    }\n    \n    $passwordHash = password_hash($input['password'], PASSWORD_DEFAULT);\n    \n    $stmt = $db->prepare('\n        INSERT INTO users (email, password_hash, full_name, name_bn, role, specialization, phone, bmdc_registration, is_active)\n        VALUES (:email, :password_hash, :full_name, :name_bn, :role, :specialization, :phone, :bmdc_registration, 1)\n    ');\n    \n    $stmt->execute([\n        ':email' => $email,\n        ':password_hash' => $passwordHash,\n        ':full_name' => $fullName,\n        ':name_bn' => $nameBn,\n        ':role' => $role,\n        ':specialization' => $specialization,\n        ':phone' => $phone,\n        ':bmdc_registration' => $bmdcRegistration,\n    ]);\n    \n    $staffId = (int)$db->lastInsertId();\n    \n    \/\/ Fetch created staff\n    $fetchStmt = $db->prepare('SELECT id, email, full_name, name_bn, role, specialization, phone, photo_url, signature_url, bmdc_registration, is_active, created_at FROM users WHERE id = :id');\n    $fetchStmt->execute([':id' => $staffId]);\n    $staff = $fetchStmt->fetch();\n    \n    logAudit($user['id'], null, 'create', 'user', $staffId, null, $staff);\n    \n    successResponse($staff, 'Staff member created successfully');\n    \n} catch (\\Exception $e) {\n    error_log('Create staff error: ' . $e->getMessage());\n    errorResponse('Failed to create staff member', 500);\n}\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 44685,
+                "completion_tokens": 977,
+                "total_tokens": 45662,
+                "prompt_cache_hit_tokens": 44032,
+                "prompt_cache_miss_tokens": 653,
+                "prompt_tokens_details": {
+                    "cached_tokens": 44032
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 27
+                },
+                "cached_tokens": 44032
+            },
+            "time": 1784642094
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_RDjV0kbCYrG1RNQkQDef8371",
+            "content": "Successfully wrote 3255 bytes (94 lines) to public_html\/api\/staff\/create.php",
+            "is_error": false,
+            "time": 1784642094
         }
     ]
 }
