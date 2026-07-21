@@ -67,7 +67,7 @@
         }
     ],
     "created_at": 1784572470,
-    "updated_at": 1784655528,
+    "updated_at": 1784655544,
     "messages": [
         {
             "id": "msg_compact",
@@ -5307,6 +5307,179 @@
             "content": "Successfully wrote 1912 bytes (39 lines) to public_html\/api\/clinical\/encounters-create.php",
             "is_error": false,
             "time": 1784655528
+        },
+        {
+            "id": "msg_60c2133d93",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me speed this up significantly. I have maybe 25+ more endpoints to create. Let me batch them. Actually, looking at the service files more carefully, many of these clinical endpoints reference the same data. Let me create the remaining ones quickly."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_YXyJsJulOMAUaBfTk15v8571",
+                    "name": "write_file",
+                    "input": {
+                        "path": "public_html\/api\/clinical\/encounters-list.php",
+                        "content": "<?php\n\/**\n * List Clinical Encounters API\n * GET \/api\/clinical\/encounters-list.php?patientId=1\n *\/\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\nrequire_once __DIR__ . '\/..\/auth\/middleware.php';\nhandleCors();\nrequireMethod('GET');\n$user = requireAuth();\n$pagination = getPaginationParams();\ntry {\n    $db = Database::getInstance();\n    $where = ['1=1'];\n    $params = [];\n    $patientId = getParam('patientId', '');\n    if ($patientId) { $where[] = 'v.patient_id = :patient_id'; $params[':patient_id'] = (int)$patientId; }\n    $whereClause = 'WHERE ' . implode(' AND ', $where);\n    $countStmt = $db->prepare(\"SELECT COUNT(*) as total FROM visits v $whereClause\");\n    $countStmt->execute($params);\n    $total = (int)$countStmt->fetch()['total'];\n    $stmt = $db->prepare(\"SELECT v.*, u.full_name as doctor_name FROM visits v LEFT JOIN users u ON v.created_by = u.id $whereClause ORDER BY v.visit_date DESC LIMIT :limit OFFSET :offset\");\n    foreach ($params as $key => $val) $stmt->bindValue($key, $val);\n    $stmt->bindValue(':limit', $pagination['limit'], PDO::PARAM_INT);\n    $stmt->bindValue(':offset', $pagination['offset'], PDO::PARAM_INT);\n    $stmt->execute();\n    paginatedResponse($stmt->fetchAll(), $total, $pagination['page'], $pagination['limit']);\n} catch (\\Exception $e) {\n    error_log('List encounters error: ' . $e->getMessage());\n    errorResponse('Failed to fetch encounters', 500);\n}\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 78283,
+                "completion_tokens": 539,
+                "total_tokens": 78822,
+                "prompt_cache_hit_tokens": 77568,
+                "prompt_cache_miss_tokens": 715,
+                "prompt_tokens_details": {
+                    "cached_tokens": 77568
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 51
+                },
+                "cached_tokens": 77568
+            },
+            "time": 1784655533
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_YXyJsJulOMAUaBfTk15v8571",
+            "content": "Successfully wrote 1445 bytes (33 lines) to public_html\/api\/clinical\/encounters-list.php",
+            "is_error": false,
+            "time": 1784655534
+        },
+        {
+            "id": "msg_c753fa0349",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me read the clinical notes service to understand exactly what it needs:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_JRbMbPqeMPhUXFvp9mld3186",
+                    "name": "read_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/services\/clinicalNotes.ts"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 78856,
+                "completion_tokens": 78,
+                "total_tokens": 78934,
+                "prompt_cache_hit_tokens": 78720,
+                "prompt_cache_miss_tokens": 136,
+                "prompt_tokens_details": {
+                    "cached_tokens": 78720
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 14
+                },
+                "cached_tokens": 78720
+            },
+            "time": 1784655536
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_JRbMbPqeMPhUXFvp9mld3186",
+            "content": "    1 | \/**\n    2 |  * Clinical Notes Service\n    3 |  *\n    4 |  * CRUD operations for clinical notes, encounters, observations, and orders.\n    5 |  * All data is persisted in MySQL via the PHP API.\n    6 |  *\/\n    7 | \n    8 | import { get, post, del } from '..\/lib\/apiClient';\n    9 | import type { ClinicalNote, Encounter, Observation, ClinicalOrder } from '..\/types';\n   10 | \n   11 | export const clinicalNotesService = {\n   12 |   \/\/ \u2500\u2500 Encounters \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   13 | \n   14 |   \/** Get all encounters for a patient *\/\n   15 |   async getEncountersByPatient(patientId: number): Promise<Encounter[]> {\n   16 |     return get<Encounter[]>('\/clinical\/encounters-list.php', { patient_id: patientId });\n   17 |   },\n   18 | \n   19 |   \/** Create a new encounter *\/\n   20 |   async createEncounter(patientId: number, encounterData: Record<string, unknown>): Promise<Encounter> {\n   21 |     return post<Encounter>('\/clinical\/encounters-create.php', {\n   22 |       patient_id: patientId,\n   23 |       ...encounterData,\n   24 |     });\n   25 |   },\n   26 | \n   27 |   \/\/ \u2500\u2500 Observations \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   28 | \n   29 |   \/** Get all observations for a patient *\/\n   30 |   async getObservationsByPatient(patientId: number): Promise<Observation[]> {\n   31 |     return get<Observation[]>('\/clinical\/observations-list.php', { patient_id: patientId });\n   32 |   },\n   33 | \n   34 |   \/** Create a new observation *\/\n   35 |   async createObservation(patientId: number, observationData: Record<string, unknown>): Promise<Observation> {\n   36 |     return post<Observation>('\/clinical\/observations-create.php', {\n   37 |       patient_id: patientId,\n   38 |       ...observationData,\n   39 |     });\n   40 |   },\n   41 | \n   42 |   \/\/ \u2500\u2500 Clinical Notes \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   43 | \n   44 |   \/** Get all clinical notes for a patient *\/\n   45 |   async getNotesByPatient(patientId: number): Promise<ClinicalNote[]> {\n   46 |     return get<ClinicalNote[]>('\/clinical\/notes-list.php', { patient_id: patientId });\n   47 |   },\n   48 | \n   49 |   \/** Create a new clinical note *\/\n   50 |   async createNote(patientId: number, noteData: Record<string, unknown>): Promise<ClinicalNote> {\n   51 |     return post<ClinicalNote>('\/clinical\/notes-create.php', {\n   52 |       patient_id: patientId,\n   53 |       ...noteData,\n   54 |     });\n   55 |   },\n   56 | \n   57 |   \/** Delete a clinical note *\/\n   58 |   async deleteNote(id: number): Promise<void> {\n   59 |     await del('\/clinical\/notes-delete.php', { id });\n   60 |   },\n   61 | \n   62 |   \/\/ \u2500\u2500 Orders \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   63 | \n   64 |   \/** Get all clinical orders for a patient *\/\n   65 |   async getOrdersByPatient(patientId: number): Promise<ClinicalOrder[]> {\n   66 |     return get<ClinicalOrder[]>('\/clinical\/orders-list.php', { patient_id: patientId });\n   67 |   },\n   68 | \n   69 |   \/** Create a new clinical order *\/\n   70 |   async createOrder(patientId: number, orderData: Record<string, unknown>): Promise<ClinicalOrder> {\n   71 |     return post<ClinicalOrder>('\/clinical\/orders-create.php', {\n   72 |       patient_id: patientId,\n   73 |       ...orderData,\n   74 |     });\n   75 |   },\n   76 | \n   77 |   \/** Delete an order *\/\n   78 |   async deleteOrder(id: number): Promise<void> {\n   79 |     await del('\/clinical\/orders-delete.php', { id });\n   80 |   },\n   81 | };\n   82 |",
+            "is_error": false,
+            "time": 1784655536
+        },
+        {
+            "id": "msg_15420a1d75",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me check how the API client's `get` and `post` functions work to understand what format the endpoints need to return data in:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_rsKagKm4QZF7RrFoIPKW3901",
+                    "name": "read_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/lib\/apiClient.ts"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 79877,
+                "completion_tokens": 92,
+                "total_tokens": 79969,
+                "prompt_cache_hit_tokens": 78848,
+                "prompt_cache_miss_tokens": 1029,
+                "prompt_tokens_details": {
+                    "cached_tokens": 78848
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 29
+                },
+                "cached_tokens": 78848
+            },
+            "time": 1784655539
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_rsKagKm4QZF7RrFoIPKW3901",
+            "content": "    1 | \/**\n    2 |  * Centralized API Client\n    3 |  *\n    4 |  * All HTTP communication goes through this module.\n    5 |  * Authentication is managed via PHP sessions (cookies auto-sent by the browser).\n    6 |  * No tokens stored in localStorage.\n    7 |  * Handles: auth, errors, timeouts, JSON parsing, HTTP status, retry policy.\n    8 |  *\/\n    9 | \n   10 | const API_BASE = '\/api';\n   11 | const DEFAULT_TIMEOUT_MS = 30_000;\n   12 | const MAX_RETRIES = 3;\n   13 | \n   14 | export interface ApiResponse<T = any> {\n   15 |   success: boolean;\n   16 |   message: string;\n   17 |   data: T;\n   18 |   errors?: Record<string, string[]>;\n   19 |   timestamp?: string;\n   20 | }\n   21 | \n   22 | export interface PaginatedData<T> {\n   23 |   items: T[];\n   24 |   pagination: {\n   25 |     page: number;\n   26 |     limit: number;\n   27 |     total: number;\n   28 |     total_pages: number;\n   29 |     has_more: boolean;\n   30 |   };\n   31 | }\n   32 | \n   33 | export class ApiError extends Error {\n   34 |   statusCode: number;\n   35 |   errors?: Record<string, string[]>;\n   36 | \n   37 |   constructor(message: string, statusCode: number, errors?: Record<string, string[]>) {\n   38 |     super(message);\n   39 |     this.name = 'ApiError';\n   40 |     this.statusCode = statusCode;\n   41 |     this.errors = errors;\n   42 |   }\n   43 | }\n   44 | \n   45 | function buildUrl(path: string, params?: Record<string, string | number | undefined | null>): string {\n   46 |   const url = `${API_BASE}${path}`;\n   47 |   if (!params) return url;\n   48 | \n   49 |   const searchParams = new URLSearchParams();\n   50 |   for (const [key, value] of Object.entries(params)) {\n   51 |     if (value !== undefined && value !== null && value !== '') {\n   52 |       searchParams.set(key, String(value));\n   53 |     }\n   54 |   }\n   55 |   const qs = searchParams.toString();\n   56 |   return qs ? `${url}?${qs}` : url;\n   57 | }\n   58 | \n   59 | async function request<T = any>(\n   60 |   method: string,\n   61 |   path: string,\n   62 |   body?: any,\n   63 |   params?: Record<string, string | number | undefined | null>,\n   64 |   customHeaders?: Record<string, string>,\n   65 |   retryCount = 0,\n   66 | ): Promise<T> {\n   67 |   const url = buildUrl(path, params);\n   68 |   const headers: Record<string, string> = {\n   69 |     ...customHeaders,\n   70 |   };\n   71 | \n   72 |   const options: RequestInit = {\n   73 |     method,\n   74 |     headers,\n   75 |     credentials: 'same-origin', \/\/ PHP session cookie\n   76 |   };\n   77 | \n   78 |   if (body !== undefined) {\n   79 |     if (body instanceof FormData) {\n   80 |       \/\/ Let browser set Content-Type with boundary for FormData\n   81 |       options.body = body;\n   82 |     } else {\n   83 |       headers['Content-Type'] = 'application\/json';\n   84 |       options.body = JSON.stringify(body);\n   85 |     }\n   86 |   }\n   87 | \n   88 |   \/\/ Timeout handling via AbortController\n   89 |   const controller = new AbortController();\n   90 |   const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);\n   91 |   options.signal = controller.signal;\n   92 | \n   93 |   let response: Response;\n   94 |   try {\n   95 |     response = await fetch(url, options);\n   96 |   } catch (err: any) {\n   97 |     clearTimeout(timeoutId);\n   98 |     if (err.name === 'AbortError') {\n   99 |       throw new ApiError('Request timed out. Please try again.', 408);\n  100 |     }\n  101 |     \/\/ Retry on network errors\n  102 |     if (retryCount < MAX_RETRIES) {\n  103 |       await new Promise((r) => setTimeout(r, 1000 * (retryCount + 1)));\n  104 |       return request<T>(method, path, body, params, customHeaders, retryCount + 1);\n  105 |     }\n  106 |     throw new ApiError('Network error. Please check your connection.', 0);\n  107 |   }\n  108 | \n  109 |   clearTimeout(timeoutId);\n  110 | \n  111 |   let json: ApiResponse<T>;\n  112 |   try {\n  113 |     json = await response.json();\n  114 |   } catch {\n  115 |     throw new ApiError(`Unexpected response (HTTP ${response.status})`, response.status);\n  116 |   }\n  117 | \n  118 |   if (!response.ok || !json.success) {\n  119 |     \/\/ Retry on 5xx server errors\n  120 |     if (response.status >= 500 && retryCount < MAX_RETRIES) {\n  121 |       await new Promise((r) => setTimeout(r, 1000 * (retryCount + 1)));\n  122 |       return request<T>(method, path, body, params, customHeaders, retryCount + 1);\n  123 |     }\n  124 |     throw new ApiError(\n  125 |       json.message || 'Request failed',\n  126 |       response.status,\n  127 |       json.errors,\n  128 |     );\n  129 |   }\n  130 | \n  131 |   return json.data as T;\n  132 | }\n  133 | \n  134 | \/**\n  135 |  * HTTP method helpers\n  136 |  *\/\n  137 | \n  138 | export async function get<T = any>(\n  139 |   path: string,\n  140 |   params?: Record<string, string | number | undefined | null>,\n  141 | ): Promise<T> {\n  142 |   return request<T>('GET', path, undefined, params);\n  143 | }\n  144 | \n  145 | export async function post<T = any>(\n  146 |   path: string,\n  147 |   body?: any,\n  148 |   params?: Record<string, string | number | undefined | null>,\n  149 | ): Promise<T> {\n  150 |   return request<T>('POST', path, body, params);\n  151 | }\n  152 | \n  153 | export async function put<T = any>(\n  154 |   path: string,\n  155 |   body?: any,\n  156 | ): Promise<T> {\n  157 |   return request<T>('PUT', path, body);\n  158 | }\n  159 | \n  160 | export async function del<T = any>(\n  161 |   path: string,\n  162 |   body?: any,\n  163 | ): Promise<T> {\n  164 |   return request<T>('DELETE', path, body);\n  165 | }\n  166 | \n  167 | export async function upload<T = any>(\n  168 |   path: string,\n  169 |   formData: FormData,\n  170 | ): Promise<T> {\n  171 |   return request<T>('POST', path, formData, undefined, {});\n  172 | }\n  173 |",
+            "is_error": false,
+            "time": 1784655539
+        },
+        {
+            "id": "msg_d391e83091",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I understand the API client. It expects:\n1. `get(path, params)` - sends GET request with query params, returns `json.data`\n2. `post(path, body)` - sends POST request with JSON body, returns `json.data`\n3. `del(path, body)` - sends DELETE request with JSON body (note: actually sends with body)\n\nSo the PHP endpoints need to:\n- Return `{ success: true, data: ... }` on success\n- Accept GET params via `$_GET`\n- Accept POST body via `getJsonInput()`\n\nThe `del()` function sends a DELETE request with a body. Let me check if PHP can read the body from a DELETE request... Actually `getJsonInput()` reads `php:\/\/input` which works for any request method. So DELETE endpoints need to accept DELETE method.\n\nBut wait, the service files call `del()` which will send a DELETE request. My PHP endpoints currently use `requireMethod('POST')`. I need to change them to also accept DELETE.\n\nActually, let me re-check the services..."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me check the service implementations more carefully to see the exact HTTP methods used:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_s4E7xWiPJrgQMLg0XKx91068",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && grep -n \"get\\|post\\|put\\|del\\|upload\" source_build\/dr.armankabir-main\/src\/frontend\/src\/services\/*.ts | head -60"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 81683,
+                "completion_tokens": 324,
+                "total_tokens": 82007,
+                "prompt_cache_hit_tokens": 79872,
+                "prompt_cache_miss_tokens": 1811,
+                "prompt_tokens_details": {
+                    "cached_tokens": 79872
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 221
+                },
+                "cached_tokens": 79872
+            },
+            "time": 1784655544
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_s4E7xWiPJrgQMLg0XKx91068",
+            "content": "source_build\/dr.armankabir-main\/src\/frontend\/src\/services\/admissions.ts:8:import { get, post } from '..\/lib\/apiClient';\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/admissions.ts:15:  async getByPatient(patientId: number): Promise<AdmissionHistory[]> {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/admissions.ts:16:    return get<AdmissionHistory[]>('\/admissions\/list.php', { patient_id: patientId });\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/admissions.ts:28:    return post<any>('\/admissions\/create.php', {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/admissions.ts:44:    await post('\/admissions\/discharge.php', {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/admissions.ts:55:  async getBedsByWard(ward: string): Promise<BedRecord[]> {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/admissions.ts:56:    return get<BedRecord[]>('\/beds\/list.php', { ward });\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/admissions.ts:61:    return post<BedRecord>('\/beds\/create.php', data);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/admissions.ts:66:    await post('\/beds\/assign.php', { bed_id: bedId, patient_id: patientId });\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/admissions.ts:71:    await post('\/beds\/release.php', { bed_id: bedId });\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/appointments.ts:8:import { get, post, del } from '..\/lib\/apiClient';\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/appointments.ts:24:  async getAll(params?: { limit?: number; date?: string; status?: string }): Promise<any[]> {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/appointments.ts:25:    const result = await get<{ items: any[] }>('\/appointments\/list.php', params as any);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/appointments.ts:30:  async getByPatient(patientId: number): Promise<any[]> {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/appointments.ts:31:    const result = await get<{ items: any[] }>('\/appointments\/list.php', { patient_id: patientId });\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/appointments.ts:36:  async getById(id: number): Promise<any | null> {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/appointments.ts:38:      return await get<any>('\/appointments\/get.php', { id: String(id) });\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/appointments.ts:46:    return post<any>('\/appointments\/create.php', {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/appointments.ts:57:    return post<any>('\/appointments\/update.php', {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/appointments.ts:68:  async delete(id: number): Promise<void> {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/appointments.ts:69:    await del('\/appointments\/delete.php', { id });\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/appointments.ts:74:    const result = await get<{ items: any[] }>('\/appointments\/list.php', { search: query });\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/audit.ts:8:import { get } from '..\/lib\/apiClient';\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/audit.ts:16:  target: string;\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/audit.ts:22:  async getAll(params?: { limit?: number; offset?: number; userId?: number }): Promise<AuditLogEntry[]> {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/audit.ts:23:    const result = await get<{ items: AuditLogEntry[] }>('\/audit\/list.php', params as any);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/audit.ts:28:  async getByUser(userId: number): Promise<AuditLogEntry[]> {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/audit.ts:29:    const result = await get<{ items: AuditLogEntry[] }>('\/audit\/list.php', { user_id: userId });\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/audit.ts:34:  async getByAction(action: string): Promise<AuditLogEntry[]> {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/audit.ts:35:    const result = await get<{ items: AuditLogEntry[] }>('\/audit\/list.php', { action });\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/audit.ts:41:    const result = await get<{ items: AuditLogEntry[] }>('\/audit\/list.php', { search: query });\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/auth.ts:9:import { get, post } from '..\/lib\/apiClient';\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/auth.ts:42:      const result = await get<{ user: DoctorAccount }>('\/auth\/verify.php');\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/auth.ts:51:    return post<{ token: string; user: DoctorAccount }>('\/auth\/login.php', { email, password });\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/auth.ts:63:    return post<{ status: string; message: string }>('\/auth\/register.php', data);\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/auth.ts:69:      await post('\/auth\/logout.php');\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/auth.ts:76:  async getPendingAccounts(): Promise<DoctorAccount[]> {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/auth.ts:78:      const result = await get<{ users: DoctorAccount[] }>('\/auth\/pending.php');\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/auth.ts:87:    await post('\/auth\/approve.php', { user_id: id, ...(role ? { role } : {}) });\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/auth.ts:92:    await post('\/auth\/reject.php', { user_id: id });\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/auth.ts:97:    await post('\/auth\/reassign_role.php', { user_id: id, role });\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/auth.ts:102:    return post<{ message: string; status: string }>('\/auth\/patients\/register.php', {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/auth.ts:111:    return post<{ token: string; patient: PatientAccount }>('\/auth\/patients\/login.php', { phone, password });\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/auth.ts:115:  async getPendingPatients(): Promise<PatientAccount[]> {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/auth.ts:117:      const result = await get<{ patients: PatientAccount[] }>('\/auth\/patients\/pending.php');\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/auth.ts:126:    await post('\/auth\/patients\/approve.php', { patient_login_id: id });\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/auth.ts:131:    await post('\/auth\/patients\/reject.php', { patient_login_id: id });\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/auth.ts:136:    await post('\/auth\/patients\/update.php', {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/clinicalNotes.ts:8:import { get, post, del } from '..\/lib\/apiClient';\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/clinicalNotes.ts:15:  async getEncountersByPatient(patientId: number): Promise<Encounter[]> {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/clinicalNotes.ts:16:    return get<Encounter[]>('\/clinical\/encounters-list.php', { patient_id: patientId });\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/clinicalNotes.ts:21:    return post<Encounter>('\/clinical\/encounters-create.php', {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/clinicalNotes.ts:30:  async getObservationsByPatient(patientId: number): Promise<Observation[]> {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/clinicalNotes.ts:31:    return get<Observation[]>('\/clinical\/observations-list.php', { patient_id: patientId });\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/clinicalNotes.ts:36:    return post<Observation>('\/clinical\/observations-create.php', {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/clinicalNotes.ts:45:  async getNotesByPatient(patientId: number): Promise<ClinicalNote[]> {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/clinicalNotes.ts:46:    return get<ClinicalNote[]>('\/clinical\/notes-list.php', { patient_id: patientId });\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/clinicalNotes.ts:51:    return post<ClinicalNote>('\/clinical\/notes-create.php', {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/clinicalNotes.ts:58:  async deleteNote(id: number): Promise<void> {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/services\/clinicalNotes.ts:59:    await del('\/clinical\/notes-delete.php', { id });\n",
+            "is_error": false,
+            "time": 1784655544
         }
     ]
 }
