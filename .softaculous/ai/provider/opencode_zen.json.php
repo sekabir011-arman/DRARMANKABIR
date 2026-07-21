@@ -1,13 +1,9 @@
 <?php exit(); ?>
 {
-    "fetched_at": 1784540929,
+    "fetched_at": 1784631159,
     "models": {
         "deepseek-v4-flash-free": {
             "name": "deepseek-v4-flash-free",
-            "context_window": 128000
-        },
-        "hy3-free": {
-            "name": "hy3-free",
             "context_window": 128000
         },
         "mimo-v2.5-free": {

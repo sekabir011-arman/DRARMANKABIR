@@ -1,4 +1,16 @@
-import { useAdminAuth } from "./hooks/useAdminAuth";
+import {
+  EmailAuthProvider,
+  useEmailAuth,
+  useInactivityTimer,
+} from "./hooks/useEmailAuth";
+import type { DoctorAccount, PatientAccount } from "./hooks/useEmailAuth";
+import {
+  appendAuditLog,
+  loadPatientRegistry,
+  loadRegistry,
+  savePatientRegistry,
+  saveRegistry,
+} from "./hooks/useAdminSave";import { useAdminAuth } from "./hooks/useAdminAuth";
 import {
   appendAuditLog,
   loadPatientRegistry,
