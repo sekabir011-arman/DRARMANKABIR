@@ -32,7 +32,7 @@
         }
     ],
     "created_at": 1784572470,
-    "updated_at": 1784642094,
+    "updated_at": 1784642102,
     "messages": [
         {
             "id": "msg_compact",
@@ -878,6 +878,49 @@
             "content": "Successfully wrote 3255 bytes (94 lines) to public_html\/api\/staff\/create.php",
             "is_error": false,
             "time": 1784642094
+        },
+        {
+            "id": "msg_b2c76ad921",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Good. Let me continue creating the remaining endpoints."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_jKl7HDdsS55je8p5agIW4855",
+                    "name": "write_file",
+                    "input": {
+                        "path": "public_html\/api\/staff\/update.php",
+                        "content": "<?php\n\/**\n * Update Staff \/ User API\n * \n * POST \/api\/staff\/update.php\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\nrequire_once __DIR__ . '\/..\/auth\/middleware.php';\n\nhandleCors();\nrequireMethod('POST');\n\n$user = requireAuth();\n$input = getJsonInput();\n\n$id = (int)($input['id'] ?? );\nif (!$id) {\n    errorResponse('User ID is required', 400);\n}\n\ntry {\n    $db = Database::getInstance();\n    \n    \/\/ Fetch existing user\n    $stmt = $db->prepare('SELECT * FROM users WHERE id = :id');\n    $stmt->execute([':id' => $id]);\n    $existing = $stmt->fetch();\n    \n    if (!$existing) {\n        errorResponse('User not found', 404);\n    }\n    \n    \/\/ Build update fields\n    $updates = [];\n    $params = [':id' => $id];\n    \n    $fields = [\n        'full_name' => 'fullName',\n        'name_bn' => 'nameBn',\n        'specialization' => 'specialization',\n        'phone' => 'phone',\n        'bmdc_registration' => 'bmdcRegistration',\n        'photo_url' => 'photoUrl',\n        'signature_url' => 'signatureUrl',\n    ];\n    \n    foreach ($fields as $dbField => $inputKey) {\n        if (isset($input[$inputKey])) {\n            if ($inputKey === 'phone') {\n                $value = sanitizePhone($input[$inputKey]);\n            } else {\n                $value = sanitizeString($input[$inputKey]);\n            }\n            $updates[] = \"$dbField = :$dbField\";\n            $params[\":$dbField\"] = $value ?: null;\n        }\n    }\n    \n    \/\/ Handle role update\n    if (isset($input['role'])) {\n        $allowedRoles = ['admin', 'consultant_doctor', 'medical_officer', 'intern_doctor',\n                         'nurse', 'staff', 'reception', 'doctor',\n                         'assistant_registrar', 'registrar',\n                         'assistant_professor', 'associate_professor', 'professor'];\n        $newRole = $input['role'];\n        if (!in_array($newRole, $allowedRoles)) {\n            errorResponse('Invalid role', 400);\n        }\n        $updates[] = 'role = :role';\n        $params[':role'] = $newRole;\n    }\n    \n    \/\/ Handle active status\n    if (isset($input['isActive'])) {\n        $updates[] = 'is_active = :is_active';\n        $params[':is_active'] = (int)$input['isActive'];\n    }\n    \n    if (empty($updates)) {\n        errorResponse('No fields to update', 400);\n    }\n    \n    $updates[] = 'updated_at = NOW()';\n    $updateStr = implode(', ', $updates);\n    \n    $updateStmt = $db->prepare(\"UPDATE users SET $updateStr WHERE id = :id\");\n    $updateStmt->execute($params);\n    \n    \/\/ Fetch updated user\n    $fetchStmt = $db->prepare('SELECT id, email, full_name, name_bn, role, specialization, phone, photo_url, signature_url, bmdc_registration, is_active, updated_at FROM users WHERE id = :id');\n    $fetchStmt->execute([':id' => $id]);\n    $updated = $fetchStmt->fetch();\n    \n    logAudit($user['id'], null, 'update', 'user', $id, $existing, $updated);\n    \n    successResponse($updated, 'Staff member updated successfully');\n    \n} catch (\\Exception $e) {\n    error_log('Update staff error: ' . $e->getMessage());\n    errorResponse('Failed to update staff member', 500);\n}\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 45693,
+                "completion_tokens": 932,
+                "total_tokens": 46625,
+                "prompt_cache_hit_tokens": 45568,
+                "prompt_cache_miss_tokens": 125,
+                "prompt_tokens_details": {
+                    "cached_tokens": 45568
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 10
+                },
+                "cached_tokens": 45568
+            },
+            "time": 1784642101
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_jKl7HDdsS55je8p5agIW4855",
+            "content": "Successfully wrote 3127 bytes (104 lines) to public_html\/api\/staff\/update.php",
+            "is_error": false,
+            "time": 1784642102
         }
     ]
 }
