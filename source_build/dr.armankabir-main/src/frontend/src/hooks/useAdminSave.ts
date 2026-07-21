@@ -1,47 +1,4 @@
-// ── Constants ─────────────────────────────────────────────────────────────────/** Get cached audit log (synchronous — use fetchAuditLog() to refresh) */
-export function getAuditLog(): AuditLogEntry[] {
-  return _auditLogCache;
-}
-
-// ── Audit helpers ─────────────────────────────────────────────────────────────
-
 /**
- * Append an entry to the audit log via the PHP API.
- */
-export async function appendAuditLog(entry: {
-  timestamp?: string;
-  userRole: string;
-  userName: string;
-  action: string;
-  target: string;
-}): Promise<void> {
-  try {
-    await post("/audit/create.php", {
-      action: entry.action,
-      target: entry.target,
-      details: JSON.stringify({
-        userRole: entry.userRole,
-        userName: entry.userName,
-      }),
-    });
-  } catch {
-    // Audit logging is non-critical
-    console.warn("[Audit] Failed to log entry");
-  }
-}
-
-/**
- * Refresh audit log from PHP API and return fresh data.
- */
-export async function fetchAndGetAuditLog(): Promise<AuditLogEntry[]> {
-  try {
-    _auditLogCache = await auditService.getAll();
-  } catch {
-    _auditLogCache = [];
-  }
-  return _auditLogCache;
-}
-}/**
  * Admin Save Operations — PHP/MySQL Backend
  *
  * All admin operations go through the PHP API via authService and auditService.
@@ -234,7 +191,7 @@ export const approveStaffAccount = async (
 ): Promise<boolean> => {
   try {
     await authService.approveAccount(accountId, selectedRole);
-    await appendAuditLog({
+    appendAuditLog({
       userRole: "admin",
       userName: "Admin",
       action: `Approved account as ${STAFF_ROLE_LABELS[selectedRole] ?? selectedRole}`,
@@ -255,7 +212,7 @@ export const rejectStaffAccount = async (
 ): Promise<boolean> => {
   try {
     await authService.rejectAccount(accountId);
-    await appendAuditLog({
+    appendAuditLog({
       userRole: "admin",
       userName: "Admin",
       action: "Rejected account",
@@ -276,7 +233,7 @@ export const approvePatientAccount = async (
 ): Promise<boolean> => {
   try {
     await authService.approvePatient(patientId);
-    await appendAuditLog({
+    appendAuditLog({
       userRole: "admin",
       userName: "Admin",
       action: "Approved patient account",
@@ -297,7 +254,7 @@ export const rejectPatientAccount = async (
 ): Promise<boolean> => {
   try {
     await authService.rejectPatient(patientId);
-    await appendAuditLog({
+    appendAuditLog({
       userRole: "admin",
       userName: "Admin",
       action: "Rejected patient account",
@@ -319,7 +276,7 @@ export const reassignStaffRole = async (
 ): Promise<boolean> => {
   try {
     await authService.reassignRole(accountId, newRole);
-    await appendAuditLog({
+    appendAuditLog({
       userRole: "admin",
       userName: "Admin",
       action: `Role changed to ${STAFF_ROLE_LABELS[newRole]}`,
