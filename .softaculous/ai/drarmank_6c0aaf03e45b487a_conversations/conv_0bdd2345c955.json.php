@@ -67,7 +67,7 @@
         }
     ],
     "created_at": 1784572470,
-    "updated_at": 1784655511,
+    "updated_at": 1784655517,
     "messages": [
         {
             "id": "msg_compact",
@@ -5182,6 +5182,49 @@
             "content": "Successfully wrote 2145 bytes (41 lines) to public_html\/api\/admissions\/create.php",
             "is_error": false,
             "time": 1784655511
+        },
+        {
+            "id": "msg_9e0d93d0b4",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me continue creating all remaining endpoints. I have a lot to create. Let me be more aggressive with speed."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_jiAGsVRtd62jJsayxLwf5384",
+                    "name": "write_file",
+                    "input": {
+                        "path": "public_html\/api\/admissions\/discharge.php",
+                        "content": "<?php\n\/**\n * Discharge Patient API\n * POST \/api\/admissions\/discharge.php\n *\/\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\nrequire_once __DIR__ . '\/..\/auth\/middleware.php';\nhandleCors();\nrequireMethod('POST');\n$user = requireAuth();\n$input = getJsonInput();\n$id = (int)($input['id'] ?? null);\nif (!$id) errorResponse('Admission ID is required', 400);\ntry {\n    $db = Database::getInstance();\n    $stmt = $db->prepare('SELECT * FROM admissions WHERE id = :id');\n    $stmt->execute([':id' => $id]);\n    $admission = $stmt->fetch();\n    if (!$admission) errorResponse('Admission not found', 404);\n    $db->beginTransaction();\n    $updateStmt = $db->prepare('UPDATE admissions SET discharge_date = :discharge_date, discharge_summary = :summary, status = :status, updated_at = NOW() WHERE id = :id');\n    $updateStmt->execute([':discharge_date' => date('Y-m-d H:i:s'), ':summary' => $input['dischargeSummary'] ?? null, ':status' => 'discharged', ':id' => $id]);\n    $db->prepare(\"UPDATE patients SET patient_type = 'outdoor' WHERE id = :id\")->execute([':id' => $admission['patient_id']]);\n    \/\/ Release bed if assigned\n    $db->prepare(\"UPDATE beds SET current_patient_id = NULL, status = 'cleaning', updated_at = NOW() WHERE current_patient_id = :pid\")->execute([':pid' => $admission['patient_id']]);\n    $db->commit();\n    logAudit($user['id'], $admission['patient_id'], 'update', 'admission', $id, $admission, null);\n    successResponse(null, 'Patient discharged successfully');\n} catch (\\Exception $e) {\n    if (isset($db) && $db->inTransaction()) $db->rollBack();\n    error_log('Discharge error: ' . $e->getMessage());\n    errorResponse('Failed to discharge patient', 500);\n}\n"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 76423,
+                "completion_tokens": 572,
+                "total_tokens": 76995,
+                "prompt_cache_hit_tokens": 75648,
+                "prompt_cache_miss_tokens": 775,
+                "prompt_tokens_details": {
+                    "cached_tokens": 75648
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 23
+                },
+                "cached_tokens": 75648
+            },
+            "time": 1784655517
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_jiAGsVRtd62jJsayxLwf5384",
+            "content": "Successfully wrote 1716 bytes (35 lines) to public_html\/api\/admissions\/discharge.php",
+            "is_error": false,
+            "time": 1784655517
         }
     ]
 }
