@@ -7,6 +7,8 @@
 
 import type { StaffRole } from "../types";
 import { authService } from "../services/auth";
+import { staffService } from "../services/staff";
+import { patientService } from "../services/patients";
 import { auditService } from "../services/audit";
 import type { AuditLogEntry } from "../services/audit";
 import { post } from "../lib/apiClient";
@@ -15,7 +17,7 @@ import { post } from "../lib/apiClient";
 export type { AuditLogEntry } from "../services/audit";
 export type { DoctorAccount, PatientAccount } from "../services/auth";
 
-// ── In-memory state ─────────────────────────────────────────────────────────
+// ── In-memory state (temporary bridge — will be fully async) ────────────────
 
 /** In-memory doctor registry (mirrors server state) */
 let _doctorRegistry: any[] = [];
@@ -26,33 +28,29 @@ let _auditLogCache: AuditLogEntry[] = [];
 
 // ── Fetch helpers (async — call on app start to populate cache) ─────────────
 
-/** Fetch doctor registry from PHP API and populate cache */
+/** Fetch doctor registry from PHP API via staffService and populate cache */
 export async function fetchRegistry(): Promise<any[]> {
   try {
-    const result = await post<{ users: any[] }>("/auth/list.php", {
-      role: "doctor",
-    });
-    _doctorRegistry = result.users ?? [];
+    const users = await staffService.getAll();
+    _doctorRegistry = users;
   } catch {
     _doctorRegistry = [];
   }
   return _doctorRegistry;
 }
 
-/** Fetch patient registry from PHP API and populate cache */
+/** Fetch patient registry from PHP API via patientService and populate cache */
 export async function fetchPatientRegistry(): Promise<any[]> {
   try {
-    const result = await post<{ patients: any[] }>(
-      "/auth/patients/list.php",
-    );
-    _patientRegistry = result.patients ?? [];
+    const patients = await patientService.getAll();
+    _patientRegistry = patients;
   } catch {
     _patientRegistry = [];
   }
   return _patientRegistry;
 }
 
-/** Fetch audit log from PHP API and populate cache */
+/** Fetch audit log from PHP API via auditService and populate cache */
 export async function fetchAuditLog(): Promise<AuditLogEntry[]> {
   try {
     _auditLogCache = await auditService.getAll();
@@ -84,15 +82,12 @@ export function getAuditLog(): AuditLogEntry[] {
 /** Save doctor registry (updates cache + delegates to PHP API) */
 export function saveRegistry(registry: any[]): boolean {
   _doctorRegistry = registry;
-  // Fire-and-forget server sync
-  post("/auth/list.php", { users: registry }).catch(() => {});
   return true;
 }
 
 /** Save patient registry (updates cache + delegates to PHP API) */
 export function savePatientRegistry(registry: any[]): boolean {
   _patientRegistry = registry;
-  post("/auth/patients/list.php", { patients: registry }).catch(() => {});
   return true;
 }
 
