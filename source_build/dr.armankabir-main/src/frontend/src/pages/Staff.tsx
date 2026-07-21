@@ -50,12 +50,9 @@ import {
 import type { DoctorAccount } from "../hooks/useAdminSave";
 import { STAFF_ROLE_COLORS, STAFF_ROLE_LABELS } from "../types";
 import type { StaffRole } from "../types";
-// ── Local Types ───────────────────────────────────────────────────────────────
-type StatusFilter = "all" | "approved" | "pending" | "rejected";
-type MainTab =
-  | "registration"
-  | "schedule"
-  | "attendance"
+import { prescriptionService } from "../services/prescriptions";
+import { appointmentService } from "../services/appointments";
+import { paymentService } from "../services/payments";
   | "directory"
   | "performance"
   | "leave";
