@@ -41,13 +41,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type React from "react";
 import { toast } from "sonner";
 import { useAdminAuth } from "../hooks/useAdminAuth";
+import { useEmailAuth } from "../hooks/useEmailAuth";
 import {
   appendAuditLog,
   loadRegistry,
   saveRegistry,
-  useEmailAuth,
-} from "../hooks/useEmailAuth";
-import type { DoctorAccount } from "../hooks/useEmailAuth";
+} from "../hooks/useAdminSave";
+import type { DoctorAccount } from "../hooks/useAdminSave";
 import { STAFF_ROLE_COLORS, STAFF_ROLE_LABELS } from "../types";
 import type { StaffRole } from "../types";
 import { storage } from "../lib/storageAdapter";
