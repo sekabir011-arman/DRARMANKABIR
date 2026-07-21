@@ -11,12 +11,31 @@ import { auditService } from "../services/audit";
 import type { AuditLogEntry } from "../services/audit";
 import { post } from "../lib/apiClient";
 
+// ── In-memory audit log cache ─────────────────────────────────────────────────
+
+let _auditLogCache: AuditLogEntry[] = [];
+
+/** Fetch audit log from PHP API and populate cache */
+export async function fetchAuditLog(): Promise<AuditLogEntry[]> {
+  try {
+    _auditLogCache = await auditService.getAll();
+  } catch {
+    _auditLogCache = [];
+  }
+  return _auditLogCache;
+}
+
+/** Get cached audit log (synchronous — use fetchAuditLog() to refresh) */
+export function getAuditLog(): AuditLogEntry[] {
+  return _auditLogCache;
+}
+
 // ── Audit helpers ─────────────────────────────────────────────────────────────
 
 /**
  * Append an entry to the audit log via the PHP API.
  */
-async function appendAuditLog(entry: {
+export async function appendAuditLog(entry: {
   timestamp?: string;
   userRole: string;
   userName: string;
