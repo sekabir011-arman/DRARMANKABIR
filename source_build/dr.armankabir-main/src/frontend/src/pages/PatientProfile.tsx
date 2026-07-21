@@ -93,7 +93,7 @@ import VisitForm from "../components/VisitForm";
 import { loadFamilyHistoryRisk } from "../components/patientDashboardTypes";
 import { useAdminAuth } from "../hooks/useAdminAuth";
 import { useEmailAuth } from "../hooks/useEmailAuth";
-import { loadRegistry } from "../hooks/useEmailAuth";
+import { loadRegistry } from "../hooks/useAdminSave";
 import {
   getDoctorEmail,
   getVisitFormData,
