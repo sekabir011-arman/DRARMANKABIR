@@ -111,3 +111,4 @@ Stack trace:
 [20-Jul-2026 20:28:45 Asia/Dhaka] PHP Parse error:  syntax error, unexpected token ")" in /home/drarmank/public_html/api/helpers.php on line 86
 [20-Jul-2026 20:28:45 Asia/Dhaka] PHP Parse error:  syntax error, unexpected token ")" in /home/drarmank/public_html/api/helpers.php on line 86
 [20-Jul-2026 20:28:45 Asia/Dhaka] PHP Parse error:  syntax error, unexpected token ")" in /home/drarmank/public_html/api/helpers.php on line 86
+[21-Jul-2026 16:54:01 Asia/Dhaka] Audit log failed: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`drarmank_drarmank_care`.`audit_logs`, CONSTRAINT `audit_logs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL)
