@@ -25,8 +25,9 @@ try {
     $db->commit();
     $fetchStmt = $db->prepare('SELECT b.*, p.full_name as patient_name FROM beds b LEFT JOIN patients p ON b.current_patient_id = p.id WHERE b.id = :id');
     $fetchStmt->execute([':id' => (int)$input['bedId']]);
-    logAudit($user['id'], (int)$input['patientId'], 'update', 'bed', (int)$input['bedId'], $bed, $fetchStmt->fetch());
-    successResponse($fetchStmt->fetch(), 'Patient assigned to bed successfully');
+    $updated = $fetchStmt->fetch();
+    logAudit($user['id'], (int)$input['patientId'], 'update', 'bed', (int)$input['bedId'], $bed, $updated);
+    successResponse($updated, 'Patient assigned to bed successfully');
 } catch (\Exception $e) {
     if (isset($db) && $db->inTransaction()) $db->rollBack();
     error_log('Assign bed error: ' . $e->getMessage());
