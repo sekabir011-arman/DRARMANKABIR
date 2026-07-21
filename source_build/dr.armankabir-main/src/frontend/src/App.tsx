@@ -55,15 +55,17 @@ import { CANISTER_ID_BACKEND as BUILD_TIME_CANISTER_ID } from "./canisterConfig"
 import { useAdminAuth } from "./hooks/useAdminAuth";
 import {
   EmailAuthProvider,
+  useEmailAuth,
+  useInactivityTimer,
+} from "./hooks/useEmailAuth";
+import type { DoctorAccount, PatientAccount } from "./services/auth";
+import {
   appendAuditLog,
   loadPatientRegistry,
   loadRegistry,
   savePatientRegistry,
   saveRegistry,
-  useEmailAuth,
-  useInactivityTimer,
-} from "./hooks/useEmailAuth";
-import type { DoctorAccount, PatientAccount } from "./hooks/useEmailAuth";
+} from "./hooks/useAdminSave";
 import { useMigration } from "./hooks/useMigration";
 import { getCanisterActor, setCanisterActor } from "./hooks/useQueries";
 
