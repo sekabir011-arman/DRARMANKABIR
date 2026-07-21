@@ -57,6 +57,17 @@ export export async function appendAuditLog(entry: {
   }
 }
 
+/**
+ * Get audit log entries from PHP API.
+ */
+export async function getAuditLog(): Promise<AuditLogEntry[]> {
+  try {
+    return await auditService.getAll();
+  } catch {
+    return [];
+  }
+}
+
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 export const STAFF_ROLE_LABELS: Record<StaffRole, string> = {
