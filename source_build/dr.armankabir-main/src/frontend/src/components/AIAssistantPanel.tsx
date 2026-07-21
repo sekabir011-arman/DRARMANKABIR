@@ -25,8 +25,8 @@ import {
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { appendAuditLog } from "../hooks/useEmailAuth";
 import { useEmailAuth } from "../hooks/useEmailAuth";
+import { appendAuditLog } from "../hooks/useAdminSave";
 import { checkExtendedClinicalAlerts } from "../lib/clinicalIntelligence";
 import type { ExtendedAlertInput } from "../types";
 import type { Patient, Prescription, Visit } from "../types";
