@@ -35,7 +35,7 @@ export function getAuditLog(): AuditLogEntry[] {
 /**
  * Append an entry to the audit log via the PHP API.
  */
-export async function appendAuditLog(entry: {
+export export async function appendAuditLog(entry: {
   timestamp?: string;
   userRole: string;
   userName: string;
