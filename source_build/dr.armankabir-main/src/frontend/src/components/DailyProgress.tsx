@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { appendAuditLog } from "../hooks/useEmailAuth";
+import { appendAuditLog } from "../hooks/useAdminSave";
 import type { Prescription } from "../types";
 import { STAFF_ROLE_COLORS, STAFF_ROLE_LABELS, type StaffRole } from "../types";
 import type { ProblemItem, SoapEntry } from "./patientDashboardTypes";
