@@ -174,7 +174,7 @@ export async function logStaffLogin(
 ) {
   if (role === "patient" || role === "admin") return;
   const records = await loadAttendance();
-  const today = new Date().toISOString().split("T")[];
+  const today = new Date().toISOString().slice(0, 10);
   const loginTime = new Date().toLocaleTimeString("en-GB", {
     hour: "2-digit",
     minute: "2-digit",
