@@ -1222,7 +1222,7 @@ function AppInner() {
   // ── Canister actor + cross-device sync setup ─────────────────────────────────
   const queryClient = useQueryClient();
 
-  // invalidateAll: called by useMigration after every successful poll cycle
+  // invalidateAll: called after every successful data refresh
   // so React Query re-fetches from the updated localStorage cache.
   const invalidateAll = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["patients"] });
