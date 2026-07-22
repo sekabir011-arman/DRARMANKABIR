@@ -484,9 +484,9 @@ export default function Staff() {
     toast.success(editingShiftId ? "Shift updated" : "Shift assigned");
   };
 
-  const deleteShift = (id: string) => {
-    const list = loadShifts().filter((s) => s.id !== id);
-    saveShifts(list);
+  const deleteShift = async (id: string) => {
+    const list = (await loadShifts()).filter((s) => s.id !== id);
+    await saveShifts(list);
     refresh();
     toast.success("Shift removed");
   };
