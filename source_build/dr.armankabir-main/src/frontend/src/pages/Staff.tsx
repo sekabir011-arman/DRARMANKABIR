@@ -359,12 +359,12 @@ export default function Staff() {
     new Date().toISOString().slice(0, 7),
   );
 
-  const refresh = useCallback(() => {
+  const refresh = useCallback(async () => {
     const reg = loadRegistry() as (DoctorAccount & { photo?: string })[];
     setStaff(reg);
-    setShifts(loadShifts());
-    setAttendance(loadAttendance());
-    setLeaveRequests(loadLeaveRequests());
+    setShifts(await loadShifts());
+    setAttendance(await loadAttendance());
+    setLeaveRequests(await loadLeaveRequests());
   }, []);
 
   useEffect(() => {
