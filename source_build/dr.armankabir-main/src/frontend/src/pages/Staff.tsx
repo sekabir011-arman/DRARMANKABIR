@@ -66,7 +66,9 @@ import type { StaffRole } from "../types";
 import { prescriptionService } from "../services/prescriptions";
 import { appointmentService } from "../services/appointments";
 import { paymentService } from "../services/payments";
-  | "directory"
+import { storage } from "../lib/storageAdapter";
+
+type StaffTab = "registration" | "schedule" | "attendance"
   | "performance"
   | "leave";
 
