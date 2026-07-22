@@ -2,12 +2,14 @@ import { get, post } from "../lib/apiClient";
 import { staffService } from "../services/staff";
 import { prescriptionService } from "../services/prescriptions";
 import { paymentService } from "../services/payments";
-import { appointmentService } from "../services/appointments";import { post } from "../lib/apiClient";
+import { appointmentService } from "../services/appointments";
 
 // ── Storage Keys (persisted in MySQL via /api/data/ endpoints) ────────────────
 const SHIFTS_KEY = "staff_shifts";
 const ATTENDANCE_KEY = "staff_attendance";
-const LEAVE_REQUESTS_KEY = "leave_requests";/**
+const LEAVE_REQUESTS_KEY = "leave_requests";
+
+/**
  * Staff — Staff management page for admin and consultant doctor roles.
  * Tabs: Registration/Approval | Schedule | Attendance | Directory
  * Admin can approve/reject pending accounts, reassign roles, manage shifts,
