@@ -1,8 +1,11 @@
 import { get, post } from "../lib/apiClient";
+import { staffService } from "../services/staff";
 import { prescriptionService } from "../services/prescriptions";
 import { appointmentService } from "../services/appointments";
 import { paymentService } from "../services/payments";
+import { staffDataService } from "../services/staffData";
 import type { StaffShift, AttendanceRecord, LeaveRequest } from "../services/staffData";
+import { storage } from "../lib/storageAdapter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,6 +61,8 @@ const LEAVE_REQUESTS_KEY = "leave_requests";
 type StaffTab = "registration" | "schedule" | "attendance"
   | "performance"
   | "leave";
+
+type StatusFilter = "all" | "approved" | "pending" | "rejected";
 
 type LeaveType = "Annual Leave" | "Sick Leave" | "Emergency Leave" | "Training";
 type LeaveStatus = "pending" | "approved" | "rejected";
@@ -286,7 +291,7 @@ export default function Staff() {
   const [staff, setStaff] = useState<(DoctorAccount & { photo?: string })[]>(
     [],
   );
-  const [mainTab, setMainTab] = useState<MainTab>("registration");
+  const [mainTab, setMainTab] = useState<StaffTab>("registration");
 
   // Registration tab state
   const [search, setSearch] = useState("");
@@ -513,10 +518,10 @@ export default function Staff() {
     );
 
   // ── Attendance actions ──────────────────────────────────────────────────────
-  const overrideAttendance = (id: string) => {
+  const overrideAttendance = async (id: string) => {
     const status = attendanceOverride[id] as AttendanceRecord["shiftStatus"];
     if (!status) return;
-    const list = loadAttendance();
+    const list = await loadAttendance();
     const idx = list.findIndex((r) => r.id === id);
     if (idx >= 0) {
       list[idx] = {
@@ -525,7 +530,7 @@ export default function Staff() {
         manualOverride: true,
         overrideNote: attendanceNote[id] ?? "",
       };
-      saveAttendance(list);
+      await saveAttendance(list);
       refresh();
       toast.success("Attendance updated");
     }
@@ -580,13 +585,13 @@ export default function Staff() {
   });
 
   // ── Leave request actions ───────────────────────────────────────────────────
-  const submitLeaveRequest = () => {
+  const submitLeaveRequest = async () => {
     if (!currentDoctor) return;
     if (!leaveForm.startDate || !leaveForm.endDate) {
       toast.error("Please fill in all required fields.");
       return;
     }
-    const requests = loadLeaveRequests();
+    const requests = await loadLeaveRequests();
     requests.push({
       id: Date.now().toString(36),
       staffId: currentDoctor.id,
@@ -600,7 +605,7 @@ export default function Staff() {
       adminNote: "",
       requestedAt: new Date().toISOString(),
     });
-    saveLeaveRequests(requests);
+    await saveLeaveRequests(requests);
     refresh();
     setShowLeaveForm(false);
     setLeaveForm({
@@ -612,8 +617,8 @@ export default function Staff() {
     toast.success("Leave request submitted");
   };
 
-  const reviewLeave = (id: string, status: LeaveStatus, note: string) => {
-    const requests = loadLeaveRequests();
+  const reviewLeave = async (id: string, status: LeaveStatus, note: string) => {
+    const requests = await loadLeaveRequests();
     const idx = requests.findIndex((r) => r.id === id);
     if (idx >= 0) {
       requests[idx] = {
@@ -623,7 +628,7 @@ export default function Staff() {
         reviewedAt: new Date().toISOString(),
         reviewedBy: currentDoctor?.name ?? "Admin",
       };
-      saveLeaveRequests(requests);
+      await saveLeaveRequests(requests);
       refresh();
       toast.success(`Leave request ${status}`);
     }
@@ -828,7 +833,7 @@ export default function Staff() {
             ...(canManage
               ? [
                   {
-                    key: "performance" as MainTab,
+                    key: "performance" as StaffTab,
                     label: "Performance",
                     icon: BarChart3,
                   },
@@ -837,13 +842,13 @@ export default function Staff() {
             ...(isAdmin || currentDoctor?.role === "admin"
               ? [
                   {
-                    key: "leave" as MainTab,
+                    key: "leave" as StaffTab,
                     label: "Leave Requests",
                     icon: Calendar,
                   },
                 ]
               : []),
-          ] as { key: MainTab; label: string; icon: React.ElementType }[]
+          ] as { key: StaffTab; label: string; icon: React.ElementType }[]
         ).map(({ key, label, icon: Icon }) => (
           <button
             key={key}
