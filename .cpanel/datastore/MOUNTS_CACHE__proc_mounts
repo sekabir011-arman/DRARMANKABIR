@@ -38,7 +38,5 @@ tracefs /sys/kernel/debug/tracing tracefs rw,relatime 0 0
 tmpfs /run/user/3206 tmpfs rw,nosuid,nodev,relatime,size=13135456k,mode=700,uid=3206,gid=3211 0 0
 /dev/md2 /usr/local/cpanel/cpsanitycheck.so ext4 rw,relatime,stripe=256,jqfmt=vfsv1,usrjquota=quota.user 0 0
 /dev/md2 /usr/local/cpanel/cpanel.lisc ext4 rw,relatime,stripe=256,jqfmt=vfsv1,usrjquota=quota.user 0 0
-tmpfs /run/user/2214 tmpfs rw,nosuid,nodev,relatime,size=13135456k,mode=700,uid=2214,gid=2219 0 0
-tmpfs /run/user/1039 tmpfs rw,nosuid,nodev,relatime,size=13135456k,mode=700,uid=1039,gid=1042 0 0
-tmpfs /run/user/2664 tmpfs rw,nosuid,nodev,relatime,size=13135456k,mode=700,uid=2664,gid=2669 0 0
-tmpfs /run/user/1946 tmpfs rw,nosuid,nodev,relatime,size=13135456k,mode=700,uid=1946,gid=1950 0 0
+tmpfs /run/user/3516 tmpfs rw,nosuid,nodev,relatime,size=13135456k,mode=700,uid=3516,gid=3521 0 0
+tmpfs /run/user/1186 tmpfs rw,nosuid,nodev,relatime,size=13135456k,mode=700,uid=1186,gid=1190 0 0

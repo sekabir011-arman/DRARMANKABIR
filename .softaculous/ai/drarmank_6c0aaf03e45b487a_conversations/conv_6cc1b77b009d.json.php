@@ -72,7 +72,7 @@
         }
     ],
     "created_at": 1784730885,
-    "updated_at": 1784743210,
+    "updated_at": 1784743519,
     "messages": [
         {
             "id": "msg_compact",
@@ -4191,6 +4191,20 @@
             "content": "   68 | import type { StaffRole } from \".\/types\";\n   69 | import { storage } from \"lib\/storageAdapter\";\n   70 |",
             "is_error": false,
             "time": 1784743210
+        },
+        {
+            "id": "msg_f00d435153",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784743463
+        },
+        {
+            "id": "msg_7f178fe8e0",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784743519
         }
     ]
 }
