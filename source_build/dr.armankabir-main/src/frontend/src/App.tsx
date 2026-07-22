@@ -1166,7 +1166,6 @@ interface DrugReminder {
 
 function AppInner() {
   // Clean up legacy business data from localStorage on startup
-  // cleanupBusinessData removed - all business data is in MySQL now
 
   const {
     currentDoctor,
@@ -1223,189 +1222,6 @@ function AppInner() {
   // ── Canister actor + cross-device sync setup ─────────────────────────────────
   const queryClient = useQueryClient();
 
-  // Create anonymous canister actor once on mount.
-  // Anonymous reads work for all query methods (no auth required on canister).
-  const canisterActorRef = useRef<ReturnType<typeof createActor> | null>(null);
-  // Track actor in state so useMigration receives a non-null value after creation.
-  // canisterActorRef is kept for synchronous access; canisterActorState drives re-renders.
-  const [canisterActorState, setCanisterActorState] = useState<ReturnType<
-    typeof createActor
-  > | null>(null);
-
-  const [backendDisconnected, setBackendDisconnected] = useState(false);
-
-  useEffect(() => {
-    // Guard: only create actor once
-    if (canisterActorRef.current) return;
-
-    function resolveCanisterId(): string {
-      // Pattern 0 (build-time): hardcoded at compile time — most reliable, always works on Vercel
-      if (BUILD_TIME_CANISTER_ID && BUILD_TIME_CANISTER_ID.trim() !== "") {
-        console.log(
-          "[sync] Using build-time embedded canister ID:",
-          BUILD_TIME_CANISTER_ID,
-        );
-        return BUILD_TIME_CANISTER_ID.trim();
-      }
-
-      const w = window as unknown as Record<string, unknown>;
-      const envRaw = (
-        import.meta as unknown as Record<string, Record<string, string>>
-      ).env;
-
-      // Pattern 0b: build-time injected by vite.config.js define block
-      // (catches both Vercel VITE_ prefix and Caffeine platform prefix)
-      const p0 = w.__RESOLVED_CANISTER_ID_BACKEND as string | undefined;
-      if (p0 && p0 !== "undefined" && p0 !== "") return p0;
-
-      // Pattern 1: VITE_ prefix — required for Vercel custom deployments
-      // (Vercel only injects vars prefixed with VITE_ into the browser bundle)
-      const p1v = envRaw?.VITE_CANISTER_ID_BACKEND;
-      if (p1v && p1v !== "undefined" && p1v !== "") return p1v;
-
-      // Pattern 2: plain CANISTER_ prefix — Caffeine platform injects this
-      const p1c = envRaw?.CANISTER_ID_BACKEND;
-      if (p1c && p1c !== "undefined" && p1c !== "") return p1c;
-
-      // Pattern 3: direct window property
-      const p3 = w.CANISTER_ID_BACKEND as string | undefined;
-      if (p3 && p3 !== "undefined" && p3 !== "") return p3;
-
-      // Pattern 4: underscore-prefixed window property
-      const p4 = w.__CANISTER_ID_BACKEND as string | undefined;
-      if (p4 && p4 !== "undefined" && p4 !== "") return p4;
-
-      // Pattern 5: platform __ENV__ object
-      const envObj = w.__ENV__ as Record<string, string> | undefined;
-      const p5 = envObj?.CANISTER_ID_BACKEND;
-      if (p5 && p5 !== "undefined" && p5 !== "") return p5;
-      const p5v = envObj?.VITE_CANISTER_ID_BACKEND;
-      if (p5v && p5v !== "undefined" && p5v !== "") return p5v;
-
-      // Pattern 6: <meta name="canister-id-backend"> tag
-      try {
-        const metaVal = document
-          .querySelector('meta[name="canister-id-backend"]')
-          ?.getAttribute("content");
-        if (metaVal && metaVal !== "undefined" && metaVal !== "")
-          return metaVal;
-      } catch {}
-
-      // Pattern 7: scan all <script> tags for JSON containing CANISTER_ID_BACKEND
-      try {
-        const scripts = document.querySelectorAll("script");
-        for (const script of Array.from(scripts)) {
-          const text = script.textContent ?? "";
-          if (!text.includes("CANISTER_ID_BACKEND")) continue;
-          // Try to find it as window.CANISTER_ID_BACKEND = "..."
-          const m1 = text.match(
-            /CANISTER_ID_BACKEND\s*[=:]\s*["']([a-z0-9-]{5,})["']/,
-          );
-          if (m1?.[1] && m1[1] !== "undefined") return m1[1];
-          // Try JSON object: { "CANISTER_ID_BACKEND": "..." }
-          try {
-            const jsonMatch = text.match(/\{[^}]*CANISTER_ID_BACKEND[^}]*\}/);
-            if (jsonMatch) {
-              const parsed = JSON.parse(jsonMatch[0]) as Record<string, string>;
-              if (
-                parsed.CANISTER_ID_BACKEND &&
-                parsed.CANISTER_ID_BACKEND !== "undefined"
-              )
-                return parsed.CANISTER_ID_BACKEND;
-            }
-          } catch {}
-        }
-      } catch {}
-
-      // Pattern 8: __CANISTER_ID_BACKEND as a global var set by build injection
-      try {
-        const g8 = (globalThis as unknown as Record<string, unknown>)
-          .__CANISTER_ID_BACKEND as string | undefined;
-        if (g8 && g8 !== "undefined" && g8 !== "") return g8;
-      } catch {}
-
-      return "";
-    }
-
-    function tryCreateActor() {
-      if (canisterActorRef.current) return true; // already created
-      const canisterId = resolveCanisterId();
-      if (!canisterId) return false;
-
-      try {
-        const actor = createActor(
-          canisterId,
-          async (file) => {
-            const bytes = await file.getBytes();
-            return new Uint8Array(bytes.buffer as ArrayBuffer);
-          },
-          async (bytes) => {
-            const { ExternalBlob } = await import("./backend");
-            return ExternalBlob.fromBytes(
-              new Uint8Array(bytes.buffer as ArrayBuffer),
-            );
-          },
-        );
-        if (!actor) {
-          console.error(
-            "[sync] createActor() returned null/undefined — setCanisterActor not called. " +
-              "Verify the canister ID is correct and the backend is reachable.",
-          );
-          return false;
-        }
-        canisterActorRef.current = actor;
-        setCanisterActorState(actor);
-        setCanisterActor(actor);
-        setBackendDisconnected(false);
-        console.info(
-          `[sync] Canister actor initialized with ID: ${canisterId}`,
-        );
-        // Expose debug helper on window for troubleshooting
-        (window as unknown as Record<string, unknown>).__debugSync = () =>
-          console.log("canisterId:", canisterId, "actor:", getCanisterActor());
-        return true;
-      } catch (err) {
-        console.error("[sync] Could not create canister actor:", err);
-        return false;
-      }
-    }
-
-    if (tryCreateActor()) {
-      // Actor created on first try — fire canisterReady event
-      window.dispatchEvent(new CustomEvent("canisterReady"));
-      return;
-    }
-
-    // canisterId was empty on first attempt — log once, then keep retrying.
-    // tryCreateActor re-resolves the canister ID on every call so a late injection
-    // (e.g., a <script> tag appended by the platform after DOMContentLoaded) is picked up.
-    console.warn(
-      "[sync] CANISTER_ID_BACKEND not yet available — will retry every 5s (up to 40 attempts).\n" +
-        "If this is a Vercel deployment: add VITE_CANISTER_ID_BACKEND to your Vercel project\n" +
-        "Environment Variables and redeploy. The value is the canister ID from the Caffeine platform.",
-    );
-    setBackendDisconnected(true);
-
-    let retries = 0;
-    const MAX_RETRIES = 40; // 40 × 5s = 3 min 20s window for late injection
-    const retryInterval = setInterval(() => {
-      retries++;
-      if (tryCreateActor()) {
-        clearInterval(retryInterval);
-        window.dispatchEvent(new CustomEvent("canisterReady"));
-        return;
-      }
-      if (retries >= MAX_RETRIES) {
-        clearInterval(retryInterval);
-        console.error(
-          `[sync] CANISTER_ID_BACKEND could not be resolved after ${MAX_RETRIES} attempts. Sync is disabled.\nFIX FOR VERCEL: Set VITE_CANISTER_ID_BACKEND in Vercel project Environment Variables.\nFIX FOR CAFFEINE: Ensure the backend canister is deployed and the platform has injected CANISTER_ID_BACKEND.\nTried: __RESOLVED_CANISTER_ID_BACKEND, VITE_CANISTER_ID_BACKEND (env), CANISTER_ID_BACKEND (env), window.CANISTER_ID_BACKEND, window.__CANISTER_ID_BACKEND, __ENV__.CANISTER_ID_BACKEND, <meta name="canister-id-backend">, <script> tag scan, globalThis.__CANISTER_ID_BACKEND`,
-        );
-      }
-    }, 5_000);
-
-    return () => clearInterval(retryInterval);
-  }, []);
-
   // invalidateAll: called by useMigration after every successful poll cycle
   // so React Query re-fetches from the updated localStorage cache.
   const invalidateAll = useCallback(() => {
@@ -1422,40 +1238,6 @@ function AppInner() {
     queryClient.invalidateQueries({ queryKey: ["admissionHistory"] });
   }, [queryClient]);
 
-  // ── Migration toast ──────────────────────────────────────────────────────────
-  // Pass canisterActorState (not canisterActorRef.current) so useMigration
-  // re-runs its effects when the actor becomes available after mount.
-  const { migrationStatus } = useMigration(canisterActorState, invalidateAll);
-  const migrationToastShownRef = useRef(false);
-  useEffect(() => {
-    if (migrationStatus === "running" && !migrationToastShownRef.current) {
-      migrationToastShownRef.current = true;
-      import("sonner").then(({ toast }) =>
-        toast.loading(
-          "Syncing your existing records to secure cloud storage...",
-          {
-            id: "migration-toast",
-            duration: 30000,
-          },
-        ),
-      );
-    }
-    if (migrationStatus === "complete") {
-      import("sonner").then(({ toast }) =>
-        toast.success("✅ All records synced. Your data is now backed up.", {
-          id: "migration-toast",
-        }),
-      );
-    }
-    if (migrationStatus === "failed") {
-      import("sonner").then(({ toast }) =>
-        toast.warning(
-          "⚠️ Sync partial. Your data is safe locally. Retry in Settings.",
-          { id: "migration-toast" },
-        ),
-      );
-    }
-  }, [migrationStatus]);
 
   // ── Patient Portal Drug Reminder State ──────────────────────────────────────
   const REMINDERS_KEY = "medicare_drug_reminders";
@@ -1738,24 +1520,6 @@ function AppInner() {
     return "";
   }, [currentPatient]);
 
-  const [bannerDismissed, setBannerDismissed] = useState(false);
-
-  // Auto-restore banner visibility if connection drops again after dismissal
-  useEffect(() => {
-    if (!backendDisconnected) setBannerDismissed(false);
-  }, [backendDisconnected]);
-
-  // Show Vercel-specific guidance after 10 retries (50s) if canister ID is still not resolved
-  const [showVercelHint, setShowVercelHint] = useState(false);
-  useEffect(() => {
-    if (!backendDisconnected) {
-      setShowVercelHint(false);
-      return;
-    }
-    // After 50s of retrying with no actor, show the Vercel env var instruction
-    const t = setTimeout(() => setShowVercelHint(true), 50_000);
-    return () => clearTimeout(t);
-  }, [backendDisconnected]);
 
   const isSerialDisplay =
     typeof window !== "undefined" &&
@@ -2034,8 +1798,6 @@ function AppInner() {
     );
   }
 
-  const showBackendBanner =
-    (backendDisconnected || BUILD_TIME_CANISTER_ID === "") && !bannerDismissed;
 
   if (!currentDoctor) {
     return (
@@ -2196,75 +1958,7 @@ function AppInner() {
 
   return (
     <>
-      {showBackendBanner && (
-        <div
-          className="fixed top-0 left-0 right-0 z-[9999] shadow-lg"
-          data-ocid="sync.backend_disconnected_banner"
-        >
-          {/* Primary red banner */}
-          <div
-            className="flex items-center justify-between gap-3 px-4 py-2.5 text-white text-sm font-medium"
-            style={{
-              background: "linear-gradient(90deg, #b91c1c 0%, #ea580c 100%)",
-            }}
-          >
-            <div className="flex items-center gap-2">
-              <span className="inline-block w-2 h-2 rounded-full bg-white/60 animate-pulse" />
-              <span>
-                Backend not connected — data is saved on this device only and
-                will NOT sync to other devices. Contact support if this
-                persists.
-              </span>
-            </div>
-            <div className="flex items-center gap-2 ml-auto shrink-0">
-              <button
-                type="button"
-                onClick={() => window.location.reload()}
-                className="rounded px-2 py-0.5 text-xs bg-white/20 hover:bg-white/30 transition-colors font-semibold"
-              >
-                Retry
-              </button>
-              <button
-                type="button"
-                aria-label="Dismiss banner"
-                onClick={() => setBannerDismissed(true)}
-                className="rounded p-0.5 hover:bg-white/20 transition-colors"
-                data-ocid="sync.backend_banner.close_button"
-              >
-                <X size={16} aria-hidden="true" />
-              </button>
-            </div>
-          </div>
-          {/* Vercel-specific hint shown after 50s of failed retries */}
-          {showVercelHint && (
-            <div
-              className="flex items-start gap-3 px-4 py-2.5 text-amber-900 text-xs font-medium border-b border-amber-300"
-              style={{ background: "#fef3c7" }}
-              data-ocid="sync.vercel_hint_banner"
-            >
-              <span className="text-base shrink-0">⚠️</span>
-              <span className="leading-snug">
-                <strong>Vercel deployment detected:</strong> Cloud sync is
-                unavailable because{" "}
-                <code className="bg-amber-200 px-1 rounded font-mono">
-                  VITE_CANISTER_ID_BACKEND
-                </code>{" "}
-                is not set. Go to your{" "}
-                <strong>
-                  Vercel project → Settings → Environment Variables
-                </strong>
-                , add{" "}
-                <code className="bg-amber-200 px-1 rounded font-mono">
-                  VITE_CANISTER_ID_BACKEND
-                </code>{" "}
-                with your canister ID value, then redeploy. Local data is safe
-                until then.
-              </span>
-            </div>
-          )}
-        </div>
-      )}
-      <div style={showBackendBanner ? { paddingTop: "40px" } : undefined}>
+      <div>
         <Suspense
           fallback={
             <div className="flex items-center justify-center h-screen">
