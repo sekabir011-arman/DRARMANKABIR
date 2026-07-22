@@ -167,14 +167,14 @@ async function saveLeaveRequests(requests: LeaveRequest[]) {
 }
 
 // ── Helper: log attendance on login ──────────────────────────────────────────
-export function logStaffLogin(
+export async function logStaffLogin(
   staffId: string,
   staffName: string,
   role: StaffRole,
 ) {
   if (role === "patient" || role === "admin") return;
-  const records = loadAttendance();
-  const today = new Date().toISOString().split("T")[0];
+  const records = await loadAttendance();
+  const today = new Date().toISOString().split("T")[];
   const loginTime = new Date().toLocaleTimeString("en-GB", {
     hour: "2-digit",
     minute: "2-digit",
@@ -188,7 +188,7 @@ export function logStaffLogin(
   if (existing) return;
 
   // Determine if late based on shift schedule
-  const shifts = loadShifts();
+  const shifts = await loadShifts();
   const todayShift = shifts.find(
     (s) => s.staffId === staffId && today >= s.startDate && today <= s.endDate,
   );
@@ -217,7 +217,7 @@ export function logStaffLogin(
     shiftStatus,
   };
   records.push(newRecord);
-  saveAttendance(records);
+  await saveAttendance(records);
 }
 
 // ── Shift icons ───────────────────────────────────────────────────────────────
