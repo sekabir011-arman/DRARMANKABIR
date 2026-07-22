@@ -1,17 +1,5 @@
-import {
-  EmailAuthProvider,
-  useEmailAuth,
-  useInactivityTimer,
-} from "./hooks/useEmailAuth";
-import {
-  appendAuditLog,
-  loadPatientRegistry,
-  loadRegistry,
-  savePatientRegistry,
-  saveRegistry,
-} from "./hooks/useAdminSave";
-import type { DoctorAccount, PatientAccount } from "./hooks/useAdminSave";
-
+import { EmailAuthProvider, useEmailAuth, useInactivityTimer } from "./hooks/useEmailAuth";
+import type { DoctorAccount, PatientAccount } from "./services/auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,47 +29,12 @@ import {
   createRouter,
   useRouterState,
 } from "@tanstack/react-router";
-import {
-  Bell,
-  CheckCircle2,
-  Loader2,
-  ShieldCheck,
-  Stethoscope,
-  User,
-  UserCheck,
-  X,
-  XCircle,
-} from "lucide-react";
+import { Bell, CheckCircle2, Loader2, ShieldCheck, Stethoscope, User, UserCheck, X, XCircle } from "lucide-react";
 import { motion } from "motion/react";
-import {
-  Suspense,
-  lazy,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Layout from "./Layout";
-import { createActor } from "./backend";
-import { CanisterActorsProvider } from "./canisterActors";
-import { CANISTER_ID_BACKEND as BUILD_TIME_CANISTER_ID } from "./canisterConfig";
 import { useAdminAuth } from "./hooks/useAdminAuth";
-import {
-  EmailAuthProvider,
-  useEmailAuth,
-  useInactivityTimer,
-} from "./hooks/useEmailAuth";
-import type { DoctorAccount, PatientAccount } from "./services/auth";
-import {
-  appendAuditLog,
-  loadPatientRegistry,
-  loadRegistry,
-  savePatientRegistry,
-  saveRegistry,
-} from "./hooks/useAdminSave";
-import { useMigration } from "./hooks/useMigration";
-import { getCanisterActor, setCanisterActor } from "./hooks/useQueries";
+import { storage, cleanupBusinessData } from "lib/storageAdapter";
 
 const AppointmentPayment = lazy(() => import("./pages/AppointmentPayment"));
 const Appointments = lazy(() => import("./pages/Appointments"));

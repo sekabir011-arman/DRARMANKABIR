@@ -72,7 +72,7 @@
         }
     ],
     "created_at": 1784730885,
-    "updated_at": 1784741881,
+    "updated_at": 1784742203,
     "messages": [
         {
             "id": "msg_5fba0a47c8",
@@ -3421,6 +3421,591 @@
             "content": "  120 | function RootLayoutComponent() {\n  121 |   const state = useRouterState();\n  122 |   const pathname = state.location.pathname;\n  123 |   const currentPageName =\n  124 |     pathname === \"\/\" || pathname === \"\/Patients\"\n  125 |       ? \"Patients\"\n  126 |       : pathname === \"\/Dashboard\"\n  127 |         ? \"Dashboard\"\n  128 |         : pathname === \"\/Appointments\"\n  129 |           ? \"Appointments\"\n  130 |           : pathname === \"\/AuditLog\"\n  131 |             ? \"AuditLog\"\n  132 |             : pathname.replace(\/^\\\/\/, \"\");\n  133 |   return (\n  134 |     <Layout currentPageName={currentPageName}>\n  135 |       <Outlet \/>\n  136 |     <\/Layout>\n  137 |   );\n  138 | }\n  139 | \n  140 | const rootRoute = createRootRoute({ component: RootLayoutComponent });\n  141 | const indexRoute = createRoute({\n  142 |   getParentRoute: () => rootRoute,\n  143 |   path: \"\/\",\n  144 |   component: Dashboard,\n  145 | });\n  146 | const dashboardRoute = createRoute({\n  147 |   getParentRoute: () => rootRoute,\n  148 |   path: \"\/Dashboard\",\n  149 |   component: Dashboard,\n  150 | });\n  151 | const patientsRoute = createRoute({\n  152 |   getParentRoute: () => rootRoute,\n  153 |   path: \"\/Patients\",\n  154 |   component: Patients,\n  155 | });\n  156 | const patientProfileRoute = createRoute({\n  157 |   getParentRoute: () => rootRoute,\n  158 |   path: \"\/PatientProfile\",\n  159 |   component: PatientProfileWrapper,\n  160 | });\n  161 | const settingsRoute = createRoute({\n  162 |   getParentRoute: () => rootRoute,\n  163 |   path: \"\/Settings\",\n  164 |   component: Settings,\n  165 | });\n  166 | const appointmentsRoute = createRoute({\n  167 |   getParentRoute: () => rootRoute,\n  168 |   path: \"\/Appointments\",\n  169 |   component: Appointments,\n  170 | });\n  171 | const auditLogRoute = createRoute({\n  172 |   getParentRoute: () => rootRoute,\n  173 |   path: \"\/AuditLog\",\n  174 |   component: AuditLog,\n  175 | });\n  176 | const wardRoundRoute = createRoute({\n  177 |   getParentRoute: () => rootRoute,\n  178 |   path: \"\/WardRound\",\n  179 |   component: WardRound,\n  180 | });\n  181 | const bedManagementRoute = createRoute({\n  182 |   getParentRoute: () => rootRoute,\n  183 |   path: \"\/BedManagement\",\n  184 |   component: BedManagement,\n  185 | });\n  186 | const visitRoute = createRoute({\n  187 |   getParentRoute: () => rootRoute,\n  188 |   path: \"\/Visit\",\n  189 |   component: VisitPage,\n  190 | });\n  191 | const emergencyPrescriptionRoute = createRoute({\n  192 |   getParentRoute: () => rootRoute,\n  193 |   path: \"\/EmergencyPrescription\",\n  194 |   component: EmergencyPrescription,\n  195 | });\n  196 | const staffRoute = createRoute({\n  197 |   getParentRoute: () => rootRoute,\n  198 |   path: \"\/Staff\",\n  199 |   component: Staff,\n  200 | });\n  201 | const appointmentPaymentRoute = createRoute({\n  202 |   getParentRoute: () => rootRoute,\n  203 |   path: \"\/AppointmentPayment\",\n  204 |   component: AppointmentPayment,\n  205 | });\n  206 | const investigationPaymentRoute = createRoute({\n  207 |   getParentRoute: () => rootRoute,\n  208 |   path: \"\/InvestigationPayment\",\n  209 |   component: InvestigationPaymentPage,\n  210 | });\n  211 | const procedurePaymentRoute = createRoute({\n  212 |   getParentRoute: () => rootRoute,\n  213 |   path: \"\/ProcedurePayment\",\n  214 |   component: ProcedurePayment,\n  215 | });\n  216 | const totalIncomeRoute = createRoute({\n  217 |   getParentRoute: () => rootRoute,\n  218 |   path: \"\/TotalIncome\",\n  219 |   component: TotalIncome,\n  220 | });\n  221 | const otherPaymentRoute = createRoute({\n  222 |   getParentRoute: () => rootRoute,\n  223 |   path: \"\/OtherPayment\",\n  224 |   component: OtherPayment,\n  225 | });\n  226 | const registrarDashboardRoute = createRoute({\n  227 |   getParentRoute: () => rootRoute,\n  228 |   path: \"\/RegistrarDashboard\",\n  229 |   component: RegistrarDashboard,\n  230 | });\n  231 | const outstandingBalancesRoute = createRoute({\n  232 |   getParentRoute: () => rootRoute,\n  233 |   path: \"\/OutstandingBalances\",\n  234 |   component: OutstandingBalances,\n  235 | });\n  236 | \n  237 | const routeTree = rootRoute.addChildren([\n  238 |   indexRoute,\n  239 |   dashboardRoute,\n  240 |   patientsRoute,\n  241 |   patientProfileRoute,\n  242 |   settingsRoute,\n  243 |   appointmentsRoute,\n  244 |   auditLogRoute,\n  245 |   wardRoundRoute,\n  246 |   bedManagementRoute,\n  247 |   visitRoute,\n  248 |   emergencyPrescriptionRoute,\n  249 |   staffRoute,\n  250 |   appointmentPaymentRoute,\n  251 |   investigationPaymentRoute,\n  252 |   procedurePaymentRoute,\n  253 |   totalIncomeRoute,\n  254 |   otherPaymentRoute,\n  255 |   outstandingBalancesRoute,\n  256 |   registrarDashboardRoute,\n  257 | ]);\n  258 | const router = createRouter({ routeTree });\n  259 | \n  260 | declare module \"@tanstack\/react-router\" {\n  261 |   interface Register {\n  262 |     router: typeof router;\n  263 |   }\n  264 | }\n  265 | \n  266 | \/\/ PatientProfile wrapper that decides the role\n  267 | function PatientProfileWrapper() {\n  268 |   const { currentDoctor } = useEmailAuth();\n  269 |   const role = (currentDoctor?.role ?? \"doctor\") as StaffRole;\n  270 |   \/\/ Map to the 4-bucket currentRole the dashboard understands, but pass the\n  271 |   \/\/ granular StaffRole separately so permission-gated actions use the real role.\n  272 |   const dashboardRole: \"admin\" | \"doctor\" | \"staff\" =\n  273 |     role === \"staff\" ? \"staff\" : \"doctor\";\n  274 |   return <PatientDashboard currentRole={dashboardRole} viewerRole={role} \/>;\n  275 | }\n  276 | \n  277 | \/\/ \u2500\u2500 Auth Form Content \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  278 | \n  279 | const DESIGNATIONS = [\"Dr.\", \"Prof.\", \"Assoc. Prof.\", \"Mr.\", \"Ms.\", \"Mrs.\"];\n  280 | \n  281 | function StaffAuthContent() {\n  282 |   const { signIn, signUp, isLoggingIn, authError } = useEmailAuth();\n  283 | \n  284 |   const [siEmail, setSiEmail] = useState(\"\");\n  285 |   const [siPassword, setSiPassword] = useState(\"\");\n  286 |   const [siError, setSiError] = useState(\"\");\n  287 | \n  288 |   const [suName, setSuName] = useState(\"\");\n  289 |   const [suEmail, setSuEmail] = useState(\"\");\n  290 |   const [suPassword, setSuPassword] = useState(\"\");\n  291 |   const [suConfirm, setSuConfirm] = useState(\"\");\n  292 |   const [suDesignation, setSuDesignation] = useState(\"Dr.\");\n  293 |   const [suDegree, setSuDegree] = useState(\"\");\n  294 |   const [suSpecialization, setSuSpecialization] = useState(\"\");\n  295 |   const [suHospital, setSuHospital] = useState(\"\");\n  296 |   const [suPhone, setSuPhone] = useState(\"\");\n  297 |   const [suRole, setSuRole] = useState<StaffRole>(\"doctor\");\n  298 |   const [suErrors, setSuErrors] = useState<Record<string, string>>({});\n  299 |   const [suSuccess, setSuSuccess] = useState(\"\");\n  300 | \n  301 |   const handleSignIn = async (e: React.FormEvent) => {\n  302 |     e.preventDefault();\n  303 |     setSiError(\"\");\n  304 |     if (!siEmail || !siPassword) {\n  305 |       setSiError(\"Please enter email and password.\");\n  306 |       return;\n  307 |     }\n  308 |     try {\n  309 |       await signIn(siEmail, siPassword);\n  310 |     } catch (err: unknown) {\n  311 |       setSiError(err instanceof Error ? err.message : \"Sign in failed.\");\n  312 |     }\n  313 |   };\n  314 | \n  315 |   const handleSignUp = async (e: React.FormEvent) => {\n  316 |     e.preventDefault();\n  317 |     const errs: Record<string, string> = {};\n  318 |     if (!suName.trim()) errs.name = \"Full name is required.\";\n  319 |     if (!suEmail.trim()) errs.email = \"Email is required.\";\n  320 |     if (!suPassword) errs.password = \"Password is required.\";\n  321 |     else if (suPassword.length < 6)\n  322 |       errs.password = \"Password must be at least 6 characters.\";\n  323 |     if (suPassword !== suConfirm) errs.confirm = \"Passwords do not match.\";\n  324 |     if (Object.keys(errs).length > 0) {\n  325 |       setSuErrors(errs);\n  326 |       return;\n  327 |     }\n  328 |     setSuErrors({});\n  329 |     setSuSuccess(\"\");\n  330 |     try {\n  331 |       await signUp({\n  332 |         name: suName.trim(),\n  333 |         email: suEmail.trim(),\n  334 |         password: suPassword,\n  335 |         designation: suDesignation,\n  336 |         degree: suDegree.trim(),\n  337 |         specialization: suSpecialization.trim(),\n  338 |         hospital: suHospital.trim(),\n  339 |         phone: suPhone.trim(),\n  340 |         role: suRole,\n  341 |       });\n  342 |     } catch (err: unknown) {\n  343 |       const msg = err instanceof Error ? err.message : \"Sign up failed.\";\n  344 |       if (\n  345 |         msg.includes(\"approval\") ||\n  346 |         msg.includes(\"pending\") ||\n  347 |         msg.includes(\"re-submitted\")\n  348 |       )\n  349 |         setSuSuccess(msg);\n  350 |       else setSuErrors({ general: msg });\n  351 |     }\n  352 |   };\n  353 | \n  354 |   return (\n  355 |     <Tabs defaultValue=\"signin\">\n  356 |       <TabsList className=\"w-full mb-5\">\n  357 |         <TabsTrigger\n  358 |           value=\"signin\"\n  359 |           className=\"flex-1\"\n  360 |           data-ocid=\"auth.signin.tab\"\n  361 |         >\n  362 |           Sign In\n  363 |         <\/TabsTrigger>\n  364 |         <TabsTrigger\n  365 |           value=\"signup\"\n  366 |           className=\"flex-1\"\n  367 |           data-ocid=\"auth.signup.tab\"\n  368 |         >\n  369 |           Sign Up\n  370 |         <\/TabsTrigger>\n  371 |       <\/TabsList>\n  372 |       <TabsContent value=\"signin\">\n  373 |         <form onSubmit={handleSignIn} className=\"space-y-4\">\n  374 |           <div className=\"space-y-1.5\">\n  375 |             <Label htmlFor=\"si-email\">Email<\/Label>\n  376 |             <Input\n  377 |               id=\"si-email\"\n  378 |               type=\"email\"\n  379 |               placeholder=\"doctor@hospital.com\"\n  380 |               value={siEmail}\n  381 |               onChange={(e) => setSiEmail(e.target.value)}\n  382 |               autoComplete=\"email\"\n  383 |               data-ocid=\"auth.signin.input\"\n  384 |             \/>\n  385 |           <\/div>\n  386 |           <div className=\"space-y-1.5\">\n  387 |             <Label htmlFor=\"si-password\">Password<\/Label>\n  388 |             <Input\n  389 |               id=\"si-password\"\n  390 |               type=\"password\"\n  391 |               placeholder=\"\u2022\u2022\u2022\u2022\u2022\u2022\"\n  392 |               value={siPassword}\n  393 |               onChange={(e) => setSiPassword(e.target.value)}\n  394 |               autoComplete=\"current-password\"\n  395 |               data-ocid=\"auth.signin.input\"\n  396 |             \/>\n  397 |           <\/div>\n  398 |           {(siError || authError) && (\n  399 |             <p\n  400 |               className=\"text-sm text-destructive\"\n  401 |               data-ocid=\"auth.signin.error_state\"\n  402 |             >\n  403 |               {siError || authError}\n  404 |             <\/p>\n  405 |           )}\n  406 |           <Button\n  407 |             type=\"submit\"\n  408 |             disabled={isLoggingIn}\n  409 |             className=\"w-full h-11 font-semibold\"\n  410 |             data-ocid=\"auth.signin.submit_button\"\n  411 |           >\n  412 |             {isLoggingIn ? (\n  413 |               <Loader2 className=\"w-4 h-4 mr-2 animate-spin\" \/>\n  414 |             ) : null}\n  415 |             {isLoggingIn ? \"Signing in...\" : \"Sign In\"}\n  416 |           <\/Button>\n  417 |         <\/form>\n  418 |       <\/TabsContent>\n  419 |       <TabsContent value=\"signup\">\n  420 |         <form onSubmit={handleSignUp} className=\"space-y-3\">\n  421 |           {suErrors.general && (\n  422 |             <p\n  423 |               className=\"text-sm text-destructive\"\n  424 |               data-ocid=\"auth.signup.error_state\"\n  425 |             >\n  426 |               {suErrors.general}\n  427 |             <\/p>\n  428 |           )}\n  429 |           {suSuccess && (\n  430 |             <div className=\"bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3\">\n  431 |               <p className=\"text-sm text-emerald-700 font-medium\">\n  432 |                 {suSuccess}\n  433 |               <\/p>\n  434 |             <\/div>\n  435 |           )}\n  436 |           <div className=\"grid grid-cols-3 gap-2\">\n  437 |             <div className=\"space-y-1.5\">\n  438 |               <Label>Designation<\/Label>\n  439 |               <Select value={suDesignation} onValueChange={setSuDesignation}>\n  440 |                 <SelectTrigger data-ocid=\"auth.signup.select\">\n  441 |                   <SelectValue \/>\n  442 |                 <\/SelectTrigger>\n  443 |                 <SelectContent>\n  444 |                   {DESIGNATIONS.map((d) => (\n  445 |                     <SelectItem key={d} value={d}>\n  446 |                       {d}\n  447 |                     <\/SelectItem>\n  448 |                   ))}\n  449 |                 <\/SelectContent>\n  450 |               <\/Select>\n  451 |             <\/div>\n  452 |             <div className=\"col-span-2 space-y-1.5\">\n  453 |               <Label htmlFor=\"su-name\">Full Name *<\/Label>\n  454 |               <Input\n  455 |                 id=\"su-name\"\n  456 |                 placeholder=\"Arman Kabir\"\n  457 |                 value={suName}\n  458 |                 onChange={(e) => setSuName(e.target.value)}\n  459 |                 data-ocid=\"auth.signup.input\"\n  460 |               \/>\n  461 |               {suErrors.name && (\n  462 |                 <p className=\"text-xs text-destructive\">{suErrors.name}<\/p>\n  463 |               )}\n  464 |             <\/div>\n  465 |           <\/div>\n  466 |           <div className=\"space-y-1.5\">\n  467 |             <Label>Role *<\/Label>\n  468 |             <Select\n  469 |               value={suRole}\n  470 |               onValueChange={(v) => setSuRole(v as StaffRole)}\n  471 |             >\n  472 |               <SelectTrigger data-ocid=\"auth.signup.select\">\n  473 |                 <SelectValue \/>\n  474 |               <\/SelectTrigger>\n  475 |               <SelectContent>\n  476 |                 {ROLE_HIERARCHY_ORDER.map((r) => (\n  477 |                   <SelectItem key={r} value={r}>\n  478 |                     <span className=\"flex items-center gap-2\">\n  479 |                       <span\n  480 |                         className={`w-2 h-2 rounded-full ${(STAFF_ROLE_COLORS[r] ?? \"\").split(\" \")[0]}`}\n  481 |                       \/>\n  482 |                       {STAFF_ROLE_LABELS[r]}\n  483 |                     <\/span>\n  484 |                   <\/SelectItem>\n  485 |                 ))}\n  486 |               <\/SelectContent>\n  487 |             <\/Select>\n  488 |           <\/div>\n  489 |           <div className=\"space-y-1.5\">\n  490 |             <Label htmlFor=\"su-email\">Email *<\/Label>\n  491 |             <Input\n  492 |               id=\"su-email\"\n  493 |               type=\"email\"\n  494 |               value={suEmail}\n  495 |               onChange={(e) => setSuEmail(e.target.value)}\n  496 |               autoComplete=\"email\"\n  497 |               data-ocid=\"auth.signup.input\"\n  498 |             \/>\n  499 |             {suErrors.email && (\n  500 |               <p className=\"text-xs text-destructive\">{suErrors.email}<\/p>\n  501 |             )}\n  502 |           <\/div>\n  503 |           <div className=\"grid grid-cols-2 gap-2\">\n  504 |             <div className=\"space-y-1.5\">\n  505 |               <Label htmlFor=\"su-password\">Password *<\/Label>\n  506 |               <Input\n  507 |                 id=\"su-password\"\n  508 |                 type=\"password\"\n  509 |                 placeholder=\"Min. 6 chars\"\n  510 |                 value={suPassword}\n  511 |                 onChange={(e) => setSuPassword(e.target.value)}\n  512 |                 data-ocid=\"auth.signup.input\"\n  513 |               \/>\n  514 |               {suErrors.password && (\n  515 |                 <p className=\"text-xs text-destructive\">{suErrors.password}<\/p>\n  516 |               )}\n  517 |             <\/div>\n  518 |             <div className=\"space-y-1.5\">\n  519 |               <Label htmlFor=\"su-confirm\">Confirm *<\/Label>",
             "is_error": false,
             "time": 1784741881
+        },
+        {
+            "id": "msg_8317eeeed9",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784742152
+        },
+        {
+            "id": "msg_d554372489",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me read the rest of the App.tsx file to understand the full structure before rewriting it. The file is 2426 lines long. Let me focus on the main parts I need to change - the imports, the canister-related code, the banners, and the localStorage usage.\n\nLet me take a different approach - instead of reading the whole 2426-line file, let me target specific sections that need to be removed\/rewritten.\n\nKey sections to remove:\n1. Import lines (lines 66-68, 83-84) - CanisterActorsProvider, createActor, canisterConfig, useMigration, getCanisterActor\/setCanisterActor\n2. The canister actor creation and resolveCanisterId logic (around line 1273-145)\n3. The showBackendBanner and showVercelHint logic (around line 179-183, 2084, 2245-232)\n4. localStorage usage throughout\n\nLet me read the critical sections."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me read the rest of the critical sections of App.tsx that need modification:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_3XQJ7ea9oQy76oWuNrAl8253",
+                    "name": "read_file",
+                    "input": {
+                        "offset": 120,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx",
+                        "limit": 1
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 84565,
+                "completion_tokens": 321,
+                "total_tokens": 84886,
+                "prompt_cache_hit_tokens": 68224,
+                "prompt_cache_miss_tokens": 16341,
+                "prompt_tokens_details": {
+                    "cached_tokens": 68224
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 210
+                },
+                "cached_tokens": 68224
+            },
+            "time": 1784742157
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_3XQJ7ea9oQy76oWuNrAl8253",
+            "content": "  120 |   getParentRoute: () => rootRoute,",
+            "is_error": false,
+            "time": 1784742157
+        },
+        {
+            "id": "msg_e7ec790edc",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The line numbers are off because I was reading the file after the first 100 lines. Let me get the right sections by using grep and reading specific line ranges."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_cAty2coIBAaavBQON7ye3741",
+                    "name": "bash",
+                    "input": {
+                        "command": "wc -l \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 84911,
+                "completion_tokens": 105,
+                "total_tokens": 85016,
+                "prompt_cache_hit_tokens": 84864,
+                "prompt_cache_miss_tokens": 47,
+                "prompt_tokens_details": {
+                    "cached_tokens": 84864
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 33
+                },
+                "cached_tokens": 84864
+            },
+            "time": 1784742161
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_cAty2coIBAaavBQON7ye3741",
+            "content": "2379 \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx\n",
+            "is_error": false,
+            "time": 1784742161
+        },
+        {
+            "id": "msg_b25bf21d36",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The file is 2379 lines. Let me read the key sections I need to modify - the imports, the canister logic, the banner, and the return\/render section."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me read the specific sections I need to modify:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_epbUE9UHM4KpHXkWRKDt9306",
+                    "name": "read_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx",
+                        "limit": 50
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 85058,
+                "completion_tokens": 126,
+                "total_tokens": 85184,
+                "prompt_cache_hit_tokens": 84992,
+                "prompt_cache_miss_tokens": 66,
+                "prompt_tokens_details": {
+                    "cached_tokens": 84992
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 37
+                },
+                "cached_tokens": 84992
+            },
+            "time": 1784742164
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_epbUE9UHM4KpHXkWRKDt9306",
+            "content": "    1 | import { EmailAuthProvider, useEmailAuth, useInactivityTimer } from \".\/hooks\/useEmailAuth\";\n    2 | import type { DoctorAccount, PatientAccount } from \".\/services\/auth\";\n    3 | import { Badge } from \"@\/components\/ui\/badge\";\n    4 | import { Button } from \"@\/components\/ui\/button\";\n    5 | import {\n    6 |   Dialog,\n    7 |   DialogContent,\n    8 |   DialogHeader,\n    9 |   DialogTitle,\n   10 | } from \"@\/components\/ui\/dialog\";\n   11 | import { Input } from \"@\/components\/ui\/input\";\n   12 | import { Label } from \"@\/components\/ui\/label\";\n   13 | import {\n   14 |   Select,\n   15 |   SelectContent,\n   16 |   SelectItem,\n   17 |   SelectTrigger,\n   18 |   SelectValue,\n   19 | } from \"@\/components\/ui\/select\";\n   20 | import { Toaster } from \"@\/components\/ui\/sonner\";\n   21 | import { Switch } from \"@\/components\/ui\/switch\";\n   22 | import { Tabs, TabsContent, TabsList, TabsTrigger } from \"@\/components\/ui\/tabs\";\n   23 | import { useQueryClient } from \"@tanstack\/react-query\";\n   24 | import {\n   25 |   Outlet,\n   26 |   RouterProvider,\n   27 |   createRootRoute,\n   28 |   createRoute,\n   29 |   createRouter,\n   30 |   useRouterState,\n   31 | } from \"@tanstack\/react-router\";\n   32 | import { Bell, CheckCircle2, Loader2, ShieldCheck, Stethoscope, User, UserCheck, X, XCircle } from \"lucide-react\";\n   33 | import { motion } from \"motion\/react\";\n   34 | import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from \"react\";\n   35 | import Layout from \".\/Layout\";\n   36 | import { useAdminAuth } from \".\/hooks\/useAdminAuth\";\n   37 | import { storage, cleanupBusinessData } from \"lib\/storageAdapter\";\n   38 | \n   39 | const AppointmentPayment = lazy(() => import(\".\/pages\/AppointmentPayment\"));\n   40 | const Appointments = lazy(() => import(\".\/pages\/Appointments\"));\n   41 | const AuditLog = lazy(() => import(\".\/pages\/AuditLog\"));\n   42 | const BedManagement = lazy(() => import(\".\/pages\/BedManagement\"));\n   43 | const Dashboard = lazy(() => import(\".\/pages\/Dashboard\"));\n   44 | const EmergencyPrescription = lazy(\n   45 |   () => import(\".\/pages\/EmergencyPrescription\"),\n   46 | );\n   47 | const InvestigationPaymentPage = lazy(\n   48 |   () => import(\".\/pages\/InvestigationPaymentPage\"),\n   49 | );\n   50 | const LandingPage = lazy(() => import(\".\/pages\/LandingPage\"));",
+            "is_error": false,
+            "time": 1784742164
+        },
+        {
+            "id": "msg_4f5833cb0e",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "OK, so the imports at the top have already been simplified - the canister-related imports are gone. Let me check the key sections now."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_LJjBWszXw9ImrrfDZjqt0677",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && grep -n \"createActor\\|CanisterActors\\|canisterConfig\\|useMigration\\|getCanisterActor\\|setCanisterActor\\|showBackendBanner\\|showVercelHint\\|resolveCanisterId\\|canisterReady\\|CANISTER_ID_BACKEND\\|__RESOLVED\\|syncBannerMessage\\|itemsPending\\|cleanupBusinessData\\|maxRetries\\|MAX_RETRIES\\|tryCreateActor\\|bannerDismissed\\|BANNER_DISMISSED\" source_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 85811,
+                "completion_tokens": 202,
+                "total_tokens": 86013,
+                "prompt_cache_hit_tokens": 85120,
+                "prompt_cache_miss_tokens": 691,
+                "prompt_tokens_details": {
+                    "cached_tokens": 85120
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 29
+                },
+                "cached_tokens": 85120
+            },
+            "time": 1784742168
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_LJjBWszXw9ImrrfDZjqt0677",
+            "content": "37:import { storage, cleanupBusinessData } from \"lib\/storageAdapter\";\n69:import { storage, cleanupBusinessData } from \"lib\/storageAdapter\";\n1169:  cleanupBusinessData();\n1228:  const canisterActorRef = useRef<ReturnType<typeof createActor> | null>(null);\n1229:  \/\/ Track actor in state so useMigration receives a non-null value after creation.\n1231:  const [canisterActorState, setCanisterActorState] = useState<ReturnType<\n1232:    typeof createActor\n1241:    function resolveCanisterId(): string {\n1258:      const p0 = w.__RESOLVED_CANISTER_ID_BACKEND as string | undefined;\n1263:      const p1v = envRaw?.VITE_CANISTER_ID_BACKEND;\n1267:      const p1c = envRaw?.CANISTER_ID_BACKEND;\n1271:      const p3 = w.CANISTER_ID_BACKEND as string | undefined;\n1275:      const p4 = w.__CANISTER_ID_BACKEND as string | undefined;\n1280:      const p5 = envObj?.CANISTER_ID_BACKEND;\n1282:      const p5v = envObj?.VITE_CANISTER_ID_BACKEND;\n1294:      \/\/ Pattern 7: scan all <script> tags for JSON containing CANISTER_ID_BACKEND\n1299:          if (!text.includes(\"CANISTER_ID_BACKEND\")) continue;\n1300:          \/\/ Try to find it as window.CANISTER_ID_BACKEND = \"...\"\n1302:            \/CANISTER_ID_BACKEND\\s*[=:]\\s*[\"']([a-z0-9-]{5,})[\"']\/,\n1305:          \/\/ Try JSON object: { \"CANISTER_ID_BACKEND\": \"...\" }\n1307:            const jsonMatch = text.match(\/\\{[^}]*CANISTER_ID_BACKEND[^}]*\\}\/);\n1311:                parsed.CANISTER_ID_BACKEND &&\n1312:                parsed.CANISTER_ID_BACKEND !== \"undefined\"\n1314:                return parsed.CANISTER_ID_BACKEND;\n1320:      \/\/ Pattern 8: __CANISTER_ID_BACKEND as a global var set by build injection\n1323:          .__CANISTER_ID_BACKEND as string | undefined;\n1330:    function tryCreateActor() {\n1332:      const canisterId = resolveCanisterId();\n1336:        const actor = createActor(\n1351:            \"[sync] createActor() returned null\/undefined \u2014 setCanisterActor not called. \" +\n1357:        setCanisterActorState(actor);\n1358:        setCanisterActor(actor);\n1365:          console.log(\"canisterId:\", canisterId, \"actor:\", getCanisterActor());\n1373:    if (tryCreateActor()) {\n1374:      \/\/ Actor created on first try \u2014 fire canisterReady event\n1375:      window.dispatchEvent(new CustomEvent(\"canisterReady\"));\n1380:    \/\/ tryCreateActor re-resolves the canister ID on every call so a late injection\n1383:      \"[sync] CANISTER_ID_BACKEND not yet available \u2014 will retry every 5s (up to 40 attempts).\\n\" +\n1384:        \"If this is a Vercel deployment: add VITE_CANISTER_ID_BACKEND to your Vercel project\\n\" +\n1390:    const MAX_RETRIES = 40; \/\/ 40 \u00d7 5s = 3 min 20s window for late injection\n1393:      if (tryCreateActor()) {\n1395:        window.dispatchEvent(new CustomEvent(\"canisterReady\"));\n1398:      if (retries >= MAX_RETRIES) {\n1401:          `[sync] CANISTER_ID_BACKEND could not be resolved after ${MAX_RETRIES} attempts. Sync is disabled.\\nFIX FOR VERCEL: Set VITE_CANISTER_ID_BACKEND in Vercel project Environment Variables.\\nFIX FOR CAFFEINE: Ensure the backend canister is deployed and the platform has injected CANISTER_ID_BACKEND.\\nTried: __RESOLVED_CANISTER_ID_BACKEND, VITE_CANISTER_ID_BACKEND (env), CANISTER_ID_BACKEND (env), window.CANISTER_ID_BACKEND, window.__CANISTER_ID_BACKEND, __ENV__.CANISTER_ID_BACKEND, <meta name=\"canister-id-backend\">, <script> tag scan, globalThis.__CANISTER_ID_BACKEND`,\n1409:  \/\/ invalidateAll: called by useMigration after every successful poll cycle\n1426:  \/\/ Pass canisterActorState (not canisterActorRef.current) so useMigration\n1428:  const { migrationStatus } = useMigration(canisterActorState, invalidateAll);\n1741:  const [bannerDismissed, setBannerDismissed] = useState(false);\n1749:  const [showVercelHint, setShowVercelHint] = useState(false);\n2037:  const showBackendBanner =\n2038:    (backendDisconnected || BUILD_TIME_CANISTER_ID === \"\") && !bannerDismissed;\n2199:      {showBackendBanner && (\n2239:          {showVercelHint && (\n2250:                  VITE_CANISTER_ID_BACKEND\n2258:                  VITE_CANISTER_ID_BACKEND\n2267:      <div style={showBackendBanner ? { paddingTop: \"40px\" } : undefined}>\n2373:    <CanisterActorsProvider>\n2377:    <\/CanisterActorsProvider>\n",
+            "is_error": false,
+            "time": 1784742168
+        },
+        {
+            "id": "msg_103d578fac",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "OK so the file still has many references. Let me look at the sections that need major rewriting:\n\n1. Line 37: import { storage, cleanupBusinessData } - keep storage, remove cleanupBusinessData\n2. Line 69: duplicate import - remove\n3. Around line 1169: cleanupBusinessData call - remove\n4. Lines 1228-1428: canister actor creation logic - remove entirely\n5. Lines 1741-1749: banner state - remove\n6. Lines 2037-2038: showBackendBanner - remove\n7. Lines 2199-2267: Banner JSX - remove\n8. Lines 2373-2377: CanisterActorsProvider - remove\n\nLet me read the specific sections to make precise edits."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me read the critical sections that need rewriting:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_0lcmHzqKfKx7RK9BG1lV9459",
+                    "name": "read_file",
+                    "input": {
+                        "offset": 30,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx",
+                        "limit": 50
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_fqFLq5KObSL7HqFRh1sB9170",
+                    "name": "read_file",
+                    "input": {
+                        "offset": 115,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx",
+                        "limit": 10
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_02_WaAqCc1t7G9NRsSW6yHy9785",
+                    "name": "read_file",
+                    "input": {
+                        "offset": 116,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx",
+                        "limit": 10
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 87279,
+                "completion_tokens": 433,
+                "total_tokens": 87712,
+                "prompt_cache_hit_tokens": 85888,
+                "prompt_cache_miss_tokens": 1391,
+                "prompt_tokens_details": {
+                    "cached_tokens": 85888
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 166
+                },
+                "cached_tokens": 85888
+            },
+            "time": 1784742174
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_0lcmHzqKfKx7RK9BG1lV9459",
+            "content": "   30 |   useRouterState,\n   31 | } from \"@tanstack\/react-router\";\n   32 | import { Bell, CheckCircle2, Loader2, ShieldCheck, Stethoscope, User, UserCheck, X, XCircle } from \"lucide-react\";\n   33 | import { motion } from \"motion\/react\";\n   34 | import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from \"react\";\n   35 | import Layout from \".\/Layout\";\n   36 | import { useAdminAuth } from \".\/hooks\/useAdminAuth\";\n   37 | import { storage, cleanupBusinessData } from \"lib\/storageAdapter\";\n   38 | \n   39 | const AppointmentPayment = lazy(() => import(\".\/pages\/AppointmentPayment\"));\n   40 | const Appointments = lazy(() => import(\".\/pages\/Appointments\"));\n   41 | const AuditLog = lazy(() => import(\".\/pages\/AuditLog\"));\n   42 | const BedManagement = lazy(() => import(\".\/pages\/BedManagement\"));\n   43 | const Dashboard = lazy(() => import(\".\/pages\/Dashboard\"));\n   44 | const EmergencyPrescription = lazy(\n   45 |   () => import(\".\/pages\/EmergencyPrescription\"),\n   46 | );\n   47 | const InvestigationPaymentPage = lazy(\n   48 |   () => import(\".\/pages\/InvestigationPaymentPage\"),\n   49 | );\n   50 | const LandingPage = lazy(() => import(\".\/pages\/LandingPage\"));\n   51 | const OtherPayment = lazy(() => import(\".\/pages\/OtherPayment\"));\n   52 | const OutstandingBalances = lazy(() => import(\".\/pages\/OutstandingBalances\"));\n   53 | const PatientDashboard = lazy(() => import(\".\/pages\/PatientDashboard\"));\n   54 | const Patients = lazy(() => import(\".\/pages\/Patients\"));\n   55 | const ProcedurePayment = lazy(() => import(\".\/pages\/ProcedurePayment\"));\n   56 | const RegistrarDashboard = lazy(() => import(\".\/pages\/RegistrarDashboard\"));\n   57 | const SerialDisplay = lazy(() => import(\".\/pages\/SerialDisplay\"));\n   58 | const Settings = lazy(() => import(\".\/pages\/Settings\"));\n   59 | const Staff = lazy(() => import(\".\/pages\/Staff\"));\n   60 | const TotalIncome = lazy(() => import(\".\/pages\/TotalIncome\"));\n   61 | const VisitPage = lazy(() => import(\".\/pages\/VisitPage\"));\n   62 | const WardRound = lazy(() => import(\".\/pages\/WardRound\"));\n   63 | import {\n   64 |   ROLE_HIERARCHY_ORDER,\n   65 |   STAFF_ROLE_COLORS,\n   66 |   STAFF_ROLE_LABELS,\n   67 | } from \".\/types\";\n   68 | import type { StaffRole } from \".\/types\";\n   69 | import { storage, cleanupBusinessData } from \"lib\/storageAdapter\";\n   70 | \n   71 | \/\/ \u2500\u2500 Route tree \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   72 | \n   73 | function RootLayoutComponent() {\n   74 |   const state = useRouterState();\n   75 |   const pathname = state.location.pathname;\n   76 |   const currentPageName =\n   77 |     pathname === \"\/\" || pathname === \"\/Patients\"\n   78 |       ? \"Patients\"\n   79 |       : pathname === \"\/Dashboard\"",
+            "is_error": false,
+            "time": 1784742174
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_fqFLq5KObSL7HqFRh1sB9170",
+            "content": "  115 |   getParentRoute: () => rootRoute,\n  116 |   path: \"\/Settings\",\n  117 |   component: Settings,\n  118 | });\n  119 | const appointmentsRoute = createRoute({\n  120 |   getParentRoute: () => rootRoute,\n  121 |   path: \"\/Appointments\",\n  122 |   component: Appointments,\n  123 | });\n  124 | const auditLogRoute = createRoute({",
+            "is_error": false,
+            "time": 1784742174
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_02_WaAqCc1t7G9NRsSW6yHy9785",
+            "content": "  116 |   path: \"\/Settings\",\n  117 |   component: Settings,\n  118 | });\n  119 | const appointmentsRoute = createRoute({\n  120 |   getParentRoute: () => rootRoute,\n  121 |   path: \"\/Appointments\",\n  122 |   component: Appointments,\n  123 | });\n  124 | const auditLogRoute = createRoute({\n  125 |   getParentRoute: () => rootRoute,",
+            "is_error": false,
+            "time": 1784742174
+        },
+        {
+            "id": "msg_e03e5b376e",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I need to make focused edits. Let me read the specific sections I need to modify and then make the changes. The sections that need changing are:\n\n1. Remove duplicate import at line 69\n2. Remove cleanupBusinessData from import at line 37\n3. Remove the cleanupBusinessData() call around line 1169\n4. Remove the entire canister actor creation and resolveCanisterId block (lines ~1222-143)\n5. Remove banner state variables (lines ~1741-175)\n6. Remove showBackendBanner logic (lines ~2037-2038)\n7. Remove banner JSX (lines ~2199-2267)\n8. Remove CanisterActorsProvider wrapper (lines ~2373-2377)\n\nLet me read these specific sections precisely."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_r8BfAvnB7Y65Ty3C83aa1116",
+                    "name": "read_file",
+                    "input": {
+                        "offset": 69,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx",
+                        "limit": 3
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_kmR155Q3Pf6801ai05Wf0826",
+                    "name": "read_file",
+                    "input": {
+                        "offset": 116,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx",
+                        "limit": 3
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_02_BvEPIjZBSM3sId5WcFNm8637",
+                    "name": "read_file",
+                    "input": {
+                        "offset": 116,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx",
+                        "limit": 250
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 88615,
+                "completion_tokens": 423,
+                "total_tokens": 89038,
+                "prompt_cache_hit_tokens": 87168,
+                "prompt_cache_miss_tokens": 1447,
+                "prompt_tokens_details": {
+                    "cached_tokens": 87168
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 166
+                },
+                "cached_tokens": 87168
+            },
+            "time": 1784742180
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_r8BfAvnB7Y65Ty3C83aa1116",
+            "content": "   69 | import { storage, cleanupBusinessData } from \"lib\/storageAdapter\";\n   70 | \n   71 | \/\/ \u2500\u2500 Route tree \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+            "is_error": false,
+            "time": 1784742180
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_kmR155Q3Pf6801ai05Wf0826",
+            "content": "  116 |   path: \"\/Settings\",\n  117 |   component: Settings,\n  118 | });",
+            "is_error": false,
+            "time": 1784742180
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_02_BvEPIjZBSM3sId5WcFNm8637",
+            "content": "  116 |   path: \"\/Settings\",\n  117 |   component: Settings,\n  118 | });\n  119 | const appointmentsRoute = createRoute({\n  120 |   getParentRoute: () => rootRoute,\n  121 |   path: \"\/Appointments\",\n  122 |   component: Appointments,\n  123 | });\n  124 | const auditLogRoute = createRoute({\n  125 |   getParentRoute: () => rootRoute,\n  126 |   path: \"\/AuditLog\",\n  127 |   component: AuditLog,\n  128 | });\n  129 | const wardRoundRoute = createRoute({\n  130 |   getParentRoute: () => rootRoute,\n  131 |   path: \"\/WardRound\",\n  132 |   component: WardRound,\n  133 | });\n  134 | const bedManagementRoute = createRoute({\n  135 |   getParentRoute: () => rootRoute,\n  136 |   path: \"\/BedManagement\",\n  137 |   component: BedManagement,\n  138 | });\n  139 | const visitRoute = createRoute({\n  140 |   getParentRoute: () => rootRoute,\n  141 |   path: \"\/Visit\",\n  142 |   component: VisitPage,\n  143 | });\n  144 | const emergencyPrescriptionRoute = createRoute({\n  145 |   getParentRoute: () => rootRoute,\n  146 |   path: \"\/EmergencyPrescription\",\n  147 |   component: EmergencyPrescription,\n  148 | });\n  149 | const staffRoute = createRoute({\n  150 |   getParentRoute: () => rootRoute,\n  151 |   path: \"\/Staff\",\n  152 |   component: Staff,\n  153 | });\n  154 | const appointmentPaymentRoute = createRoute({\n  155 |   getParentRoute: () => rootRoute,\n  156 |   path: \"\/AppointmentPayment\",\n  157 |   component: AppointmentPayment,\n  158 | });\n  159 | const investigationPaymentRoute = createRoute({\n  160 |   getParentRoute: () => rootRoute,\n  161 |   path: \"\/InvestigationPayment\",\n  162 |   component: InvestigationPaymentPage,\n  163 | });\n  164 | const procedurePaymentRoute = createRoute({\n  165 |   getParentRoute: () => rootRoute,\n  166 |   path: \"\/ProcedurePayment\",\n  167 |   component: ProcedurePayment,\n  168 | });\n  169 | const totalIncomeRoute = createRoute({\n  170 |   getParentRoute: () => rootRoute,\n  171 |   path: \"\/TotalIncome\",\n  172 |   component: TotalIncome,\n  173 | });\n  174 | const otherPaymentRoute = createRoute({\n  175 |   getParentRoute: () => rootRoute,\n  176 |   path: \"\/OtherPayment\",\n  177 |   component: OtherPayment,\n  178 | });\n  179 | const registrarDashboardRoute = createRoute({\n  180 |   getParentRoute: () => rootRoute,\n  181 |   path: \"\/RegistrarDashboard\",\n  182 |   component: RegistrarDashboard,\n  183 | });\n  184 | const outstandingBalancesRoute = createRoute({\n  185 |   getParentRoute: () => rootRoute,\n  186 |   path: \"\/OutstandingBalances\",\n  187 |   component: OutstandingBalances,\n  188 | });\n  189 | \n  190 | const routeTree = rootRoute.addChildren([\n  191 |   indexRoute,\n  192 |   dashboardRoute,\n  193 |   patientsRoute,\n  194 |   patientProfileRoute,\n  195 |   settingsRoute,\n  196 |   appointmentsRoute,\n  197 |   auditLogRoute,\n  198 |   wardRoundRoute,\n  199 |   bedManagementRoute,\n  200 |   visitRoute,\n  201 |   emergencyPrescriptionRoute,\n  202 |   staffRoute,\n  203 |   appointmentPaymentRoute,\n  204 |   investigationPaymentRoute,\n  205 |   procedurePaymentRoute,\n  206 |   totalIncomeRoute,\n  207 |   otherPaymentRoute,\n  208 |   outstandingBalancesRoute,\n  209 |   registrarDashboardRoute,\n  210 | ]);\n  211 | const router = createRouter({ routeTree });\n  212 | \n  213 | declare module \"@tanstack\/react-router\" {\n  214 |   interface Register {\n  215 |     router: typeof router;\n  216 |   }\n  217 | }\n  218 | \n  219 | \/\/ PatientProfile wrapper that decides the role\n  220 | function PatientProfileWrapper() {\n  221 |   const { currentDoctor } = useEmailAuth();\n  222 |   const role = (currentDoctor?.role ?? \"doctor\") as StaffRole;\n  223 |   \/\/ Map to the 4-bucket currentRole the dashboard understands, but pass the\n  224 |   \/\/ granular StaffRole separately so permission-gated actions use the real role.\n  225 |   const dashboardRole: \"admin\" | \"doctor\" | \"staff\" =\n  226 |     role === \"staff\" ? \"staff\" : \"doctor\";\n  227 |   return <PatientDashboard currentRole={dashboardRole} viewerRole={role} \/>;\n  228 | }\n  229 | \n  230 | \/\/ \u2500\u2500 Auth Form Content \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  231 | \n  232 | const DESIGNATIONS = [\"Dr.\", \"Prof.\", \"Assoc. Prof.\", \"Mr.\", \"Ms.\", \"Mrs.\"];\n  233 | \n  234 | function StaffAuthContent() {\n  235 |   const { signIn, signUp, isLoggingIn, authError } = useEmailAuth();\n  236 | \n  237 |   const [siEmail, setSiEmail] = useState(\"\");\n  238 |   const [siPassword, setSiPassword] = useState(\"\");\n  239 |   const [siError, setSiError] = useState(\"\");\n  240 | \n  241 |   const [suName, setSuName] = useState(\"\");\n  242 |   const [suEmail, setSuEmail] = useState(\"\");\n  243 |   const [suPassword, setSuPassword] = useState(\"\");\n  244 |   const [suConfirm, setSuConfirm] = useState(\"\");\n  245 |   const [suDesignation, setSuDesignation] = useState(\"Dr.\");\n  246 |   const [suDegree, setSuDegree] = useState(\"\");\n  247 |   const [suSpecialization, setSuSpecialization] = useState(\"\");\n  248 |   const [suHospital, setSuHospital] = useState(\"\");\n  249 |   const [suPhone, setSuPhone] = useState(\"\");\n  250 |   const [suRole, setSuRole] = useState<StaffRole>(\"doctor\");\n  251 |   const [suErrors, setSuErrors] = useState<Record<string, string>>({});\n  252 |   const [suSuccess, setSuSuccess] = useState(\"\");\n  253 | \n  254 |   const handleSignIn = async (e: React.FormEvent) => {\n  255 |     e.preventDefault();\n  256 |     setSiError(\"\");\n  257 |     if (!siEmail || !siPassword) {\n  258 |       setSiError(\"Please enter email and password.\");\n  259 |       return;\n  260 |     }\n  261 |     try {\n  262 |       await signIn(siEmail, siPassword);\n  263 |     } catch (err: unknown) {\n  264 |       setSiError(err instanceof Error ? err.message : \"Sign in failed.\");\n  265 |     }\n  266 |   };\n  267 | \n  268 |   const handleSignUp = async (e: React.FormEvent) => {\n  269 |     e.preventDefault();\n  270 |     const errs: Record<string, string> = {};\n  271 |     if (!suName.trim()) errs.name = \"Full name is required.\";\n  272 |     if (!suEmail.trim()) errs.email = \"Email is required.\";\n  273 |     if (!suPassword) errs.password = \"Password is required.\";\n  274 |     else if (suPassword.length < 6)\n  275 |       errs.password = \"Password must be at least 6 characters.\";\n  276 |     if (suPassword !== suConfirm) errs.confirm = \"Passwords do not match.\";\n  277 |     if (Object.keys(errs).length > 0) {\n  278 |       setSuErrors(errs);\n  279 |       return;\n  280 |     }\n  281 |     setSuErrors({});\n  282 |     setSuSuccess(\"\");\n  283 |     try {\n  284 |       await signUp({\n  285 |         name: suName.trim(),\n  286 |         email: suEmail.trim(),\n  287 |         password: suPassword,\n  288 |         designation: suDesignation,\n  289 |         degree: suDegree.trim(),\n  290 |         specialization: suSpecialization.trim(),\n  291 |         hospital: suHospital.trim(),\n  292 |         phone: suPhone.trim(),\n  293 |         role: suRole,\n  294 |       });\n  295 |     } catch (err: unknown) {\n  296 |       const msg = err instanceof Error ? err.message : \"Sign up failed.\";\n  297 |       if (\n  298 |         msg.includes(\"approval\") ||\n  299 |         msg.includes(\"pending\") ||\n  300 |         msg.includes(\"re-submitted\")\n  301 |       )\n  302 |         setSuSuccess(msg);\n  303 |       else setSuErrors({ general: msg });\n  304 |     }\n  305 |   };\n  306 | \n  307 |   return (\n  308 |     <Tabs defaultValue=\"signin\">\n  309 |       <TabsList className=\"w-full mb-5\">\n  310 |         <TabsTrigger\n  311 |           value=\"signin\"\n  312 |           className=\"flex-1\"\n  313 |           data-ocid=\"auth.signin.tab\"\n  314 |         >\n  315 |           Sign In\n  316 |         <\/TabsTrigger>\n  317 |         <TabsTrigger\n  318 |           value=\"signup\"\n  319 |           className=\"flex-1\"\n  320 |           data-ocid=\"auth.signup.tab\"\n  321 |         >\n  322 |           Sign Up\n  323 |         <\/TabsTrigger>\n  324 |       <\/TabsList>\n  325 |       <TabsContent value=\"signin\">\n  326 |         <form onSubmit={handleSignIn} className=\"space-y-4\">\n  327 |           <div className=\"space-y-1.5\">\n  328 |             <Label htmlFor=\"si-email\">Email<\/Label>\n  329 |             <Input\n  330 |               id=\"si-email\"\n  331 |               type=\"email\"\n  332 |               placeholder=\"doctor@hospital.com\"\n  333 |               value={siEmail}\n  334 |               onChange={(e) => setSiEmail(e.target.value)}\n  335 |               autoComplete=\"email\"\n  336 |               data-ocid=\"auth.signin.input\"\n  337 |             \/>\n  338 |           <\/div>\n  339 |           <div className=\"space-y-1.5\">\n  340 |             <Label htmlFor=\"si-password\">Password<\/Label>\n  341 |             <Input\n  342 |               id=\"si-password\"\n  343 |               type=\"password\"\n  344 |               placeholder=\"\u2022\u2022\u2022\u2022\u2022\u2022\"\n  345 |               value={siPassword}\n  346 |               onChange={(e) => setSiPassword(e.target.value)}\n  347 |               autoComplete=\"current-password\"\n  348 |               data-ocid=\"auth.signin.input\"\n  349 |             \/>\n  350 |           <\/div>\n  351 |           {(siError || authError) && (\n  352 |             <p\n  353 |               className=\"text-sm text-destructive\"\n  354 |               data-ocid=\"auth.signin.error_state\"\n  355 |             >\n  356 |               {siError || authError}\n  357 |             <\/p>\n  358 |           )}\n  359 |           <Button\n  360 |             type=\"submit\"\n  361 |             disabled={isLoggingIn}\n  362 |             className=\"w-full h-11 font-semibold\"\n  363 |             data-ocid=\"auth.signin.submit_button\"\n  364 |           >\n  365 |             {isLoggingIn ? (",
+            "is_error": false,
+            "time": 1784742180
+        },
+        {
+            "id": "msg_7bfdf21672",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "OK, this is very large. Let me take a more efficient approach - I'll read the specific sections that need to be removed and make targeted edits. Let me read the key sections I know need modification."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me read the remaining critical sections of App.tsx:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_Ou2BpNEbpu9JSyzS3pBs3298",
+                    "name": "read_file",
+                    "input": {
+                        "offset": 115,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx",
+                        "limit": 10
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 91733,
+                "completion_tokens": 148,
+                "total_tokens": 91881,
+                "prompt_cache_hit_tokens": 88960,
+                "prompt_cache_miss_tokens": 2773,
+                "prompt_tokens_details": {
+                    "cached_tokens": 88960
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 42
+                },
+                "cached_tokens": 88960
+            },
+            "time": 1784742183
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_Ou2BpNEbpu9JSyzS3pBs3298",
+            "content": "  115 |   getParentRoute: () => rootRoute,\n  116 |   path: \"\/Settings\",\n  117 |   component: Settings,\n  118 | });\n  119 | const appointmentsRoute = createRoute({\n  120 |   getParentRoute: () => rootRoute,\n  121 |   path: \"\/Appointments\",\n  122 |   component: Appointments,\n  123 | });\n  124 | const auditLogRoute = createRoute({",
+            "is_error": false,
+            "time": 1784742183
+        },
+        {
+            "id": "msg_3960f809f7",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "OK, let me take a more efficient approach. The App.tsx file is 2379 lines. I need to read the specific sections that:\n\n1. Lines 1-37: imports (already simplified by previous edits)\n2. Lines 63-69: duplicate import (remove line 69)\n3. Lines ~116-117: cleanupBusinessData() call (remove)\n4. Lines ~122-143: canister actor creation logic (remove)\n5. Lines ~174-175: banner state (remove)\n6. Lines ~2035-204: showBackendBanner logic (remove)\n7. Lines ~2195-227: Banner JSX (remove)\n8. Lines ~237-2379: CanisterActorsProvider (remove)\n\nLet me read all these sections now."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_RZpGpniP2cr54bq5WEWx1814",
+                    "name": "read_file",
+                    "input": {
+                        "offset": 115,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx",
+                        "limit": 100
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 91984,
+                "completion_tokens": 269,
+                "total_tokens": 92253,
+                "prompt_cache_hit_tokens": 91776,
+                "prompt_cache_miss_tokens": 208,
+                "prompt_tokens_details": {
+                    "cached_tokens": 91776
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 174
+                },
+                "cached_tokens": 91776
+            },
+            "time": 1784742188
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_RZpGpniP2cr54bq5WEWx1814",
+            "content": "  115 |   getParentRoute: () => rootRoute,\n  116 |   path: \"\/Settings\",\n  117 |   component: Settings,\n  118 | });\n  119 | const appointmentsRoute = createRoute({\n  120 |   getParentRoute: () => rootRoute,\n  121 |   path: \"\/Appointments\",\n  122 |   component: Appointments,\n  123 | });\n  124 | const auditLogRoute = createRoute({\n  125 |   getParentRoute: () => rootRoute,\n  126 |   path: \"\/AuditLog\",\n  127 |   component: AuditLog,\n  128 | });\n  129 | const wardRoundRoute = createRoute({\n  130 |   getParentRoute: () => rootRoute,\n  131 |   path: \"\/WardRound\",\n  132 |   component: WardRound,\n  133 | });\n  134 | const bedManagementRoute = createRoute({\n  135 |   getParentRoute: () => rootRoute,\n  136 |   path: \"\/BedManagement\",\n  137 |   component: BedManagement,\n  138 | });\n  139 | const visitRoute = createRoute({\n  140 |   getParentRoute: () => rootRoute,\n  141 |   path: \"\/Visit\",\n  142 |   component: VisitPage,\n  143 | });\n  144 | const emergencyPrescriptionRoute = createRoute({\n  145 |   getParentRoute: () => rootRoute,\n  146 |   path: \"\/EmergencyPrescription\",\n  147 |   component: EmergencyPrescription,\n  148 | });\n  149 | const staffRoute = createRoute({\n  150 |   getParentRoute: () => rootRoute,\n  151 |   path: \"\/Staff\",\n  152 |   component: Staff,\n  153 | });\n  154 | const appointmentPaymentRoute = createRoute({\n  155 |   getParentRoute: () => rootRoute,\n  156 |   path: \"\/AppointmentPayment\",\n  157 |   component: AppointmentPayment,\n  158 | });\n  159 | const investigationPaymentRoute = createRoute({\n  160 |   getParentRoute: () => rootRoute,\n  161 |   path: \"\/InvestigationPayment\",\n  162 |   component: InvestigationPaymentPage,\n  163 | });\n  164 | const procedurePaymentRoute = createRoute({\n  165 |   getParentRoute: () => rootRoute,\n  166 |   path: \"\/ProcedurePayment\",\n  167 |   component: ProcedurePayment,\n  168 | });\n  169 | const totalIncomeRoute = createRoute({\n  170 |   getParentRoute: () => rootRoute,\n  171 |   path: \"\/TotalIncome\",\n  172 |   component: TotalIncome,\n  173 | });\n  174 | const otherPaymentRoute = createRoute({\n  175 |   getParentRoute: () => rootRoute,\n  176 |   path: \"\/OtherPayment\",\n  177 |   component: OtherPayment,\n  178 | });\n  179 | const registrarDashboardRoute = createRoute({\n  180 |   getParentRoute: () => rootRoute,\n  181 |   path: \"\/RegistrarDashboard\",\n  182 |   component: RegistrarDashboard,\n  183 | });\n  184 | const outstandingBalancesRoute = createRoute({\n  185 |   getParentRoute: () => rootRoute,\n  186 |   path: \"\/OutstandingBalances\",\n  187 |   component: OutstandingBalances,\n  188 | });\n  189 | \n  190 | const routeTree = rootRoute.addChildren([\n  191 |   indexRoute,\n  192 |   dashboardRoute,\n  193 |   patientsRoute,\n  194 |   patientProfileRoute,\n  195 |   settingsRoute,\n  196 |   appointmentsRoute,\n  197 |   auditLogRoute,\n  198 |   wardRoundRoute,\n  199 |   bedManagementRoute,\n  200 |   visitRoute,\n  201 |   emergencyPrescriptionRoute,\n  202 |   staffRoute,\n  203 |   appointmentPaymentRoute,\n  204 |   investigationPaymentRoute,\n  205 |   procedurePaymentRoute,\n  206 |   totalIncomeRoute,\n  207 |   otherPaymentRoute,\n  208 |   outstandingBalancesRoute,\n  209 |   registrarDashboardRoute,\n  210 | ]);\n  211 | const router = createRouter({ routeTree });\n  212 | \n  213 | declare module \"@tanstack\/react-router\" {\n  214 |   interface Register {",
+            "is_error": false,
+            "time": 1784742188
+        },
+        {
+            "id": "msg_363ba7f37a",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Good, the routes section looks clean. Let me now find and read the specific sections that contain ICP\/canister code. I'll use grep to find exact line numbers and read those ranges."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_twzXvW1oX7TxaE1xVEuX4644",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && grep -n \"cleanupBusinessData\\|createActor\\|CanisterActors\\|canisterConfig\\|useMigration\\|getCanisterActor\\|setCanisterActor\\|showBackendBanner\\|showVercelHint\\|resolveCanisterId\\|canisterReady\\|CANISTER_ID_BACKEND\\|__RESOLVED\\|syncBannerMessage\\|itemsPending\\|maxRetries\\|MAX_RETRIES\\|tryCreateActor\\|bannerDismissed\\|BANNER_DISMISSED\\|canisterActorRef\\|canisterActorState\\|BuildTimeCanister\\|BUILD_TIME_CANISTER\\|backendDisconnected\\|setBackendDisconnected\\|setShowBackend\\|showSyncBanner\" source_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 93167,
+                "completion_tokens": 254,
+                "total_tokens": 93421,
+                "prompt_cache_hit_tokens": 92160,
+                "prompt_cache_miss_tokens": 1007,
+                "prompt_tokens_details": {
+                    "cached_tokens": 92160
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 39
+                },
+                "cached_tokens": 92160
+            },
+            "time": 1784742193
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_twzXvW1oX7TxaE1xVEuX4644",
+            "content": "37:import { storage, cleanupBusinessData } from \"lib\/storageAdapter\";\n69:import { storage, cleanupBusinessData } from \"lib\/storageAdapter\";\n1169:  cleanupBusinessData();\n1228:  const canisterActorRef = useRef<ReturnType<typeof createActor> | null>(null);\n1229:  \/\/ Track actor in state so useMigration receives a non-null value after creation.\n1230:  \/\/ canisterActorRef is kept for synchronous access; canisterActorState drives re-renders.\n1231:  const [canisterActorState, setCanisterActorState] = useState<ReturnType<\n1232:    typeof createActor\n1235:  const [backendDisconnected, setBackendDisconnected] = useState(false);\n1239:    if (canisterActorRef.current) return;\n1241:    function resolveCanisterId(): string {\n1243:      if (BUILD_TIME_CANISTER_ID && BUILD_TIME_CANISTER_ID.trim() !== \"\") {\n1246:          BUILD_TIME_CANISTER_ID,\n1248:        return BUILD_TIME_CANISTER_ID.trim();\n1258:      const p0 = w.__RESOLVED_CANISTER_ID_BACKEND as string | undefined;\n1263:      const p1v = envRaw?.VITE_CANISTER_ID_BACKEND;\n1267:      const p1c = envRaw?.CANISTER_ID_BACKEND;\n1271:      const p3 = w.CANISTER_ID_BACKEND as string | undefined;\n1275:      const p4 = w.__CANISTER_ID_BACKEND as string | undefined;\n1280:      const p5 = envObj?.CANISTER_ID_BACKEND;\n1282:      const p5v = envObj?.VITE_CANISTER_ID_BACKEND;\n1294:      \/\/ Pattern 7: scan all <script> tags for JSON containing CANISTER_ID_BACKEND\n1299:          if (!text.includes(\"CANISTER_ID_BACKEND\")) continue;\n1300:          \/\/ Try to find it as window.CANISTER_ID_BACKEND = \"...\"\n1302:            \/CANISTER_ID_BACKEND\\s*[=:]\\s*[\"']([a-z0-9-]{5,})[\"']\/,\n1305:          \/\/ Try JSON object: { \"CANISTER_ID_BACKEND\": \"...\" }\n1307:            const jsonMatch = text.match(\/\\{[^}]*CANISTER_ID_BACKEND[^}]*\\}\/);\n1311:                parsed.CANISTER_ID_BACKEND &&\n1312:                parsed.CANISTER_ID_BACKEND !== \"undefined\"\n1314:                return parsed.CANISTER_ID_BACKEND;\n1320:      \/\/ Pattern 8: __CANISTER_ID_BACKEND as a global var set by build injection\n1323:          .__CANISTER_ID_BACKEND as string | undefined;\n1330:    function tryCreateActor() {\n1331:      if (canisterActorRef.current) return true; \/\/ already created\n1332:      const canisterId = resolveCanisterId();\n1336:        const actor = createActor(\n1351:            \"[sync] createActor() returned null\/undefined \u2014 setCanisterActor not called. \" +\n1356:        canisterActorRef.current = actor;\n1357:        setCanisterActorState(actor);\n1358:        setCanisterActor(actor);\n1359:        setBackendDisconnected(false);\n1365:          console.log(\"canisterId:\", canisterId, \"actor:\", getCanisterActor());\n1373:    if (tryCreateActor()) {\n1374:      \/\/ Actor created on first try \u2014 fire canisterReady event\n1375:      window.dispatchEvent(new CustomEvent(\"canisterReady\"));\n1380:    \/\/ tryCreateActor re-resolves the canister ID on every call so a late injection\n1383:      \"[sync] CANISTER_ID_BACKEND not yet available \u2014 will retry every 5s (up to 40 attempts).\\n\" +\n1384:        \"If this is a Vercel deployment: add VITE_CANISTER_ID_BACKEND to your Vercel project\\n\" +\n1387:    setBackendDisconnected(true);\n1390:    const MAX_RETRIES = 40; \/\/ 40 \u00d7 5s = 3 min 20s window for late injection\n1393:      if (tryCreateActor()) {\n1395:        window.dispatchEvent(new CustomEvent(\"canisterReady\"));\n1398:      if (retries >= MAX_RETRIES) {\n1401:          `[sync] CANISTER_ID_BACKEND could not be resolved after ${MAX_RETRIES} attempts. Sync is disabled.\\nFIX FOR VERCEL: Set VITE_CANISTER_ID_BACKEND in Vercel project Environment Variables.\\nFIX FOR CAFFEINE: Ensure the backend canister is deployed and the platform has injected CANISTER_ID_BACKEND.\\nTried: __RESOLVED_CANISTER_ID_BACKEND, VITE_CANISTER_ID_BACKEND (env), CANISTER_ID_BACKEND (env), window.CANISTER_ID_BACKEND, window.__CANISTER_ID_BACKEND, __ENV__.CANISTER_ID_BACKEND, <meta name=\"canister-id-backend\">, <script> tag scan, globalThis.__CANISTER_ID_BACKEND`,\n1409:  \/\/ invalidateAll: called by useMigration after every successful poll cycle\n1426:  \/\/ Pass canisterActorState (not canisterActorRef.current) so useMigration\n1428:  const { migrationStatus } = useMigration(canisterActorState, invalidateAll);\n1741:  const [bannerDismissed, setBannerDismissed] = useState(false);\n1745:    if (!backendDisconnected) setBannerDismissed(false);\n1746:  }, [backendDisconnected]);\n1749:  const [showVercelHint, setShowVercelHint] = useState(false);\n1751:    if (!backendDisconnected) {\n1758:  }, [backendDisconnected]);\n2037:  const showBackendBanner =\n2038:    (backendDisconnected || BUILD_TIME_CANISTER_ID === \"\") && !bannerDismissed;\n2199:      {showBackendBanner && (\n2239:          {showVercelHint && (\n2250:                  VITE_CANISTER_ID_BACKEND\n2258:                  VITE_CANISTER_ID_BACKEND\n2267:      <div style={showBackendBanner ? { paddingTop: \"40px\" } : undefined}>\n2373:    <CanisterActorsProvider>\n2377:    <\/CanisterActorsProvider>\n",
+            "is_error": false,
+            "time": 1784742193
+        },
+        {
+            "id": "msg_88448773aa",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I have all the line numbers. Let me also check if there are references to BUILD_TIME_CANISTER_ID that I may have missed."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me also check for BUILD_TIME_CANISTER_ID and other remaining ICP references:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_koJWxEkGI3iv2Ocf7SuI6645",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && grep -n \"BUILD_TIME_CANISTER_ID\" source_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_RtywlE93XYuH6r5M2JsU4643",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && grep -n \"migrationStatus\\|invalidateAll\\|showSyncBanner\\|itemsPending\" source_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 94897,
+                "completion_tokens": 203,
+                "total_tokens": 95100,
+                "prompt_cache_hit_tokens": 93312,
+                "prompt_cache_miss_tokens": 1585,
+                "prompt_tokens_details": {
+                    "cached_tokens": 93312
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 29
+                },
+                "cached_tokens": 93312
+            },
+            "time": 1784742197
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_koJWxEkGI3iv2Ocf7SuI6645",
+            "content": "1243:      if (BUILD_TIME_CANISTER_ID && BUILD_TIME_CANISTER_ID.trim() !== \"\") {\n1246:          BUILD_TIME_CANISTER_ID,\n1248:        return BUILD_TIME_CANISTER_ID.trim();\n2038:    (backendDisconnected || BUILD_TIME_CANISTER_ID === \"\") && !bannerDismissed;\n",
+            "is_error": false,
+            "time": 1784742198
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_RtywlE93XYuH6r5M2JsU4643",
+            "content": "1409:  \/\/ invalidateAll: called by useMigration after every successful poll cycle\n1411:  const invalidateAll = useCallback(() => {\n1428:  const { migrationStatus } = useMigration(canisterActorState, invalidateAll);\n1431:    if (migrationStatus === \"running\" && !migrationToastShownRef.current) {\n1443:    if (migrationStatus === \"complete\") {\n1450:    if (migrationStatus === \"failed\") {\n1458:  }, [migrationStatus]);\n",
+            "is_error": false,
+            "time": 1784742198
+        },
+        {
+            "id": "msg_24954b82d8",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now let me read the exact sections I need to modify. Let me read the ranges:\n\n1. Lines 1225-147 (canister creation + migration logic) - needs complete removal\n2. Lines 1738-1762 (banner state) - remove\n3. Lines 2035-204 (showBackendBanner) - remove\n4. Lines 2195-227 (Banner JSX) - remove\n5. Lines 237-2379 (CanisterActorsProvider) - remove\n\nAlso:\n- Line 37: change import to just `{ storage }` \n- Line 69: remove duplicate import\n- Line 1169: remove cleanupBusinessData() call\n- The section with migration\/invalidateAll logic\n\nLet me read these specific ranges."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_Ddn4CoK2YukN8PtDrNue0678",
+                    "name": "read_file",
+                    "input": {
+                        "offset": 122,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx",
+                        "limit": 15
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 95311,
+                "completion_tokens": 264,
+                "total_tokens": 95575,
+                "prompt_cache_hit_tokens": 94976,
+                "prompt_cache_miss_tokens": 335,
+                "prompt_tokens_details": {
+                    "cached_tokens": 94976
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 169
+                },
+                "cached_tokens": 94976
+            },
+            "time": 1784742203
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_Ddn4CoK2YukN8PtDrNue0678",
+            "content": "  122 |   component: Appointments,\n  123 | });\n  124 | const auditLogRoute = createRoute({\n  125 |   getParentRoute: () => rootRoute,\n  126 |   path: \"\/AuditLog\",\n  127 |   component: AuditLog,\n  128 | });\n  129 | const wardRoundRoute = createRoute({\n  130 |   getParentRoute: () => rootRoute,\n  131 |   path: \"\/WardRound\",\n  132 |   component: WardRound,\n  133 | });\n  134 | const bedManagementRoute = createRoute({\n  135 |   getParentRoute: () => rootRoute,\n  136 |   path: \"\/BedManagement\",",
+            "is_error": false,
+            "time": 1784742203
         }
     ]
 }
