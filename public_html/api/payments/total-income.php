@@ -9,12 +9,13 @@ try {
     $db = Database::getInstance();
     $from = getParam("from", "");
     $to = getParam("to", "");
-    $where = ["p.status = " . $db->quote("completed")];
+    $conditions = ["p.status = 'completed'"];
     $params = [];
-    if ($from) { $where[] = "p.payment_date >= :from_date"; $params[":from_date"] = $from; }
-    if ($to) { $where[] = "p.payment_date <= :to_date"; $params[":to_date"] = $to; }
-    $whereClause = "WHERE " . implode(" AND ", $where);
-    $stmt = $db->prepare("SELECT COUNT(*) as total_transactions, IFNULL(SUM(p.amount), ) as total_income, IFNULL(AVG(p.amount), ) as average_amount FROM payments p $whereClause");
+    if ($from) { $conditions[] = "p.payment_date >= :from_date"; $params[":from_date"] = $from; }
+    if ($to) { $conditions[] = "p.payment_date <= :to_date"; $params[":to_date"] = $to; }
+    $whereClause = "WHERE " . implode(" AND ", $conditions);
+    $sql = "SELECT COUNT(*) as total_transactions, COALESCE(SUM(p.amount), 0) as total_income, COALESCE(AVG(p.amount), 0) as average_amount FROM payments p $whereClause";
+    $stmt = $db->prepare($sql);
     $stmt->execute($params);
     $stats = $stmt->fetch();
     successResponse($stats);
