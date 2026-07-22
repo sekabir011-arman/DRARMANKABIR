@@ -1,22 +1,8 @@
 import { get, post } from "../lib/apiClient";
-import { staffService } from "../services/staff";
 import { prescriptionService } from "../services/prescriptions";
-import { paymentService } from "../services/payments";
 import { appointmentService } from "../services/appointments";
-import { staffDataService } from "../services/staffData";
+import { paymentService } from "../services/payments";
 import type { StaffShift, AttendanceRecord, LeaveRequest } from "../services/staffData";
-
-// ── Data keys (persisted in MySQL via /api/data/ endpoints) ─────────────────
-const SHIFTS_KEY = 'staff_shifts';
-const ATTENDANCE_KEY = 'staff_attendance';
-const LEAVE_REQUESTS_KEY = 'leave_requests';
-
-/**
- * Staff — Staff management page for admin and consultant doctor roles.
- * Tabs: Registration/Approval | Schedule | Attendance | Directory
- * Admin can approve/reject pending accounts, reassign roles, manage shifts,
- * view attendance, and see the full staff contact directory.
- */
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,10 +49,11 @@ import {
 import type { DoctorAccount } from "../hooks/useAdminSave";
 import { STAFF_ROLE_COLORS, STAFF_ROLE_LABELS } from "../types";
 import type { StaffRole } from "../types";
-import { prescriptionService } from "../services/prescriptions";
-import { appointmentService } from "../services/appointments";
-import { paymentService } from "../services/payments";
-import { storage } from "../lib/storageAdapter";
+
+// ── Data keys (persisted in MySQL via /api/data/ endpoints) ─────────────────
+const SHIFTS_KEY = "staff_shifts";
+const ATTENDANCE_KEY = "staff_attendance";
+const LEAVE_REQUESTS_KEY = "leave_requests";
 
 type StaffTab = "registration" | "schedule" | "attendance"
   | "performance"
