@@ -2370,10 +2370,8 @@ function PatientPortalView({
 
 export default function App() {
   return (
-    <CanisterActorsProvider>
-      <EmailAuthProvider>
-        <AppInner />
-      </EmailAuthProvider>
-    </CanisterActorsProvider>
+    <EmailAuthProvider>
+      <AppInner />
+    </EmailAuthProvider>
   );
 }
