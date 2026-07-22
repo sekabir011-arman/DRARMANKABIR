@@ -110,44 +110,56 @@ interface AttendanceRecord {
   overrideNote?: string;
 }
 
-// ── Storage helpers ───────────────────────────────────────────────────────────
-function loadShifts(): StaffShift[] {
+// ── Storage helpers (persisted via PHP API → MySQL) ─────────────────────────
+async function loadShifts(): Promise<StaffShift[]> {
   try {
-    const raw = storage.getItem(SHIFTS_KEY);
-    return raw ? (JSON.parse(raw) as StaffShift[]) : [];
+    const result = await get<{ setting_value: StaffShift[] }>('/data/get.php', { key: SHIFTS_KEY });
+    return result?.setting_value ?? [];
   } catch {
     return [];
   }
 }
 
-function saveShifts(shifts: StaffShift[]) {
-  storage.setItem(SHIFTS_KEY, JSON.stringify(shifts));
+async function saveShifts(shifts: StaffShift[]) {
+  try {
+    await post('/data/save.php', { key: SHIFTS_KEY, value: shifts });
+  } catch {
+    // Silently fail - API handles logging
+  }
 }
 
-function loadAttendance(): AttendanceRecord[] {
+async function loadAttendance(): Promise<AttendanceRecord[]> {
   try {
-    const raw = storage.getItem(ATTENDANCE_KEY);
-    return raw ? (JSON.parse(raw) as AttendanceRecord[]) : [];
+    const result = await get<{ setting_value: AttendanceRecord[] }>('/data/get.php', { key: ATTENDANCE_KEY });
+    return result?.setting_value ?? [];
   } catch {
     return [];
   }
 }
 
-function saveAttendance(records: AttendanceRecord[]) {
-  storage.setItem(ATTENDANCE_KEY, JSON.stringify(records));
+async function saveAttendance(records: AttendanceRecord[]) {
+  try {
+    await post('/data/save.php', { key: ATTENDANCE_KEY, value: records });
+  } catch {
+    // Silently fail
+  }
 }
 
-function loadLeaveRequests(): LeaveRequest[] {
+async function loadLeaveRequests(): Promise<LeaveRequest[]> {
   try {
-    const raw = storage.getItem(LEAVE_REQUESTS_KEY);
-    return raw ? (JSON.parse(raw) as LeaveRequest[]) : [];
+    const result = await get<{ setting_value: LeaveRequest[] }>('/data/get.php', { key: LEAVE_REQUESTS_KEY });
+    return result?.setting_value ?? [];
   } catch {
     return [];
   }
 }
 
-function saveLeaveRequests(requests: LeaveRequest[]) {
-  storage.setItem(LEAVE_REQUESTS_KEY, JSON.stringify(requests));
+async function saveLeaveRequests(requests: LeaveRequest[]) {
+  try {
+    await post('/data/save.php', { key: LEAVE_REQUESTS_KEY, value: requests });
+  } catch {
+    // Silently fail
+  }
 }
 
 // ── Helper: log attendance on login ──────────────────────────────────────────
