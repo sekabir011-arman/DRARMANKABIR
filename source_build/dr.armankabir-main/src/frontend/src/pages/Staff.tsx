@@ -441,7 +441,7 @@ export default function Staff() {
   };
 
   // ── Shift schedule actions ──────────────────────────────────────────────────
-  const saveShift = () => {
+  const saveShift = async () => {
     if (
       !shiftForm.staffId ||
       !shiftForm.ward ||
@@ -452,7 +452,7 @@ export default function Staff() {
       return;
     }
     const staffMember = staff.find((s) => s.id === shiftForm.staffId);
-    const list = loadShifts();
+    const list = await loadShifts();
     if (editingShiftId) {
       const idx = list.findIndex((s) => s.id === editingShiftId);
       if (idx >= 0) {
@@ -470,7 +470,7 @@ export default function Staff() {
         createdBy: currentDoctor?.name ?? "Admin",
       });
     }
-    saveShifts(list);
+    await saveShifts(list);
     refresh();
     setShowAddShift(false);
     setEditingShiftId(null);
