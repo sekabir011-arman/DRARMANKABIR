@@ -1,9 +1,13 @@
 <?php exit(); ?>
 {
-    "fetched_at": 1784631159,
+    "fetched_at": 1784720252,
     "models": {
         "deepseek-v4-flash-free": {
             "name": "deepseek-v4-flash-free",
+            "context_window": 128000
+        },
+        "laguna-s-2.1-free": {
+            "name": "laguna-s-2.1-free",
             "context_window": 128000
         },
         "mimo-v2.5-free": {

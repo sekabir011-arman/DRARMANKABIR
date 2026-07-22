@@ -1,6 +1,6 @@
 <?php exit(); ?>
 {
-    "fetched_at": 1784631159,
+    "fetched_at": 1784720252,
     "models": {
         "big-pickle": {
             "name": "big-pickle",
@@ -68,6 +68,14 @@
         },
         "gemini-3.5-flash": {
             "name": "gemini-3.5-flash",
+            "context_window": 128000
+        },
+        "gemini-3.5-flash-lite": {
+            "name": "gemini-3.5-flash-lite",
+            "context_window": 128000
+        },
+        "gemini-3.6-flash": {
+            "name": "gemini-3.6-flash",
             "context_window": 128000
         },
         "glm-5": {
