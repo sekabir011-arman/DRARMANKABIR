@@ -39,6 +39,6 @@ tmpfs /run/user/3206 tmpfs rw,nosuid,nodev,relatime,size=13135456k,mode=700,uid=
 /dev/md2 /usr/local/cpanel/cpsanitycheck.so ext4 rw,relatime,stripe=256,jqfmt=vfsv1,usrjquota=quota.user 0 0
 /dev/md2 /usr/local/cpanel/cpanel.lisc ext4 rw,relatime,stripe=256,jqfmt=vfsv1,usrjquota=quota.user 0 0
 tmpfs /run/user/2214 tmpfs rw,nosuid,nodev,relatime,size=13135456k,mode=700,uid=2214,gid=2219 0 0
-tmpfs /run/user/1224 tmpfs rw,nosuid,nodev,relatime,size=13135456k,mode=700,uid=1224,gid=1228 0 0
-tmpfs /run/user/1540 tmpfs rw,nosuid,nodev,relatime,size=13135456k,mode=700,uid=1540,gid=1544 0 0
-tmpfs /run/user/1394 tmpfs rw,nosuid,nodev,relatime,size=13135456k,mode=700,uid=1394,gid=1398 0 0
+tmpfs /run/user/1039 tmpfs rw,nosuid,nodev,relatime,size=13135456k,mode=700,uid=1039,gid=1042 0 0
+tmpfs /run/user/2664 tmpfs rw,nosuid,nodev,relatime,size=13135456k,mode=700,uid=2664,gid=2669 0 0
+tmpfs /run/user/1946 tmpfs rw,nosuid,nodev,relatime,size=13135456k,mode=700,uid=1946,gid=1950 0 0

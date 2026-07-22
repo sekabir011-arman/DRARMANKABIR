@@ -66,7 +66,7 @@ import {
   STAFF_ROLE_LABELS,
 } from "./types";
 import type { StaffRole } from "./types";
-import { storage, cleanupBusinessData } from "lib/storageAdapter";
+import { storage } from "lib/storageAdapter";
 
 // ── Route tree ────────────────────────────────────────────────────────────────
 
@@ -1166,7 +1166,7 @@ interface DrugReminder {
 
 function AppInner() {
   // Clean up legacy business data from localStorage on startup
-  cleanupBusinessData();
+  // cleanupBusinessData removed - all business data is in MySQL now
 
   const {
     currentDoctor,
