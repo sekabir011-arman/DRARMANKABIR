@@ -6,6 +6,11 @@ import { appointmentService } from "../services/appointments";
 import { staffDataService } from "../services/staffData";
 import type { StaffShift, AttendanceRecord, LeaveRequest } from "../services/staffData";
 
+// ── Data keys (persisted in MySQL via /api/data/ endpoints) ─────────────────
+const SHIFTS_KEY = 'staff_shifts';
+const ATTENDANCE_KEY = 'staff_attendance';
+const LEAVE_REQUESTS_KEY = 'leave_requests';
+
 /**
  * Staff — Staff management page for admin and consultant doctor roles.
  * Tabs: Registration/Approval | Schedule | Attendance | Directory
