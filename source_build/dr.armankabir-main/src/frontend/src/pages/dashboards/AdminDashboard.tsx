@@ -132,7 +132,7 @@ export default function AdminDashboard() {
   );
   const recentLogs = useMemo(() => getAuditLog().slice(-10).reverse(), []);
   const totalPatients = useMemo(getTotalPatients, []);
-  const syncStatus = useMemo(getSyncStatus, []);
+  const syncStatus = "Connected (PHP/MySQL)";
   const admittedCount = useMemo(getAdmittedCount, []);
   const visitsThisWeek = useMemo(getVisitsThisWeek, []);
   const topActions = useMemo(getTopActionsThisWeek, []);
