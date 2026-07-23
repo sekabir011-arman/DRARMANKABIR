@@ -219,10 +219,6 @@ class QueueErrorBoundary extends Component<
     }
     return this.props.children;
   }
-    return [];
-  } catch {
-    return [];
-  }
 }
 
 // ── Walk-In Modal ─────────────────────────────────────────────────────────────
