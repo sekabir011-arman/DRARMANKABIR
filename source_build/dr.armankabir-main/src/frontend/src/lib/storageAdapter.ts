@@ -1,15 +1,8 @@
 /**
- * Storage Adapter — UI Preferences Only
+ * Storage Adapter — thin wrapper around localStorage
  *
- * This module is the ONLY allowed interface to browser storage.
- * Business data must NEVER be stored here.
- *
- * ALLOWED: Theme, language, sidebar collapsed state, table layout prefs, non-sensitive UI settings.
- * FORBIDDEN: Patients, doctors, staff, appointments, prescriptions, clinical notes,
- *            payments, invoices, notifications, auth tokens, audit logs, registries.
- *
- * Migration complete. Business data now goes through services/ -> PHP API -> MySQL.
- * React Query handles caching and refresh.
+ * This is the only allowed interface to browser storage.
+ * Provides basic error handling and a single point of access.
  *
  * Usage:
  *   import { storage } from '../lib/storageAdapter';
@@ -17,116 +10,10 @@
  *   storage.setItem('sidebar_collapsed', 'true');
  */
 
-// ─── Allowed UI Preference Keys ──────────────────────────────────────────────
-// Only these keys are permitted in browser storage.
-// Any other key indicates business data leakage and must be removed.
-
-const ALLOWED_UI_KEYS = new Set([
-  'patient_language',
-  'sidebar_collapsed',
-  'theme',
-  'table_page_size',
-  'table_compact_view',
-  'classroom_arman',
-  'classroom_samia',
-  'chamber_arman',
-  'chamber_samia',
-  'profile_arman',
-  'profile_samia',
-  'prescriptionHeaders_chamber',
-  'prescriptionHeaders_hospital',
-  'app_current_user_email',
-]);
-
-/**
- * Business data key prefixes that should NOT be in browser storage.
- * These are blocked by the storage adapter guard.
- */
-const BUSINESS_KEY_PREFIXES = [
-  'patients',
-  'patient_',
-  'registry',
-  'doctor_',
-  'medicare_',
-  'staff_',
-  'appointment',
-  'clinical',
-  'soapNotes',
-  'vitals_',
-  'alerts_',
-  'intakeOutput',
-  'dischargeStatus',
-  'pregnancy_',
-  'teleconsults',
-  'referrals_',
-  'procedureLogs',
-  'admissionHistory',
-  'consentForms',
-  'visits_',
-  'prescriptions_',
-  'prescription',
-  'handovers',
-  'rates_',
-  'receipts_',
-  'shifts_',
-  'attendance_',
-  'leaveRequests',
-  'wardRoundChecklist',
-  'testimonials',
-  'gallery_',
-  'lab_',
-  'drugReminders',
-  'moneyReceipts',
-  'phpAuthToken',
-  'staff_auth',
-];
-
-function isAllowedKey(key: string): boolean {
-  if (ALLOWED_UI_KEYS.has(key)) return true;
-  // Temporary UI state keys (draft autosave, scroll position, etc.)
-  if (key.startsWith('autosave_')) return true;
-  if (key.startsWith('draft_')) return true;
-  if (key.startsWith('scroll_')) return true;
-  // Check if it's a business key prefix
-  for (const prefix of BUSINESS_KEY_PREFIXES) {
-    if (key === prefix || key.startsWith(prefix + '_')) {
-      return false;
-    }
-  }
-  return true;
-}
-
-// ─── Core storage wrapper ───────────────────────────────────────────────────
-
-// ─── Soft Block Mode ────────────────────────────────────────────────────────
-// When true, business data keys are blocked entirely (getItem returns null,
-// setItem/removeItem are no-ops). When false, operations are allowed with a
-// deprecation warning. Set to true after all components have migrated.
-let HARD_BLOCK = false;
-
-export function enableHardBlock(): void {
-  HARD_BLOCK = true;
-}
-
-export function disableHardBlock(): void {
-  HARD_BLOCK = false;
-}
-
-function shouldBlock(key: string): boolean {
-  if (isAllowedKey(key)) return false;
-  if (HARD_BLOCK) {
-    console.warn(`[StorageAdapter] BLOCKED "${key}". Business data must come from PHP API.`);
-    return true;
-  }
-  console.warn(`[StorageAdapter] DEPRECATED "${key}". Business data should use PHP API, not localStorage.`);
-  return false; // soft mode: warn but allow
-}
-
-// ─── Core storage wrapper ───────────────────────────────────────────────────
+// ─── Core storage wrapper ─────────────────────────────────────────────────────
 
 export const storage = {
   getItem(key: string): string | null {
-    if (shouldBlock(key)) return null;
     try {
       return localStorage.getItem(key);
     } catch {
@@ -135,7 +22,6 @@ export const storage = {
   },
 
   setItem(key: string, value: string): void {
-    if (shouldBlock(key)) return;
     try {
       localStorage.setItem(key, value);
     } catch (err) {
@@ -144,7 +30,6 @@ export const storage = {
   },
 
   removeItem(key: string): void {
-    if (shouldBlock(key)) return;
     try {
       localStorage.removeItem(key);
     } catch {
@@ -153,15 +38,8 @@ export const storage = {
   },
 
   clear(): void {
-    // Only clear allowed UI keys
     try {
-      for (const key of ALLOWED_UI_KEYS) {
-        try {
-          localStorage.removeItem(key);
-        } catch {
-          // ignore
-        }
-      }
+      localStorage.clear();
     } catch {
       // ignore
     }
@@ -171,7 +49,7 @@ export const storage = {
     try {
       return localStorage.length;
     } catch {
-      return 0; // fallback when localStorage unavailable
+      return ;
     }
   },
 
@@ -183,34 +61,3 @@ export const storage = {
     }
   },
 };
-
-/**
- * Clean up all business data from localStorage.
- * Run this once on app startup to remove legacy data.
- * Only UI preferences are preserved.
- */
-export function cleanupBusinessData(): void {
-  try {
-    const keysToRemove: string[] = [];
-    const len = localStorage.length;
-    for (let i = 0; i < len; i++) {
-      const key = localStorage.key(i);
-      if (key && !isAllowedKey(key)) {
-        keysToRemove.push(key);
-      }
-    }
-    for (const key of keysToRemove) {
-      try {
-        localStorage.removeItem(key);
-        console.log('[StorageAdapter] Cleaned up business data key:', key);
-      } catch {
-        // ignore
-      }
-    }
-    if (keysToRemove.length > 0) {
-      console.log('[StorageAdapter] Cleanup complete. Removed ' + keysToRemove.length + ' business data keys.');
-    }
-  } catch {
-    // ignore
-  }
-}
