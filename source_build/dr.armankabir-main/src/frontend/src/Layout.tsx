@@ -217,8 +217,7 @@ function NavBadge({ count }: { count: number }) {
 
 export default function Layout({ children, currentPageName }: LayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [conflictCount, setConflictCount] = useState();
-  const [dueMedCount, setDueMedCount] = useState(0);
+  const [dueMedCount, setDueMedCount] = useState();
   // Emergency Rx notifications for nurses
   const [emergencyNotifs, setEmergencyNotifs] = useState<
     EmergencyNotification[]
