@@ -49,15 +49,6 @@ function getTotalPatients(): number {
   return count;
 }
 
-function getSyncStatus(): string {
-  const lastSync = storage.getItem("medicare_last_sync");
-  if (!lastSync) return "Never synced";
-  const diffMs = Date.now() - Number(lastSync);
-  const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "Just now";
-  if (diffMin < 60) return `${diffMin} min ago`;
-  return `${Math.floor(diffMin / 60)}h ago`;
-}
 
 function getAdmittedCount(): number {
   let count = 0;
