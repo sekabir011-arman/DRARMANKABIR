@@ -42,7 +42,6 @@ import { useAdminAuth } from "./hooks/useAdminAuth";
 import { useEmailAuth } from "./hooks/useEmailAuth";
 import { useOnlineStatus } from "./hooks/useOnlineStatus";
 import { getPermissionsForRole } from "./hooks/useRolePermissions";
-import { getConflictsCount } from "./lib/hybridStorage";
 import {
   STAFF_ROLE_ACTIVE_BG,
   STAFF_ROLE_BORDER_COLOR,
