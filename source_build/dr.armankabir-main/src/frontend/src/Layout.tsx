@@ -40,7 +40,6 @@ import {
 } from "./components/patientDashboardTypes";
 import { useAdminAuth } from "./hooks/useAdminAuth";
 import { useEmailAuth } from "./hooks/useEmailAuth";
-import { useSyncStatus } from "./hooks/useMigration";
 import { useOnlineStatus } from "./hooks/useOnlineStatus";
 import { getPermissionsForRole } from "./hooks/useRolePermissions";
 import { getConflictsCount } from "./lib/hybridStorage";
