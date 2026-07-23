@@ -2063,7 +2063,7 @@ function PatientPortalView({
 export default function App() {
   return (
     <EmailAuthProvider>
-      <AppInner />
+      <AppRoot />
     </EmailAuthProvider>
   );
 }

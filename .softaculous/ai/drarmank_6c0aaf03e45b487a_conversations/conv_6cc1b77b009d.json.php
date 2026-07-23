@@ -72,7 +72,7 @@
         }
     ],
     "created_at": 1784730885,
-    "updated_at": 1784778589,
+    "updated_at": 1784779800,
     "messages": [
         {
             "id": "msg_compact",
@@ -4912,6 +4912,13 @@
             "content": "src\/App.tsx:2066:      <AppInner \/>\n",
             "is_error": false,
             "time": 1784778589
+        },
+        {
+            "id": "msg_9cc8a24e4b",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784779800
         }
     ]
 }
