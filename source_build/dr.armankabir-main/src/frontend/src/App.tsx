@@ -1,4 +1,4 @@
-      <AppRoot />import { EmailAuthProvider, useEmailAuth, useInactivityTimer } from "./hooks/useEmailAuth";
+import { EmailAuthProvider, useEmailAuth, useInactivityTimer } from "./hooks/useEmailAuth";
 import type { DoctorAccount, PatientAccount } from "./services/auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
