@@ -56,11 +56,9 @@ import MoneyReceipt, { ReceiptsHistoryList } from "../components/MoneyReceipt";
 import PatientForm, { type PatientFormData } from "../components/PatientForm";
 import { useEmailAuth } from "../hooks/useEmailAuth";
 import {
-  _canisterActorRef,
   useCreatePatient,
   useGetAllPatients,
 } from "../hooks/useQueries";
-import { enqueueSync } from "../lib/hybridStorage";
 import { buildFollowUpMessage } from "../lib/whatsappTemplates";
 import { storage } from "../lib/storageAdapter";
 
@@ -136,70 +134,6 @@ function saveSerials(data: SerialEntry[]) {
 
 // ─── Canister sync helpers ────────────────────────────────────────────────────
 
-/** Push appointment changes to the canister — fire-and-forget, never throws */
-async function syncAppointmentToCanister(
-  op: "create" | "update" | "delete",
-  entry: AppointmentEntry,
-): Promise<void> {
-  const actor = _canisterActorRef();
-  if (!actor || !navigator.onLine) {
-    enqueueSync({
-      timestamp: Date.now(),
-      operation: op,
-      entityType: "appointment",
-      entityId: entry.id,
-      data: entry,
-    });
-    return;
-  }
-  try {
-    if (op === "delete") {
-      await actor.deleteAppointment(entry.id);
-    } else {
-      await actor.bulkUpsertAppointments([entry]);
-    }
-  } catch (e) {
-    console.warn("Canister appointment sync failed, queuing:", e);
-    enqueueSync({
-      timestamp: Date.now(),
-      operation: op,
-      entityType: "appointment",
-      entityId: entry.id,
-      data: entry,
-    });
-  }
-}
-
-/** Push queue-entry changes to the canister — fire-and-forget, never throws */
-async function syncQueueEntryToCanister(
-  op: "create" | "update" | "delete",
-  entry: SerialEntry,
-): Promise<void> {
-  const actor = _canisterActorRef();
-  const enriched = { ...entry, queueDate: todayStr() };
-  if (!actor || !navigator.onLine) {
-    enqueueSync({
-      timestamp: Date.now(),
-      operation: op,
-      entityType: "queueEntry",
-      entityId: entry.id,
-      data: enriched,
-    });
-    return;
-  }
-  try {
-    if (op === "delete") {
-      await actor.deleteQueueEntry(entry.id);
-    } else {
-      await actor.bulkUpsertQueueEntries([enriched]);
-    }
-  } catch (e) {
-    console.warn("Canister queue-entry sync failed, queuing:", e);
-    enqueueSync({
-      timestamp: Date.now(),
-      operation: op,
-      entityType: "queueEntry",
-      entityId: entry.id,
       data: enriched,
     });
   }
@@ -532,27 +466,23 @@ function DoctorSerialTab() {
     setForm({ name: "", phone: "" });
     setAddOpen(false);
     toast.success(`Serial #${next} added for ${entry.patientName}`);
-    syncQueueEntryToCanister("create", entry);
   }
 
   function updateStatus(id: string, status: SerialStatus) {
     const updated = serials.map((s) => (s.id === id ? { ...s, status } : s));
     persist(updated);
     const entry = updated.find((s) => s.id === id);
-    if (entry) syncQueueEntryToCanister("update", entry);
   }
 
   function deleteSerial(id: string) {
     const entry = serials.find((s) => s.id === id);
     persist(serials.filter((s) => s.id !== id));
     toast.success("Serial removed");
-    if (entry) syncQueueEntryToCanister("delete", entry);
   }
 
   function resetQueue() {
     // Delete all current entries from canister before clearing
     for (const entry of serials) {
-      syncQueueEntryToCanister("delete", entry);
     }
     persist([]);
     setResetOpen(false);
@@ -1033,7 +963,6 @@ function ChamberAppointmentsTab() {
         appointments.map((a) => (a.id === editTarget.id ? updatedEntry : a)),
       );
       toast.success("Appointment updated");
-      syncAppointmentToCanister("update", updatedEntry);
     } else {
       const entry: AppointmentEntry = {
         id: uid(),
@@ -1054,7 +983,6 @@ function ChamberAppointmentsTab() {
       toast.success(
         `Appointment scheduled for ${entry.patientName} — Serial #${serial}`,
       );
-      syncAppointmentToCanister("create", entry);
     }
     setAddOpen(false);
   }
@@ -1063,7 +991,6 @@ function ChamberAppointmentsTab() {
     const entry = appointments.find((a) => a.id === id);
     persist(appointments.filter((a) => a.id !== id));
     toast.success("Appointment deleted");
-    if (entry) syncAppointmentToCanister("delete", entry);
   }
 
   const chamberOnly = appointments.filter(
@@ -1751,7 +1678,6 @@ function AdmittedPatientsTab() {
         appointments.map((a) => (a.id === editTarget.id ? updatedEntry : a)),
       );
       toast.success("Admission appointment updated");
-      syncAppointmentToCanister("update", updatedEntry);
     } else {
       const entry: AppointmentEntry = {
         id: uid(),
@@ -1775,7 +1701,6 @@ function AdmittedPatientsTab() {
       toast.success(
         `Admission scheduled for ${entry.patientName} — Daily Serial #${serial}`,
       );
-      syncAppointmentToCanister("create", entry);
     }
     setAddOpen(false);
   }
@@ -1789,7 +1714,6 @@ function AdmittedPatientsTab() {
     const entry = updated.find((a) => a.id === timePickerTarget.id);
     setTimePickerTarget(null);
     toast.success(`Visit time set to ${timePickerVal}`);
-    if (entry) syncAppointmentToCanister("update", entry);
   }
 
   // Auto-generate today's admission slot for admitted patients from visit form
