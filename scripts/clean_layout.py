@@ -1,4 +1,4 @@
-    if (syncStatus.pendingChanges > )#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Clean up Layout.tsx - remove all ICP/sync related code."""
 
 with open("source_build/dr.armankabir-main/src/frontend/src/Layout.tsx", "r") as f:
@@ -65,7 +65,6 @@ content = content.replace(
 )
 
 # 10. Remove lastSyncLabel / lastSyncTime / syncIndicator block
-# Find it by looking for the unique comment
 idx = content.find("  const lastSyncLabel = (() => {")
 if idx >= :
     end_idx = content.find("\n  // Close popover on outside click", idx)
@@ -94,7 +93,6 @@ content = content.replace(
 )
 
 # 12. Remove sync conflict badge + sync popover JSX
-# Find the entire block from "Sync conflict badge" comment to before "Mobile menu button"
 start_marker = "              {/* Sync conflict badge */}"
 end_marker = "              {/* Mobile menu button */}"
 idx_start = content.find(start_marker)
