@@ -19,7 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { Principal } from "@icp-sdk/core/principal";
+// Principal import removed - we use string IDs with PHP/MySQL
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { format } from "date-fns";
 import {
