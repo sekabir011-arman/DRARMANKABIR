@@ -33,7 +33,6 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import SyncConflictDialog from "./components/SyncConflictDialog";
 import {
   type EmergencyNotification,
   acknowledgeEmergencyNotification,
