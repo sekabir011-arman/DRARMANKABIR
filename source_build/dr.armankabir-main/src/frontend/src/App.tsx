@@ -64,7 +64,6 @@ import {
   ROLE_HIERARCHY_ORDER,
   STAFF_ROLE_COLORS,
   STAFF_ROLE_LABELS,
-} from "./types";
 import type { StaffRole } from "./types";
 
 // ── Route tree ────────────────────────────────────────────────────────────────
