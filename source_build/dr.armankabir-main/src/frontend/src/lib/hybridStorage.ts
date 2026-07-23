@@ -36,7 +36,6 @@ export interface SyncStatus {
   isOnline: boolean;
   pendingChanges: number;
   lastSyncAt?: Date;
-  canisterConnected: boolean;
 }
 
 export interface SyncConflict {
