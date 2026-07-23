@@ -481,9 +481,8 @@ function DoctorSerialTab() {
   }
 
   function resetQueue() {
-    // Delete all current entries from canister before clearing
-    for (const entry of serials) {
-    }
+    // Clear all serial entries
+    persist([]);
     persist([]);
     setResetOpen(false);
     toast.success("Queue reset for today");
