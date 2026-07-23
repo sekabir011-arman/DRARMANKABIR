@@ -1217,7 +1217,7 @@ function AppRoot() {
   const [pendingCount, setPendingCount] = useState(0);
   const [authTab, setAuthTab] = useState("staff");
 
-  // ── Canister actor + cross-device sync setup ─────────────────────────────────
+  // ── Data refresh setup ────────────────────────────────────────────────────────
   const queryClient = useQueryClient();
 
   // invalidateAll: called after every successful data refresh
