@@ -1,4 +1,5 @@
-import { Badge } from "@/components/ui/badge";
+  // ── Sync conflict dialog ────────────────────────────────────────────────
+      </div>import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Link, useRouterState } from "@tanstack/react-router";
