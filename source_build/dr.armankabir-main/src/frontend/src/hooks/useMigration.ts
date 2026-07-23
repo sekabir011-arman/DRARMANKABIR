@@ -15,8 +15,8 @@ export interface MigrationState {
 }
 
 const COMPLETE_PROGRESS: MigrationProgress = {
-  total: ,
-  migrated: ,
+  total: 1,
+  migrated: 1,
   message: "All data is stored server-side via PHP API",
 };
 
