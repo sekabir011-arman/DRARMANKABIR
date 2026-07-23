@@ -3139,9 +3139,7 @@ export default function PatientProfile() {
                       interpretation: labImportRefRange ? undefined : undefined,
                       observationDate:
                         BigInt(new Date(labImportDate).getTime()) * 1_000_000n,
-                      recordedBy: {
-                        toString: () => "local",
-                      } as unknown as Principal,
+                      recordedBy: getDoctorEmail(),
                       recordedByName: getDoctorEmail(),
                       recordedByRole: "doctor",
                     });
