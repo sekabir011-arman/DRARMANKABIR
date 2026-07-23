@@ -132,13 +132,6 @@ function saveSerials(data: SerialEntry[]) {
   storage.setItem(todayKey(), JSON.stringify(data));
 }
 
-// ─── Canister sync helpers ────────────────────────────────────────────────────
-
-      data: enriched,
-    });
-  }
-}
-
 function loadAppointments(): AppointmentEntry[] {
   try {
     const a = JSON.parse(

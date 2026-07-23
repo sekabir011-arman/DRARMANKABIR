@@ -219,43 +219,6 @@ class QueueErrorBoundary extends Component<
     }
     return this.props.children;
   }
-}
-
-// ── Canister queue sync (best-effort) ─────────────────────────────────────────
-// The canister backend has no dedicated queue API, so we piggy-back on
-// ClinicalNotes: we store the queue as a JSON blob in a note with
-// noteSubtype = "queue_display". All devices writing or reading this key
-// see the same cross-device state within 1–2 canister round-trips.
-
-const QUEUE_NOTE_SUBTYPE = "queue_display";
-
-async function tryPullQueueFromCanister(): Promise<SerialEntry[]> {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const actor = (window as any).__canisterActorForQueue;
-    if (!actor || !navigator.onLine) return [];
-    const today = new Date().toISOString().slice(0, 10);
-    const notes: Array<{
-      content: string;
-      noteSubtype?: string;
-      createdAt: bigint;
-    }> = await actor.getClinicalNotesByType(0n, "General");
-    const queueNotes = notes
-      .filter((n) => n.noteSubtype === QUEUE_NOTE_SUBTYPE)
-      .sort((a, b) => Number(b.createdAt - a.createdAt));
-    if (queueNotes.length === 0) return [];
-    const parsed: unknown = JSON.parse(queueNotes[0].content);
-    if (
-      parsed !== null &&
-      typeof parsed === "object" &&
-      "date" in parsed &&
-      (parsed as { date: string }).date === today &&
-      "entries" in parsed
-    ) {
-      return safeParseQueue(
-        JSON.stringify((parsed as { entries: unknown }).entries),
-      );
-    }
     return [];
   } catch {
     return [];
