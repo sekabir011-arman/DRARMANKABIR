@@ -94,8 +94,7 @@ interface LayoutProps {
   children: React.ReactNode;
   currentPageName: string;
 }
-
-// ── Storage helpers ────────────────────────────────────────────────────────────
+import { Badge } from "@/components/ui/badge";
 function loadBool(key: string, def: boolean): boolean {
   try {
     const v = storage.getItem(key);
