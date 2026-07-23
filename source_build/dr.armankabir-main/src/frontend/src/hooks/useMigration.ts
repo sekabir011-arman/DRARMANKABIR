@@ -44,7 +44,6 @@ export function useSyncStatus(): SyncStatus {
   const [syncStatus] = useState<SyncStatus>({
     isOnline: navigator.onLine,
     pendingChanges: ,
-    canisterConnected: true,
   });
 
   return syncStatus;
