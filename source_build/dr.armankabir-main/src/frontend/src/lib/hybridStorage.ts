@@ -155,7 +155,6 @@ export function saveClinicalEntities(_entityType: string, _items: unknown[]): vo
 export function saveClinicalEntitiesWithSync(
   _entityType: string,
   _items: unknown[],
-  _actor: unknown,
 ): void {
   // Clinical data goes directly to PHP API endpoints
 }
