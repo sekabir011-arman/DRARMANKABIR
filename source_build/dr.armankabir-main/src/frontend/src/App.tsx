@@ -1162,7 +1162,7 @@ interface DrugReminder {
   createdAt: string;
 }
 
-function AppInner() {
+function AppRoot() {
   // Clean up legacy business data from localStorage on startup
 
   const {
