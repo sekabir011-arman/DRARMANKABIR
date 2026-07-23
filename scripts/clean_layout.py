@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+    if (syncStatus.pendingChanges > )#!/usr/bin/env python3
 """Clean up Layout.tsx - remove all ICP/sync related code."""
 
 with open("source_build/dr.armankabir-main/src/frontend/src/Layout.tsx", "r") as f:
