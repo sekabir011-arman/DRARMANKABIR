@@ -113,7 +113,7 @@ export function getPendingChangesCount(): number {
 
 // ─── Frontpage content — PHP API backed ──────────────────────────────────────
 
-export async function saveFrontPageContentWithSync(_actor: unknown): Promise<void> {
+export async function saveFrontPageContentWithSync(): Promise<void> {
   // Content saving is handled by useSiteConfig via the PHP API
 }
 
