@@ -171,7 +171,7 @@ export function VitalEntryForm({
       patientId,
       observationType: "Vital" as const,
       observationDate: now,
-      recordedBy: { toString: () => "local" } as unknown as Principal,
+      recordedBy: currentDoctor?.email ?? "local",
       recordedByName: currentDoctor?.name ?? "Unknown",
       recordedByRole: (currentDoctor?.role ?? "doctor") as StaffRole,
     };
@@ -290,7 +290,7 @@ export function AddDrugForm({
       code: "DRUG",
       description: `${name.trim()} ${dose.trim()}`.trim(),
       orderedAt: BigInt(Date.now()) * 1_000_000n,
-      orderedBy: { toString: () => "local" } as unknown as Principal,
+      orderedBy: currentDoctor?.email ?? "local",
       orderedByName: currentDoctor?.name ?? "Unknown",
       orderedByRole: (currentDoctor?.role ?? "doctor") as StaffRole,
     });
@@ -369,7 +369,7 @@ export function OrderTestForm({
         code: "LAB",
         description: test,
         orderedAt: BigInt(Date.now()) * 1_000_000n,
-        orderedBy: { toString: () => "local" } as unknown as Principal,
+        orderedBy: currentDoctor?.email ?? "local",
         orderedByName: currentDoctor?.name ?? "Unknown",
         orderedByRole: (currentDoctor?.role ?? "doctor") as StaffRole,
       });
@@ -445,7 +445,7 @@ function QuickReviewModal({
         patientId: patient.id,
         noteType: "SOAP",
         noteSubtype: "quick_review",
-        authorId: { toString: () => "local" } as unknown as Principal,
+        authorId: currentDoctor?.email ?? "local",
         authorName: currentDoctor?.name ?? "Unknown",
         authorRole: (currentDoctor?.role ?? "consultant_doctor") as StaffRole,
         content: JSON.stringify({
