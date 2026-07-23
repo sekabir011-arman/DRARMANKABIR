@@ -109,8 +109,7 @@ function saveBool(key: string, val: boolean) {
     storage.setItem(key, String(val));
   } catch {}
 }
-
-// ── Badge helpers ──────────────────────────────────────────────────────────────
+import { Badge } from "@/components/ui/badge";
 function getPendingApprovalCount(): number {
   try {
     const registry = JSON.parse(
