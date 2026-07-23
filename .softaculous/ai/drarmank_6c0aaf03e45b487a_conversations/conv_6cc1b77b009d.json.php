@@ -72,7 +72,7 @@
         }
     ],
     "created_at": 1784730885,
-    "updated_at": 1784814130,
+    "updated_at": 1784814646,
     "messages": [
         {
             "id": "msg_compact",
@@ -5317,6 +5317,13 @@
             "content": "    1 | import { Badge } from \"@\/components\/ui\/badge\";\n    2 | import { Button } from \"@\/components\/ui\/button\";import { Badge } from \"@\/components\/ui\/badge\";\n    3 | import { Button } from \"@\/components\/ui\/button\";\n    4 | import { cn } from \"@\/lib\/utils\";\n    5 | import { Link, useRouterState } from \"@tanstack\/react-router\";\n    6 | import {\n    7 |   AlertTriangle,\n    8 |   BarChart3,\n    9 |   Bed,\n   10 |   CalendarDays,",
             "is_error": false,
             "time": 1784814130
+        },
+        {
+            "id": "msg_7da87b0a14",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784814646
         }
     ]
 }
