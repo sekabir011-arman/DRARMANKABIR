@@ -22,47 +22,48 @@ content = content.replace(
     ""
 )
 
-# 4. Remove showSyncPopover state
+# 4-8. Remove state variables that are no longer needed
+import re
+
+# Remove showSyncPopover state
 content = content.replace(
     "  const [showSyncPopover, setShowSyncPopover] = useState(false);\n",
     ""
 )
 
-# 5. Remove showConflictDialog state
+# Remove showConflictDialog state
 content = content.replace(
     "  const [showConflictDialog, setShowConflictDialog] = useState(false);\n",
     ""
 )
 
-# 6. Remove conflictCount state
+# Remove conflictCount state
 content = content.replace(
     "  const [conflictCount, setConflictCount] = useState();\n",
     ""
 )
 
-# 7. Remove syncPopoverRef
+# Remove syncPopoverRef
 content = content.replace(
     "  const syncPopoverRef = useRef<HTMLDivElement>(null);\n",
     ""
 )
 
-# 8. Remove syncStatus
+# Remove syncStatus
 content = content.replace(
     "  const syncStatus = useSyncStatus();\n",
     ""
 )
 
 # 9. Remove conflict count polling
-content = content.replace(
-    "\n  // Poll conflict count every 5 seconds\n"
-    "  useEffect(() => {\n"
-    "    const refresh = () => setConflictCount(getConflictsCount());\n"
-    "    refresh();\n"
-    "    const iv = setInterval(refresh, 500);\n"
-    "    return () => clearInterval(iv);\n"
-    "  }, []);",
-    ""
-)
+poll_text = """  // Poll conflict count every 5 seconds
+  useEffect(() => {
+    const refresh = () => setConflictCount(getConflictsCount());
+    refresh();
+    const iv = setInterval(refresh, 500);
+    return () => clearInterval(iv);
+  }, []);"""
+content = content.replace(poll_text, "")
 
 # 10. Remove lastSyncLabel / lastSyncTime / syncIndicator block
 idx = content.find("  const lastSyncLabel = (() => {")
@@ -74,23 +75,21 @@ if idx >= :
         content = content[:idx] + content[end_idx:]
 
 # 11. Remove sync popover close handler
-content = content.replace(
-    "\n  // Close popover on outside click\n"
-    "  useEffect(() => {\n"
-    "    if (!showSyncPopover) return;\n"
-    "    const handler = (e: MouseEvent) => {\n"
-    "      if (\n"
-    "        syncPopoverRef.current &&\n"
-    "        !syncPopoverRef.current.contains(e.target as Node)\n"
-    "      ) {\n"
-    "        setShowSyncPopover(false);\n"
-    "      }\n"
-    "    };\n"
-    "    document.addEventListener(\"mousedown\", handler);\n"
-    "    return () => document.removeEventListener(\"mousedown\", handler);\n"
-    "  }, [showSyncPopover]);",
-    ""
-)
+popover_effect = """  // Close popover on outside click
+  useEffect(() => {
+    if (!showSyncPopover) return;
+    const handler = (e: MouseEvent) => {
+      if (
+        syncPopoverRef.current &&
+        !syncPopoverRef.current.contains(e.target as Node)
+      ) {
+        setShowSyncPopover(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showSyncPopover]);"""
+content = content.replace(popover_effect, "")
 
 # 12. Remove sync conflict badge + sync popover JSX
 start_marker = "              {/* Sync conflict badge */}"
