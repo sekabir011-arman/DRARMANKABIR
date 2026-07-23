@@ -36,7 +36,6 @@ import {
   useGetAllBeds,
 } from "../hooks/useQueries";
 import { getClinicalStore, saveClinicalStore } from "../lib/clinicalStore";
-import { saveClinicalEntitiesWithSync } from "../lib/hybridStorage";
 import type { BedRecord, BedType, Patient } from "../types";
 import { storage } from "../lib/storageAdapter";
 
@@ -865,7 +864,7 @@ export default function BedManagement() {
     saveClinicalStore(store);
     // Sync expired reservation release to canister
     const updatedBeds = (store.beds as BedRecord[]) ?? [];
-    saveClinicalEntitiesWithSync("beds", updatedBeds, getCanisterActor());
+    saveClinicalEntitiesWithSync("beds", updatedBeds);
     refetch();
     toast.warning(
       `Bed ${bed.bedNumber} reservation expired and released — ${bed.reservedForPatient ?? "patient"} did not arrive`,
@@ -988,7 +987,7 @@ export default function BedManagement() {
     saveClinicalStore(store);
     // Sync beds to canister
     const updatedBeds = (store.beds as BedRecord[]) ?? [];
-    saveClinicalEntitiesWithSync("beds", updatedBeds, getCanisterActor());
+    saveClinicalEntitiesWithSync("beds", updatedBeds);
     refetch();
   }
 
@@ -1136,7 +1135,7 @@ export default function BedManagement() {
     saveClinicalStore(store);
     // Sync transfer changes to canister
     const updatedBeds = (store.beds as BedRecord[]) ?? [];
-    saveClinicalEntitiesWithSync("beds", updatedBeds, getCanisterActor());
+    saveClinicalEntitiesWithSync("beds", updatedBeds);
     refetch();
     setShowTransferDialog(false);
     setTransferBedId("");
