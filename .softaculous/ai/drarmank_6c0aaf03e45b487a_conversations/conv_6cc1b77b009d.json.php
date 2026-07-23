@@ -72,7 +72,7 @@
         }
     ],
     "created_at": 1784730885,
-    "updated_at": 1784812521,
+    "updated_at": 1784812813,
     "messages": [
         {
             "id": "msg_compact",
@@ -5154,6 +5154,13 @@
             "content": "    1 |   \/\/ \u2500\u2500 Sync conflict dialog \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n    2 |       <\/div>import { Badge } from \"@\/components\/ui\/badge\";\n    3 | import { Button } from \"@\/components\/ui\/button\";\n    4 | import { cn } from \"@\/lib\/utils\";\n    5 | import { Link, useRouterState } from \"@tanstack\/react-router\";",
             "is_error": false,
             "time": 1784812521
+        },
+        {
+            "id": "msg_0995b468c4",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784812813
         }
     ]
 }
