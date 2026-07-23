@@ -246,11 +246,6 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
 
   const syncPopoverRef = useRef<HTMLDivElement>(null);
   const state = useRouterState();
-  const pathname = state.location.pathname;
-  const { currentDoctor } = useEmailAuth();
-  const { isAdmin } = useAdminAuth();
-  const isOnline = useOnlineStatus();
-  const syncStatus = useSyncStatus();
 
   const role = (currentDoctor?.role ?? "staff") as StaffRole;
   const rolePerms = getPermissionsForRole(role);
