@@ -38,12 +38,12 @@
         {
             "priority": "high",
             "content": "Phase 7: Clean up Layout.tsx - remove SyncConflictDialog, localStorage badge counts, sync popover",
-            "status": "in_progress"
+            "status": "completed"
         },
         {
             "priority": "high",
             "content": "Phase 8: Clean up storageAdapter.ts - simplify to UI-only prefs, remove business key blocking",
-            "status": "pending"
+            "status": "in_progress"
         },
         {
             "priority": "high",
@@ -72,7 +72,7 @@
         }
     ],
     "created_at": 1784730885,
-    "updated_at": 1784814664,
+    "updated_at": 1784814675,
     "messages": [
         {
             "id": "msg_compact",
@@ -5548,6 +5548,208 @@
             "content": "          <div className=\"max-w-6xl mx-auto px-6 py-3\">\n",
             "is_error": false,
             "time": 1784814664
+        },
+        {
+            "id": "msg_5d19331834",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The caffeine.ai reference appears to be a footer link\/advertisement. It's not intrinsic to the ICP connection. It's just a link in the footer. Let me update the offline banner text to remove the sync reference."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me update the offline banner text:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_1GFzGfOSfqv7FNgj8ynG7802",
+                    "name": "edit_file",
+                    "input": {
+                        "new_string": "            You are offline. All data is saved locally and will be available\n            when reconnected.",
+                        "old_string": "            You are offline. All data is saved locally and will sync when\n            reconnected.",
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/Layout.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 59887,
+                "completion_tokens": 183,
+                "total_tokens": 60070,
+                "prompt_cache_hit_tokens": 59776,
+                "prompt_cache_miss_tokens": 111,
+                "prompt_tokens_details": {
+                    "cached_tokens": 59776
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 44
+                },
+                "cached_tokens": 59776
+            },
+            "time": 1784814668
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_1GFzGfOSfqv7FNgj8ynG7802",
+            "content": "Edited source_build\/dr.armankabir-main\/src\/frontend\/src\/Layout.tsx (1 replacement)\n-             You are offline. All data is saved locally and will sync when\n-             reconnected.\n+             You are offline. All data is saved locally and will be available\n+             when reconnected.",
+            "is_error": false,
+            "time": 1784814668
+        },
+        {
+            "id": "msg_e5e8199a5c",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now let me update the todo and move on to Phase 8: Clean up storageAdapter.ts"
+                },
+                {
+                    "type": "text",
+                    "text": "Good. Now let me update the todo and move to Phase 8:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_8NOrwko6ZvCsJXwb1Lqp3371",
+                    "name": "todo_write",
+                    "input": {
+                        "todos": [
+                            {
+                                "priority": "high",
+                                "content": "Phase 1: Full project audit - identify all ICP-related files and dependencies",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Phase 2: Delete ICP source files (canisterActors, canisterConfig, backend, declarations)",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Phase 3: Update package.json - remove @dfinity, @icp-sdk, @caffeine deps",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Phase 4: Update vite.config.js - remove canister-id-embedder plugin and ICP env vars",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Phase 5: Update main.tsx - remove InternetIdentityProvider",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Phase 6: Rewrite App.tsx - remove all ICP\/sync\/canister\/banner\/localStorage logic",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Phase 7: Clean up Layout.tsx - remove SyncConflictDialog, localStorage badge counts, sync popover",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Phase 8: Clean up storageAdapter.ts - simplify to UI-only prefs, remove business key blocking",
+                                "status": "in_progress"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Phase 9: Clean up hybridStorage.ts, SyncStatusBadge.tsx, SyncConflictDialog.tsx, useMigration.ts",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Phase 10: Update env.json - remove canister fields",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Phase 11: Remove backend Motoko directory (entirely ICP)",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Phase 12: Clean out remaining localStorage usage in components\/pages",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Phase 13: Generate final report",
+                                "status": "pending"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 60149,
+                "completion_tokens": 471,
+                "total_tokens": 60620,
+                "prompt_cache_hit_tokens": 60032,
+                "prompt_cache_miss_tokens": 117,
+                "prompt_tokens_details": {
+                    "cached_tokens": 60032
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 19
+                },
+                "cached_tokens": 60032
+            },
+            "time": 1784814673
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_8NOrwko6ZvCsJXwb1Lqp3371",
+            "content": "Todo list updated with 13 items.",
+            "is_error": false,
+            "time": 1784814673
+        },
+        {
+            "id": "msg_3ac7e83106",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me read the storageAdapter.ts file to understand what needs to be cleaned up."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_nYPLQs6A3gpvd3iMCVMM8944",
+                    "name": "read_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/lib\/storageAdapter.ts"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 60639,
+                "completion_tokens": 81,
+                "total_tokens": 60720,
+                "prompt_cache_hit_tokens": 60544,
+                "prompt_cache_miss_tokens": 95,
+                "prompt_tokens_details": {
+                    "cached_tokens": 60544
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 17
+                },
+                "cached_tokens": 60544
+            },
+            "time": 1784814675
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_nYPLQs6A3gpvd3iMCVMM8944",
+            "content": "    1 | \/**\n    2 |  * Storage Adapter \u2014 UI Preferences Only\n    3 |  *\n    4 |  * This module is the ONLY allowed interface to browser storage.\n    5 |  * Business data must NEVER be stored here.\n    6 |  *\n    7 |  * ALLOWED: Theme, language, sidebar collapsed state, table layout prefs, non-sensitive UI settings.\n    8 |  * FORBIDDEN: Patients, doctors, staff, appointments, prescriptions, clinical notes,\n    9 |  *            payments, invoices, notifications, auth tokens, audit logs, registries.\n   10 |  *\n   11 |  * Migration complete. Business data now goes through services\/ -> PHP API -> MySQL.\n   12 |  * React Query handles caching and refresh.\n   13 |  *\n   14 |  * Usage:\n   15 |  *   import { storage } from '..\/lib\/storageAdapter';\n   16 |  *   const lang = storage.getItem('patient_language');\n   17 |  *   storage.setItem('sidebar_collapsed', 'true');\n   18 |  *\/\n   19 | \n   20 | \/\/ \u2500\u2500\u2500 Allowed UI Preference Keys \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   21 | \/\/ Only these keys are permitted in browser storage.\n   22 | \/\/ Any other key indicates business data leakage and must be removed.\n   23 | \n   24 | const ALLOWED_UI_KEYS = new Set([\n   25 |   'patient_language',\n   26 |   'sidebar_collapsed',\n   27 |   'theme',\n   28 |   'table_page_size',\n   29 |   'table_compact_view',\n   30 |   'classroom_arman',\n   31 |   'classroom_samia',\n   32 |   'chamber_arman',\n   33 |   'chamber_samia',\n   34 |   'profile_arman',\n   35 |   'profile_samia',\n   36 |   'prescriptionHeaders_chamber',\n   37 |   'prescriptionHeaders_hospital',\n   38 |   'app_current_user_email',\n   39 | ]);\n   40 | \n   41 | \/**\n   42 |  * Business data key prefixes that should NOT be in browser storage.\n   43 |  * These are blocked by the storage adapter guard.\n   44 |  *\/\n   45 | const BUSINESS_KEY_PREFIXES = [\n   46 |   'patients',\n   47 |   'patient_',\n   48 |   'registry',\n   49 |   'doctor_',\n   50 |   'medicare_',\n   51 |   'staff_',\n   52 |   'appointment',\n   53 |   'clinical',\n   54 |   'soapNotes',\n   55 |   'vitals_',\n   56 |   'alerts_',\n   57 |   'intakeOutput',\n   58 |   'dischargeStatus',\n   59 |   'pregnancy_',\n   60 |   'teleconsults',\n   61 |   'referrals_',\n   62 |   'procedureLogs',\n   63 |   'admissionHistory',\n   64 |   'consentForms',\n   65 |   'visits_',\n   66 |   'prescriptions_',\n   67 |   'prescription',\n   68 |   'handovers',\n   69 |   'rates_',\n   70 |   'receipts_',\n   71 |   'shifts_',\n   72 |   'attendance_',\n   73 |   'leaveRequests',\n   74 |   'wardRoundChecklist',\n   75 |   'testimonials',\n   76 |   'gallery_',\n   77 |   'lab_',\n   78 |   'drugReminders',\n   79 |   'moneyReceipts',\n   80 |   'phpAuthToken',\n   81 |   'staff_auth',\n   82 | ];\n   83 | \n   84 | function isAllowedKey(key: string): boolean {\n   85 |   if (ALLOWED_UI_KEYS.has(key)) return true;\n   86 |   \/\/ Temporary UI state keys (draft autosave, scroll position, etc.)\n   87 |   if (key.startsWith('autosave_')) return true;\n   88 |   if (key.startsWith('draft_')) return true;\n   89 |   if (key.startsWith('scroll_')) return true;\n   90 |   \/\/ Check if it's a business key prefix\n   91 |   for (const prefix of BUSINESS_KEY_PREFIXES) {\n   92 |     if (key === prefix || key.startsWith(prefix + '_')) {\n   93 |       return false;\n   94 |     }\n   95 |   }\n   96 |   return true;\n   97 | }\n   98 | \n   99 | \/\/ \u2500\u2500\u2500 Core storage wrapper \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  100 | \n  101 | \/\/ \u2500\u2500\u2500 Soft Block Mode \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  102 | \/\/ When true, business data keys are blocked entirely (getItem returns null,\n  103 | \/\/ setItem\/removeItem are no-ops). When false, operations are allowed with a\n  104 | \/\/ deprecation warning. Set to true after all components have migrated.\n  105 | let HARD_BLOCK = false;\n  106 | \n  107 | export function enableHardBlock(): void {\n  108 |   HARD_BLOCK = true;\n  109 | }\n  110 | \n  111 | export function disableHardBlock(): void {\n  112 |   HARD_BLOCK = false;\n  113 | }\n  114 | \n  115 | function shouldBlock(key: string): boolean {\n  116 |   if (isAllowedKey(key)) return false;\n  117 |   if (HARD_BLOCK) {\n  118 |     console.warn(`[StorageAdapter] BLOCKED \"${key}\". Business data must come from PHP API.`);\n  119 |     return true;\n  120 |   }\n  121 |   console.warn(`[StorageAdapter] DEPRECATED \"${key}\". Business data should use PHP API, not localStorage.`);\n  122 |   return false; \/\/ soft mode: warn but allow\n  123 | }\n  124 | \n  125 | \/\/ \u2500\u2500\u2500 Core storage wrapper \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  126 | \n  127 | export const storage = {\n  128 |   getItem(key: string): string | null {\n  129 |     if (shouldBlock(key)) return null;\n  130 |     try {\n  131 |       return localStorage.getItem(key);\n  132 |     } catch {\n  133 |       return null;\n  134 |     }\n  135 |   },\n  136 | \n  137 |   setItem(key: string, value: string): void {\n  138 |     if (shouldBlock(key)) return;\n  139 |     try {\n  140 |       localStorage.setItem(key, value);\n  141 |     } catch (err) {\n  142 |       console.warn(`[StorageAdapter] Failed to write key \"${key}\":`, err);\n  143 |     }\n  144 |   },\n  145 | \n  146 |   removeItem(key: string): void {\n  147 |     if (shouldBlock(key)) return;\n  148 |     try {\n  149 |       localStorage.removeItem(key);\n  150 |     } catch {\n  151 |       \/\/ ignore\n  152 |     }\n  153 |   },\n  154 | \n  155 |   clear(): void {\n  156 |     \/\/ Only clear allowed UI keys\n  157 |     try {\n  158 |       for (const key of ALLOWED_UI_KEYS) {\n  159 |         try {\n  160 |           localStorage.removeItem(key);\n  161 |         } catch {\n  162 |           \/\/ ignore\n  163 |         }\n  164 |       }\n  165 |     } catch {\n  166 |       \/\/ ignore\n  167 |     }\n  168 |   },\n  169 | \n  170 |   get length(): number {\n  171 |     try {\n  172 |       return localStorage.length;\n  173 |     } catch {\n  174 |       return 0; \/\/ fallback when localStorage unavailable\n  175 |     }\n  176 |   },\n  177 | \n  178 |   key(index: number): string | null {\n  179 |     try {\n  180 |       return localStorage.key(index);\n  181 |     } catch {\n  182 |       return null;\n  183 |     }\n  184 |   },\n  185 | };\n  186 | \n  187 | \/**\n  188 |  * Clean up all business data from localStorage.\n  189 |  * Run this once on app startup to remove legacy data.\n  190 |  * Only UI preferences are preserved.\n  191 |  *\/\n  192 | export function cleanupBusinessData(): void {\n  193 |   try {\n  194 |     const keysToRemove: string[] = [];\n  195 |     const len = localStorage.length;\n  196 |     for (let i = 0; i < len; i++) {\n  197 |       const key = localStorage.key(i);\n  198 |       if (key && !isAllowedKey(key)) {\n  199 |         keysToRemove.push(key);\n  200 |       }\n  201 |     }\n  202 |     for (const key of keysToRemove) {\n  203 |       try {\n  204 |         localStorage.removeItem(key);\n  205 |         console.log('[StorageAdapter] Cleaned up business data key:', key);\n  206 |       } catch {\n  207 |         \/\/ ignore\n  208 |       }\n  209 |     }\n  210 |     if (keysToRemove.length > 0) {\n  211 |       console.log('[StorageAdapter] Cleanup complete. Removed ' + keysToRemove.length + ' business data keys.');\n  212 |     }\n  213 |   } catch {\n  214 |     \/\/ ignore\n  215 |   }\n  216 | }\n  217 |",
+            "is_error": false,
+            "time": 1784814675
         }
     ]
 }

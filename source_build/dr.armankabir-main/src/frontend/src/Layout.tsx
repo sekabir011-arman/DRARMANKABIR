@@ -579,8 +579,8 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
         <div className="bg-amber-500 text-white text-center text-sm py-2 px-4 flex items-center justify-center gap-2 sticky top-0 z-[60]">
           <WifiOff className="w-4 h-4 shrink-0" />
           <span>
-            You are offline. All data is saved locally and will sync when
-            reconnected.
+            You are offline. All data is saved locally and will be available
+            when reconnected.
           </span>
         </div>
       )}
