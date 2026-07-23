@@ -567,7 +567,6 @@ function SerialDisplayInner() {
   const [showWalkIn, setShowWalkIn] = useState(false);
   const allowWalkIn = canAddWalkIn();
   const prevNowServingIdRef = useRef<string | null>(null);
-  const lastCanisterPollRef = useRef<number>(0);
 
   // Real-time clock
   useEffect(() => {
@@ -632,37 +631,17 @@ function SerialDisplayInner() {
     return () => document.removeEventListener("visibilitychange", onVisibility);
   }, []);
 
-  // Primary poll: localStorage every 2s + canister every 5s
+  // Poll localStorage every 2s
   useEffect(() => {
-    const load = async () => {
+    const load = () => {
       try {
-        // 1. Read localStorage (fast, always)
         const raw = storage.getItem(todayKeyLocal());
         const localEntries = safeParseQueue(raw);
-
-        // 2. Try canister every 5 seconds for cross-device sync
-        const now = Date.now();
-        let merged = localEntries;
-        if (now - lastCanisterPollRef.current >= 5_000) {
-          lastCanisterPollRef.current = now;
-          const remoteEntries = await tryPullQueueFromCanister();
-          if (remoteEntries.length > 0) {
-            merged = mergeQueues(localEntries, remoteEntries);
-            // Write back merged result to localStorage so future local reads are up-to-date
-            try {
-              storage.setItem(todayKey(), JSON.stringify(merged));
-            } catch {
-              // localStorage full or unavailable
-            }
-          }
-        }
-
-        setSerials(merged);
+        setSerials(localEntries);
         setHasError(false);
       } catch (err) {
         console.error("SerialDisplay poll error:", err);
         setHasError(true);
-        // Ensure we always show something rather than crashing
         setSerials([]);
       }
     };
