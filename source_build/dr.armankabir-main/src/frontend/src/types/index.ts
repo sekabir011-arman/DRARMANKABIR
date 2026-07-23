@@ -2,8 +2,6 @@
 // These types were previously imported from backend.d which is a protected stub.
 // All domain types live here.
 
-import type { Principal } from "@icp-sdk/core/principal";
-
 // ── Staff Role System ─────────────────────────────────────────────────────────
 export type StaffRole =
   | "admin"
@@ -345,7 +343,7 @@ export interface SerialEntry {
 export interface VersionedRecord {
   version: number;
   createdAt: bigint;
-  createdBy: Principal;
+  createdBy: string;
   createdByName: string;
   createdByRole: StaffRole;
   changeReason?: string;
@@ -359,7 +357,7 @@ export interface Encounter {
   status: "Planned" | "InProgress" | "Completed" | "Cancelled";
   startDate: bigint;
   endDate?: bigint;
-  providerId: Principal;
+  providerId: string;
   providerName: string;
   locationNotes?: string;
   versionInfo: VersionedRecord;
@@ -384,7 +382,7 @@ export interface Observation {
   normalRange?: string;
   status: "Preliminary" | "Final" | "Corrected";
   observationDate: bigint;
-  recordedBy: Principal;
+  recordedBy: string;
   recordedByName: string;
   recordedByRole: StaffRole;
   versionInfo: VersionedRecord;
@@ -400,7 +398,7 @@ export interface ClinicalOrder {
   description: string;
   status: "Requested" | "Pending" | "InProgress" | "Completed" | "Cancelled";
   orderedAt: bigint;
-  orderedBy: Principal;
+  orderedBy: string;
   orderedByName: string;
   orderedByRole: StaffRole;
   completedAt?: bigint;
@@ -421,7 +419,7 @@ export interface ClinicalNote {
     | "Handover"
     | "General";
   noteSubtype?: string;
-  authorId: Principal;
+  authorId: string;
   authorName: string;
   authorRole: StaffRole;
   content: string; // JSON string for structured SOAP content
@@ -439,7 +437,7 @@ export interface AuditEntry {
   fieldName: string;
   beforeValue?: string;
   afterValue: string;
-  changedBy: Principal;
+  changedBy: string;
   changedByName: string;
   changedByRole: StaffRole;
   changedAt: bigint;
@@ -497,7 +495,7 @@ export interface ClinicalAlert {
   triggeredAt: bigint;
   triggeredBy: string;
   isAcknowledged: boolean;
-  acknowledgedBy?: Principal;
+  acknowledgedBy?: string;
   acknowledgedAt?: bigint;
   isResolved: boolean;
   resolvedAt?: bigint;
@@ -688,7 +686,7 @@ export interface DiagnosisTemplate {
   defaultInvestigations: string[];
   defaultAdvice: string[];
   defaultAdviceBn: string[];
-  createdBy: Principal;
+  createdBy: string;
   createdAt: bigint;
   isActive: boolean;
 }
@@ -709,7 +707,7 @@ export interface ClinicalIntelligence {
 
 export interface SyncRecord {
   id: bigint;
-  userId: Principal;
+  userId: string;
   deviceId: string;
   lastSyncAt: bigint;
   pendingChanges: bigint;
