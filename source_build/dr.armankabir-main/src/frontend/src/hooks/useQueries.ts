@@ -449,7 +449,6 @@ export function useSyncStatus() {
       isOnline: navigator.onLine,
       pendingChanges: false,
       lastSyncAt: new Date(),
-      canisterConnected: false,
     }),
   });
 }

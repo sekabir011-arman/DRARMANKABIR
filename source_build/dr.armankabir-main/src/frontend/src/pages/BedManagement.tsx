@@ -862,7 +862,7 @@ export default function BedManagement() {
         : b,
     ) as unknown[];
     saveClinicalStore(store);
-    // Sync expired reservation release to canister
+    // No canister sync — data is server-side via PHP
     const updatedBeds = (store.beds as BedRecord[]) ?? [];
     saveClinicalEntitiesWithSync("beds", updatedBeds);
     refetch();
@@ -985,7 +985,7 @@ export default function BedManagement() {
     }));
     store.beds = normalised.map(updater) as unknown[];
     saveClinicalStore(store);
-    // Sync beds to canister
+    // No canister sync — data is server-side via PHP
     const updatedBeds = (store.beds as BedRecord[]) ?? [];
     saveClinicalEntitiesWithSync("beds", updatedBeds);
     refetch();
@@ -1133,7 +1133,7 @@ export default function BedManagement() {
       return b;
     }) as unknown[];
     saveClinicalStore(store);
-    // Sync transfer changes to canister
+    // No canister sync — data is server-side via PHP
     const updatedBeds = (store.beds as BedRecord[]) ?? [];
     saveClinicalEntitiesWithSync("beds", updatedBeds);
     refetch();

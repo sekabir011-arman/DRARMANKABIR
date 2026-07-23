@@ -166,7 +166,7 @@ export function nextClinicalId(_items: { id?: unknown }[]): bigint {
 // ─── Bootstrap — no-op ───────────────────────────────────────────────────────
 
 export async function bootstrapFromCanister(): Promise<void> {
-  // No canister to bootstrap from
+  // No canister — all data is PHP/MySQL
 }
 
 // ─── Content offline queue — no-op ──────────────────────────────────────────
