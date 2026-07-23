@@ -102,7 +102,7 @@
         }
     ],
     "created_at": 1784730885,
-    "updated_at": 1784814946,
+    "updated_at": 1784820076,
     "messages": [
         {
             "id": "msg_compact",
@@ -6337,6 +6337,151 @@
             "content": "Edited source_build\/dr.armankabir-main\/src\/frontend\/src\/lib\/hybridStorage.ts (1 replacement)\n- export function saveClinicalEntitiesWithSync(\n-   _entityType: string,\n-   _items: unknown[],\n-   _actor: unknown,\n- ): void {\n-   \/\/ Clinical data goes directly to PHP API endpoints\n- }\n+ export function saveClinicalEntitiesWithSync(\n+   _entityType: string,\n+   _items: unknown[],\n+ ): void {\n+   \/\/ Clinical data goes directly to PHP API endpoints\n+ }",
             "is_error": false,
             "time": 1784814946
+        },
+        {
+            "id": "msg_547a42abbb",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784820058
+        },
+        {
+            "id": "msg_adb62edac1",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The user just said \"continue\". Let me continue with the cleanup. I need to fix the remaining files that still have ICP\/canister references. Let me check what's left to do after my edits to hybridStorage.ts."
+                },
+                {
+                    "type": "text",
+                    "text": "Continuing with the cleanup. Let me check the current state of the remaining files:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_yzVuuSsp8RL4Ibp6h09b1217",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && find source_build\/dr.armankabir-main\/src\/frontend\/src -type f \\( -name \"*.ts\" -o -name \"*.tsx\" \\) | xargs grep -l \"icp\\|canister\\|dfinity\\|hybridStorage\\|SyncConflict\\|SyncStatus\\|useMigration\\|cleanupBusiness\\|internet.computer\\|caffeine.ai\\|Principal\\|@icp-sdk\\|getCanisterActor\\|enqueueSync\\|saveClinicalEntitiesWithSync\\|tryPullQueueFromCanister\" 2>\/dev\/null | grep -v node_modules"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 70931,
+                "completion_tokens": 232,
+                "total_tokens": 71163,
+                "prompt_cache_hit_tokens": 62464,
+                "prompt_cache_miss_tokens": 8467,
+                "prompt_tokens_details": {
+                    "cached_tokens": 62464
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 46
+                },
+                "cached_tokens": 62464
+            },
+            "time": 1784820062
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_yzVuuSsp8RL4Ibp6h09b1217",
+            "content": "source_build\/dr.armankabir-main\/src\/frontend\/src\/components\/SyncStatusBadge.tsx\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/SyncConflictDialog.tsx\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/types\/index.ts\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/Layout.tsx\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/lib\/hybridStorage.ts\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/lib\/api.ts\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/SerialDisplay.tsx\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/LandingPage.tsx\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/PatientProfile.tsx\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/BedManagement.tsx\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Appointments.tsx\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/WardRound.tsx\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useMigration.ts\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useCanisterSync.ts\n",
+            "is_error": false,
+            "time": 1784820063
+        },
+        {
+            "id": "msg_45fea2780e",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me check what references remain in each file and clean them up. Let me start by checking the specific grep matches."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me check what specific references remain in each file:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_R7BpA5y9a8L5ufoQeH7o6094",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && for f in \\\n  source_build\/dr.armankabir-main\/src\/frontend\/src\/types\/index.ts \\\n  source_build\/dr.armankabir-main\/src\/frontend\/src\/lib\/api.ts \\\n  source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx \\\n  source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx \\\n  source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/SerialDisplay.tsx \\\n  source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/LandingPage.tsx \\\n  source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/PatientProfile.tsx \\\n  source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/BedManagement.tsx \\\n  source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Appointments.tsx \\\n  source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/WardRound.tsx \\\n  source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts \\\n  source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useCanisterSync.ts \\\n  source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useMigration.ts \\\n  source_build\/dr.armankabir-main\/src\/frontend\/src\/components\/SyncStatusBadge.tsx \\\n  source_build\/dr.armankabir-main\/src\/frontend\/src\/components\/SyncConflictDialog.tsx; do\n  count=$(grep -c \"icp\\|canister\\|dfinity\\|Principal\\|@icp-sdk\\|getCanisterActor\\|enqueueSync\\|saveClinicalEntitiesWithSync\\|tryPullQueueFromCanister\\|SyncConflictDialog\\|SyncStatusBadge\" \"$f\" 2>\/dev\/null)\n  echo \"$f: $count matches\"\ndone"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 71574,
+                "completion_tokens": 535,
+                "total_tokens": 72109,
+                "prompt_cache_hit_tokens": 71040,
+                "prompt_cache_miss_tokens": 534,
+                "prompt_tokens_details": {
+                    "cached_tokens": 71040
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 24
+                },
+                "cached_tokens": 71040
+            },
+            "time": 1784820068
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_R7BpA5y9a8L5ufoQeH7o6094",
+            "content": "source_build\/dr.armankabir-main\/src\/frontend\/src\/types\/index.ts: 10 matches\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/lib\/api.ts: 0 matches\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Settings.tsx: 0 matches\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx: 0 matches\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/SerialDisplay.tsx: 7 matches\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/LandingPage.tsx: 0 matches\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/PatientProfile.tsx: 2 matches\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/BedManagement.tsx: 8 matches\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Appointments.tsx: 11 matches\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/WardRound.tsx: 5 matches\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts: 3 matches\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useCanisterSync.ts: 0 matches\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useMigration.ts: 1 matches\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/SyncStatusBadge.tsx: 2 matches\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/SyncConflictDialog.tsx: 3 matches\n",
+            "is_error": false,
+            "time": 1784820068
+        },
+        {
+            "id": "msg_9850f34400",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me check the AdminDashboard.tsx - it was found by the broader search earlier but not by my count:\n- grep found: getSyncStatus, syncStatus - those are local function names, not ICP references\n- Settings.tsx:  matches now (caffeine.ai was found by the broader grep but maybe it's already cleaned)\n- LandingPage.tsx:  matches now\n\nLet me re-check each file more carefully. The count above is specifically for ICP\/canister\/Principal etc, but the broader search earlier found more things. Let me look at what's in useCanisterSync.ts - it shows  matches now, so maybe it's already clean.\n\nLet me focus on the files with actual content to clean:\n1. types\/index.ts - remove Principal import and types\n2. SerialDisplay.tsx - remove canister sync code\n3. PatientProfile.tsx - remove Principal import\n4. BedManagement.tsx - remove getCanisterActor, saveClinicalEntitiesWithSync\n5. Appointments.tsx - remove _canisterActorRef, enqueueSync, syncAppointmentToCanister\n6. WardRound.tsx - remove Principal import\n7. useQueries.ts - remove getCanisterActor, useSyncStatus\n8. useMigration.ts - one match left\n9. SyncStatusBadge.tsx - clean up\n10. SyncConflictDialog.tsx - clean up"
+                },
+                {
+                    "type": "text",
+                    "text": "Let me check each file's specific references more carefully:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_P5jgeF6C7YRxy20XXe4L1832",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && grep -n \"icp\\|canister\\|dfinity\\|Principal\\|@icp-sdk\\|getCanisterActor\\|enqueueSync\\|saveClinicalEntitiesWithSync\\|tryPullQueueFromCanister\\|SyncConflict\\|SyncStatus\\|useMigration\\|cleanupBusiness\\|getSyncStatus\\|_syncStatus\" \\\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/types\/index.ts \\\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/SerialDisplay.tsx \\\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/PatientProfile.tsx \\\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/BedManagement.tsx \\\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Appointments.tsx \\\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/WardRound.tsx \\\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts \\\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useMigration.ts \\\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/SyncStatusBadge.tsx \\\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/SyncConflictDialog.tsx \\\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useCanisterSync.ts \\\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx \\\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/lib\/api.ts 2>&1"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 72536,
+                "completion_tokens": 728,
+                "total_tokens": 73264,
+                "prompt_cache_hit_tokens": 72064,
+                "prompt_cache_miss_tokens": 472,
+                "prompt_tokens_details": {
+                    "cached_tokens": 72064
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 292
+                },
+                "cached_tokens": 72064
+            },
+            "time": 1784820076
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_P5jgeF6C7YRxy20XXe4L1832",
+            "content": "source_build\/dr.armankabir-main\/src\/frontend\/src\/types\/index.ts:5:import type { Principal } from \"@icp-sdk\/core\/principal\";\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/types\/index.ts:348:  createdBy: Principal;\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/types\/index.ts:362:  providerId: Principal;\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/types\/index.ts:387:  recordedBy: Principal;\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/types\/index.ts:403:  orderedBy: Principal;\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/types\/index.ts:424:  authorId: Principal;\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/types\/index.ts:442:  changedBy: Principal;\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/types\/index.ts:500:  acknowledgedBy?: Principal;\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/types\/index.ts:691:  createdBy: Principal;\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/types\/index.ts:712:  userId: Principal;\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/SerialDisplay.tsx:225:\/\/ The canister backend has no dedicated queue API, so we piggy-back on\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/SerialDisplay.tsx:228:\/\/ see the same cross-device state within 1\u20132 canister round-trips.\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/SerialDisplay.tsx:232:async function tryPullQueueFromCanister(): Promise<SerialEntry[]> {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/SerialDisplay.tsx:235:    const actor = (window as any).__canisterActorForQueue;\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/SerialDisplay.tsx:676:  \/\/ Primary poll: localStorage every 2s + canister every 5s\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/SerialDisplay.tsx:684:        \/\/ 2. Try canister every 5 seconds for cross-device sync\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/SerialDisplay.tsx:689:          const remoteEntries = await tryPullQueueFromCanister();\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/PatientProfile.tsx:22:import type { Principal } from \"@icp-sdk\/core\/principal\";\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/PatientProfile.tsx:3144:                      } as unknown as Principal,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/BedManagement.tsx:33:  getCanisterActor,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/BedManagement.tsx:40:import { saveClinicalEntitiesWithSync } from \"..\/lib\/hybridStorage\";\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/BedManagement.tsx:867:    \/\/ Sync expired reservation release to canister\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/BedManagement.tsx:869:    saveClinicalEntitiesWithSync(\"beds\", updatedBeds, getCanisterActor());\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/BedManagement.tsx:990:    \/\/ Sync beds to canister\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/BedManagement.tsx:992:    saveClinicalEntitiesWithSync(\"beds\", updatedBeds, getCanisterActor());\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/BedManagement.tsx:1138:    \/\/ Sync transfer changes to canister\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/BedManagement.tsx:1140:    saveClinicalEntitiesWithSync(\"beds\", updatedBeds, getCanisterActor());\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Appointments.tsx:59:  _canisterActorRef,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Appointments.tsx:63:import { enqueueSync } from \"..\/lib\/hybridStorage\";\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Appointments.tsx:139:\/** Push appointment changes to the canister \u2014 fire-and-forget, never throws *\/\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Appointments.tsx:144:  const actor = _canisterActorRef();\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Appointments.tsx:146:    enqueueSync({\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Appointments.tsx:163:    enqueueSync({\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Appointments.tsx:173:\/** Push queue-entry changes to the canister \u2014 fire-and-forget, never throws *\/\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Appointments.tsx:178:  const actor = _canisterActorRef();\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Appointments.tsx:181:    enqueueSync({\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Appointments.tsx:198:    enqueueSync({\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Appointments.tsx:553:    \/\/ Delete all current entries from canister before clearing\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/WardRound.tsx:7:import type { Principal } from \"@icp-sdk\/core\/principal\";\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/WardRound.tsx:174:      recordedBy: { toString: () => \"local\" } as unknown as Principal,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/WardRound.tsx:293:      orderedBy: { toString: () => \"local\" } as unknown as Principal,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/WardRound.tsx:372:        orderedBy: { toString: () => \"local\" } as unknown as Principal,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/WardRound.tsx:448:        authorId: { toString: () => \"local\" } as unknown as Principal,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts:6: * No canister actors or sync queue code.\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts:445:export function useSyncStatus() {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts:452:      canisterConnected: false,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts:521:export function getCanisterActor(): unknown | null {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useMigration.ts:7:import type { MigrationProgress, SyncStatus } from \"..\/lib\/hybridStorage\";\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useMigration.ts:23:export function useMigration(\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useMigration.ts:43:export function useSyncStatus(): SyncStatus {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useMigration.ts:44:  const [syncStatus] = useState<SyncStatus>({\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useMigration.ts:47:    canisterConnected: true,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/SyncStatusBadge.tsx:2: * SyncStatusBadge \u2014 shows real-time sync state in the app header.\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/SyncStatusBadge.tsx:15:export default function SyncStatusBadge() {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/SyncConflictDialog.tsx:18:  type SyncConflict,\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/SyncConflictDialog.tsx:25:interface SyncConflictDialogProps {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/SyncConflictDialog.tsx:58:  conflict: SyncConflict;\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/SyncConflictDialog.tsx:158:export default function SyncConflictDialog({\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/components\/SyncConflictDialog.tsx:162:}: SyncConflictDialogProps) {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useCanisterSync.ts:11:export type SyncStatus = \"offline\" | \"syncing\" | \"synced\" | \"pending\";\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useCanisterSync.ts:15:  syncStatus: SyncStatus;\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useCanisterSync.ts:25:  const [syncStatus, setSyncStatus] = useState<SyncStatus>(\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useCanisterSync.ts:35:      setSyncStatus(\"offline\");\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useCanisterSync.ts:42:    setSyncStatus(\"syncing\");\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useCanisterSync.ts:50:      setSyncStatus(\"synced\");\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useCanisterSync.ts:53:      setSyncStatus(\"pending\");\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useCanisterSync.ts:63:      setSyncStatus(\"synced\");\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useCanisterSync.ts:68:      setSyncStatus(\"offline\");\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx:52:function getSyncStatus(): string {\nsource_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/dashboards\/AdminDashboard.tsx:144:  const syncStatus = useMemo(getSyncStatus, []);\n",
+            "is_error": false,
+            "time": 1784820076
         }
     ]
 }

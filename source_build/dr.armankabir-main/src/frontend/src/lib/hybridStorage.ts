@@ -165,7 +165,7 @@ export function nextClinicalId(_items: { id?: unknown }[]): bigint {
 
 // ─── Bootstrap — no-op ───────────────────────────────────────────────────────
 
-export async function bootstrapFromCanister(_actor: unknown): Promise<void> {
+export async function bootstrapFromCanister(): Promise<void> {
   // No canister to bootstrap from
 }
 
