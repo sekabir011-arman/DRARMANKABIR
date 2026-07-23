@@ -244,8 +244,6 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
     loadBool("mobile_sidebar_expanded", false),
   );
 
-  const syncPopoverRef = useRef<HTMLDivElement>(null);
-  const state = useRouterState();
 
   const role = (currentDoctor?.role ?? "staff") as StaffRole;
   const rolePerms = getPermissionsForRole(role);
@@ -296,15 +294,6 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
     setAdmittedPatientCount(getAdmittedPatientCount());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
-
-  // Poll conflict count every 5 seconds
-  useEffect(() => {
-    const refresh = () => setConflictCount(getConflictsCount());
-    refresh();
-    const iv = setInterval(refresh, 5000);
-    return () => clearInterval(iv);
-  }, []);
-
   // Poll emergency notifications for nurses every 15 seconds
   const isNurse = role === "nurse";
   useEffect(() => {
@@ -443,65 +432,6 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
     isActive("OtherPayment") ||
     isActive("OutstandingBalances") ||
     isActive("Staff");
-
-  const lastSyncLabel = (() => {
-    if (!syncStatus.lastSyncAt) return "Never synced";
-    const diffMs = Date.now() - syncStatus.lastSyncAt.getTime();
-    const diffMin = Math.floor(diffMs / 60000);
-    if (diffMin < 1) return "Just now";
-    if (diffMin === 1) return "1 min ago";
-    if (diffMin < 60) return `${diffMin} min ago`;
-    return `${Math.floor(diffMin / 60)}h ago`;
-  })();
-
-  const lastSyncTime = (() => {
-    if (!syncStatus.lastSyncAt) return "";
-    return syncStatus.lastSyncAt.toLocaleTimeString("en-BD", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  })();
-
-  const syncIndicator = (() => {
-    if (!isOnline)
-      return {
-        color: "bg-amber-500",
-        label: `Offline (${syncStatus.pendingChanges} pending)`,
-        tooltip: `Offline — ${syncStatus.pendingChanges} item(s) pending sync.`,
-        icon: <WifiOff className="w-3 h-3" />,
-        badgeClass: "bg-amber-100 text-amber-700 border-amber-200",
-      };
-    if (syncStatus.pendingChanges > 0)
-      return {
-        color: "bg-yellow-400 animate-pulse",
-        label: `Syncing... (${syncStatus.pendingChanges} pending)`,
-        tooltip: `${syncStatus.pendingChanges} item(s) pending sync — last synced at ${lastSyncTime || "unknown"}`,
-        icon: <RefreshCw className="w-3 h-3 animate-spin" />,
-        badgeClass: "bg-yellow-100 text-yellow-700 border-yellow-200",
-      };
-    return {
-      color: "bg-green-500",
-      label: "All synced",
-      tooltip: `All data synced — last synced at ${lastSyncTime || lastSyncLabel}`,
-      icon: <Wifi className="w-3 h-3" />,
-      badgeClass: "bg-green-100 text-green-700 border-green-200",
-    };
-  })();
-
-  // Close popover on outside click
-  useEffect(() => {
-    if (!showSyncPopover) return;
-    const handler = (e: MouseEvent) => {
-      if (
-        syncPopoverRef.current &&
-        !syncPopoverRef.current.contains(e.target as Node)
-      ) {
-        setShowSyncPopover(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [showSyncPopover]);
 
   // Mobile bottom nav (4 most important)
   const mobileNavItems = [
@@ -975,96 +905,6 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
                   )}
                 </a>
               )}
-
-              {/* Sync conflict badge */}
-              {conflictCount > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setShowConflictDialog(true)}
-                  className="flex items-center gap-1.5 text-xs font-semibold px-2 py-1 rounded-full border bg-red-100 text-red-700 border-red-200 hover:bg-red-200 transition-colors animate-pulse"
-                  title={`${conflictCount} sync conflict${conflictCount > 1 ? "s" : ""}`}
-                  data-ocid="nav.sync_conflict_badge"
-                >
-                  <AlertTriangle className="w-3 h-3" />
-                  <span className="hidden sm:inline">
-                    ⚠️ {conflictCount} sync conflict
-                    {conflictCount > 1 ? "s" : ""}
-                  </span>
-                  <span className="sm:hidden">{conflictCount}</span>
-                </button>
-              )}
-
-              {/* Sync status indicator */}
-              <div className="relative" ref={syncPopoverRef}>
-                <button
-                  type="button"
-                  onClick={() => setShowSyncPopover((v) => !v)}
-                  className={cn(
-                    "flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-full border transition-colors",
-                    syncIndicator.badgeClass,
-                  )}
-                  title={syncIndicator.tooltip}
-                  data-ocid="nav.sync_status"
-                >
-                  {syncIndicator.icon}
-                  <span className="hidden sm:inline">
-                    {syncIndicator.label}
-                  </span>
-                </button>
-                {showSyncPopover && (
-                  <div className="absolute right-0 top-full mt-2 w-72 bg-card border border-border rounded-xl shadow-lg p-3 z-50 text-sm">
-                    <p className="font-semibold text-foreground mb-1 flex items-center gap-1.5">
-                      {isOnline ? (
-                        <CheckCircle2 className="w-4 h-4 text-green-500" />
-                      ) : (
-                        <WifiOff className="w-4 h-4 text-amber-500" />
-                      )}
-                      {isOnline ? "Online" : "Offline Mode"}
-                    </p>
-                    <div className="space-y-1.5 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1.5">
-                        <Clock className="w-3 h-3" />
-                        Last synced:{" "}
-                        <span className="font-medium text-foreground">
-                          {lastSyncTime ? `at ${lastSyncTime}` : lastSyncLabel}
-                        </span>
-                      </div>
-                      {syncStatus.pendingChanges > 0 ? (
-                        <div className="flex items-center gap-1.5 text-amber-600">
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                          {syncStatus.pendingChanges} item(s) pending sync
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1.5 text-green-600">
-                          <CheckCircle2 className="w-3 h-3" />
-                          All data synced
-                        </div>
-                      )}
-                      {conflictCount > 0 && (
-                        <button
-                          type="button"
-                          className="flex items-center gap-1.5 text-red-600 font-medium hover:underline w-full text-left"
-                          onClick={() => {
-                            setShowSyncPopover(false);
-                            setShowConflictDialog(true);
-                          }}
-                          data-ocid="nav.sync_conflict_link"
-                        >
-                          <AlertTriangle className="w-3 h-3" />
-                          {conflictCount} conflict{conflictCount > 1 ? "s" : ""}{" "}
-                          need resolution
-                        </button>
-                      )}
-                      {!isOnline && (
-                        <p className="text-amber-600 font-medium">
-                          All changes are saved locally and will sync
-                          automatically when you&apos;re back online.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
 
               {/* Mobile hamburger (for overlay menu) */}
               <Button
@@ -1579,13 +1419,6 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
           })}
         </div>
       </nav>
-
-      {/* Sync Conflict Dialog */}
-      <SyncConflictDialog
-        open={showConflictDialog}
-        onClose={() => setShowConflictDialog(false)}
-        onAllResolved={() => setConflictCount(0)}
-      />
     </div>
   );
 }
