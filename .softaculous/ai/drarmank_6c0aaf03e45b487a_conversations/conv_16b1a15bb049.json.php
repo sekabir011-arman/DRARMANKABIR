@@ -77,7 +77,7 @@
         }
     ],
     "created_at": 1784888456,
-    "updated_at": 1784889479,
+    "updated_at": 1784889555,
     "messages": [
         {
             "id": "msg_040bae270a",
@@ -1484,6 +1484,46 @@
             "content": "continue",
             "attachments": [],
             "time": 1784889479
+        },
+        {
+            "id": "msg_c0c39e1538",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The user wants me to continue. Let me write the comprehensive architecture analysis report as a file. Let me produce the complete report now."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_z41o8Pj2dJOPZbyuNUbM1365",
+                    "name": "write_file",
+                    "input": []
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 217502,
+                "completion_tokens": 8192,
+                "total_tokens": 225694,
+                "prompt_cache_hit_tokens": 4352,
+                "prompt_cache_miss_tokens": 213150,
+                "prompt_tokens_details": {
+                    "cached_tokens": 4352
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 27
+                },
+                "cached_tokens": 4352
+            },
+            "time": 1784889554
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_z41o8Pj2dJOPZbyuNUbM1365",
+            "content": "Path is required",
+            "is_error": true,
+            "time": 1784889555
         }
     ]
 }
