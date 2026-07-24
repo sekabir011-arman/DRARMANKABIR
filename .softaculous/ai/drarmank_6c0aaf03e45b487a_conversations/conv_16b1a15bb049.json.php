@@ -77,7 +77,7 @@
         }
     ],
     "created_at": 1784888456,
-    "updated_at": 1784888971,
+    "updated_at": 1784889027,
     "messages": [
         {
             "id": "msg_040bae270a",
@@ -1277,6 +1277,46 @@
             "content": "Todo list updated with 14 items.",
             "is_error": false,
             "time": 1784888971
+        },
+        {
+            "id": "msg_e9c40c9bd1",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now let me write the comprehensive architecture analysis report."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_hVgMTadduSLTaVm89omG1494",
+                    "name": "write_file",
+                    "input": []
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 217679,
+                "completion_tokens": 8192,
+                "total_tokens": 225871,
+                "prompt_cache_hit_tokens": 217216,
+                "prompt_cache_miss_tokens": 463,
+                "prompt_tokens_details": {
+                    "cached_tokens": 217216
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 10
+                },
+                "cached_tokens": 217216
+            },
+            "time": 1784889027
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_hVgMTadduSLTaVm89omG1494",
+            "content": "Path is required",
+            "is_error": true,
+            "time": 1784889027
         }
     ]
 }
