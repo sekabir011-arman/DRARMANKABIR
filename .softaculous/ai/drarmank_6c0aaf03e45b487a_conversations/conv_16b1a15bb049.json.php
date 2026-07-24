@@ -77,7 +77,7 @@
         }
     ],
     "created_at": 1784888456,
-    "updated_at": 1784889623,
+    "updated_at": 1784889706,
     "messages": [
         {
             "id": "msg_compact",
@@ -171,6 +171,53 @@
             "content": "Path is required",
             "is_error": true,
             "time": 1784889623
+        },
+        {
+            "id": "msg_f74ca41134",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me write the complete report to a file."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_SOEaOGzK2hXAqirILZVY1708",
+                    "name": "write_file",
+                    "input": []
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 3946,
+                "completion_tokens": 8192,
+                "total_tokens": 12138,
+                "prompt_cache_hit_tokens": 3840,
+                "prompt_cache_miss_tokens": 106,
+                "prompt_tokens_details": {
+                    "cached_tokens": 3840
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 10
+                },
+                "cached_tokens": 3840
+            },
+            "time": 1784889690
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_SOEaOGzK2hXAqirILZVY1708",
+            "content": "Path is required",
+            "is_error": true,
+            "time": 1784889690
+        },
+        {
+            "id": "msg_b82b003d99",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784889706
         }
     ]
 }
