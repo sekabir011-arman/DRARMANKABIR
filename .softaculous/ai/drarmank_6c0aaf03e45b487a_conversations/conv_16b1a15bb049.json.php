@@ -77,7 +77,7 @@
         }
     ],
     "created_at": 1784888456,
-    "updated_at": 1784889198,
+    "updated_at": 1784889479,
     "messages": [
         {
             "id": "msg_040bae270a",
@@ -1437,6 +1437,53 @@
             "content": "Path is required",
             "is_error": true,
             "time": 1784889198
+        },
+        {
+            "id": "msg_43ae5f99b2",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me try again with the correct parameter name."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_xvSOPFUIGwCijlHkUrjm8555",
+                    "name": "write_file",
+                    "input": []
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 217929,
+                "completion_tokens": 8192,
+                "total_tokens": 226121,
+                "prompt_cache_hit_tokens": 217856,
+                "prompt_cache_miss_tokens": 73,
+                "prompt_tokens_details": {
+                    "cached_tokens": 217856
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 10
+                },
+                "cached_tokens": 217856
+            },
+            "time": 1784889252
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_xvSOPFUIGwCijlHkUrjm8555",
+            "content": "Path is required",
+            "is_error": true,
+            "time": 1784889252
+        },
+        {
+            "id": "msg_d4cbe57d6f",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784889479
         }
     ]
 }
