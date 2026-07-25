@@ -1,6 +1,6 @@
 <?php exit(); ?>
 {
-    "fetched_at": 1784896093,
+    "fetched_at": 1784983549,
     "models": {
         "big-pickle": {
             "name": "big-pickle",
@@ -32,6 +32,10 @@
         },
         "claude-opus-4-8": {
             "name": "claude-opus-4-8",
+            "context_window": 128000
+        },
+        "claude-opus-5": {
+            "name": "claude-opus-5",
             "context_window": 128000
         },
         "claude-sonnet-4": {
