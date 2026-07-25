@@ -204,7 +204,6 @@ export interface Medication {
   /** Timestamp when auto-linked from emergency Rx */
   emergencyRxLinkedAt?: string;
 }
-
 export interface ConsultantAssignment {
   email: string;
   name: string;
