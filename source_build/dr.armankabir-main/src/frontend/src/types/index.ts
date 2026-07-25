@@ -275,36 +275,26 @@ export interface Prescription {
   notes?: string;
   createdAt: string;
 }
-
-export interface UserProfile {
-  name: string;
-  specialization?: string;
-  phone?: string;
-  email?: string;
-  address?: string;
-  photo?: string;
-}
-
-// Appointment type
+// Appointment type (MySQL schema mapping)
 export interface Appointment {
-  id: string;
-  patientId?: string;
-  patientName: string;
-  phone: string;
-  registerNumber?: string;
-  age?: string;
-  gender?: string;
-  preferredDoctor: string;
-  preferredChamber?: string;
-  preferredDate: string;
-  preferredTime: string;
-  reason?: string;
-  status: "pending" | "confirmed" | "cancelled";
+  id: number;
+  patientId: number | null;
+  patientName: string | null;
+  patientPhone: string | null;
+  doctorId: number | null;
+  doctorName: string | null;
+  appointmentDate: string;
+  appointmentTime: string | null;
+  serialNumber: number;
+  type: 'regular' | 'emergency' | 'follow-up' | 'consultation';
+  status: 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
+  chiefComplaint: string | null;
+  notes: string | null;
+  isPublicRequest: boolean;
+  createdBy: number | null;
   createdAt: string;
-  createdBy?: string;
-  notes?: string;
-  /** 'chamber' = outpatient | 'admitted' = inpatient */
-  appointmentType: "chamber" | "admitted";
+  updatedAt: string | null;
+}
   /** Admitted-only fields */
   hospitalName?: string;
   bedWardNumber?: string;
