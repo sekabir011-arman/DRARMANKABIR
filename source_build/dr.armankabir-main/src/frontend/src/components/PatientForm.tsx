@@ -1,4 +1,9 @@
-import type { Patient } from "../types";import { Badge } from "@/components/ui/badge";
+function ageToApproxDob(age: string): string {
+  const n = Number.parseInt(age);
+  if (Number.isNaN(n) || n <  || n > 130) return "";
+  const year = new Date().getFullYear() - n;
+  return `${year}-01-01`;
+}import type { Patient } from "../types";import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

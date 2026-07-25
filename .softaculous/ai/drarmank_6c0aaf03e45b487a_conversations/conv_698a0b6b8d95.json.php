@@ -92,7 +92,7 @@
         }
     ],
     "created_at": 1784983610,
-    "updated_at": 1785005987,
+    "updated_at": 1785006725,
     "messages": [
         {
             "id": "msg_compact",
@@ -2975,6 +2975,20 @@
             "content": "Edited \/source_build\/dr.armankabir-main\/src\/frontend\/src\/components\/PatientForm.tsx (1 replacement)\n- \n+ import type { Patient } from \"..\/types\";",
             "is_error": false,
             "time": 1785005987
+        },
+        {
+            "id": "msg_4bd7ab07aa",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785006237
+        },
+        {
+            "id": "msg_660f66bffc",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785006725
         }
     ]
 }
