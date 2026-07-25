@@ -118,7 +118,7 @@ export default function PatientForm({
   isLoading,
 }: PatientFormProps) {
   const dob = patient?.dateOfBirth
-    ? patient.dateOfBirth.split("T")[]?.substring(, 10) ?? ""
+    ? patient.dateOfBirth.substring(, 10)
     : "";
 
   const existingPhoto =
