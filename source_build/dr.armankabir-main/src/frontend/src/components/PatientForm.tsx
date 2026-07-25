@@ -1,4 +1,4 @@
-/** Scan server for duplicate patients via API */
+interface DuplicateMatch {/** Scan server for duplicate patients via API */
 async function checkDuplicatePatient(phone: string, email: string): Promise<DuplicateMatch | null> {
   if (!phone && !email) return null;
   try {
