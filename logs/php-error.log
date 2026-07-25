@@ -113,3 +113,8 @@ Stack trace:
 [20-Jul-2026 20:28:45 Asia/Dhaka] PHP Parse error:  syntax error, unexpected token ")" in /home/drarmank/public_html/api/helpers.php on line 86
 [21-Jul-2026 16:54:01 Asia/Dhaka] Audit log failed: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`drarmank_drarmank_care`.`audit_logs`, CONSTRAINT `audit_logs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL)
 [22-Jul-2026 00:16:34 Asia/Dhaka] Audit log failed: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`drarmank_drarmank_care`.`audit_logs`, CONSTRAINT `audit_logs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL)
+[24-Jul-2026 20:55:11 Asia/Dhaka] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'drarmank_drarmank_care.admin_sessions' doesn't exist in Command line code:9
+Stack trace:
+#0 Command line code(9): PDO->query()
+#1 {main}
+  thrown in Command line code on line 9
