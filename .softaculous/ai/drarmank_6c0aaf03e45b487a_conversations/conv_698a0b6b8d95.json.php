@@ -52,7 +52,7 @@
         }
     ],
     "created_at": 1784983610,
-    "updated_at": 1785002687,
+    "updated_at": 1785002714,
     "messages": [
         {
             "id": "msg_compact",
@@ -1343,6 +1343,358 @@
             "content": "    1 | \/**\n    2 |  * React Query hooks \u2014 PHP\/MySQL Backend\n    3 |  *\n    4 |  * All CRUD operations now target the PHP\/MySQL API via the service layer.\n    5 |  * No localStorage, sessionStorage, or IndexedDB is used for business data.\n    6 |  * No canister actors or sync queue code.\n    7 |  * IDs are number (MySQL INT\/BIGINT).\n    8 |  *\/\n    9 | \n   10 | import { useMutation, useQuery, useQueryClient } from '@tanstack\/react-query';\n   11 | import {\n   12 |   patientService,\n   13 |   visitService,\n   14 |   prescriptionService,\n   15 |   appointmentService,\n   16 |   clinicalNotesService,\n   17 |   admissionService,\n   18 |   vitalService,\n   19 |   userService,\n   20 | } from '..\/services';\n   21 | import type {\n   22 |   AdmissionHistory,\n   23 |   BedRecord,\n   24 |   ClinicalAlert,\n   25 |   ClinicalNote,\n   26 |   ClinicalOrder,\n   27 |   DrugReminder,\n   28 |   Encounter,\n   29 |   Observation,\n   30 |   Patient,\n   31 |   Prescription,\n   32 |   UserProfile,\n   33 |   Visit,\n   34 |   VitalSigns,\n   35 | } from '..\/types';\n   36 | \n   37 | \/\/ \u2500\u2500\u2500 Patients \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   38 | \n   39 | export function useGetAllPatients() {\n   40 |   return useQuery<Patient[]>({\n   41 |     queryKey: ['patients'],\n   42 |     queryFn: () => patientService.getAll(100),\n   43 |   });\n   44 | }\n   45 | \n   46 | export function useGetPatient(id: number | null) {\n   47 |   return useQuery<Patient | null>({\n   48 |     queryKey: ['patient', id?.toString()],\n   49 |     queryFn: () => patientService.getById(id!),\n   50 |     enabled: !!id,\n   51 |   });\n   52 | }\n   53 | \n   54 | export function useCreatePatient() {\n   55 |   const qc = useQueryClient();\n   56 |   return useMutation({\n   57 |     mutationFn: async (data: {\n   58 |       fullName: string;\n   59 |       nameBn?: string | null;\n   60 |       dateOfBirth?: string | null;\n   61 |       gender?: string;\n   62 |       phone?: string | null;\n   63 |       email?: string | null;\n   64 |       address?: string | null;\n   65 |       bloodGroup?: string | null;\n   66 |       weight?: number | null;\n   67 |       height?: number | null;\n   68 |       allergies?: string[];\n   69 |       chronicConditions?: string[];\n   70 |       pastSurgicalHistory?: string | null;\n   71 |       patientType?: string;\n   72 |       photo?: string | null;\n   73 |     }) => {\n   74 |       return patientService.create(data);\n   75 |     },\n   76 |     onSuccess: () => qc.invalidateQueries({ queryKey: ['patients'] }),\n   77 |   });\n   78 | }\n   79 | \n   80 | export function useUpdatePatient() {\n   81 |   const qc = useQueryClient();\n   82 |   return useMutation({\n   83 |     mutationFn: async (data: {\n   84 |       id: number;\n   85 |       fullName?: string;\n   86 |       nameBn?: string | null;\n   87 |       dateOfBirth?: string | null;\n   88 |       gender?: string;\n   89 |       phone?: string | null;\n   90 |       email?: string | null;\n   91 |       address?: string | null;\n   92 |       bloodGroup?: string | null;\n   93 |       weight?: number | null;\n   94 |       height?: number | null;\n   95 |       allergies?: string[];\n   96 |       chronicConditions?: string[];\n   97 |       pastSurgicalHistory?: string | null;\n   98 |       patientType?: string;\n   99 |       photo?: string | null;\n  100 |     }) => {\n  101 |       return patientService.update(data);\n  102 |     },\n  103 |     onSuccess: (_, vars) => {\n  104 |       qc.invalidateQueries({ queryKey: ['patients'] });\n  105 |       qc.invalidateQueries({ queryKey: ['patient', vars.id.toString()] });\n  106 |     },\n  107 |   });\n  108 | }\n  109 | \n  110 | export function useDeletePatient() {\n  111 |   const qc = useQueryClient();\n  112 |   return useMutation({\n  113 |     mutationFn: async (id: number) => {\n  114 |       await patientService.delete(id);\n  115 |     },\n  116 |     onSuccess: () => qc.invalidateQueries({ queryKey: ['patients'] }),\n  117 |   });\n  118 | }\n  119 | \n  120 | \/\/ \u2500\u2500\u2500 Visits \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  121 | \n  122 | export function useGetVisitsByPatient(patientId: number | null) {\n  123 |   return useQuery<Visit[]>({\n  124 |     queryKey: ['visits', patientId?.toString()],\n  125 |     queryFn: () => visitService.getByPatient(patientId!),\n  126 |     enabled: !!patientId,\n  127 |   });\n  128 | }\n  129 | \n  130 | export function useCreateVisit() {\n  131 |   const qc = useQueryClient();\n  132 |   return useMutation({\n  133 |     mutationFn: async (data: {\n  134 |       patientId: number;\n  135 |       visitDate?: string;\n  136 |       chiefComplaint?: string;\n  137 |       historyOfPresentIllness?: string | null;\n  138 |       vitalSigns?: VitalSigns;\n  139 |       physicalExamination?: string | null;\n  140 |       diagnosis?: string | null;\n  141 |       notes?: string | null;\n  142 |       visitType?: string;\n  143 |     }) => {\n  144 |       return visitService.create(data);\n  145 |     },\n  146 |     onSuccess: (_, vars) =>\n  147 |       qc.invalidateQueries({ queryKey: ['visits', vars.patientId.toString()] }),\n  148 |   });\n  149 | }\n  150 | \n  151 | export function useDeleteVisit() {\n  152 |   const qc = useQueryClient();\n  153 |   return useMutation({\n  154 |     mutationFn: async ({ id, patientId }: { id: number; patientId: number }) => {\n  155 |       await visitService.delete(id, patientId);\n  156 |     },\n  157 |     onSuccess: (_, vars) =>\n  158 |       qc.invalidateQueries({ queryKey: ['visits', vars.patientId.toString()] }),\n  159 |   });\n  160 | }\n  161 | \n  162 | export function useUpdateVisit() {\n  163 |   const qc = useQueryClient();\n  164 |   return useMutation({\n  165 |     mutationFn: async (data: {\n  166 |       id: number;\n  167 |       patientId: number;\n  168 |       visitDate?: string;\n  169 |       chiefComplaint?: string;\n  170 |       historyOfPresentIllness?: string | null;\n  171 |       vitalSigns?: VitalSigns;\n  172 |       physicalExamination?: string | null;\n  173 |       diagnosis?: string | null;\n  174 |       notes?: string | null;\n  175 |       visitType?: string;\n  176 |     }) => {\n  177 |       return visitService.update(data);\n  178 |     },\n  179 |     onSuccess: (_, vars) =>\n  180 |       qc.invalidateQueries({ queryKey: ['visits', vars.patientId.toString()] }),\n  181 |   });\n  182 | }\n  183 | \n  184 | \/\/ \u2500\u2500\u2500 Prescriptions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  185 | \n  186 | export function useGetPrescriptionsByPatient(patientId: number | null) {\n  187 |   return useQuery<Prescription[]>({\n  188 |     queryKey: ['prescriptions', patientId?.toString()],\n  189 |     queryFn: () => prescriptionService.getByPatient(patientId!),\n  190 |     enabled: !!patientId,\n  191 |   });\n  192 | }\n  193 | \n  194 | export function useCreatePrescription() {\n  195 |   const qc = useQueryClient();\n  196 |   return useMutation({\n  197 |     mutationFn: async (data: {\n  198 |       patientId: number;\n  199 |       visitId?: number | null;\n  200 |       prescriptionDate?: string;\n  201 |       diagnosis?: string | null;\n  202 |       medications: import('..\/types').Medication[];\n  203 |       notes?: string | null;\n  204 |     }) => {\n  205 |       return prescriptionService.create(data);\n  206 |     },\n  207 |     onSuccess: (_, vars) =>\n  208 |       qc.invalidateQueries({ queryKey: ['prescriptions', vars.patientId.toString()] }),\n  209 |   });\n  210 | }\n  211 | \n  212 | export function useDeletePrescription() {\n  213 |   const qc = useQueryClient();\n  214 |   return useMutation({\n  215 |     mutationFn: async ({ id, patientId }: { id: number; patientId: number }) => {\n  216 |       await prescriptionService.delete(id, patientId);\n  217 |     },\n  218 |     onSuccess: (_, vars) =>\n  219 |       qc.invalidateQueries({ queryKey: ['prescriptions', vars.patientId.toString()] }),\n  220 |   });\n  221 | }\n  222 | \n  223 | export function useUpdatePrescription() {\n  224 |   const qc = useQueryClient();\n  225 |   return useMutation({\n  226 |     mutationFn: async (data: {\n  227 |       id: number;\n  228 |       patientId: number;\n  229 |       visitId?: number | null;\n  230 |       prescriptionDate?: string;\n  231 |       diagnosis?: string | null;\n  232 |       medications: import('..\/types').Medication[];\n  233 |       notes?: string | null;\n  234 |     }) => {\n  235 |       return prescriptionService.update(data);\n  236 |     },\n  237 |     onSuccess: (_, vars) =>\n  238 |       qc.invalidateQueries({ queryKey: ['prescriptions', vars.patientId.toString()] }),\n  239 |   });\n  240 | }\n  241 | \n  242 | \/\/ \u2500\u2500\u2500 User profile \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  243 | \n  244 | export function useGetCallerUserProfile() {\n  245 |   return useQuery<UserProfile | null>({\n  246 |     queryKey: ['userProfile'],\n  247 |     queryFn: () => userService.getProfile(),\n  248 |   });\n  249 | }\n  250 | \n  251 | export function useGetCallerUserRole() {\n  252 |   return useQuery<string>({\n  253 |     queryKey: ['userRole'],\n  254 |     queryFn: () => userService.getRole(),\n  255 |   });\n  256 | }\n  257 | \n  258 | export function useSaveCallerUserProfile() {\n  259 |   const qc = useQueryClient();\n  260 |   return useMutation({\n  261 |     mutationFn: async (profile: UserProfile) => {\n  262 |       await userService.updateProfile(profile);\n  263 |       return profile;\n  264 |     },\n  265 |     onSuccess: () => qc.invalidateQueries({ queryKey: ['userProfile'] }),\n  266 |   });\n  267 | }\n  268 | \n  269 | \/\/ \u2500\u2500\u2500 Clinical Data Hooks \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  270 | \n  271 | export function useGetEncountersByPatient(patientId: number | null) {\n  272 |   return useQuery<Encounter[]>({\n  273 |     queryKey: ['encounters', patientId?.toString()],\n  274 |     queryFn: () => clinicalNotesService.getEncountersByPatient(patientId!),\n  275 |     enabled: !!patientId,\n  276 |   });\n  277 | }\n  278 | \n  279 | export function useCreateEncounter() {\n  280 |   const qc = useQueryClient();\n  281 |   return useMutation({\n  282 |     mutationFn: async (data: { patientId: number; encounterData: Record<string, unknown> }) =>\n  283 |       clinicalNotesService.createEncounter(data.patientId, data.encounterData),\n  284 |     onSuccess: (_, vars) =>\n  285 |       qc.invalidateQueries({ queryKey: ['encounters', vars.patientId.toString()] }),\n  286 |   });\n  287 | }\n  288 | \n  289 | export function useGetObservationsByPatient(patientId: number | null) {\n  290 |   return useQuery<Observation[]>({\n  291 |     queryKey: ['observations', patientId?.toString()],\n  292 |     queryFn: () => clinicalNotesService.getObservationsByPatient(patientId!),\n  293 |     enabled: !!patientId,\n  294 |   });\n  295 | }\n  296 | \n  297 | export function useCreateObservation() {\n  298 |   const qc = useQueryClient();\n  299 |   return useMutation({\n  300 |     mutationFn: async (data: { patientId: number; observationData: Record<string, unknown> }) =>\n  301 |       clinicalNotesService.createObservation(data.patientId, data.observationData),\n  302 |     onSuccess: (_, vars) =>\n  303 |       qc.invalidateQueries({ queryKey: ['observations', vars.patientId.toString()] }),\n  304 |   });\n  305 | }\n  306 | \n  307 | export function useGetClinicalNotesByPatient(patientId: number | null) {\n  308 |   return useQuery<ClinicalNote[]>({\n  309 |     queryKey: ['clinicalNotes', patientId?.toString()],\n  310 |     queryFn: () => clinicalNotesService.getNotesByPatient(patientId!),\n  311 |     enabled: !!patientId,\n  312 |   });\n  313 | }\n  314 | \n  315 | export function useCreateClinicalNote() {\n  316 |   const qc = useQueryClient();\n  317 |   return useMutation({\n  318 |     mutationFn: async (data: { patientId: number; noteData: Record<string, unknown> }) =>\n  319 |       clinicalNotesService.createNote(data.patientId, data.noteData),\n  320 |     onSuccess: (_, vars) =>\n  321 |       qc.invalidateQueries({ queryKey: ['clinicalNotes', vars.patientId.toString()] }),\n  322 |   });\n  323 | }\n  324 | \n  325 | export function useGetOrdersByPatient(patientId: number | null) {\n  326 |   return useQuery<ClinicalOrder[]>({\n  327 |     queryKey: ['orders', patientId?.toString()],\n  328 |     queryFn: () => clinicalNotesService.getOrdersByPatient(patientId!),\n  329 |     enabled: !!patientId,\n  330 |   });\n  331 | }\n  332 | \n  333 | export function useCreateOrder() {\n  334 |   const qc = useQueryClient();\n  335 |   return useMutation({\n  336 |     mutationFn: async (data: { patientId: number; orderData: Record<string, unknown> }) =>\n  337 |       clinicalNotesService.createOrder(data.patientId, data.orderData),\n  338 |     onSuccess: (_, vars) =>\n  339 |       qc.invalidateQueries({ queryKey: ['orders', vars.patientId.toString()] }),\n  340 |   });\n  341 | }\n  342 | \n  343 | \/\/ \u2500\u2500\u2500 Beds & Admissions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  344 | \n  345 | export function useGetBedsByWard(ward: string | null) {\n  346 |   return useQuery<BedRecord[]>({\n  347 |     queryKey: ['beds', ward],\n  348 |     queryFn: () => admissionService.getBedsByWard(ward!),\n  349 |     enabled: !!ward,\n  350 |   });\n  351 | }\n  352 | \n  353 | export function useCreateBed() {\n  354 |   const qc = useQueryClient();\n  355 |   return useMutation({\n  356 |     mutationFn: async (data: { ward: string; bedNumber: string; bedType?: string }) =>\n  357 |       admissionService.createBed(data),\n  358 |     onSuccess: () => qc.invalidateQueries({ queryKey: ['beds'] }),\n  359 |   });\n  360 | }\n  361 | \n  362 | export function useGetAdmissionHistory(patientId: number | null) {\n  363 |   return useQuery<AdmissionHistory[]>({\n  364 |     queryKey: ['admissions', patientId?.toString()],\n  365 |     queryFn: () => admissionService.getByPatient(patientId!),\n  366 |     enabled: !!patientId,\n  367 |   });\n  368 | }\n  369 | \n  370 | \/\/ \u2500\u2500\u2500 Drug Reminders & Alerts \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  371 | \n  372 | export function useGetDrugReminders() {\n  373 |   return useQuery<DrugReminder[]>({\n  374 |     queryKey: ['drugReminders'],\n  375 |     queryFn: async () => {\n  376 |       const { get } = await import('..\/lib\/apiClient');\n  377 |       return get<DrugReminder[]>('\/drugs\/reminders.php');\n  378 |     },\n  379 |   });\n  380 | }\n  381 | \n  382 | export function useGetClinicalAlerts() {\n  383 |   return useQuery<ClinicalAlert[]>({\n  384 |     queryKey: ['clinicalAlerts'],\n  385 |     queryFn: async () => {\n  386 |       const { get } = await import('..\/lib\/apiClient');\n  387 |       return get<ClinicalAlert[]>('\/clinical\/alerts-list.php');\n  388 |     },\n  389 |   });\n  390 | }\n  391 | \n  392 | \/\/ \u2500\u2500\u2500 Appointments \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  393 | \n  394 | export function useGetAppointmentsByPatient(patientId: number | null) {\n  395 |   return useQuery<any[]>({\n  396 |     queryKey: ['appointments', patientId?.toString()],\n  397 |     queryFn: () => appointmentService.getByPatient(patientId!),\n  398 |     enabled: !!patientId,\n  399 |   });\n  400 | }\n  401 | \n  402 | export function useCreateAppointment() {\n  403 |   const qc = useQueryClient();\n  404 |   return useMutation({\n  405 |     mutationFn: async (data: {\n  406 |       patientId: number;\n  407 |       appointmentDate?: string;\n  408 |       doctorName?: string;\n  409 |       reason?: string;\n  410 |       status?: string;\n  411 |     }) => {\n  412 |       return appointmentService.create(data);\n  413 |     },\n  414 |     onSuccess: () => qc.invalidateQueries({ queryKey: ['appointments'] }),\n  415 |   });\n  416 | }\n  417 | \n  418 | \/\/ \u2500\u2500\u2500 Vitals \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  419 | \n  420 | export function useGetVitalsByPatient(patientId: number | null) {\n  421 |   return useQuery<any[]>({\n  422 |     queryKey: ['vitals', patientId?.toString()],\n  423 |     queryFn: () => vitalService.getByPatient(patientId!),\n  424 |     enabled: !!patientId,\n  425 |   });\n  426 | }\n  427 | \n  428 | export function useCreateVitals() {\n  429 |   const qc = useQueryClient();\n  430 |   return useMutation({\n  431 |     mutationFn: async (data: {\n  432 |       patientId: number;\n  433 |       vitalSigns: VitalSigns;\n  434 |       recordedAt?: string;\n  435 |     }) => {\n  436 |       return vitalService.create(data);\n  437 |     },\n  438 |     onSuccess: (_, vars) =>\n  439 |       qc.invalidateQueries({ queryKey: ['vitals', vars.patientId.toString()] }),\n  440 |   });\n  441 | }\n  442 | \n  443 | \/\/ \u2500\u2500\u2500 Sync status (no-op \u2014 always online with PHP) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  444 | \n  445 | export function useSyncStatus() {\n  446 |   return useQuery({\n  447 |     queryKey: ['syncStatus'],\n  448 |     queryFn: async () => ({\n  449 |       isOnline: navigator.onLine,\n  450 |       pendingChanges: false,\n  451 |       lastSyncAt: new Date(),\n  452 |     }),\n  453 |   });\n  454 | }\n  455 | \n  456 | export function isNetworkOnline(): boolean {\n  457 |   return navigator.onLine;\n  458 | }\n  459 | \n  460 | \/\/ \u2500\u2500\u2500 Legacy helpers \u2014 all deprecated, kept only for type compatibility \u2500\u2500\u2500\u2500\n  461 | \n  462 | import type { Medication } from '..\/types';\n  463 | \n  464 | \/** @deprecated Use patientService directly *\/\n  465 | export function saveToStorage<T>(_key: string, _data: T[]): void {\n  466 |   \/\/ No-op \u2014 storage is server-side\n  467 | }\n  468 | \n  469 | \/** @deprecated Use patientService directly *\/\n  470 | export function loadFromStorage<T>(_key: string): T[] {\n  471 |   return [];\n  472 | }\n  473 | \n  474 | \/** @deprecated Use patientService directly *\/\n  475 | export function loadFromAllDoctorKeys<T>(_prefix: string): T[] {\n  476 |   return [];\n  477 | }\n  478 | \n  479 | \/** @deprecated \u2014 email is retrieved from PHP session *\/\n  480 | export function getDoctorEmail(): string {\n  481 |   return '';\n  482 | }\n  483 | \n  484 | \/** @deprecated \u2014 email comes from PHP session *\/\n  485 | export function setCanonicalUserEmail(_email: string): void {\n  486 |   \/\/ No-op \u2014 email comes from PHP session\n  487 | }\n  488 | \n  489 | \/** @deprecated *\/\n  490 | export function clearCanonicalUserEmail(): void {\n  491 |   \/\/ No-op\n  492 | }\n  493 | \n  494 | \/** @deprecated *\/\n  495 | export function storageKey(prefix: string): string {\n  496 |   return prefix;\n  497 | }\n  498 | \n  499 | \/** @deprecated *\/\n  500 | export function getVisitFormData(_visitId: string | number | null): Record<string, any> | null {\n  501 |   return null;\n  502 | }\n  503 | \n  504 | \/** @deprecated *\/\n  505 | export function generateRegisterNumber(): string {\n  506 |   return '';\n  507 | }\n  508 | \n  509 | \/** @deprecated *\/\n  510 | export function createPatientInStorage(_data: Record<string, unknown>): Patient {\n  511 |   throw new Error('createPatientInStorage is deprecated. Use patientService.create() instead.');\n  512 | }\n  513 | \n  514 | \/** @deprecated \u2014 Canister actor not used *\/\n  515 | export function setCanisterActor(_actor: unknown): void {\n  516 |   \/\/ No-op\n  517 | }\n  518 | \n  519 | \/** @deprecated *\/\n  520 | export function getCanisterActor(): unknown | null {\n  521 |   return null;\n  522 | }\n  523 |",
             "is_error": false,
             "time": 1785002687
+        },
+        {
+            "id": "msg_2ca7318b35",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I see a problem in `useQueries.ts`:\n\n- `useGetAllPatients` (line 42): `patientService.getAll(100)` \u2014 the new service returns `{ items: Patient[], total: number }` but the hook expects `Patient[]`. I need to update this.\n\nLet me fix this hook, then also check the API client to ensure it doesn't add auth tokens to localStorage.\n\nLet me also check `useGetPatient` \u2014 the new `getById` returns `Patient | null` which matches, so that's fine.\n\nAlso I notice `useGetAllPatients` returns `useQuery<Patient[]>` but the new service returns `{ items: Patient[], total: number }`. I need to update this."
+                },
+                {
+                    "type": "text",
+                    "text": "I see a type mismatch in `useGetAllPatients` \u2014 the new service returns `{ items, total }` but the hook expects `Patient[]`. Let me fix it:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_v6eOOqielhxMkqle7IyX1491",
+                    "name": "edit_file",
+                    "input": {
+                        "path": "\/source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts",
+                        "old_string": "export function useGetAllPatients() {\n  return useQuery<Patient[]>({\n    queryKey: ['patients'],\n    queryFn: () => patientService.getAll(100),\n  });\n}",
+                        "new_string": "export function useGetAllPatients() {\n  return useQuery<Patient[]>({\n    queryKey: ['patients'],\n    queryFn: async () => {\n      const result = await patientService.getAll(100);\n      return result.items;\n    },\n  });\n}"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 31709,
+                "completion_tokens": 378,
+                "total_tokens": 32087,
+                "prompt_cache_hit_tokens": 26368,
+                "prompt_cache_miss_tokens": 5341,
+                "prompt_tokens_details": {
+                    "cached_tokens": 26368
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 153
+                },
+                "cached_tokens": 26368
+            },
+            "time": 1785002691
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_v6eOOqielhxMkqle7IyX1491",
+            "content": "Edited \/source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts (1 replacement)\n- export function useGetAllPatients() {\n-   return useQuery<Patient[]>({\n-     queryKey: ['patients'],\n-     queryFn: () => patientService.getAll(100),\n-   });\n- }\n+ export function useGetAllPatients() {\n+   return useQuery<Patient[]>({\n+     queryKey: ['patients'],\n+     queryFn: async () => {\n+       const result = await patientService.getAll(100);\n+       return result.items;\n+     },\n+   });\n+ }",
+            "is_error": false,
+            "time": 1785002692
+        },
+        {
+            "id": "msg_7351514818",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now let me check the apiClient to see if it stores auth tokens in localStorage (S1-5,6,7,8):"
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me check the `apiClient.ts` for auth token handling:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_XE59in2ig1xp9zQwggju5224",
+                    "name": "read_file",
+                    "input": {
+                        "path": "\/source_build\/dr.armankabir-main\/src\/frontend\/src\/lib\/apiClient.ts"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 32235,
+                "completion_tokens": 106,
+                "total_tokens": 32341,
+                "prompt_cache_hit_tokens": 32000,
+                "prompt_cache_miss_tokens": 235,
+                "prompt_tokens_details": {
+                    "cached_tokens": 32000
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 28
+                },
+                "cached_tokens": 32000
+            },
+            "time": 1785002694
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_XE59in2ig1xp9zQwggju5224",
+            "content": "    1 | \/**\n    2 |  * Centralized API Client\n    3 |  *\n    4 |  * All HTTP communication goes through this module.\n    5 |  * Authentication is managed via PHP sessions (cookies auto-sent by the browser).\n    6 |  * No tokens stored in localStorage.\n    7 |  * Handles: auth, errors, timeouts, JSON parsing, HTTP status, retry policy.\n    8 |  *\/\n    9 | \n   10 | const API_BASE = '\/api';\n   11 | const DEFAULT_TIMEOUT_MS = 30_000;\n   12 | const MAX_RETRIES = 3;\n   13 | \n   14 | export interface ApiResponse<T = any> {\n   15 |   success: boolean;\n   16 |   message: string;\n   17 |   data: T;\n   18 |   errors?: Record<string, string[]>;\n   19 |   timestamp?: string;\n   20 | }\n   21 | \n   22 | export interface PaginatedData<T> {\n   23 |   items: T[];\n   24 |   pagination: {\n   25 |     page: number;\n   26 |     limit: number;\n   27 |     total: number;\n   28 |     total_pages: number;\n   29 |     has_more: boolean;\n   30 |   };\n   31 | }\n   32 | \n   33 | export class ApiError extends Error {\n   34 |   statusCode: number;\n   35 |   errors?: Record<string, string[]>;\n   36 | \n   37 |   constructor(message: string, statusCode: number, errors?: Record<string, string[]>) {\n   38 |     super(message);\n   39 |     this.name = 'ApiError';\n   40 |     this.statusCode = statusCode;\n   41 |     this.errors = errors;\n   42 |   }\n   43 | }\n   44 | \n   45 | function buildUrl(path: string, params?: Record<string, string | number | undefined | null>): string {\n   46 |   const url = `${API_BASE}${path}`;\n   47 |   if (!params) return url;\n   48 | \n   49 |   const searchParams = new URLSearchParams();\n   50 |   for (const [key, value] of Object.entries(params)) {\n   51 |     if (value !== undefined && value !== null && value !== '') {\n   52 |       searchParams.set(key, String(value));\n   53 |     }\n   54 |   }\n   55 |   const qs = searchParams.toString();\n   56 |   return qs ? `${url}?${qs}` : url;\n   57 | }\n   58 | \n   59 | async function request<T = any>(\n   60 |   method: string,\n   61 |   path: string,\n   62 |   body?: any,\n   63 |   params?: Record<string, string | number | undefined | null>,\n   64 |   customHeaders?: Record<string, string>,\n   65 |   retryCount = 0,\n   66 | ): Promise<T> {\n   67 |   const url = buildUrl(path, params);\n   68 |   const headers: Record<string, string> = {\n   69 |     ...customHeaders,\n   70 |   };\n   71 | \n   72 |   const options: RequestInit = {\n   73 |     method,\n   74 |     headers,\n   75 |     credentials: 'same-origin', \/\/ PHP session cookie\n   76 |   };\n   77 | \n   78 |   if (body !== undefined) {\n   79 |     if (body instanceof FormData) {\n   80 |       \/\/ Let browser set Content-Type with boundary for FormData\n   81 |       options.body = body;\n   82 |     } else {\n   83 |       headers['Content-Type'] = 'application\/json';\n   84 |       options.body = JSON.stringify(body);\n   85 |     }\n   86 |   }\n   87 | \n   88 |   \/\/ Timeout handling via AbortController\n   89 |   const controller = new AbortController();\n   90 |   const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);\n   91 |   options.signal = controller.signal;\n   92 | \n   93 |   let response: Response;\n   94 |   try {\n   95 |     response = await fetch(url, options);\n   96 |   } catch (err: any) {\n   97 |     clearTimeout(timeoutId);\n   98 |     if (err.name === 'AbortError') {\n   99 |       throw new ApiError('Request timed out. Please try again.', 408);\n  100 |     }\n  101 |     \/\/ Retry on network errors\n  102 |     if (retryCount < MAX_RETRIES) {\n  103 |       await new Promise((r) => setTimeout(r, 1000 * (retryCount + 1)));\n  104 |       return request<T>(method, path, body, params, customHeaders, retryCount + 1);\n  105 |     }\n  106 |     throw new ApiError('Network error. Please check your connection.', 0);\n  107 |   }\n  108 | \n  109 |   clearTimeout(timeoutId);\n  110 | \n  111 |   let json: ApiResponse<T>;\n  112 |   try {\n  113 |     json = await response.json();\n  114 |   } catch {\n  115 |     throw new ApiError(`Unexpected response (HTTP ${response.status})`, response.status);\n  116 |   }\n  117 | \n  118 |   if (!response.ok || !json.success) {\n  119 |     \/\/ Retry on 5xx server errors\n  120 |     if (response.status >= 500 && retryCount < MAX_RETRIES) {\n  121 |       await new Promise((r) => setTimeout(r, 1000 * (retryCount + 1)));\n  122 |       return request<T>(method, path, body, params, customHeaders, retryCount + 1);\n  123 |     }\n  124 |     throw new ApiError(\n  125 |       json.message || 'Request failed',\n  126 |       response.status,\n  127 |       json.errors,\n  128 |     );\n  129 |   }\n  130 | \n  131 |   return json.data as T;\n  132 | }\n  133 | \n  134 | \/**\n  135 |  * HTTP method helpers\n  136 |  *\/\n  137 | \n  138 | export async function get<T = any>(\n  139 |   path: string,\n  140 |   params?: Record<string, string | number | undefined | null>,\n  141 | ): Promise<T> {\n  142 |   return request<T>('GET', path, undefined, params);\n  143 | }\n  144 | \n  145 | export async function post<T = any>(\n  146 |   path: string,\n  147 |   body?: any,\n  148 |   params?: Record<string, string | number | undefined | null>,\n  149 | ): Promise<T> {\n  150 |   return request<T>('POST', path, body, params);\n  151 | }\n  152 | \n  153 | export async function put<T = any>(\n  154 |   path: string,\n  155 |   body?: any,\n  156 | ): Promise<T> {\n  157 |   return request<T>('PUT', path, body);\n  158 | }\n  159 | \n  160 | export async function del<T = any>(\n  161 |   path: string,\n  162 |   body?: any,\n  163 | ): Promise<T> {\n  164 |   return request<T>('DELETE', path, body);\n  165 | }\n  166 | \n  167 | export async function upload<T = any>(\n  168 |   path: string,\n  169 |   formData: FormData,\n  170 | ): Promise<T> {\n  171 |   return request<T>('POST', path, formData, undefined, {});\n  172 | }\n  173 |",
+            "is_error": false,
+            "time": 1785002694
+        },
+        {
+            "id": "msg_7ce79e3964",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The `apiClient.ts` is already clean \u2014 no localStorage usage, uses PHP sessions via `credentials: 'same-origin'`. Tasks S1-5,6,7,8 are already done.\n\nNow let me check if there are any other files that still have remnants of the old storage-based approach. Let me search for localStorage usage in the frontend source."
+                },
+                {
+                    "type": "text",
+                    "text": "The `apiClient.ts` is already clean \u2014 no localStorage. Let me verify there are no remaining localStorage references in the frontend:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_aFOpOtO7mlywrEeD3IVA8889",
+                    "name": "grep",
+                    "input": {
+                        "pattern": "localStorage",
+                        "path": "\/source_build\/dr.armankabir-main\/src\/frontend\/src",
+                        "include": "*.ts"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 34055,
+                "completion_tokens": 195,
+                "total_tokens": 34250,
+                "prompt_cache_hit_tokens": 32256,
+                "prompt_cache_miss_tokens": 1799,
+                "prompt_tokens_details": {
+                    "cached_tokens": 32256
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 75
+                },
+                "cached_tokens": 32256
+            },
+            "time": 1785002698
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_aFOpOtO7mlywrEeD3IVA8889",
+            "content": "source_build\/dr.armankabir-main\/src\/frontend\/src\/components\/PrescriptionHelpers.ts:4: * - Doctor signature management (upload \/ read from localStorage)\n\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/components\/patientDashboardTypes.ts:2: * Shared types and localStorage helpers for the patient dashboard.\n\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/services\/index.ts:7: * No component accesses localStorage, sessionStorage, IndexedDB, or fetch() directly.\n\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/services\/auth.ts:5: * No tokens or credentials stored in localStorage.\n\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/lib\/apiClient.ts:6: * No tokens stored in localStorage.\n\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/lib\/storageAdapter.ts:2: * Storage Adapter \u2014 thin wrapper around localStorage\n\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/lib\/storageAdapter.ts:18:      return localStorage.getItem(key);\n\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/lib\/storageAdapter.ts:26:      localStorage.setItem(key, value);\n\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/lib\/storageAdapter.ts:34:      localStorage.removeItem(key);\n\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/lib\/storageAdapter.ts:42:      localStorage.clear();\n\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/lib\/storageAdapter.ts:50:      return localStorage.length;\n\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/lib\/storageAdapter.ts:58:      return localStorage.key(index);\n\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/lib\/hybridStorage.ts:5:\/\/ localStorage is no longer the primary data store.\n\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/lib\/clinicalStore.ts:15:  \/\/ Clinical data is persisted via PHP API \u2014 no localStorage needed\n\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/lib\/api.ts:8: * (credentials: 'same-origin') and does NOT store tokens in localStorage.\n\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/utils\/clinicalUtils.ts:20: * Severity is inferred from visit notes \/ extended localStorage data when present;\n\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useMigration.ts:4:\/\/ No localStorage used.\n\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts:5: * No localStorage, sessionStorage, or IndexedDB is used for business data.\n\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useAdminSave.ts:5: * No localStorage used for any data storage.",
+            "is_error": false,
+            "time": 1785002698
+        },
+        {
+            "id": "msg_3d727239ba",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The `storageAdapter.ts` still has localStorage. Let me check if it's still used by any components. This is S1-5,6,7,8 \u2014 removing all localStorage usage for auth\/data. But wait, `storageAdapter.ts` might be kept as a compatibility layer. Let me check if any files import it.\n\nAlso, the `auth.ts` service - let me read it to see if it stores tokens."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me check `auth.ts` to see if tokens are being stored:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_rbXujhmxPcr3QXrXASoD0976",
+                    "name": "read_file",
+                    "input": {
+                        "path": "\/source_build\/dr.armankabir-main\/src\/frontend\/src\/services\/auth.ts"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 35013,
+                "completion_tokens": 165,
+                "total_tokens": 35178,
+                "prompt_cache_hit_tokens": 34176,
+                "prompt_cache_miss_tokens": 837,
+                "prompt_tokens_details": {
+                    "cached_tokens": 34176
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 88
+                },
+                "cached_tokens": 34176
+            },
+            "time": 1785002701
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_rbXujhmxPcr3QXrXASoD0976",
+            "content": "    1 | \/**\n    2 |  * Auth Service\n    3 |  *\n    4 |  * All authentication operations go through the PHP API.\n    5 |  * No tokens or credentials stored in localStorage.\n    6 |  * PHP session cookies handle authentication.\n    7 |  *\/\n    8 | \n    9 | import { get, post } from '..\/lib\/apiClient';\n   10 | import type { StaffRole } from '..\/types';\n   11 | \n   12 | export interface DoctorAccount {\n   13 |   id: number;\n   14 |   email: string;\n   15 |   full_name: string;\n   16 |   name_bn: string;\n   17 |   role: StaffRole;\n   18 |   specialization: string;\n   19 |   phone: string;\n   20 |   photo_url?: string;\n   21 |   signature_url?: string;\n   22 |   bmdc_registration?: string;\n   23 | }\n   24 | \n   25 | export interface PatientAccount {\n   26 |   id: number;\n   27 |   patient_id: number;\n   28 |   phone: string;\n   29 |   full_name: string;\n   30 |   name_bn: string;\n   31 |   gender?: string;\n   32 |   date_of_birth?: string;\n   33 |   register_number?: string;\n   34 |   photo_url?: string;\n   35 |   status: 'pending' | 'approved' | 'rejected';\n   36 | }\n   37 | \n   38 | export const authService = {\n   39 |   \/** Verify current PHP session and return doctor account *\/\n   40 |   async verifySession(): Promise<DoctorAccount | null> {\n   41 |     try {\n   42 |       const result = await get<{ user: DoctorAccount }>('\/auth\/verify.php');\n   43 |       return result?.user ?? null;\n   44 |     } catch {\n   45 |       return null;\n   46 |     }\n   47 |   },\n   48 | \n   49 |   \/** Sign in with email and password *\/\n   50 |   async signIn(email: string, password: string): Promise<{ token?: string; user: DoctorAccount }> {\n   51 |     return post<{ token: string; user: DoctorAccount }>('\/auth\/login.php', { email, password });\n   52 |   },\n   53 | \n   54 |   \/** Sign up a new staff account *\/\n   55 |   async signUp(data: {\n   56 |     email: string;\n   57 |     password: string;\n   58 |     full_name: string;\n   59 |     role?: string;\n   60 |     specialization?: string;\n   61 |     phone?: string;\n   62 |   }): Promise<{ status: string; message: string }> {\n   63 |     return post<{ status: string; message: string }>('\/auth\/register.php', data);\n   64 |   },\n   65 | \n   66 |   \/** Sign out (server-side session clear) *\/\n   67 |   async signOut(): Promise<void> {\n   68 |     try {\n   69 |       await post('\/auth\/logout.php');\n   70 |     } catch {\n   71 |       \/\/ Ignore logout errors\n   72 |     }\n   73 |   },\n   74 | \n   75 |   \/** Get pending staff accounts for admin approval *\/\n   76 |   async getPendingAccounts(): Promise<DoctorAccount[]> {\n   77 |     try {\n   78 |       const result = await get<{ users: DoctorAccount[] }>('\/auth\/pending.php');\n   79 |       return result.users ?? [];\n   80 |     } catch {\n   81 |       return [];\n   82 |     }\n   83 |   },\n   84 | \n   85 |   \/** Approve a staff account *\/\n   86 |   async approveAccount(id: number, role?: string): Promise<void> {\n   87 |     await post('\/auth\/approve.php', { user_id: id, ...(role ? { role } : {}) });\n   88 |   },\n   89 | \n   90 |   \/** Reject a staff account *\/\n   91 |   async rejectAccount(id: number): Promise<void> {\n   92 |     await post('\/auth\/reject.php', { user_id: id });\n   93 |   },\n   94 | \n   95 |   \/** Reassign a user's role *\/\n   96 |   async reassignRole(id: number, role: StaffRole): Promise<void> {\n   97 |     await post('\/auth\/reassign_role.php', { user_id: id, role });\n   98 |   },\n   99 | \n  100 |   \/** Patient sign up *\/\n  101 |   async patientSignUp(data: { registerNumber: string; phone: string; password: string }): Promise<{ message: string; status: string }> {\n  102 |     return post<{ message: string; status: string }>('\/auth\/patients\/register.php', {\n  103 |       register_number: data.registerNumber.trim(),\n  104 |       phone: data.phone,\n  105 |       password: data.password,\n  106 |     });\n  107 |   },\n  108 | \n  109 |   \/** Patient sign in *\/\n  110 |   async patientSignIn(phone: string, password: string): Promise<{ token?: string; patient: PatientAccount }> {\n  111 |     return post<{ token: string; patient: PatientAccount }>('\/auth\/patients\/login.php', { phone, password });\n  112 |   },\n  113 | \n  114 |   \/** Get pending patient accounts *\/\n  115 |   async getPendingPatients(): Promise<PatientAccount[]> {\n  116 |     try {\n  117 |       const result = await get<{ patients: PatientAccount[] }>('\/auth\/patients\/pending.php');\n  118 |       return result.patients ?? [];\n  119 |     } catch {\n  120 |       return [];\n  121 |     }\n  122 |   },\n  123 | \n  124 |   \/** Approve a patient account *\/\n  125 |   async approvePatient(id: number): Promise<void> {\n  126 |     await post('\/auth\/patients\/approve.php', { patient_login_id: id });\n  127 |   },\n  128 | \n  129 |   \/** Reject a patient account *\/\n  130 |   async rejectPatient(id: number): Promise<void> {\n  131 |     await post('\/auth\/patients\/reject.php', { patient_login_id: id });\n  132 |   },\n  133 | \n  134 |   \/** Update patient credentials *\/\n  135 |   async updatePatientCredentials(registerNumber: string, newPhone?: string, newPassword?: string): Promise<void> {\n  136 |     await post('\/auth\/patients\/update.php', {\n  137 |       register_number: registerNumber,\n  138 |       phone: newPhone,\n  139 |       password: newPassword,\n  140 |     });\n  141 |   },\n  142 | };\n  143 |",
+            "is_error": false,
+            "time": 1785002701
+        },
+        {
+            "id": "msg_a5859c8852",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The `auth.ts` service is clean \u2014 no localStorage usage. Good.\n\nBut I see that `signIn` (line 50-52) returns `{ token?: string; user: DoctorAccount }` and `patientSignIn` (line 110-112) returns `{ token?: string; patient: PatientAccount }`. The token might be stored by calling code. Let me search for where `signIn` is called to see if the response token is stored in localStorage.\n\nActually wait \u2014 the comments on the auth endpoints say PHP sessions handle auth. But the login endpoint may return a Bearer token for API auth. Let me check the PHP login endpoint.\n\nBut that's not the immediate concern. The auth service itself doesn't store anything in localStorage. If calling code stores tokens, that's a separate issue.\n\nLet me now move to Sprint 2 and start working on the appointments service. But first, let me update the todo list to reflect current progress."
+                },
+                {
+                    "type": "text",
+                    "text": "Good \u2014 `auth.ts` is clean. Now let me check the `appointments.ts` service to fix the missing fields (S1-3):"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_Ot1UXLhpP5WupbNmBHkC4094",
+                    "name": "read_file",
+                    "input": {
+                        "path": "\/source_build\/dr.armankabir-main\/src\/frontend\/src\/services\/appointments.ts"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 36672,
+                "completion_tokens": 292,
+                "total_tokens": 36964,
+                "prompt_cache_hit_tokens": 35072,
+                "prompt_cache_miss_tokens": 1600,
+                "prompt_tokens_details": {
+                    "cached_tokens": 35072
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 198
+                },
+                "cached_tokens": 35072
+            },
+            "time": 1785002705
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_Ot1UXLhpP5WupbNmBHkC4094",
+            "content": "    1 | \/**\n    2 |  * Appointment Service\n    3 |  *\n    4 |  * CRUD operations for patient appointments.\n    5 |  * All data is persisted in MySQL via the PHP API.\n    6 |  *\/\n    7 | \n    8 | import { get, post, del } from '..\/lib\/apiClient';\n    9 | \n   10 | export interface CreateAppointmentData {\n   11 |   patientId: number;\n   12 |   appointmentDate?: string;\n   13 |   doctorName?: string;\n   14 |   reason?: string;\n   15 |   status?: string;\n   16 | }\n   17 | \n   18 | export interface UpdateAppointmentData extends Partial<CreateAppointmentData> {\n   19 |   id: number;\n   20 | }\n   21 | \n   22 | export const appointmentService = {\n   23 |   \/** Get all appointments *\/\n   24 |   async getAll(params?: { limit?: number; date?: string; status?: string }): Promise<any[]> {\n   25 |     const result = await get<{ items: any[] }>('\/appointments\/list.php', params as any);\n   26 |     return result.items ?? [];\n   27 |   },\n   28 | \n   29 |   \/** Get appointments for a specific patient *\/\n   30 |   async getByPatient(patientId: number): Promise<any[]> {\n   31 |     const result = await get<{ items: any[] }>('\/appointments\/list.php', { patient_id: patientId });\n   32 |     return result.items ?? [];\n   33 |   },\n   34 | \n   35 |   \/** Get a single appointment by ID *\/\n   36 |   async getById(id: number): Promise<any | null> {\n   37 |     try {\n   38 |       return await get<any>('\/appointments\/get.php', { id: String(id) });\n   39 |     } catch {\n   40 |       return null;\n   41 |     }\n   42 |   },\n   43 | \n   44 |   \/** Create a new appointment *\/\n   45 |   async create(data: CreateAppointmentData): Promise<any> {\n   46 |     return post<any>('\/appointments\/create.php', {\n   47 |       patient_id: data.patientId,\n   48 |       appointment_date: data.appointmentDate,\n   49 |       doctor_name: data.doctorName,\n   50 |       reason: data.reason,\n   51 |       status: data.status ?? 'scheduled',\n   52 |     });\n   53 |   },\n   54 | \n   55 |   \/** Update an existing appointment *\/\n   56 |   async update(data: UpdateAppointmentData): Promise<any> {\n   57 |     return post<any>('\/appointments\/update.php', {\n   58 |       id: data.id,\n   59 |       patient_id: data.patientId,\n   60 |       appointment_date: data.appointmentDate,\n   61 |       doctor_name: data.doctorName,\n   62 |       reason: data.reason,\n   63 |       status: data.status,\n   64 |     });\n   65 |   },\n   66 | \n   67 |   \/** Delete an appointment *\/\n   68 |   async delete(id: number): Promise<void> {\n   69 |     await del('\/appointments\/delete.php', { id });\n   70 |   },\n   71 | \n   72 |   \/** Search appointments *\/\n   73 |   async search(query: string): Promise<any[]> {\n   74 |     const result = await get<{ items: any[] }>('\/appointments\/list.php', { search: query });\n   75 |     return result.items ?? [];\n   76 |   },\n   77 | };\n   78 |",
+            "is_error": false,
+            "time": 1785002705
+        },
+        {
+            "id": "msg_57b7697f3d",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I need to check what the PHP appointments endpoints expect. Let me read them to see if they read snake_case or camelCase."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me check the PHP appointments endpoints:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_yAtiXXXRICq3UlX1D46I6226",
+                    "name": "read_file",
+                    "input": {
+                        "path": "\/public_html\/api\/appointments\/create.php"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_7CwAJgpgmFcti65hJaBL9078",
+                    "name": "read_file",
+                    "input": {
+                        "path": "\/public_html\/api\/appointments\/list.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 37753,
+                "completion_tokens": 121,
+                "total_tokens": 37874,
+                "prompt_cache_hit_tokens": 36864,
+                "prompt_cache_miss_tokens": 889,
+                "prompt_tokens_details": {
+                    "cached_tokens": 36864
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 26
+                },
+                "cached_tokens": 36864
+            },
+            "time": 1785002708
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_yAtiXXXRICq3UlX1D46I6226",
+            "content": "    1 | <?php\n    2 | \/**\n    3 |  * Create Appointment API\n    4 |  * \n    5 |  * POST \/api\/appointments\/create.php\n    6 |  *\/\n    7 | \n    8 | require_once __DIR__ . '\/..\/database.php';\n    9 | require_once __DIR__ . '\/..\/helpers.php';\n   10 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   11 | \n   12 | handleCors();\n   13 | requireMethod('POST');\n   14 | \n   15 | $user = requireAuth();\n   16 | $input = getJsonInput();\n   17 | \n   18 | $missing = validateRequired($input, ['appointment_date']);\n   19 | if ($missing) {\n   20 |     errorResponse('Missing required fields: appointment_date', 400, ['missing_fields' => $missing]);\n   21 | }\n   22 | \n   23 | \/\/ Validate appointment type\n   24 | $allowedTypes = ['regular', 'emergency', 'follow-up', 'consultation'];\n   25 | $appointmentType = $input['type'] ?? 'regular';\n   26 | if (!in_array($appointmentType, $allowedTypes)) {\n   27 |     errorResponse('Invalid appointment type. Allowed: ' . implode(', ', $allowedTypes), 400);\n   28 | }\n   29 | \n   30 | \/\/ Validate appointment status\n   31 | $allowedStatuses = ['scheduled', 'confirmed', 'checked_in', 'in_progress', 'completed', 'cancelled', 'no_show'];\n   32 | $appointmentStatus = $input['status'] ?? 'scheduled';\n   33 | if (!in_array($appointmentStatus, $allowedStatuses)) {\n   34 |     errorResponse('Invalid appointment status. Allowed: ' . implode(', ', $allowedStatuses), 400);\n   35 | }\n   36 | \n   37 | try {\n   38 |     $db = Database::getInstance();\n   39 |     \n   40 |     \/\/ Generate serial number for the day\n   41 |     $date = $input['appointment_date'];\n   42 |     $doctorId = isset($input['doctor_id']) ? (int)$input['doctor_id'] : null;\n   43 |     \n   44 |     \/\/ Use separate query for serial number to avoid PDO duplicate named parameter issue\n   45 |     $serialSql = 'SELECT COALESCE(MAX(serial_number), 0) + 1 as next_serial FROM appointments WHERE appointment_date = :date';\n   46 |     $serialParams = [':date' => $date];\n   47 |     if ($doctorId) {\n   48 |         $serialSql .= ' AND doctor_id = :did';\n   49 |         $serialParams[':did'] = $doctorId;\n   50 |     } else {\n   51 |         $serialSql .= ' AND doctor_id IS NULL';\n   52 |     }\n   53 |     $serialStmt = $db->prepare($serialSql);\n   54 |     $serialStmt->execute($serialParams);\n   55 |     $serialNumber = (int)$serialStmt->fetch()['next_serial'];\n   56 |     \n   57 |     $stmt = $db->prepare('\n   58 |         INSERT INTO appointments (patient_id, patient_name, patient_phone, doctor_id, appointment_date, appointment_time, serial_number, `type`, `status`, chief_complaint, notes, is_public_request, created_by)\n   59 |         VALUES (:patient_id, :patient_name, :patient_phone, :doctor_id, :appointment_date, :appointment_time, :serial_number, :appt_type, :appt_status, :chief_complaint, :notes, :is_public_request, :created_by)\n   60 |     ');\n   61 |     \n   62 |     $stmt->execute([\n   63 |         ':patient_id' => isset($input['patient_id']) ? (int)$input['patient_id'] : null,\n   64 |         ':patient_name' => $input['patient_name'] ?? null,\n   65 |         ':patient_phone' => $input['patient_phone'] ?? null,\n   66 |         ':doctor_id' => $doctorId,\n   67 |         ':appointment_date' => $date,\n   68 |         ':appointment_time' => $input['appointment_time'] ?? null,\n   69 |         ':serial_number' => $serialNumber,\n   70 |         ':appt_type' => $appointmentType,\n   71 |         ':appt_status' => $appointmentStatus,\n   72 |         ':chief_complaint' => $input['chief_complaint'] ?? null,\n   73 |         ':notes' => $input['notes'] ?? null,\n   74 |         ':is_public_request' => isset($input['is_public_request']) ? (int)$input['is_public_request'] : 0,\n   75 |         ':created_by' => $user['id'],\n   76 |     ]);\n   77 |     \n   78 |     $appointmentId = (int)$db->lastInsertId();\n   79 |     \n   80 |     logAudit($user['id'], null, 'create', 'appointment', $appointmentId);\n   81 |     \n   82 |     successResponse(['id' => $appointmentId, 'serial_number' => $serialNumber], 'Appointment created successfully');\n   83 |     \n   84 | } catch (\\Exception $e) {\n   85 |     error_log('Create appointment error: ' . $e->getMessage());\n   86 |     errorResponse('Failed to create appointment', 500);\n   87 | }\n   88 |",
+            "is_error": false,
+            "time": 1785002708
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_7CwAJgpgmFcti65hJaBL9078",
+            "content": "    1 | <?php\n    2 | \/**\n    3 |  * List Appointments API\n    4 |  * \n    5 |  * GET \/api\/appointments\/list.php?date=2026-07-11&doctor_id=123&status=scheduled\n    6 |  *\/\n    7 | \n    8 | require_once __DIR__ . '\/..\/database.php';\n    9 | require_once __DIR__ . '\/..\/helpers.php';\n   10 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   11 | \n   12 | handleCors();\n   13 | requireMethod('GET');\n   14 | \n   15 | $user = requireAuth();\n   16 | $pagination = getPaginationParams();\n   17 | \n   18 | try {\n   19 |     $db = Database::getInstance();\n   20 |     \n   21 |     $where = [];\n   22 |     $params = [];\n   23 |     \n   24 |     $date = getParam('date', '');\n   25 |     if ($date) {\n   26 |         $where[] = 'a.appointment_date = :date';\n   27 |         $params[':date'] = $date;\n   28 |     }\n   29 |     \n   30 |     $doctorId = getParam('doctor_id', '');\n   31 |     if ($doctorId) {\n   32 |         $where[] = 'a.doctor_id = :doctor_id';\n   33 |         $params[':doctor_id'] = (int)$doctorId;\n   34 |     }\n   35 |     \n   36 |     $patientId = getParam('patient_id', '');\n   37 |     if ($patientId) {\n   38 |         $where[] = 'a.patient_id = :patient_id';\n   39 |         $params[':patient_id'] = (int)$patientId;\n   40 |     }\n   41 |     \n   42 |     $status = getParam('status', '');\n   43 |     if ($status) {\n   44 |         $where[] = 'a.status = :status';\n   45 |         $params[':status'] = $status;\n   46 |     }\n   47 |     \n   48 |     $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';\n   49 |     \n   50 |     $countStmt = $db->prepare(\"SELECT COUNT(*) as total FROM appointments a $whereClause\");\n   51 |     $countStmt->execute($params);\n   52 |     $total = (int)$countStmt->fetch()['total'];\n   53 |     \n   54 |     $stmt = $db->prepare(\"\n   55 |         SELECT a.*, \n   56 |                p.full_name as patient_name, p.phone as patient_phone,\n   57 |                u.full_name as doctor_name\n   58 |         FROM appointments a\n   59 |         LEFT JOIN patients p ON a.patient_id = p.id\n   60 |         LEFT JOIN users u ON a.doctor_id = u.id\n   61 |         $whereClause\n   62 |         ORDER BY a.appointment_date DESC, a.appointment_time ASC\n   63 |         LIMIT :limit OFFSET :offset\n   64 |     \");\n   65 |     \n   66 |     foreach ($params as $key => $val) {\n   67 |         $stmt->bindValue($key, $val);\n   68 |     }\n   69 |     $stmt->bindValue(':limit', $pagination['limit'], PDO::PARAM_INT);\n   70 |     $stmt->bindValue(':offset', $pagination['offset'], PDO::PARAM_INT);\n   71 |     $stmt->execute();\n   72 |     \n   73 |     $appointments = $stmt->fetchAll();\n   74 |     \n   75 |     paginatedResponse($appointments, $total, $pagination['page'], $pagination['limit']);\n   76 |     \n   77 | } catch (\\Exception $e) {\n   78 |     error_log('List appointments error: ' . $e->getMessage());\n   79 |     errorResponse('Failed to fetch appointments', 500);\n   80 | }\n   81 |",
+            "is_error": false,
+            "time": 1785002708
+        },
+        {
+            "id": "msg_49014f7b01",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I see the appointments data flow:\n\n**PHP create.php reads:**\n- `appointment_date` (required)\n- `patient_id` (camelCase)\n- `patient_name` (snake_case)\n- `patient_phone` (snake_case)\n- `doctor_id` (camelCase)\n- `appointment_time` (snake_case)\n- `type` (camelCase)\n- `status` (camelCase)\n- `chief_complaint` (snake_case)\n- `notes` (camelCase)\n- `is_public_request` (snake_case)\n\n**Frontend sends:**\n- `patient_id` (snake_case)\n- `appointment_date` (snake_case)\n- `doctor_name` (camelCase) \u274c Should be `doctor_name` or `doctor_id`\n- `reason` \u274c Maps to `chief_complaint`\n- `status`\n\n**Mismatches:**\n1. Frontend sends `patient_id` \u2014 PHP reads `patient_id` \u2705\n2. Frontend sends `appointment_date` \u2014 PHP reads `appointment_date` \u2705\n3. Frontend sends `doctor_name` \u2014 PHP has `doctor_id` (numeric ID, not name) \u274c\n4. Frontend sends `reason` \u2014 PHP has `chief_complaint` \u274c\n5. Frontend doesn't send `patient_name` or `patient_phone` \u274c\n\nThe PHP endpoint uses `doctor_id` (numeric), but the frontend sends `doctor_name` (string). This is a fundamental mismatch - the database stores doctor_id as a FK reference.\n\nLet me fix the frontend service to:\n1. Send `doctor_id` (number) instead of `doctor_name` (string)\n2. Send `chief_complaint` instead of `reason`\n3. Add `patientName` and `patientPhone` fields\n4. Send `appointment_time` as well\n\nActually, looking at this more carefully, the PHP create.php expects:\n- `patient_id`, `patient_name`, `patient_phone`, `doctor_id`, `appointment_date`, `appointment_time`, `type`, `status`, `chief_complaint`, `notes`, `is_public_request`\n\nThe frontend interface creates these fields:\n- `patientId`, `appointmentDate`, `doctorName`, `reason`, `status`\n\nThe PHP uses `doctor_id` (FK to users table), not a doctor name. So the frontend needs to send a doctor ID, not a name. Let me redesign the appointment service properly.\n\nLet me also check if there's a PHP update.php for appointments:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_EW5gV63ALOtkKSZZzTcw7839",
+                    "name": "read_file",
+                    "input": {
+                        "path": "\/public_html\/api\/appointments\/update.php"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_qY2aNI2VWrs8c73pXol52403",
+                    "name": "read_file",
+                    "input": {
+                        "path": "\/public_html\/api\/appointments\/get.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 40020,
+                "completion_tokens": 646,
+                "total_tokens": 40666,
+                "prompt_cache_hit_tokens": 37760,
+                "prompt_cache_miss_tokens": 2260,
+                "prompt_tokens_details": {
+                    "cached_tokens": 37760
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 557
+                },
+                "cached_tokens": 37760
+            },
+            "time": 1785002714
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_EW5gV63ALOtkKSZZzTcw7839",
+            "content": "    1 | <?php\n    2 | \/**\n    3 |  * Appointments API - Update\n    4 |  * \n    5 |  * POST \/api\/appointments\/update.php\n    6 |  *\/\n    7 | \n    8 | require_once __DIR__ . '\/..\/database.php';\n    9 | require_once __DIR__ . '\/..\/helpers.php';\n   10 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   11 | \n   12 | handleCors();\n   13 | requireMethod('POST');\n   14 | \n   15 | $user = requireAuth();\n   16 | $input = getJsonInput();\n   17 | \n   18 | $id = (int)($input['id'] ?? 0);\n   19 | if (!$id) {\n   20 |     errorResponse('Appointment ID is required', 400);\n   21 | }\n   22 | \n   23 | try {\n   24 |     $db = Database::getInstance();\n   25 |     \n   26 |     $updates = [];\n   27 |     $params = [':id' => $id];\n   28 |     \n   29 |     \/\/ Validate status if provided\n   30 |     if (isset($input['status'])) {\n   31 |         $allowedStatuses = ['scheduled', 'confirmed', 'checked_in', 'in_progress', 'completed', 'cancelled', 'no_show'];\n   32 |         if (!in_array($input['status'], $allowedStatuses)) {\n   33 |             errorResponse('Invalid appointment status. Allowed: ' . implode(', ', $allowedStatuses), 400);\n   34 |         }\n   35 |     }\n   36 |     \n   37 |     $allowedFields = [\n   38 |         'status' => 'status',\n   39 |         'appointment_time' => 'appointment_time',\n   40 |         'chief_complaint' => 'chief_complaint',\n   41 |         'notes' => 'notes',\n   42 |         'patient_id' => 'patient_id',\n   43 |         'patient_name' => 'patient_name',\n   44 |         'patient_phone' => 'patient_phone',\n   45 |         'serial_number' => 'serial_number',\n   46 |     ];\n   47 |     \n   48 |     \/\/ Validate status value if provided\n   49 |     if (isset($input['status'])) {\n   50 |         $allowedStatuses = ['scheduled', 'confirmed', 'checked_in', 'in_progress', 'completed', 'cancelled', 'no_show'];\n   51 |         if (!in_array($input['status'], $allowedStatuses)) {\n   52 |             errorResponse('Invalid appointment status. Allowed: ' . implode(', ', $allowedStatuses), 400);\n   53 |         }\n   54 |     }\n   55 |     \n   56 |     foreach ($allowedFields as $inputKey => $dbField) {\n   57 |         if (isset($input[$inputKey])) {\n   58 |             $updates[] = \"$dbField = :$dbField\";\n   59 |             $params[\":$dbField\"] = $input[$inputKey];\n   60 |         }\n   61 |     }\n   62 |     \n   63 |     if (empty($updates)) {\n   64 |         errorResponse('No fields to update', 400);\n   65 |     }\n   66 |     \n   67 |     $updates[] = 'updated_at = NOW()';\n   68 |     $updateStr = implode(', ', $updates);\n   69 |     \n   70 |     $stmt = $db->prepare(\"UPDATE appointments SET $updateStr WHERE id = :id\");\n   71 |     $stmt->execute($params);\n   72 |     \n   73 |     logAudit($user['id'], null, 'update', 'appointment', $id);\n   74 |     \n   75 |     successResponse(null, 'Appointment updated successfully');\n   76 | } catch (\\Exception $e) {\n   77 |     error_log('Update appointment error: ' . $e->getMessage());\n   78 |     errorResponse('Failed to update appointment', 500);\n   79 | }\n   80 |",
+            "is_error": false,
+            "time": 1785002714
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_qY2aNI2VWrs8c73pXol52403",
+            "content": "    1 | <?php\n    2 | \/**\n    3 |  * Get Single Appointment API\n    4 |  * \n    5 |  * GET \/api\/appointments\/get.php?id=1\n    6 |  *\/\n    7 | \n    8 | require_once __DIR__ . '\/..\/database.php';\n    9 | require_once __DIR__ . '\/..\/helpers.php';\n   10 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   11 | \n   12 | handleCors();\n   13 | requireMethod('GET');\n   14 | \n   15 | $user = requireAuth();\n   16 | $id = (int)($_GET['id'] ?? null);\n   17 | \n   18 | if (!$id) {\n   19 |     errorResponse('Appointment ID is required', 400);\n   20 | }\n   21 | \n   22 | try {\n   23 |     $db = Database::getInstance();\n   24 |     \n   25 |     $stmt = $db->prepare('\n   26 |         SELECT a.*, u.full_name as doctor_name, p.full_name as patient_name, p.phone as patient_phone\n   27 |         FROM appointments a\n   28 |         LEFT JOIN users u ON a.doctor_id = u.id\n   29 |         LEFT JOIN patients p ON a.patient_id = p.id\n   30 |         WHERE a.id = :id\n   31 |     ');\n   32 |     $stmt->execute([':id' => $id]);\n   33 |     $appointment = $stmt->fetch();\n   34 |     \n   35 |     if (!$appointment) {\n   36 |         errorResponse('Appointment not found', 404);\n   37 |     }\n   38 |     \n   39 |     successResponse($appointment);\n   40 |     \n   41 | } catch (\\Exception $e) {\n   42 |     error_log('Get appointment error: ' . $e->getMessage());\n   43 |     errorResponse('Failed to fetch appointment', 500);\n   44 | }\n   45 |",
+            "is_error": false,
+            "time": 1785002714
         }
     ]
 }

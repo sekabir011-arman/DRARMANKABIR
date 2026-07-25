@@ -39,7 +39,10 @@ import type {
 export function useGetAllPatients() {
   return useQuery<Patient[]>({
     queryKey: ['patients'],
-    queryFn: () => patientService.getAll(100),
+    queryFn: async () => {
+      const result = await patientService.getAll(100);
+      return result.items;
+    },
   });
 }
 
