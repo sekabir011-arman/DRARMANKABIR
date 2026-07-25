@@ -1,4 +1,4 @@
-function ageToApproxDob(age: string): string {
+function ageToApproxDob(age: string): string {function ageToApproxDob(age: string): string {
   const n = Number.parseInt(age);
   if (Number.isNaN(n) || n <  || n > 130) return "";
   const year = new Date().getFullYear() - n;
