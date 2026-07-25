@@ -249,9 +249,9 @@ export interface Patient {
 }
 
 export interface Visit {
-  id: bigint;
-  patientId: bigint;
-  visitDate: bigint;
+  id: number;
+  patientId: number;
+  visitDate: string;
   chiefComplaint: string;
   historyOfPresentIllness?: string;
   vitalSigns: VitalSigns;
@@ -264,8 +264,7 @@ export interface Visit {
     | "emergency"
     | "follow-up"
     | "admitted";
-  createdAt: bigint;
-  [key: string]: unknown;
+  createdAt: string;
 }
 
 export interface Prescription {
