@@ -208,17 +208,13 @@ export default function PatientForm({
     e.preventDefault();
     if (!form.fullName.trim()) return;
 
-    let dobBigInt: bigint | null = dobToBigInt(form.dateOfBirth);
-    if (!dobBigInt && form.ageInput.trim()) {
-      const approx = ageToApproxDob(form.ageInput.trim());
-      dobBigInt = dobToBigInt(approx);
-    }
+    const dobStr = form.dateOfBirth || (form.ageInput.trim() ? ageToApproxDob(form.ageInput.trim()) : null);
 
     try {
       onSubmit({
         fullName: form.fullName.trim(),
         nameBn: form.nameBn.trim() || null,
-        dateOfBirth: dobBigInt,
+        dateOfBirth: dobStr,
         gender: form.gender,
         phone: form.phone.trim() || null,
         email: form.email.trim() || null,
