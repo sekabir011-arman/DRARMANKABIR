@@ -81,10 +81,12 @@ try {
         INSERT INTO patients (
             register_number, full_name, name_bn, date_of_birth, gender,
             phone, email, address, blood_group, weight, height,
+            allergies, chronic_conditions, past_surgical_history,
             patient_type, photo_url, registration_complete, created_by
         ) VALUES (
             :register_number, :full_name, :name_bn, :date_of_birth, :gender,
             :phone, :email, :address, :blood_group, :weight, :height,
+            :allergies, :chronic_conditions, :past_surgical_history,
             :patient_type, :photo_url, 1, :created_by
         )
     ');
@@ -101,6 +103,9 @@ try {
         ':blood_group' => $bloodGroup,
         ':weight' => $weight,
         ':height' => $height,
+        ':allergies' => $input['allergies'] ?? '[]',
+        ':chronic_conditions' => $input['chronicConditions'] ?? '[]',
+        ':past_surgical_history' => $input['pastSurgicalHistory'] ?? null,
         ':patient_type' => $patientType,
         ':photo_url' => $photoUrl,
         ':created_by' => $user['id'],

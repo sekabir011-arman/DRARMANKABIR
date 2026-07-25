@@ -52,7 +52,7 @@
         }
     ],
     "created_at": 1784983610,
-    "updated_at": 1785002382,
+    "updated_at": 1785002627,
     "messages": [
         {
             "id": "msg_compact",
@@ -6231,6 +6231,89 @@
             "content": "    1 | <?php\n    2 | \/**\n    3 |  * List Patients API\n    4 |  * \n    5 |  * GET \/api\/patients\/list.php\n    6 |  * Query: ?page=1&limit=20&search=text&type=outdoor&status=Active\n    7 |  *\/\n    8 | \n    9 | require_once __DIR__ . '\/..\/database.php';\n   10 | require_once __DIR__ . '\/..\/helpers.php';\n   11 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   12 | \n   13 | handleCors();\n   14 | requireMethod('GET');\n   15 | \n   16 | $user = requireAuth();\n   17 | $pagination = getPaginationParams();\n   18 | \n   19 | try {\n   20 |     $db = Database::getInstance();\n   21 |     \n   22 |     $where = [];\n   23 |     $params = [];\n   24 |     \n   25 |     \/\/ Search filter\n   26 |     $search = trim(getParam('search', ''));\n   27 |     if ($search) {\n   28 |         $where[] = '(p.full_name LIKE :search OR p.name_bn LIKE :search2 OR p.phone LIKE :search3 OR p.email LIKE :search4 OR p.register_number LIKE :search5)';\n   29 |         $params[':search'] = \"%$search%\";\n   30 |         $params[':search2'] = \"%$search%\";\n   31 |         $params[':search3'] = \"%$search%\";\n   32 |         $params[':search4'] = \"%$search%\";\n   33 |         $params[':search5'] = \"%$search%\";\n   34 |     }\n   35 |     \n   36 |     \/\/ Patient type filter\n   37 |     $type = getParam('type', '');\n   38 |     if ($type && in_array($type, ['outdoor', 'indoor', 'emergency', 'admitted'])) {\n   39 |         $where[] = 'p.patient_type = :type';\n   40 |         $params[':type'] = $type;\n   41 |     }\n   42 |     \n   43 |     \/\/ Status filter\n   44 |     $status = getParam('status', '');\n   45 |     if ($status && in_array($status, ['Active', 'Inactive', 'Deceased'])) {\n   46 |         $where[] = 'p.status = :status';\n   47 |         $params[':status'] = $status;\n   48 |     }\n   49 |     \n   50 |     \/\/ Consultant filter (for doctors)\n   51 |     $consultantId = getParam('consultant_id', '');\n   52 |     if ($consultantId) {\n   53 |         $where[] = 'EXISTS (SELECT 1 FROM patient_consultants pc WHERE pc.patient_id = p.id AND pc.consultant_id = :consultant_id AND pc.is_active = 1)';\n   54 |         $params[':consultant_id'] = $consultantId;\n   55 |     }\n   56 |     \n   57 |     $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';\n   58 |     \n   59 |     \/\/ Get total count\n   60 |     $countStmt = $db->prepare(\"SELECT COUNT(*) as total FROM patients p $whereClause\");\n   61 |     $countStmt->execute($params);\n   62 |     $total = (int)$countStmt->fetch()['total'];\n   63 |     \n   64 |     \/\/ Get patients\n   65 |     $stmt = $db->prepare(\"\n   66 |         SELECT p.*, \n   67 |                (SELECT JSON_ARRAYAGG(JSON_OBJECT('consultant_id', pc.consultant_id, 'assigned_at', pc.assigned_at))\n   68 |                 FROM patient_consultants pc WHERE pc.patient_id = p.id AND pc.is_active = 1) as consultants\n   69 |         FROM patients p\n   70 |         $whereClause\n   71 |         ORDER BY p.created_at DESC\n   72 |         LIMIT :limit OFFSET :offset\n   73 |     \");\n   74 |     \n   75 |     foreach ($params as $key => $val) {\n   76 |         $stmt->bindValue($key, $val);\n   77 |     }\n   78 |     $stmt->bindValue(':limit', $pagination['limit'], PDO::PARAM_INT);\n   79 |     $stmt->bindValue(':offset', $pagination['offset'], PDO::PARAM_INT);\n   80 |     $stmt->execute();\n   81 |     \n   82 |     $patients = $stmt->fetchAll();\n   83 |     \n   84 |     \/\/ Decode JSON fields\n   85 |     foreach ($patients as &$patient) {\n   86 |         $patient['allergies'] = json_decode($patient['allergies'] ?? '[]', true) ?: [];\n   87 |         $patient['chronic_conditions'] = json_decode($patient['chronic_conditions'] ?? '[]', true) ?: [];\n   88 |         $patient['consultants'] = json_decode($patient['consultants'] ?? '[]', true) ?: [];\n   89 |         $patient['id'] = (int)$patient['id'];\n   90 |         $patient['weight'] = $patient['weight'] ? (float)$patient['weight'] : null;\n   91 |         $patient['height'] = $patient['height'] ? (float)$patient['height'] : null;\n   92 |     }\n   93 |     \n   94 |     paginatedResponse($patients, $total, $pagination['page'], $pagination['limit']);\n   95 |     \n   96 | } catch (\\Exception $e) {\n   97 |     error_log('List patients error: ' . $e->getMessage());\n   98 |     errorResponse('Failed to fetch patients', 500);\n   99 | }\n  100 |",
             "is_error": false,
             "time": 1785002382
+        },
+        {
+            "id": "msg_d59af1e06c",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785002621
+        },
+        {
+            "id": "msg_034bdf462e",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I have the full picture. Let me trace the data flow:\n\n1. PHP `patients\/list.php` returns **snake_case** fields: `full_name`, `name_bn`, `date_of_birth`, `created_at`, etc.\n2. PHP `patients\/create.php` reads **camelCase** input: `$input['fullName']`, `$input['nameBn']`, etc.\n3. The frontend service `patients.ts` sends **snake_case** to the API: `full_name: data.fullName`, `name_bn: data.nameBn`, etc.\n\nThis means:\n- **LIST**: Returns snake_case \u2192 Frontend expects camelCase (Patient interface). Type mismatch!\n- **CREATE**: Service sends snake_case \u2192 PHP reads camelCase. **All fields lost!**\n- **GET**: Returns snake_case \u2192 Same issue as LIST.\n\nThe fix needs to happen in the **service layer** (`patients.ts`). The service must:\n1. Send camelCase to PHP (which reads camelCase)\n2. Map snake_case responses back to camelCase DTOs\n\nLet me also check the `patients\/get.php` and `patients\/update.php` to make sure they also read camelCase."
+                },
+                {
+                    "type": "text",
+                    "text": "Now I have the complete data flow. Let me check the remaining PHP endpoints to confirm they all read camelCase:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_PNIvyibemDajdOd7EWOb3604",
+                    "name": "read_file",
+                    "input": {
+                        "path": "\/public_html\/api\/patients\/get.php"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_Sk1uFBmzsOpNezISjpth1838",
+                    "name": "read_file",
+                    "input": {
+                        "path": "\/public_html\/api\/patients\/update.php"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_02_88lfZ2XCFgYPlfrTUXCO5333",
+                    "name": "read_file",
+                    "input": {
+                        "path": "\/public_html\/api\/patients\/delete.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 96584,
+                "completion_tokens": 402,
+                "total_tokens": 96986,
+                "prompt_cache_hit_tokens": 512,
+                "prompt_cache_miss_tokens": 96072,
+                "prompt_tokens_details": {
+                    "cached_tokens": 512
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 253
+                },
+                "cached_tokens": 512
+            },
+            "time": 1785002627
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_PNIvyibemDajdOd7EWOb3604",
+            "content": "    1 | <?php\n    2 | \/**\n    3 |  * Get Single Patient API\n    4 |  * \n    5 |  * GET \/api\/patients\/get.php?id=123\n    6 |  *\/\n    7 | \n    8 | require_once __DIR__ . '\/..\/database.php';\n    9 | require_once __DIR__ . '\/..\/helpers.php';\n   10 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   11 | \n   12 | handleCors();\n   13 | requireMethod('GET');\n   14 | \n   15 | $user = requireAuth();\n   16 | $id = (int)getParam('id', 0);\n   17 | \n   18 | if (!$id) {\n   19 |     errorResponse('Patient ID is required', 400);\n   20 | }\n   21 | \n   22 | try {\n   23 |     $db = Database::getInstance();\n   24 |     \n   25 |     $stmt = $db->prepare('\n   26 |         SELECT p.*,\n   27 |                (SELECT JSON_ARRAYAGG(JSON_OBJECT(\"consultant_id\", pc.consultant_id, \"assigned_at\", pc.assigned_at))\n   28 |                 FROM patient_consultants pc WHERE pc.patient_id = p.id AND pc.is_active = 1) as consultants\n   29 |         FROM patients p\n   30 |         WHERE p.id = :id\n   31 |         LIMIT 1\n   32 |     ');\n   33 |     $stmt->execute([':id' => $id]);\n   34 |     $patient = $stmt->fetch();\n   35 |     \n   36 |     if (!$patient) {\n   37 |         errorResponse('Patient not found', 404);\n   38 |     }\n   39 |     \n   40 |     \/\/ Decode JSON fields\n   41 |     $patient['allergies'] = json_decode($patient['allergies'] ?? '[]', true) ?: [];\n   42 |     $patient['chronic_conditions'] = json_decode($patient['chronic_conditions'] ?? '[]', true) ?: [];\n   43 |     $patient['consultants'] = json_decode($patient['consultants'] ?? '[]', true) ?: [];\n   44 |     $patient['id'] = (int)$patient['id'];\n   45 |     $patient['weight'] = $patient['weight'] ? (float)$patient['weight'] : null;\n   46 |     $patient['height'] = $patient['height'] ? (float)$patient['height'] : null;\n   47 |     \n   48 |     successResponse($patient);\n   49 |     \n   50 | } catch (\\Exception $e) {\n   51 |     error_log('Get patient error: ' . $e->getMessage());\n   52 |     errorResponse('Failed to fetch patient', 500);\n   53 | }\n   54 |",
+            "is_error": false,
+            "time": 1785002627
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_Sk1uFBmzsOpNezISjpth1838",
+            "content": "    1 | <?php\n    2 | \/**\n    3 |  * Update Patient API\n    4 |  * \n    5 |  * POST \/api\/patients\/update.php\n    6 |  * Body: { id, fullName, nameBn, dateOfBirth, gender, phone, email, ... }\n    7 |  *\/\n    8 | \n    9 | require_once __DIR__ . '\/..\/database.php';\n   10 | require_once __DIR__ . '\/..\/helpers.php';\n   11 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   12 | \n   13 | handleCors();\n   14 | requireMethod('POST');\n   15 | \n   16 | $user = requireAuth();\n   17 | $input = getJsonInput();\n   18 | \n   19 | $id = (int)($input['id'] ?? 0);\n   20 | if (!$id) {\n   21 |     errorResponse('Patient ID is required', 400);\n   22 | }\n   23 | \n   24 | try {\n   25 |     $db = Database::getInstance();\n   26 |     \n   27 |     \/\/ Fetch existing patient\n   28 |     $stmt = $db->prepare('SELECT * FROM patients WHERE id = :id');\n   29 |     $stmt->execute([':id' => $id]);\n   30 |     $existing = $stmt->fetch();\n   31 |     \n   32 |     if (!$existing) {\n   33 |         errorResponse('Patient not found', 404);\n   34 |     }\n   35 |     \n   36 |     \/\/ Build update fields\n   37 |     $updates = [];\n   38 |     $params = [':id' => $id];\n   39 |     \n   40 |     $fields = [\n   41 |         'full_name' => 'fullName',\n   42 |         'name_bn' => 'nameBn',\n   43 |         'gender' => 'gender',\n   44 |         'phone' => 'phone',\n   45 |         'email' => 'email',\n   46 |         'address' => 'address',\n   47 |         'blood_group' => 'bloodGroup',\n   48 |         'patient_type' => 'patientType',\n   49 |         'photo_url' => 'photo',\n   50 |         'status' => 'status',\n   51 |     ];\n   52 |     \n   53 |     foreach ($fields as $dbField => $inputKey) {\n   54 |         if (isset($input[$inputKey])) {\n   55 |             $value = null;\n   56 |             if ($inputKey === 'gender') {\n   57 |                 $value = in_array($input[$inputKey], ['male', 'female', 'other']) ? $input[$inputKey] : 'male';\n   58 |             } elseif ($inputKey === 'patientType') {\n   59 |                 $value = in_array($input[$inputKey], ['outdoor', 'indoor', 'emergency', 'admitted']) ? $input[$inputKey] : 'outdoor';\n   60 |             } elseif ($inputKey === 'phone') {\n   61 |                 $value = sanitizePhone($input[$inputKey]);\n   62 |             } elseif ($inputKey === 'email') {\n   63 |                 $value = sanitizeEmail($input[$inputKey]);\n   64 |             } elseif ($inputKey === 'bloodGroup') {\n   65 |                 $value = $input[$inputKey] === 'unknown' ? null : sanitizeString($input[$inputKey]);\n   66 |             } else {\n   67 |                 $value = sanitizeString($input[$inputKey]);\n   68 |             }\n   69 |             $updates[] = \"$dbField = :$dbField\";\n   70 |             $params[\":$dbField\"] = $value ?: null;\n   71 |         }\n   72 |     }\n   73 |     \n   74 |     \/\/ Handle numeric fields\n   75 |     if (isset($input['weight'])) {\n   76 |         $updates[] = 'weight = :weight';\n   77 |         $params[':weight'] = floatval($input['weight']) ?: null;\n   78 |     }\n   79 |     if (isset($input['height'])) {\n   80 |         $updates[] = 'height = :height';\n   81 |         $params[':height'] = floatval($input['height']) ?: null;\n   82 |     }\n   83 |     if (isset($input['dateOfBirth'])) {\n   84 |         $updates[] = 'date_of_birth = :date_of_birth';\n   85 |         $params[':date_of_birth'] = $input['dateOfBirth'] ?: null;\n   86 |     }\n   87 |     \n   88 |     \/\/ Handle JSON fields\n   89 |     if (isset($input['allergies'])) {\n   90 |         $updates[] = 'allergies = :allergies';\n   91 |         $params[':allergies'] = json_encode($input['allergies']);\n   92 |     }\n   93 |     if (isset($input['chronicConditions'])) {\n   94 |         $updates[] = 'chronic_conditions = :chronic_conditions';\n   95 |         $params[':chronic_conditions'] = json_encode($input['chronicConditions']);\n   96 |     }\n   97 |     if (isset($input['pastSurgicalHistory'])) {\n   98 |         $updates[] = 'past_surgical_history = :past_surgical_history';\n   99 |         $params[':past_surgical_history'] = sanitizeString($input['pastSurgicalHistory']);\n  100 |     }\n  101 |     \n  102 |     if (empty($updates)) {\n  103 |         errorResponse('No fields to update', 400);\n  104 |     }\n  105 |     \n  106 |     $updates[] = 'updated_at = NOW()';\n  107 |     $updateStr = implode(', ', $updates);\n  108 |     \n  109 |     $db->beginTransaction();\n  110 |     \n  111 |     $updateStmt = $db->prepare(\"UPDATE patients SET $updateStr WHERE id = :id\");\n  112 |     $updateStmt->execute($params);\n  113 |     \n  114 |     \/\/ Fetch updated patient\n  115 |     $fetchStmt = $db->prepare('SELECT * FROM patients WHERE id = :id');\n  116 |     $fetchStmt->execute([':id' => $id]);\n  117 |     $updated = $fetchStmt->fetch();\n  118 |     \n  119 |     $db->commit();\n  120 |     \n  121 |     logAudit($user['id'], $id, 'update', 'patient', $id, $existing, $updated);\n  122 |     \n  123 |     successResponse($updated, 'Patient updated successfully');\n  124 |     \n  125 | } catch (\\Exception $e) {\n  126 |     if (isset($db) && $db->inTransaction()) {\n  127 |         $db->rollBack();\n  128 |     }\n  129 |     error_log('Update patient error: ' . $e->getMessage());\n  130 |     errorResponse('Failed to update patient', 500);\n  131 | }\n  132 |",
+            "is_error": false,
+            "time": 1785002627
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_02_88lfZ2XCFgYPlfrTUXCO5333",
+            "content": "    1 | <?php\n    2 | \/**\n    3 |  * Delete Patient API\n    4 |  * \n    5 |  * POST \/api\/patients\/delete.php\n    6 |  * Body: { id: 123 }\n    7 |  * Only admin can delete patients.\n    8 |  *\/\n    9 | \n   10 | require_once __DIR__ . '\/..\/database.php';\n   11 | require_once __DIR__ . '\/..\/helpers.php';\n   12 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   13 | \n   14 | handleCors();\n   15 | requireMethod('POST');\n   16 | \n   17 | $user = requireAdmin();\n   18 | $input = getJsonInput();\n   19 | \n   20 | $id = (int)($input['id'] ?? 0);\n   21 | if (!$id) {\n   22 |     errorResponse('Patient ID is required', 400);\n   23 | }\n   24 | \n   25 | try {\n   26 |     $db = Database::getInstance();\n   27 |     \n   28 |     \/\/ Fetch existing patient\n   29 |     $stmt = $db->prepare('SELECT id, full_name, register_number FROM patients WHERE id = :id');\n   30 |     $stmt->execute([':id' => $id]);\n   31 |     $existing = $stmt->fetch();\n   32 |     \n   33 |     if (!$existing) {\n   34 |         errorResponse('Patient not found', 404);\n   35 |     }\n   36 |     \n   37 |     \/\/ Begin transaction for cascading delete\n   38 |     $db->beginTransaction();\n   39 |     \n   40 |     \/\/ Delete related records first (foreign keys handle most via CASCADE)\n   41 |     $tables = ['visits', 'prescriptions', 'appointments', 'vital_signs', 'clinical_notes', 'investigations', 'payments', 'invoices', 'referrals', 'chat_messages', 'teleconsults', 'consent_forms', 'medication_admin_records', 'drug_reminders'];\n   42 |     foreach ($tables as $table) {\n   43 |         $db->prepare(\"DELETE FROM $table WHERE patient_id = :id\")->execute([':id' => $id]);\n   44 |     }\n   45 |     \n   46 |     \/\/ Delete patient\n   47 |     $stmt = $db->prepare('DELETE FROM patients WHERE id = :id');\n   48 |     $stmt->execute([':id' => $id]);\n   49 |     \n   50 |     $db->commit();\n   51 |     \n   52 |     logAudit($user['id'], $id, 'delete', 'patient', $id, $existing);\n   53 |     \n   54 |     successResponse(null, 'Patient and all related records deleted successfully');\n   55 |     \n   56 | } catch (\\Exception $e) {\n   57 |     if (isset($db) && $db->inTransaction()) {\n   58 |         $db->rollBack();\n   59 |     }\n   60 |     error_log('Delete patient error: ' . $e->getMessage());\n   61 |     errorResponse('Failed to delete patient', 500);\n   62 | }\n   63 |",
+            "is_error": false,
+            "time": 1785002627
         }
     ]
 }
