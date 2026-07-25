@@ -283,7 +283,6 @@ export interface UserProfile {
   email?: string;
   address?: string;
   photo?: string;
-  [key: string]: unknown;
 }
 
 // Appointment type
@@ -334,7 +333,7 @@ export interface SerialEntry {
 
 export interface VersionedRecord {
   version: number;
-  createdAt: bigint;
+  createdAt: number;
   createdBy: string;
   createdByName: string;
   createdByRole: StaffRole;
@@ -342,13 +341,13 @@ export interface VersionedRecord {
 }
 
 export interface Encounter {
-  id: bigint;
-  patientId: bigint;
+  id: number;
+  patientId: number;
   encounterId: string;
   encounterType: "OPD" | "IPD" | "Emergency" | "FollowUp";
   status: "Planned" | "InProgress" | "Completed" | "Cancelled";
-  startDate: bigint;
-  endDate?: bigint;
+  startDate: number;
+  endDate?: number;
   providerId: string;
   providerName: string;
   locationNotes?: string;
@@ -357,9 +356,9 @@ export interface Encounter {
 }
 
 export interface Observation {
-  id: bigint;
-  patientId: bigint;
-  encounterId?: bigint;
+  id: number;
+  patientId: number;
+  encounterId?: number;
   observationType:
     | "Vital"
     | "Lab"
@@ -373,7 +372,7 @@ export interface Observation {
   interpretation?: string;
   normalRange?: string;
   status: "Preliminary" | "Final" | "Corrected";
-  observationDate: bigint;
+  observationDate: number;
   recordedBy: string;
   recordedByName: string;
   recordedByRole: StaffRole;
@@ -382,27 +381,27 @@ export interface Observation {
 }
 
 export interface ClinicalOrder {
-  id: bigint;
-  patientId: bigint;
-  encounterId?: bigint;
+  id: number;
+  patientId: number;
+  encounterId?: number;
   orderType: "Medication" | "LabTest" | "Procedure" | "Investigation";
   code: string;
   description: string;
   status: "Requested" | "Pending" | "InProgress" | "Completed" | "Cancelled";
-  orderedAt: bigint;
+  orderedAt: number;
   orderedBy: string;
   orderedByName: string;
   orderedByRole: StaffRole;
-  completedAt?: bigint;
+  completedAt?: number;
   result?: string;
   notes?: string;
   versionInfo: VersionedRecord;
 }
 
 export interface ClinicalNote {
-  id: bigint;
-  patientId: bigint;
-  encounterId?: bigint;
+  id: number;
+  patientId: number;
+  encounterId?: number;
   noteType:
     | "SOAP"
     | "DailyProgress"
@@ -416,30 +415,30 @@ export interface ClinicalNote {
   authorRole: StaffRole;
   content: string; // JSON string for structured SOAP content
   isDraft: boolean;
-  createdAt: bigint;
+  createdAt: number;
   versionInfo: VersionedRecord;
-  previousVersionIds: bigint[];
+  previousVersionIds: number[];
   isDeleted: boolean;
 }
 
 export interface AuditEntry {
-  id: bigint;
+  id: number;
   entityType: string;
-  entityId: bigint;
+  entityId: number;
   fieldName: string;
   beforeValue?: string;
   afterValue: string;
   changedBy: string;
   changedByName: string;
   changedByRole: StaffRole;
-  changedAt: bigint;
+  changedAt: number;
   reason?: string;
   ipAddress?: string;
 }
 
 export interface ClinicalAlert {
-  id: bigint;
-  patientId: bigint;
+  id: number;
+  patientId: number;
   alertType:
     | "Sepsis"
     | "AKI"
@@ -484,13 +483,13 @@ export interface ClinicalAlert {
   severity: "Critical" | "Warning" | "Info";
   message: string;
   details?: string;
-  triggeredAt: bigint;
+  triggeredAt: number;
   triggeredBy: string;
   isAcknowledged: boolean;
   acknowledgedBy?: string;
-  acknowledgedAt?: bigint;
+  acknowledgedAt?: number;
   isResolved: boolean;
-  resolvedAt?: bigint;
+  resolvedAt?: number;
 }
 
 // ── Extended Clinical Intelligence Types ──────────────────────────────────────
@@ -632,7 +631,7 @@ export interface AdmissionHistory {
 export interface BedTransferEntry {
   fromBed: string;
   toBed: string;
-  date: bigint;
+  date: number;
   reason: string;
 }
 
@@ -645,7 +644,7 @@ export type BedType =
   | "Cabin";
 
 export interface BedRecord {
-  id: bigint;
+  id: number;
   bedNumber: string;
   ward: string;
   hospitalName: string;
@@ -654,10 +653,10 @@ export interface BedRecord {
   status: "Empty" | "Occupied" | "Maintenance" | "Reserved" | "Cleaning";
   /** Bed category/type determining special equipment and purpose */
   bedType?: BedType;
-  patientId?: bigint;
+  patientId?: number;
   patientName?: string;
-  admissionDate?: bigint;
-  dischargeDate?: bigint;
+  admissionDate?: number;
+  dischargeDate?: number;
   /** ISO timestamp string for when a reservation expires (2h default) */
   reservationExpiry?: string | null;
   /** Name of the patient the bed is reserved for */
@@ -670,7 +669,7 @@ export interface BedRecord {
 }
 
 export interface DiagnosisTemplate {
-  id: bigint;
+  id: number;
   diagnosisName: string;
   diagnosisNameBn?: string;
   icdCode?: string;
@@ -679,7 +678,7 @@ export interface DiagnosisTemplate {
   defaultAdvice: string[];
   defaultAdviceBn: string[];
   createdBy: string;
-  createdAt: bigint;
+  createdAt: number;
   isActive: boolean;
 }
 
@@ -698,13 +697,13 @@ export interface ClinicalIntelligence {
 }
 
 export interface SyncRecord {
-  id: bigint;
+  id: number;
   userId: string;
   deviceId: string;
-  lastSyncAt: bigint;
-  pendingChanges: bigint;
+  lastSyncAt: number;
+  pendingChanges: number;
   lastEntityType?: string;
-  lastEntityId?: bigint;
+  lastEntityId?: number;
 }
 
 // ── Investigation tracking types ───────────────────────────────────────────────
