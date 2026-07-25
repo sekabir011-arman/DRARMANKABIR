@@ -18,9 +18,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { loadFromStorage } from "../hooks/useQueries";
 import type { Patient } from "../types";
-import { storage } from "../lib/storageAdapter";
 
 function cmToFeetInches(cm: number): string {
   const totalInches = cm / 2.54;
@@ -36,51 +34,24 @@ export function calculateAge(dob: string): number | null {
   const today = new Date();
   let age = today.getFullYear() - birth.getFullYear();
   const m = today.getMonth() - birth.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-  return age >= 0 ? age : null;
+  if (m <  || (m ===  && today.getDate() < birth.getDate())) age--;
+  return age >=  ? age : null;
 }
 
 function feetInchesToCm(str: string): number | null {
   const match = str.match(/(\d+)['\s]*(?:ft)?['\s]*(\d*)["\s]*(?:in)?/i);
   if (!match) return null;
-  const feet = Number.parseInt(match[1]) || 0;
-  const inches = Number.parseInt(match[2]) || 0;
+  const feet = Number.parseInt(match[1]) || ;
+  const inches = Number.parseInt(match[2]) || ;
   const cm = feet * 30.48 + inches * 2.54;
-  return cm > 0 ? Math.round(cm * 10) / 10 : null;
-}
-
-function dobToBigInt(dateStr: string): bigint | null {
-  if (!dateStr) return null;
-  try {
-    const ms = new Date(dateStr).getTime();
-    if (Number.isNaN(ms)) return null;
-    return BigInt(ms) * 1000000n;
-  } catch {
-    return null;
-  }
+  return cm >  ? Math.round(cm * 10) / 10 : null;
 }
 
 function ageToApproxDob(age: string): string {
   const n = Number.parseInt(age);
-  if (Number.isNaN(n) || n < 0 || n > 130) return "";
+  if (Number.isNaN(n) || n <  || n > 130) return "";
   const year = new Date().getFullYear() - n;
   return `${year}-01-01`;
-}
-
-/** Scan all localStorage patient keys across all doctor emails */
-function loadAllPatients(): Patient[] {
-  const results: Patient[] = [];
-  for (let i = 0; i < storage.length; i++) {
-    const key = storage.key(i);
-    if (!key?.startsWith("patients_")) continue;
-    try {
-      const raw = storage.getItem(key);
-      if (!raw) continue;
-      const items = JSON.parse(raw) as Patient[];
-      if (Array.isArray(items)) results.push(...items);
-    } catch {}
-  }
-  return results;
 }
 
 interface DuplicateMatch {
