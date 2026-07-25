@@ -3,15 +3,12 @@
  *
  * CRUD operations for patient appointments.
  * All data is persisted in MySQL via the PHP API.
- * 
- * Data flow:
- *   Frontend (camelCase) → Service (maps to camelCase) → PHP API (reads camelCase)
- *   PHP API (returns snake_case) → Service (maps to camelCase) → Frontend DTO
+ * CamelCase frontend ↔ snake_case PHP API.
  */
 
 import { get, post, del } from '../lib/apiClient';
 import type { Appointment } from '../types';
-import { mapListFromApi, mapFromApi, mapToApi, type Mapping, toNumber, toIsoString } from '../lib/mappers';
+import { mapListFromApi, mapFromApi, mapToApi, type Mapping, toNumber, toBoolean } from '../lib/mappers';
 
 // ── Appointment API mapping ───────────────────────────────────────────────
 
@@ -30,18 +27,21 @@ const appointmentMapping: Mapping<Appointment> = {
   chiefComplaint: 'chief_complaint',
   notes: 'notes',
   isPublicRequest: 'is_public_request',
+  createdBy: 'created_by',
   createdAt: 'created_at',
+  updatedAt: 'updated_at',
 };
 
 const appointmentTransforms = {
   id: (v: any) => toNumber(v) ?? ,
   patientId: (v: any) => toNumber(v),
   doctorId: (v: any) => toNumber(v),
-  serialNumber: (v: any) => toNumber(v),
-  isPublicRequest: (v: any) => v === 1 || v === true || v === '1',
+  serialNumber: (v: any) => toNumber(v) ?? ,
+  createdBy: (v: any) => toNumber(v),
+  isPublicRequest: (v: any) => toBoolean(v),
 };
 
-// ── Request DTOs (camelCase) ─────────────────────────────────────────────
+// ── Request DTOs ─────────────────────────────────────────────────────────
 
 export interface CreateAppointmentData {
   patientId?: number;
@@ -54,7 +54,6 @@ export interface CreateAppointmentData {
   status?: string;
   chiefComplaint?: string;
   notes?: string;
-  isPublicRequest?: boolean;
 }
 
 export interface UpdateAppointmentData extends Partial<CreateAppointmentData> {
@@ -70,7 +69,7 @@ export const appointmentService = {
 
   /** Get appointments for a specific patient */
   async getByPatient(patientId: number): Promise<Appointment[]> {
-    const result = await get<{ items: Record<string, any>[] }>('/appointments/list.php', { patient_id: patientId });
+    const result = await get<{ items: Record<string, any>[] }>('/appointments/list.php', { patient_id: String(patientId) });
     return mapListFromApi<Appointment>(result.items, appointmentMapping, appointmentTransforms);
   },
 
@@ -84,27 +83,29 @@ export const appointmentService = {
     }
   },
 
-  /** Create a new appointment */
-  async create(data: CreateAppointmentData): Promise<any> {
-    // PHP API reads camelCase (e.g., $input['appointment_date'])
+  /** Create a new appointment — PHP reads snake_case */
+  async create(data: CreateAppointmentData): Promise<Appointment> {
     const payload: Record<string, any> = {
-      patient_id: data.patientId,
-      patient_name: data.patientName,
-      patient_phone: data.patientPhone,
-      doctor_id: data.doctorId,
+      patient_id: data.patientId ?? null,
+      patient_name: data.patientName ?? null,
+      patient_phone: data.patientPhone ?? null,
+      doctor_id: data.doctorId ?? null,
       appointment_date: data.appointmentDate,
-      appointment_time: data.appointmentTime,
+      appointment_time: data.appointmentTime ?? null,
       type: data.type ?? 'regular',
       status: data.status ?? 'scheduled',
-      chief_complaint: data.chiefComplaint,
-      notes: data.notes,
-      is_public_request: data.isPublicRequest ? 1 : ,
+      chief_complaint: data.chiefComplaint ?? null,
+      notes: data.notes ?? null,
     };
-    return post<any>('/appointments/create.php', payload);
+    const result = await post<Record<string, any>>('/appointments/create.php', payload);
+    // create.php returns { id, serial_number } — map via getById
+    const apptId = result?.id ?? ;
+    if (apptId) return (await this.getById(apptId))!;
+    return result as unknown as Appointment;
   },
 
-  /** Update an existing appointment */
-  async update(data: UpdateAppointmentData): Promise<any> {
+  /** Update an existing appointment — PHP reads snake_case */
+  async update(data: UpdateAppointmentData): Promise<void> {
     const payload: Record<string, any> = { id: data.id };
     if (data.patientId !== undefined) payload.patient_id = data.patientId;
     if (data.patientName !== undefined) payload.patient_name = data.patientName;
@@ -116,8 +117,7 @@ export const appointmentService = {
     if (data.status !== undefined) payload.status = data.status;
     if (data.chiefComplaint !== undefined) payload.chief_complaint = data.chiefComplaint;
     if (data.notes !== undefined) payload.notes = data.notes;
-    if (data.isPublicRequest !== undefined) payload.is_public_request = data.isPublicRequest ? 1 : ;
-    return post<any>('/appointments/update.php', payload);
+    await post('/appointments/update.php', payload);
   },
 
   /** Delete an appointment */
