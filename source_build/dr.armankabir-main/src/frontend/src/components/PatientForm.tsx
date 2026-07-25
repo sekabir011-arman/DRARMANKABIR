@@ -1,4 +1,18 @@
-function ageToApproxDob(age: string): string {function ageToApproxDob(age: string): string {
+/** Scan server for duplicate patients via API */
+async function checkDuplicatePatient(phone: string, email: string): Promise<DuplicateMatch | null> {
+  if (!phone && !email) return null;
+  try {
+    const { patientService } = await import('../services/patients');
+    const results = await patientService.search(phone || email);
+    for (const p of results) {
+      if (phone && p.phone?.trim() === phone) return { patient: p, matchField: 'phone' };
+      if (email && p.email?.trim().toLowerCase() === email.toLowerCase()) return { patient: p, matchField: 'email' };
+    }
+  } catch {}
+  return null;
+}
+
+interface DuplicateMatch {function ageToApproxDob(age: string): string {function ageToApproxDob(age: string): string {
   const n = Number.parseInt(age);
   if (Number.isNaN(n) || n <  || n > 130) return "";
   const year = new Date().getFullYear() - n;
