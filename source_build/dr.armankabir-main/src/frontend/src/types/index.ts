@@ -186,7 +186,7 @@ export interface Medication {
   specialInstruction?: string;
   specialInstructionBn?: string;
   /** PRN (as-needed) drug — bypasses scheduled reminders */
-  isPrn?: string; // "true" | "false" stored as string for index signature compat
+  isPrn?: string;
   /** Condition for PRN drug, e.g. "if fever > 38°F" */
   prnCondition?: string;
   /** IV/IM dose format: 'single' | 'loading-maintenance' | 'infusion' */
@@ -203,7 +203,6 @@ export interface Medication {
   fromEmergencyRx?: string;
   /** Timestamp when auto-linked from emergency Rx */
   emergencyRxLinkedAt?: string;
-  [key: string]: string | undefined;
 }
 
 export interface ConsultantAssignment {
