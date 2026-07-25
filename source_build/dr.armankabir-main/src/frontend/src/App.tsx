@@ -280,13 +280,13 @@ function StaffAuthContent() {
     setSuSuccess("");
     try {
       await signUp({
-        name: suName.trim(),
+        full_name: suName.trim(),
         email: suEmail.trim(),
         password: suPassword,
         designation: suDesignation,
         degree: suDegree.trim(),
         specialization: suSpecialization.trim(),
-        hospital: suHospital.trim(),
+        hospital_name: suHospital.trim(),
         phone: suPhone.trim(),
         role: suRole,
       });
