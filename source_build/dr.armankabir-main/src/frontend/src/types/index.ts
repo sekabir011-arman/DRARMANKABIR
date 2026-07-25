@@ -247,7 +247,6 @@ export interface Patient {
   /** Whether patient has completed full registration (false for emergency quick-reg patients) */
   registrationComplete?: boolean;
 }
-
 export interface Visit {
   id: number;
   patientId: number;
