@@ -5,33 +5,15 @@
  * All data is persisted in MySQL via the PHP API.
  * 
  * Data flow:
- *   Frontend (camelCase) → Service (maps to PHP-compatible) → PHP API
- *   PHP API (returns snake_case) → Service (maps to camelCase) → Frontend
+ *   Frontend (camelCase) → Service (maps to camelCase) → PHP API (reads camelCase)
+ *   PHP API (returns snake_case) → Service (maps to camelCase) → Frontend DTO
  */
 
 import { get, post, del } from '../lib/apiClient';
-import { mapListFromApi, mapFromApi, toNumber, type Mapping } from '../lib/mappers';
+import type { Appointment } from '../types';
+import { mapListFromApi, mapFromApi, mapToApi, type Mapping, toNumber, toIsoString } from '../lib/mappers';
 
-// ── Appointment interface (matching PHP response) ────────────────────────
-
-export interface Appointment {
-  id: number;
-  patientId: number | null;
-  patientName: string | null;
-  patientPhone: string | null;
-  doctorId: number | null;
-  doctorName: string | null;
-  appointmentDate: string;
-  appointmentTime: string | null;
-  serialNumber: number | null;
-  type: string;
-  status: string;
-  chiefComplaint: string | null;
-  notes: string | null;
-  isPublicRequest: boolean;
-  createdAt: string;
-  updatedAt: string | null;
-}
+// ── Appointment API mapping ───────────────────────────────────────────────
 
 const appointmentMapping: Mapping<Appointment> = {
   id: 'id',
@@ -49,7 +31,6 @@ const appointmentMapping: Mapping<Appointment> = {
   notes: 'notes',
   isPublicRequest: 'is_public_request',
   createdAt: 'created_at',
-  updatedAt: 'updated_at',
 };
 
 const appointmentTransforms = {
@@ -60,19 +41,19 @@ const appointmentTransforms = {
   isPublicRequest: (v: any) => v === 1 || v === true || v === '1',
 };
 
-// ── Request DTOs ─────────────────────────────────────────────────────────
+// ── Request DTOs (camelCase) ─────────────────────────────────────────────
 
 export interface CreateAppointmentData {
-  patientId?: number | null;
-  patientName?: string | null;
-  patientPhone?: string | null;
-  doctorId?: number | null;
+  patientId?: number;
+  patientName?: string;
+  patientPhone?: string;
+  doctorId?: number;
   appointmentDate: string;
-  appointmentTime?: string | null;
+  appointmentTime?: string;
   type?: string;
   status?: string;
-  chiefComplaint?: string | null;
-  notes?: string | null;
+  chiefComplaint?: string;
+  notes?: string;
   isPublicRequest?: boolean;
 }
 
@@ -82,25 +63,15 @@ export interface UpdateAppointmentData extends Partial<CreateAppointmentData> {
 
 export const appointmentService = {
   /** Get all appointments */
-  async getAll(params?: {
-    limit?: number;
-    date?: string;
-    status?: string;
-    doctor_id?: number;
-  }): Promise<Appointment[]> {
-    const result = await get<{ items: Record<string, any>[] }>(
-      '/appointments/list.php',
-      params as Record<string, string | number>
-    );
-    return mapListFromApi<Appointment>(result.items ?? [], appointmentMapping, appointmentTransforms);
+  async getAll(params?: { limit?: number; date?: string; status?: string }): Promise<Appointment[]> {
+    const result = await get<{ items: Record<string, any>[] }>('/appointments/list.php', params as any);
+    return mapListFromApi<Appointment>(result.items, appointmentMapping, appointmentTransforms);
   },
 
   /** Get appointments for a specific patient */
   async getByPatient(patientId: number): Promise<Appointment[]> {
-    const result = await get<{ items: Record<string, any>[] }>('/appointments/list.php', {
-      patient_id: patientId,
-    });
-    return mapListFromApi<Appointment>(result.items ?? [], appointmentMapping, appointmentTransforms);
+    const result = await get<{ items: Record<string, any>[] }>('/appointments/list.php', { patient_id: patientId });
+    return mapListFromApi<Appointment>(result.items, appointmentMapping, appointmentTransforms);
   },
 
   /** Get a single appointment by ID */
@@ -114,33 +85,26 @@ export const appointmentService = {
   },
 
   /** Create a new appointment */
-  async create(data: CreateAppointmentData): Promise<Appointment> {
-    // PHP API reads: appointment_date, patient_id, patient_name, patient_phone,
-    //   doctor_id, appointment_time, type, status, chief_complaint, notes, is_public_request
+  async create(data: CreateAppointmentData): Promise<any> {
+    // PHP API reads camelCase (e.g., $input['appointment_date'])
     const payload: Record<string, any> = {
+      patient_id: data.patientId,
+      patient_name: data.patientName,
+      patient_phone: data.patientPhone,
+      doctor_id: data.doctorId,
       appointment_date: data.appointmentDate,
+      appointment_time: data.appointmentTime,
+      type: data.type ?? 'regular',
+      status: data.status ?? 'scheduled',
+      chief_complaint: data.chiefComplaint,
+      notes: data.notes,
+      is_public_request: data.isPublicRequest ? 1 : ,
     };
-    if (data.patientId != null) payload.patient_id = data.patientId;
-    if (data.patientName != null) payload.patient_name = data.patientName;
-    if (data.patientPhone != null) payload.patient_phone = data.patientPhone;
-    if (data.doctorId != null) payload.doctor_id = data.doctorId;
-    if (data.appointmentTime != null) payload.appointment_time = data.appointmentTime;
-    payload.type = data.type ?? 'regular';
-    payload.status = data.status ?? 'scheduled';
-    if (data.chiefComplaint != null) payload.chief_complaint = data.chiefComplaint;
-    if (data.notes != null) payload.notes = data.notes;
-    if (data.isPublicRequest != null) payload.is_public_request = data.isPublicRequest ? 1 : ;
-
-    const result = await post<Record<string, any>>('/appointments/create.php', payload);
-    // create.php returns { id, serial_number }, fetch full appointment
-    if (result?.id) {
-      return (await this.getById(result.id))!;
-    }
-    return result as unknown as Appointment;
+    return post<any>('/appointments/create.php', payload);
   },
 
   /** Update an existing appointment */
-  async update(data: UpdateAppointmentData): Promise<void> {
+  async update(data: UpdateAppointmentData): Promise<any> {
     const payload: Record<string, any> = { id: data.id };
     if (data.patientId !== undefined) payload.patient_id = data.patientId;
     if (data.patientName !== undefined) payload.patient_name = data.patientName;
@@ -153,7 +117,7 @@ export const appointmentService = {
     if (data.chiefComplaint !== undefined) payload.chief_complaint = data.chiefComplaint;
     if (data.notes !== undefined) payload.notes = data.notes;
     if (data.isPublicRequest !== undefined) payload.is_public_request = data.isPublicRequest ? 1 : ;
-    await post('/appointments/update.php', payload);
+    return post<any>('/appointments/update.php', payload);
   },
 
   /** Delete an appointment */
@@ -164,6 +128,6 @@ export const appointmentService = {
   /** Search appointments */
   async search(query: string): Promise<Appointment[]> {
     const result = await get<{ items: Record<string, any>[] }>('/appointments/list.php', { search: query });
-    return mapListFromApi<Appointment>(result.items ?? [], appointmentMapping, appointmentTransforms);
+    return mapListFromApi<Appointment>(result.items, appointmentMapping, appointmentTransforms);
   },
 };

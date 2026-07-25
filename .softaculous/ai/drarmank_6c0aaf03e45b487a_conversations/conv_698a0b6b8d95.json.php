@@ -8,12 +8,12 @@
         {
             "priority": "high",
             "content": "SECURITY: Protect phpMyAdmin with .htaccess password",
-            "status": "in_progress"
+            "status": "completed"
         },
         {
             "priority": "high",
-            "content": "Sprint 1: Fix appointments.ts \u2014 camelCase fields + mapper (S1-3)",
-            "status": "pending"
+            "content": "Sprint 1: Fix appointments.ts \u2014 add patientName, patientPhone, doctorId, fix field names (S1-3)",
+            "status": "in_progress"
         },
         {
             "priority": "high",
@@ -92,7 +92,7 @@
         }
     ],
     "created_at": 1784983610,
-    "updated_at": 1785002958,
+    "updated_at": 1785003197,
     "messages": [
         {
             "id": "msg_compact",
@@ -2210,6 +2210,294 @@
             "content": "Creating .htpasswd file with secure credentials...\nCreated \/home\/drarmank\/.htpasswd-phpmyadmin with user: admin\n",
             "is_error": false,
             "time": 1785002958
+        },
+        {
+            "id": "msg_d42baa8c2d",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785003176
+        },
+        {
+            "id": "msg_108c68cb93",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The user wants me to continue. Let me check what I was doing and continue with the roadmap. I was in the middle of Sprint 1 tasks. Let me pick up where I left off.\n\nActually, looking at the conversation, I had:\n1. Fixed helpers.php parse error \u2713\n2. Fixed audit FK violation \u2713\n3. Applied Migration 004 (admin_sessions table) \u2713\n4. Fixed TypeScript types (bigint\u2192number, removed [key:string]) \u2713\n5. Created lib\/mappers.ts \u2713\n6. Fixed patients.ts service \u2713\n7. Fixed patients\/create.php (added missing INSERT fields) \u2713\n8. Secured phpMyAdmin with .htaccess \u2713\n\nI still need to:\n- Fix appointments.ts (S1-3) - add patientName, patientPhone, doctorId fields\n- Fix PatientForm.tsx (S1-4) - remove BigInt DOB\n- Remove auth tokens from localStorage (S1-5,6,7,8)\n- Continue with Sprint 2-8\n\nLet me continue with fixing appointments.ts first since that's currently still sending snake_case to a PHP endpoint that reads snake_case. Wait, let me re-check - actually the PHP `create.php` reads `$input['patient_id']` (snake_case), `$input['patient_name']`, `$input['patient_phone']`, `$input['doctor_id']`. So the PHP reads snake_case for appointments, but the service sends snake_case too... Let me re-check.\n\nActually looking at the PHP create.php for appointments:\n- `$input['patient_id']` - snake_case\n- `$input['patient_name']` - snake_case  \n- `$input['patient_phone']` - snake_case\n- `$input['doctor_id']` - snake_case\n- `$input['appointment_date']` - snake_case\n- `$input['appointment_time']` - snake_case\n- `$input['chief_complaint']` - snake_case\n- `$input['notes']` - snake_case\n- `$input['type']` - snake_case\n- `$input['status']` - snake_case\n\nBut the frontend CreateAppointmentData has:\n- patientId (camelCase)\n- appointmentDate (camelCase)\n- doctorName (camelCase)\n- reason (camelCase)\n- status (camelCase)\n\nAnd the service sends:\n```\npatient_id: data.patientId,          \/\/ maps camelCase\u2192snake_case\nappointment_date: data.appointmentDate,\ndoctor_name: data.doctorName,\nreason: data.reason,\nstatus: data.status\n```\n\nBut the PHP reads `$input['patient_id']` (snake_case) \u2713, `$input['doctor_id']` (not doctor_name) \u274c. So it sends `doctor_name` but PHP reads `doctor_id` - that's a mismatch.\n\nAlso `reason` is sent but PHP reads `chief_complaint`. That's another mismatch.\n\nAnd `patient_name` and `patient_phone` are never sent by the service.\n\nSo the appointment service has several bugs:\n1. Sends `doctor_name` but PHP expects `doctor_id`\n2. Sends `reason` but PHP expects `chief_complaint`\n3. Doesn't send `patient_name`, `patient_phone`\n\nLet me fix the appointment service to properly map camelCase\u2192snake_case that PHP expects, AND add the missing fields.\n\nAlso, the list.php returns snake_case fields but the service returns `any[]` without any typing. Let me create a proper Appointment interface.\n\nLet me continue with the work."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me continue fixing the appointment service. The PHP endpoint reads different field names than what the service sends:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_pwmTCrNxGRimACqFhtlA7102",
+                    "name": "todo_write",
+                    "input": {
+                        "todos": [
+                            {
+                                "priority": "high",
+                                "content": "SECURITY: Protect phpMyAdmin with .htaccess password",
+                                "status": "completed"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Sprint 1: Fix appointments.ts \u2014 add patientName, patientPhone, doctorId, fix field names (S1-3)",
+                                "status": "in_progress"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Sprint 1: Fix PatientForm.tsx \u2014 remove BigInt DOB (S1-4)",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Sprint 1: Remove auth tokens from localStorage (S1-5,6,7,8)",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Sprint 2: Visit service & hook refactoring",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Sprint 2: Prescription service & hook refactoring",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Sprint 3: Clinical engine service & hook refactoring",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Sprint 3: Appointment service & hook refactoring",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Sprint 4: Auth service & hook refactoring",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Sprint 4: User service & hook refactoring",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Sprint 5: Payment\/investigation\/content services",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Sprint 5: Admin dashboard hooks",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Sprint 6: Frontend components \u2014 PatientForm, PatientDetails",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Sprint 6: Frontend components \u2014 Appointment, Visit forms",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Sprint 7: Remove deprecated code & dead storage hooks",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Sprint 7: Removal of hybridStorage, storageAdapter, api.ts",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Sprint 8: Testing & verification",
+                                "status": "pending"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 44201,
+                "completion_tokens": 1278,
+                "total_tokens": 45479,
+                "prompt_cache_hit_tokens": 38528,
+                "prompt_cache_miss_tokens": 5673,
+                "prompt_tokens_details": {
+                    "cached_tokens": 38528
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 767
+                },
+                "cached_tokens": 38528
+            },
+            "time": 1785003187
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_pwmTCrNxGRimACqFhtlA7102",
+            "content": "Todo list updated with 17 items.",
+            "is_error": false,
+            "time": 1785003187
+        },
+        {
+            "id": "msg_6008636215",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me check the appointments PHP create endpoint again to understand what fields it expects, then fix the frontend service to match."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me read the full PHP endpoints to understand the exact field names expected:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_GKxGBspIFf3hLMaqMGYB1783",
+                    "name": "read_file",
+                    "input": {
+                        "path": "\/public_html\/api\/appointments\/create.php"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_Wyfk6NGe8XZkK5WFfbUB9079",
+                    "name": "read_file",
+                    "input": {
+                        "path": "\/public_html\/api\/appointments\/update.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 45498,
+                "completion_tokens": 128,
+                "total_tokens": 45626,
+                "prompt_cache_hit_tokens": 45440,
+                "prompt_cache_miss_tokens": 58,
+                "prompt_tokens_details": {
+                    "cached_tokens": 45440
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 25
+                },
+                "cached_tokens": 45440
+            },
+            "time": 1785003190
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_GKxGBspIFf3hLMaqMGYB1783",
+            "content": "    1 | <?php\n    2 | \/**\n    3 |  * Create Appointment API\n    4 |  * \n    5 |  * POST \/api\/appointments\/create.php\n    6 |  *\/\n    7 | \n    8 | require_once __DIR__ . '\/..\/database.php';\n    9 | require_once __DIR__ . '\/..\/helpers.php';\n   10 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   11 | \n   12 | handleCors();\n   13 | requireMethod('POST');\n   14 | \n   15 | $user = requireAuth();\n   16 | $input = getJsonInput();\n   17 | \n   18 | $missing = validateRequired($input, ['appointment_date']);\n   19 | if ($missing) {\n   20 |     errorResponse('Missing required fields: appointment_date', 400, ['missing_fields' => $missing]);\n   21 | }\n   22 | \n   23 | \/\/ Validate appointment type\n   24 | $allowedTypes = ['regular', 'emergency', 'follow-up', 'consultation'];\n   25 | $appointmentType = $input['type'] ?? 'regular';\n   26 | if (!in_array($appointmentType, $allowedTypes)) {\n   27 |     errorResponse('Invalid appointment type. Allowed: ' . implode(', ', $allowedTypes), 400);\n   28 | }\n   29 | \n   30 | \/\/ Validate appointment status\n   31 | $allowedStatuses = ['scheduled', 'confirmed', 'checked_in', 'in_progress', 'completed', 'cancelled', 'no_show'];\n   32 | $appointmentStatus = $input['status'] ?? 'scheduled';\n   33 | if (!in_array($appointmentStatus, $allowedStatuses)) {\n   34 |     errorResponse('Invalid appointment status. Allowed: ' . implode(', ', $allowedStatuses), 400);\n   35 | }\n   36 | \n   37 | try {\n   38 |     $db = Database::getInstance();\n   39 |     \n   40 |     \/\/ Generate serial number for the day\n   41 |     $date = $input['appointment_date'];\n   42 |     $doctorId = isset($input['doctor_id']) ? (int)$input['doctor_id'] : null;\n   43 |     \n   44 |     \/\/ Use separate query for serial number to avoid PDO duplicate named parameter issue\n   45 |     $serialSql = 'SELECT COALESCE(MAX(serial_number), 0) + 1 as next_serial FROM appointments WHERE appointment_date = :date';\n   46 |     $serialParams = [':date' => $date];\n   47 |     if ($doctorId) {\n   48 |         $serialSql .= ' AND doctor_id = :did';\n   49 |         $serialParams[':did'] = $doctorId;\n   50 |     } else {\n   51 |         $serialSql .= ' AND doctor_id IS NULL';\n   52 |     }\n   53 |     $serialStmt = $db->prepare($serialSql);\n   54 |     $serialStmt->execute($serialParams);\n   55 |     $serialNumber = (int)$serialStmt->fetch()['next_serial'];\n   56 |     \n   57 |     $stmt = $db->prepare('\n   58 |         INSERT INTO appointments (patient_id, patient_name, patient_phone, doctor_id, appointment_date, appointment_time, serial_number, `type`, `status`, chief_complaint, notes, is_public_request, created_by)\n   59 |         VALUES (:patient_id, :patient_name, :patient_phone, :doctor_id, :appointment_date, :appointment_time, :serial_number, :appt_type, :appt_status, :chief_complaint, :notes, :is_public_request, :created_by)\n   60 |     ');\n   61 |     \n   62 |     $stmt->execute([\n   63 |         ':patient_id' => isset($input['patient_id']) ? (int)$input['patient_id'] : null,\n   64 |         ':patient_name' => $input['patient_name'] ?? null,\n   65 |         ':patient_phone' => $input['patient_phone'] ?? null,\n   66 |         ':doctor_id' => $doctorId,\n   67 |         ':appointment_date' => $date,\n   68 |         ':appointment_time' => $input['appointment_time'] ?? null,\n   69 |         ':serial_number' => $serialNumber,\n   70 |         ':appt_type' => $appointmentType,\n   71 |         ':appt_status' => $appointmentStatus,\n   72 |         ':chief_complaint' => $input['chief_complaint'] ?? null,\n   73 |         ':notes' => $input['notes'] ?? null,\n   74 |         ':is_public_request' => isset($input['is_public_request']) ? (int)$input['is_public_request'] : 0,\n   75 |         ':created_by' => $user['id'],\n   76 |     ]);\n   77 |     \n   78 |     $appointmentId = (int)$db->lastInsertId();\n   79 |     \n   80 |     logAudit($user['id'], null, 'create', 'appointment', $appointmentId);\n   81 |     \n   82 |     successResponse(['id' => $appointmentId, 'serial_number' => $serialNumber], 'Appointment created successfully');\n   83 |     \n   84 | } catch (\\Exception $e) {\n   85 |     error_log('Create appointment error: ' . $e->getMessage());\n   86 |     errorResponse('Failed to create appointment', 500);\n   87 | }\n   88 |",
+            "is_error": false,
+            "time": 1785003190
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_Wyfk6NGe8XZkK5WFfbUB9079",
+            "content": "    1 | <?php\n    2 | \/**\n    3 |  * Appointments API - Update\n    4 |  * \n    5 |  * POST \/api\/appointments\/update.php\n    6 |  *\/\n    7 | \n    8 | require_once __DIR__ . '\/..\/database.php';\n    9 | require_once __DIR__ . '\/..\/helpers.php';\n   10 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   11 | \n   12 | handleCors();\n   13 | requireMethod('POST');\n   14 | \n   15 | $user = requireAuth();\n   16 | $input = getJsonInput();\n   17 | \n   18 | $id = (int)($input['id'] ?? 0);\n   19 | if (!$id) {\n   20 |     errorResponse('Appointment ID is required', 400);\n   21 | }\n   22 | \n   23 | try {\n   24 |     $db = Database::getInstance();\n   25 |     \n   26 |     $updates = [];\n   27 |     $params = [':id' => $id];\n   28 |     \n   29 |     \/\/ Validate status if provided\n   30 |     if (isset($input['status'])) {\n   31 |         $allowedStatuses = ['scheduled', 'confirmed', 'checked_in', 'in_progress', 'completed', 'cancelled', 'no_show'];\n   32 |         if (!in_array($input['status'], $allowedStatuses)) {\n   33 |             errorResponse('Invalid appointment status. Allowed: ' . implode(', ', $allowedStatuses), 400);\n   34 |         }\n   35 |     }\n   36 |     \n   37 |     $allowedFields = [\n   38 |         'status' => 'status',\n   39 |         'appointment_time' => 'appointment_time',\n   40 |         'chief_complaint' => 'chief_complaint',\n   41 |         'notes' => 'notes',\n   42 |         'patient_id' => 'patient_id',\n   43 |         'patient_name' => 'patient_name',\n   44 |         'patient_phone' => 'patient_phone',\n   45 |         'serial_number' => 'serial_number',\n   46 |     ];\n   47 |     \n   48 |     \/\/ Validate status value if provided\n   49 |     if (isset($input['status'])) {\n   50 |         $allowedStatuses = ['scheduled', 'confirmed', 'checked_in', 'in_progress', 'completed', 'cancelled', 'no_show'];\n   51 |         if (!in_array($input['status'], $allowedStatuses)) {\n   52 |             errorResponse('Invalid appointment status. Allowed: ' . implode(', ', $allowedStatuses), 400);\n   53 |         }\n   54 |     }\n   55 |     \n   56 |     foreach ($allowedFields as $inputKey => $dbField) {\n   57 |         if (isset($input[$inputKey])) {\n   58 |             $updates[] = \"$dbField = :$dbField\";\n   59 |             $params[\":$dbField\"] = $input[$inputKey];\n   60 |         }\n   61 |     }\n   62 |     \n   63 |     if (empty($updates)) {\n   64 |         errorResponse('No fields to update', 400);\n   65 |     }\n   66 |     \n   67 |     $updates[] = 'updated_at = NOW()';\n   68 |     $updateStr = implode(', ', $updates);\n   69 |     \n   70 |     $stmt = $db->prepare(\"UPDATE appointments SET $updateStr WHERE id = :id\");\n   71 |     $stmt->execute($params);\n   72 |     \n   73 |     logAudit($user['id'], null, 'update', 'appointment', $id);\n   74 |     \n   75 |     successResponse(null, 'Appointment updated successfully');\n   76 | } catch (\\Exception $e) {\n   77 |     error_log('Update appointment error: ' . $e->getMessage());\n   78 |     errorResponse('Failed to update appointment', 500);\n   79 | }\n   80 |",
+            "is_error": false,
+            "time": 1785003190
+        },
+        {
+            "id": "msg_a022a8a9c7",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I understand the full picture for appointments:\n\n**PHP create.php expects (snake_case):**\n- `patient_id`, `patient_name`, `patient_phone`, `doctor_id`\n- `appointment_date`, `appointment_time`\n- `type`, `status`\n- `chief_complaint`, `notes`\n- `is_public_request`\n\n**Current frontend sends (snake_case but wrong field names):**\n- `patient_id: data.patientId` \u2713\n- `appointment_date: data.appointmentDate` \u2713\n- `doctor_name: data.doctorName` \u274c should be `doctor_id`\n- `reason: data.reason` \u274c should be `chief_complaint`\n- `status: data.status` \u2713\n- Missing: `patient_name`, `patient_phone`, `appointment_time`, `type`, `notes`, `is_public_request`\n\nSo the frontend has multiple field name mismatches. Let me fix the entire service to properly map camelCase DTO \u2192 snake_case API fields, using the mappers utility.\n\nAlso, the PHP list.php returns snake_case fields like:\n- `patient_id`, `patient_name`, `patient_phone`, `doctor_id`, `doctor_name` (joined)\n- `appointment_date`, `appointment_time`\n- `type`, `status`\n- `chief_complaint`, `notes`\n- `serial_number`\n- `is_public_request`\n\nI need to create a proper Appointment type and use the mapper.\n\nLet me check if there's an Appointment type already defined."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me check the existing types and then completely rewrite the appointment service:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_aiWRkqStJ0c7dlRdk3DY9353",
+                    "name": "grep",
+                    "input": {
+                        "pattern": "interface Appointment",
+                        "include": "*.ts",
+                        "path": "\/source_build\/dr.armankabir-main\/src\/frontend\/src"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 47770,
+                "completion_tokens": 432,
+                "total_tokens": 48202,
+                "prompt_cache_hit_tokens": 45568,
+                "prompt_cache_miss_tokens": 2202,
+                "prompt_tokens_details": {
+                    "cached_tokens": 45568
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 325
+                },
+                "cached_tokens": 45568
+            },
+            "time": 1785003194
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_aiWRkqStJ0c7dlRdk3DY9353",
+            "content": "source_build\/dr.armankabir-main\/src\/frontend\/src\/types\/index.ts:289:export interface Appointment {",
+            "is_error": false,
+            "time": 1785003194
+        },
+        {
+            "id": "msg_55c5b7073e",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ET_OHKB2khaValJHAALBIM82412",
+                    "name": "read_file",
+                    "input": {
+                        "path": "\/source_build\/dr.armankabir-main\/src\/frontend\/src\/types\/index.ts",
+                        "offset": 285,
+                        "limit": 30
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 48240,
+                "completion_tokens": 95,
+                "total_tokens": 48335,
+                "prompt_cache_hit_tokens": 48128,
+                "prompt_cache_miss_tokens": 112,
+                "prompt_tokens_details": {
+                    "cached_tokens": 48128
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 0
+                },
+                "cached_tokens": 48128
+            },
+            "time": 1785003197
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ET_OHKB2khaValJHAALBIM82412",
+            "content": "  285 |   photo?: string;\n  286 | }\n  287 | \n  288 | \/\/ Appointment type\n  289 | export interface Appointment {\n  290 |   id: string;\n  291 |   patientId?: string;\n  292 |   patientName: string;\n  293 |   phone: string;\n  294 |   registerNumber?: string;\n  295 |   age?: string;\n  296 |   gender?: string;\n  297 |   preferredDoctor: string;\n  298 |   preferredChamber?: string;\n  299 |   preferredDate: string;\n  300 |   preferredTime: string;\n  301 |   reason?: string;\n  302 |   status: \"pending\" | \"confirmed\" | \"cancelled\";\n  303 |   createdAt: string;\n  304 |   createdBy?: string;\n  305 |   notes?: string;\n  306 |   \/** 'chamber' = outpatient | 'admitted' = inpatient *\/\n  307 |   appointmentType: \"chamber\" | \"admitted\";\n  308 |   \/** Admitted-only fields *\/\n  309 |   hospitalName?: string;\n  310 |   bedWardNumber?: string;\n  311 |   admissionReason?: string;\n  312 |   referringDoctor?: string;\n  313 |   \/** Serial number assigned for the day *\/\n  314 |   serialNumber?: number;",
+            "is_error": false,
+            "time": 1785003197
         }
     ]
 }
