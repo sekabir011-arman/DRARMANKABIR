@@ -102,6 +102,9 @@ interface EmailAuthContextValue {
     hospital_name?: string;
     phone?: string;
   }) => Promise<void>;
+    hospital_name?: string;
+    phone?: string;
+  }) => Promise<void>;
     specialization?: string;
     phone?: string;
   }) => Promise<void>;
