@@ -267,15 +267,14 @@ export interface Visit {
 }
 
 export interface Prescription {
-  id: bigint;
-  patientId: bigint;
-  visitId?: bigint;
-  prescriptionDate: bigint;
+  id: number;
+  patientId: number;
+  visitId?: number;
+  prescriptionDate: string;
   diagnosis?: string;
   medications: Medication[];
   notes?: string;
-  createdAt: bigint;
-  [key: string]: unknown;
+  createdAt: string;
 }
 
 export interface UserProfile {

@@ -22,7 +22,7 @@
         }
     ],
     "created_at": 1784983610,
-    "updated_at": 1784999101,
+    "updated_at": 1784999714,
     "messages": [
         {
             "id": "msg_compact",
@@ -4115,6 +4115,27 @@
             "content": "  253 |   visitDate: string;\n  254 |   chiefComplaint: string;\n  255 |   historyOfPresentIllness?: string;\n  256 |   vitalSigns: VitalSigns;\n  257 |   physicalExamination?: string;\n  258 |   diagnosis?: string;\n  259 |   notes?: string;\n  260 |   visitType:\n  261 |     | \"outpatient\"\n  262 |     | \"inpatient\"\n  263 |     | \"emergency\"\n  264 |     | \"follow-up\"\n  265 |     | \"admitted\";\n  266 |   createdAt: string;\n  267 | }\n  268 | \n  269 | export interface Prescription {\n  270 |   id: bigint;\n  271 |   patientId: bigint;\n  272 |   visitId?: bigint;",
             "is_error": false,
             "time": 1784999101
+        },
+        {
+            "id": "msg_725e83eceb",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784999304
+        },
+        {
+            "id": "msg_ffbc8e87ca",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784999635
+        },
+        {
+            "id": "msg_b654ba75d5",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784999714
         }
     ]
 }
