@@ -212,10 +212,10 @@ export interface ConsultantAssignment {
 }
 
 export interface Patient {
-  id: bigint;
+  id: number;
   fullName: string;
   nameBn?: string;
-  dateOfBirth?: bigint;
+  dateOfBirth?: string;
   gender: Gender;
   phone?: string;
   email?: string;
@@ -227,7 +227,7 @@ export interface Patient {
   chronicConditions: string[];
   pastSurgicalHistory?: string;
   patientType: "outdoor" | "indoor" | "emergency" | "admitted";
-  createdAt: bigint;
+  createdAt: string;
   registerNumber?: string;
   photo?: string;
   // Extended fields
@@ -246,7 +246,6 @@ export interface Patient {
   consultantAssignment?: ConsultantAssignment;
   /** Whether patient has completed full registration (false for emergency quick-reg patients) */
   registrationComplete?: boolean;
-  [key: string]: unknown;
 }
 
 export interface Visit {
