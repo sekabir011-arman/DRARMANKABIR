@@ -105,7 +105,7 @@ interface PatientFormProps {
   }>;
   onSubmit: (data: PatientFormData) => void;
   onCancel: () => void;
-  onViewExisting?: (patientId: bigint) => void;
+  onViewExisting?: (patientId: number) => void;
   isLoading?: boolean;
 }
 
