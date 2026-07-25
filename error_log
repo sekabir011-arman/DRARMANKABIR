@@ -75,3 +75,5 @@ Stack trace:
 #0 Command line code(2): PDO->__construct()
 #1 {main}
   thrown in Command line code on line 2
+[25-Jul-2026 16:03:10 UTC] PHP Fatal error:  Cannot use [] for reading in /home/drarmank/db_check2.php on line 14
+[25-Jul-2026 16:06:17 UTC] PHP Fatal error:  Cannot use [] for reading in /home/drarmank/db_check2.php on line 14
