@@ -259,8 +259,8 @@ function logAudit(
 ): void {
     try {
         $db = Database::getInstance();
-        // Use  for null user_id to avoid FK constraint issues with audit_logs
-        $safeUserId = $userId ?? 0;
+        // Use null for unauthenticated actions — FK is ON DELETE SET NULL
+        $safeUserId = ($userId !== null && $userId > ) ? $userId : null;
         $stmt = $db->prepare('
             INSERT INTO audit_logs (user_id, patient_id, action, entity_type, entity_id, old_values, new_values, ip_address, user_agent)
             VALUES (:user_id, :patient_id, :action, :entity_type, :entity_id, :old_values, :new_values, :ip_address, :user_agent)
