@@ -74,8 +74,10 @@ try {
     $countStmt->execute([':year' => $year]);
     $count = (int)$countStmt->fetch()['cnt'] + 1;
     $registerNumber = sprintf('REG-%s%s-%04d', $year, $month, $count);
-    
-    $db->beginTransaction();
+    // Read allergies, chronic_conditions, past_surgical_history (camelCase input)
+    $allergies = isset($input['allergies']) ? $input['allergies'] : [];
+    $chronicConditions = isset($input['chronicConditions']) ? $input['chronicConditions'] : [];
+    $pastSurgicalHistory = isset($input['pastSurgicalHistory']) ? sanitizeString($input['pastSurgicalHistory']) : null;
     
     $stmt = $db->prepare('
         INSERT INTO patients (
@@ -102,6 +104,14 @@ try {
         ':address' => $address,
         ':blood_group' => $bloodGroup,
         ':weight' => $weight,
+        ':height' => $height,
+        ':allergies' => json_encode($allergies),
+        ':chronic_conditions' => json_encode($chronicConditions),
+        ':past_surgical_history' => $pastSurgicalHistory,
+        ':patient_type' => $patientType,
+        ':photo_url' => $photoUrl,
+        ':created_by' => $user['id'],
+    ]);
         ':height' => $height,
         ':allergies' => $input['allergies'] ?? '[]',
         ':chronic_conditions' => $input['chronicConditions'] ?? '[]',
