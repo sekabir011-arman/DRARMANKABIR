@@ -52,7 +52,7 @@
         }
     ],
     "created_at": 1784901768,
-    "updated_at": 1784955156,
+    "updated_at": 1784956985,
     "messages": [
         {
             "id": "msg_compact",
@@ -4167,6 +4167,13 @@
             "content": "Edited source_build\/dr.armankabir-main\/src\/frontend\/src\/App.tsx (1 replacement)\n-       await signUp({\n-         name: suName.trim(),\n-         email: suEmail.trim(),\n-         password: suPassword,\n-         designation: suDesignation,\n-         degree: suDegree.trim(),\n-         specialization: suSpecialization.trim(),\n-         hospital: suHospital.trim(),\n-         phone: suPhone.trim(),\n-         role: suRole,\n-       });\n+       await signUp({\n+         full_name: suName.trim(),\n+         email: suEmail.trim(),\n+         password: suPassword,\n+         designation: suDesignation,\n+         degree: suDegree.trim(),\n+         specialization: suSpecialization.trim(),\n+         hospital_name: suHospital.trim(),\n+         phone: suPhone.trim(),\n+         role: suRole,\n+       });",
             "is_error": false,
             "time": 1784955156
+        },
+        {
+            "id": "msg_5ce1fd56ae",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1784956985
         }
     ]
 }
