@@ -168,7 +168,6 @@ export interface VitalSigns {
   respiratoryRate?: string;
   weight?: string;
   height?: string;
-  [key: string]: string | undefined;
 }
 
 export interface Medication {
