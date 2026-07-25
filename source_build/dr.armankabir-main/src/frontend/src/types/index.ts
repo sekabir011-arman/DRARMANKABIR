@@ -295,18 +295,6 @@ export interface Appointment {
   createdAt: string;
   updatedAt: string | null;
 }
-  /** Admitted-only fields */
-  hospitalName?: string;
-  bedWardNumber?: string;
-  admissionReason?: string;
-  referringDoctor?: string;
-  /** Serial number assigned for the day */
-  serialNumber?: number;
-  /** Date the serial was assigned (YYYY-MM-DD) */
-  serialDate?: string;
-  /** Time set by doctor (admitted patients only) */
-  visitTime?: string;
-}
 
 // Serial Queue
 export interface SerialEntry {
