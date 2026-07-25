@@ -112,14 +112,6 @@ try {
         ':photo_url' => $photoUrl,
         ':created_by' => $user['id'],
     ]);
-        ':height' => $height,
-        ':allergies' => $input['allergies'] ?? '[]',
-        ':chronic_conditions' => $input['chronicConditions'] ?? '[]',
-        ':past_surgical_history' => $input['pastSurgicalHistory'] ?? null,
-        ':patient_type' => $patientType,
-        ':photo_url' => $photoUrl,
-        ':created_by' => $user['id'],
-    ]);
     
     $patientId = (int)$db->lastInsertId();
     
