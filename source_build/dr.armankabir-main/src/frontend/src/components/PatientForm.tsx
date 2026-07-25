@@ -144,21 +144,13 @@ export default function PatientForm({
 
   const [photo, setPhoto] = useState<string | null>(existingPhoto);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // ── Duplicate detection state ──────────────────────────────────────────────
-  const [duplicateMatch, setDuplicateMatch] = useState<DuplicateMatch | null>(
-    null,
-  );
-  const [proceedAnyway, setProceedAnyway] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Check for duplicates when phone or email changes (debounced 500ms)
+  // Check for duplicates when phone or email changes (debounced 50ms)
   // Only for new patient registration (no existing patient prop)
   useEffect(() => {
     if (patient) return; // editing existing — skip
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
+    debounceRef.current = setTimeout(async () => {
       const phone = form.phone.trim();
       const email = form.email.trim().toLowerCase();
 
@@ -167,21 +159,35 @@ export default function PatientForm({
         return;
       }
 
-      const allPatients = loadAllPatients();
-      let match: DuplicateMatch | null = null;
+      try {
+        // Check via API — not localStorage
+        const { patientService } = await import('../services/patients');
+        let match: DuplicateMatch | null = null;
 
-      if (phone) {
-        const found = allPatients.find((p) => p.phone?.trim() === phone);
-        if (found) match = { patient: found, matchField: "phone" };
+        if (phone) {
+          const results = await patientService.search(phone);
+          const found = results.find((p) => p.phone?.trim() === phone);
+          if (found) match = { patient: found, matchField: 'phone' };
+        }
+
+        if (!match && email) {
+          const results = await patientService.search(email);
+          const found = results.find((p) => p.email?.trim().toLowerCase() === email);
+          if (found) match = { patient: found, matchField: 'email' };
+        }
+
+        setDuplicateMatch(match);
+        if (match) setProceedAnyway(false);
+      } catch {
+        // Silently fail — duplicate check is a UX bonus, not critical
+        setDuplicateMatch(null);
       }
+    }, 500);
 
-      if (!match && email) {
-        const found = allPatients.find(
-          (p) => p.email?.trim().toLowerCase() === email,
-        );
-        if (found) match = { patient: found, matchField: "email" };
-      }
-
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [form.phone, form.email, patient]);
       setDuplicateMatch(match);
       if (match) setProceedAnyway(false);
     }, 500);

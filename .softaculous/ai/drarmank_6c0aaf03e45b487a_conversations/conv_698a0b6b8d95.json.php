@@ -92,7 +92,7 @@
         }
     ],
     "created_at": 1784983610,
-    "updated_at": 1785007265,
+    "updated_at": 1785007978,
     "messages": [
         {
             "id": "msg_compact",
@@ -3464,6 +3464,13 @@
             "content": "Edited \/source_build\/dr.armankabir-main\/src\/frontend\/src\/components\/PatientForm.tsx (1 replacement)\n-   const handleSubmit = (e: React.FormEvent) => {\n-     e.preventDefault();\n-     if (!form.fullName.trim()) return;\n- \n-     let dobBigInt: bigint | null = dobToBigInt(form.dateOfBirth);\n-     if (!dobBigInt && form.ageInput.trim()) {\n-       const approx = ageToApproxDob(form.ageInput.trim());\n-       dobBigInt = dobToBigInt(approx);\n-     }\n- \n-     try {\n-       onSubmit({\n-         fullName: form.fullName.trim(),\n-         nameBn: form.nameBn.trim() || null,\n-         dateOfBirth: dobBigInt,\n-         gender: form.gender,\n+   const handleSubmit = (e: React.FormEvent) => {\n+     e.preventDefault();\n+     if (!form.fullName.trim()) return;\n+ \n+     const dobStr = form.dateOfBirth || (form.ageInput.trim() ? ageToApproxDob(form.ageInput.trim()) : null);\n+ \n+     try {\n+       onSubmit({\n+         fullName: form.fullName.trim(),\n+         nameBn: form.nameBn.trim() || null,\n+         dateOfBirth: dobStr,\n+         gender: form.gender,",
             "is_error": false,
             "time": 1785007265
+        },
+        {
+            "id": "msg_4690ab4e04",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785007978
         }
     ]
 }
