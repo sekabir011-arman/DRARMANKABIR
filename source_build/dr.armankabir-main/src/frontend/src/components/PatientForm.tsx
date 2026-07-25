@@ -81,7 +81,7 @@ interface DuplicateMatch {
 export interface PatientFormData {
   fullName: string;
   nameBn: string | null;
-  dateOfBirth: bigint | null;
+  dateOfBirth: string | null;
   gender: string;
   phone: string | null;
   email: string | null;
