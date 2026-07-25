@@ -265,7 +265,6 @@ export interface Visit {
     | "admitted";
   createdAt: string;
 }
-
 export interface Prescription {
   id: number;
   patientId: number;
