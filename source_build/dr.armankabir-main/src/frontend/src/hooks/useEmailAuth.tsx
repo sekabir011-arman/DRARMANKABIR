@@ -92,10 +92,13 @@ interface EmailAuthContextValue {
     email: string;
     password: string;
     full_name: string;
+    role?: string;
     designation?: string;
     degree?: string;
+    specialization?: string;
     hospital_name?: string;
-    role?: string;
+    phone?: string;
+  }) => Promise<void>;
     specialization?: string;
     phone?: string;
   }) => Promise<void>;
