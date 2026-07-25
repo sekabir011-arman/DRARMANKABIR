@@ -74,6 +74,9 @@ try {
     $countStmt->execute([':year' => $year]);
     $count = (int)$countStmt->fetch()['cnt'] + 1;
     $registerNumber = sprintf('REG-%s%s-%04d', $year, $month, $count);
+    
+    $db->beginTransaction();
+    
     // Read allergies, chronic_conditions, past_surgical_history (camelCase input)
     $allergies = isset($input['allergies']) ? $input['allergies'] : [];
     $chronicConditions = isset($input['chronicConditions']) ? $input['chronicConditions'] : [];
