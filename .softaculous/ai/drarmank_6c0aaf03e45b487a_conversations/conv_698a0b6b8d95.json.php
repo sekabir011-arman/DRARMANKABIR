@@ -62,7 +62,7 @@
         }
     ],
     "created_at": 1784983610,
-    "updated_at": 1785053583,
+    "updated_at": 1785053847,
     "messages": [
         {
             "id": "msg_compact",
@@ -6852,6 +6852,20 @@
             "content": "  268 |     | \"admitted\";\n  269 |   createdBy?: number;\n  270 |   createdAt: string;\n  271 |   updatedAt?: string;\n  272 | }\n  273 | export interface Prescription {\n  274 |   id: number;\n  275 |   patientId: number;\n  276 |   visitId?: number;\n  277 |   prescriptionDate: string;\n  278 |   diagnosis?: string;\n  279 |   medications: Medication[];\n  280 |   notes?: string;\n  281 |   createdAt: string;\n  282 | }",
             "is_error": false,
             "time": 1785053583
+        },
+        {
+            "id": "msg_6619d7e559",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785053717
+        },
+        {
+            "id": "msg_63b1a3883a",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785053847
         }
     ]
 }
