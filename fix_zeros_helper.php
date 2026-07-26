@@ -1,35 +1,44 @@
 <?php
+/**
+ * Fix helpers.php - restore stripped numeric values
+ * 
+ * The number zero is being stripped from files. This script
+ * writes the correct content using chr(48) to avoid character stripping issues.
+ */
 $path = '/home/drarmank/public_html/api/helpers.php';
 $content = file_get_contents($path);
 
 $zero = chr(48);
-$dotZero = chr(46) . chr(48) . chr(48);
 
-// Fix all stripped zeros
-$search = [
-    "\$userId > " . chr(41),  // $userId > )
-    "\$patientId > " . chr(41),  // $patientId > )
-];
-$replace = [
-    "\$userId > " . $zero . chr(41),  // $userId > )
-    "\$patientId > " . $zero . chr(41),  // $patientId > )
-];
+// Fix line 265: $userId > )  -> $userId > )
+$content = preg_replace(
+    '/\\$userId !== null && \\$userId > \\)/',
+    '\$userId !== null && $userId > ' . $zero . ')',
+    $content
+);
 
-$content = str_replace($search, $replace, $content);
+// Fix line 274: $patientId > )  -> $patientId > )
+$content = preg_replace(
+    '/\\$patientId !== null && \\$patientId > \\)/',
+    '\$patientId !== null && $patientId > ' . $zero . ')',
+    $content
+);
 
-// Fix IP address 127...1 pattern
-$content = preg_replace('/127\.\.\.1/', '127' . $dotZero . $dotZero . '1', $content);
+// Fix line 293: '127...1' -> '127...1'
+$content = preg_replace(
+    "/'127\\.\\.\\.1'/",
+    "'127." . $zero . "." . $zero . ".1'",
+    $content
+);
 
 file_put_contents($path, $content);
-echo "Fixed helpers.php\n";
+echo "Fixed\n";
 
-// Check for any remaining issues
+// Verify
 $lines = file($path);
-foreach ($lines as $i => $line) {
-    if (preg_match('/\$\w+ > \)/', $line) || preg_match('/127\.\.\.1/', $line)) {
-        echo "STILL BROKEN Line " . ($i+1) . ": " . $line;
-    }
+foreach ([264, 273, 292] as $idx) {
+    echo "Line " . ($idx + 1) . ": " . rtrim($lines[$idx]) . "\n";
 }
 
-// Verify syntax
+echo "\nSyntax: ";
 passthru("php -l " . escapeshellarg($path) . " 2>&1");
