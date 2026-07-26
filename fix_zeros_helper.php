@@ -1,44 +1,30 @@
 <?php
-/**
- * Fix helpers.php - restore stripped numeric values
- * 
- * The number zero is being stripped from files. This script
- * writes the correct content using chr(48) to avoid character stripping issues.
- */
+// Fix zero stripped from helpers.php
 $path = '/home/drarmank/public_html/api/helpers.php';
-$content = file_get_contents($path);
+$c = file_get_contents($path);
+$zero = 480; // '' chr(48) in decimal
 
-$zero = chr(48);
+// Fix "> " by replacing the exact pattern using binary-safe approach
+$needle1 = "\$userId > \x29";  // $userId > )
+$replacement1 = "\$userId > \x29"; // $userId > )
+$c = str_replace($needle1, $replacement1, $c);
 
-// Fix line 265: $userId > )  -> $userId > )
-$content = preg_replace(
-    '/\\$userId !== null && \\$userId > \\)/',
-    '\$userId !== null && $userId > ' . $zero . ')',
-    $content
-);
+$needle2 = "\$patientId > \x29";  // $patientId > )
+$replacement2 = "\$patientId > \x29"; // $patientId > )
+$c = str_replace($needle2, $replacement2, $c);
 
-// Fix line 274: $patientId > )  -> $patientId > )
-$content = preg_replace(
-    '/\\$patientId !== null && \\$patientId > \\)/',
-    '\$patientId !== null && $patientId > ' . $zero . ')',
-    $content
-);
+$needle3 = "'127\x2e\x2e\x2e1'";  // '127...1'
+$replacement3 = "'127...1'";
+$c = str_replace($needle3, $replacement3, $c);
 
-// Fix line 293: '127...1' -> '127...1'
-$content = preg_replace(
-    "/'127\\.\\.\\.1'/",
-    "'127." . $zero . "." . $zero . ".1'",
-    $content
-);
+file_put_contents($path, $c);
 
-file_put_contents($path, $content);
-echo "Fixed\n";
-
-// Verify
+// Check the result
 $lines = file($path);
-foreach ([264, 273, 292] as $idx) {
-    echo "Line " . ($idx + 1) . ": " . rtrim($lines[$idx]) . "\n";
+for ($i = 260; $i < 280; $i++) {
+    if (isset($lines[$i])) {
+        echo "Line " . ($i+1) . ": " . $lines[$i];
+    }
 }
-
-echo "\nSyntax: ";
-passthru("php -l " . escapeshellarg($path) . " 2>&1");
+echo "\n=== Syntax check ===\n";
+system("php -l " . escapeshellarg($path) . " 2>&1");
