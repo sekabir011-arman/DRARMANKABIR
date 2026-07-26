@@ -45,6 +45,11 @@ try {
     
     $visits = $stmt->fetchAll();
     
+    // Decode vital_signs JSON
+    foreach ($visits as &$v) {
+        $v['vital_signs'] = !empty($v['vital_signs']) ? json_decode($v['vital_signs'], true) : null;
+    }
+    
     paginatedResponse($visits, $total, $pagination['page'], $pagination['limit']);
     
 } catch (\Exception $e) {
