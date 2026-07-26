@@ -13,6 +13,7 @@ try {
     $stmt->execute([':id' => $id]);
     $visit = $stmt->fetch();
     if (!$visit) errorResponse('Visit not found', 404);
+    $visit['vital_signs'] = !empty($visit['vital_signs']) ? json_decode($visit['vital_signs'], true) : null;
     successResponse($visit);
 } catch (\Exception $e) {
     error_log('Get visit error: ' . $e->getMessage());
