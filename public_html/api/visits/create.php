@@ -3,6 +3,7 @@
  * Create Visit API
  * 
  * POST /api/visits/create.php
+ * Body: { patientId, visitType, visitDate, chiefComplaint, historyOfPresentIllness, vitalSigns, physicalExamination, diagnosis, notes }
  */
 
 require_once __DIR__ . '/../database.php';
@@ -15,14 +16,14 @@ requireMethod('POST');
 $user = requireAuth();
 $input = getJsonInput();
 
-$missing = validateRequired($input, ['patient_id', 'visit_type']);
+$missing = validateRequired($input, ['patientId', 'visitType']);
 if ($missing) {
     errorResponse('Missing required fields', 400, ['missing_fields' => $missing]);
 }
 
 // Validate visit type
 $allowedVisitTypes = ['outpatient', 'inpatient', 'emergency', 'follow-up', 'admitted'];
-$visitType = $input['visit_type'];
+$visitType = $input['visitType'];
 if (!in_array($visitType, $allowedVisitTypes)) {
     errorResponse('Invalid visit type. Allowed: ' . implode(', ', $allowedVisitTypes), 400);
 }
@@ -31,17 +32,20 @@ try {
     $db = Database::getInstance();
     
     $stmt = $db->prepare('
-        INSERT INTO visits (patient_id, visit_type, visit_date, chief_complaint, history_of_present_illness, physical_examination, diagnosis, notes, created_by)
-        VALUES (:patient_id, :visit_type, :visit_date, :chief_complaint, :hpI, :pe, :diagnosis, :notes, :created_by)
+        INSERT INTO visits (patient_id, visit_type, visit_date, chief_complaint, vital_signs, history_of_present_illness, physical_examination, diagnosis, notes, created_by)
+        VALUES (:patient_id, :visit_type, :visit_date, :chief_complaint, :vital_signs, :hpI, :pe, :diagnosis, :notes, :created_by)
     ');
     
+    $vitalSigns = isset($input['vitalSigns']) ? json_encode($input['vitalSigns']) : null;
+    
     $stmt->execute([
-        ':patient_id' => (int)$input['patient_id'],
-        ':visit_type' => $input['visit_type'],
-        ':visit_date' => $input['visit_date'] ?? date('Y-m-d'),
-        ':chief_complaint' => $input['chief_complaint'] ?? null,
-        ':hpI' => $input['history_of_present_illness'] ?? null,
-        ':pe' => $input['physical_examination'] ?? null,
+        ':patient_id' => (int)$input['patientId'],
+        ':visit_type' => $input['visitType'],
+        ':visit_date' => $input['visitDate'] ?? date('Y-m-d'),
+        ':chief_complaint' => $input['chiefComplaint'] ?? null,
+        ':vital_signs' => $vitalSigns,
+        ':hpI' => $input['historyOfPresentIllness'] ?? null,
+        ':pe' => $input['physicalExamination'] ?? null,
         ':diagnosis' => $input['diagnosis'] ?? null,
         ':notes' => $input['notes'] ?? null,
         ':created_by' => $user['id'],

@@ -77,7 +77,7 @@
         }
     ],
     "created_at": 1784983610,
-    "updated_at": 1785052122,
+    "updated_at": 1785052397,
     "messages": [
         {
             "id": "msg_compact",
@@ -5434,6 +5434,20 @@
             "content": "    1 | <?php\n    2 | require_once __DIR__ . '\/..\/database.php';\n    3 | require_once __DIR__ . '\/..\/helpers.php';\n    4 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n    5 | handleCors();\n    6 | requireMethod('GET');\n    7 | $user = requireAuth();\n    8 | $id = (int)($_GET['id'] ?? null);\n    9 | if (!$id) errorResponse('Visit ID is required', 400);\n   10 | try {\n   11 |     $db = Database::getInstance();\n   12 |     $stmt = $db->prepare('SELECT v.*, p.full_name as patient_name, p.phone as patient_phone, u.full_name as doctor_name FROM visits v LEFT JOIN patients p ON v.patient_id = p.id LEFT JOIN users u ON v.created_by = u.id WHERE v.id = :id');\n   13 |     $stmt->execute([':id' => $id]);\n   14 |     $visit = $stmt->fetch();\n   15 |     if (!$visit) errorResponse('Visit not found', 404);\n   16 |     successResponse($visit);\n   17 | } catch (\\Exception $e) {\n   18 |     error_log('Get visit error: ' . $e->getMessage());\n   19 |     errorResponse('Failed to fetch visit', 500);\n   20 | }\n   21 |",
             "is_error": false,
             "time": 1785052122
+        },
+        {
+            "id": "msg_77f3f7ff4f",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785052287
+        },
+        {
+            "id": "msg_9df762827e",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785052397
         }
     ]
 }
