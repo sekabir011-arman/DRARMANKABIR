@@ -42,7 +42,7 @@
         }
     ],
     "created_at": 1784983610,
-    "updated_at": 1785076657,
+    "updated_at": 1785076679,
     "messages": [
         {
             "id": "msg_compact",
@@ -1609,6 +1609,195 @@
             "content": "    1 | <?php\n    2 | require_once __DIR__ . \"\/..\/database.php\";\n    3 | require_once __DIR__ . \"\/..\/helpers.php\";\n    4 | require_once __DIR__ . \"\/..\/auth\/middleware.php\";\n    5 | handleCors();\n    6 | requireMethod(\"POST\");\n    7 | $user = requireAuth();\n    8 | $unread = 0;\n    9 | try {\n   10 |     $db = Database::getInstance();\n   11 |     $stmt = $db->prepare(\"UPDATE notifications SET is_read = 1, read_at = NOW() WHERE user_id = :user_id AND is_read = :unread\");\n   12 |     $stmt->execute([\":user_id\" => $user[\"id\"], \":unread\" => $unread]);\n   13 |     successResponse(null, \"All notifications marked as read\");\n   14 | } catch (\\Exception $e) {\n   15 |     error_log(\"Mark all read error: \" . $e->getMessage());\n   16 |     errorResponse(\"Failed to mark notifications as read\", 500);\n   17 | }\n   18 |",
             "is_error": false,
             "time": 1785076657
+        },
+        {
+            "id": "msg_7576d4bd7b",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The existing notification endpoints look good. I need to create:\n1. `\/api\/notifications\/unread-count.php` - returns the count of unread notifications\n2. `\/api\/settings\/site-config.php` - handles GET and POST for site configuration\n\nLet me create these missing endpoints."
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me create the two missing endpoints:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_KIfR9RNbIr8OFqQP6vWx4851",
+                    "name": "write_file",
+                    "input": {
+                        "content": "<?php\n\/**\n * Notifications API - Unread Count\n * \n * GET \/api\/notifications\/unread-count.php\n * Returns the total count of unread notifications for the current user.\n * \n * Response:\n *   { \"success\": true, \"data\": { \"count\": 5 } }\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\nrequire_once __DIR__ . '\/..\/auth\/middleware.php';\n\nhandleCors();\nrequireMethod('GET');\n\n$user = requireAuth();\n\ntry {\n    $db = Database::getInstance();\n    \n    $stmt = $db->prepare(\"SELECT COUNT(*) as count FROM notifications WHERE (user_id IS NULL OR user_id = :user_id) AND is_read = \");\n    $stmt->execute([':user_id' => $user['id']]);\n    $count = (int)$stmt->fetch()['count'];\n    \n    successResponse(['count' => $count], 'Unread count retrieved');\n} catch (\\Exception $e) {\n    error_log('Unread count error: ' . $e->getMessage());\n    errorResponse('Failed to get unread count', 500);\n}\n",
+                        "path": "\/public_html\/api\/notifications\/unread-count.php"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_GD11bDOFDCANUYpYMRmw2552",
+                    "name": "write_file",
+                    "input": {
+                        "content": "<?php\n\/**\n * Site Configuration API\n * \n * GET \/api\/settings\/site-config.php     \u2014 Retrieve site config and doctor content overrides\n * POST \/api\/settings\/site-config.php    \u2014 Update site config and\/or doctor content overrides\n * \n * This endpoint is used by the frontend landingService (useSiteConfig, useDoctorContent hooks).\n * \n * Request body (POST, JSON):\n *   { \"siteConfig\": { ... }, \"doctorContentOverrides\": { ... } }\n * \n * Response (GET):\n *   { \"success\": true, \"data\": { \"heroSection\": {...}, \"aboutSection\": {...}, ... } }\n * \n * Response (POST):\n *   { \"success\": true, \"data\": { \"siteConfig\": {...}, \"doctorContentOverrides\": {...}, \"updated_at\": \"...\" }, \"message\": \"...\" }\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\nrequire_once __DIR__ . '\/..\/auth\/middleware.php';\n\nhandleCors();\n\n$method = $_SERVER['REQUEST_METHOD'];\n\ntry {\n    $db = Database::getInstance();\n\n    if ($method === 'GET') {\n        \/\/ \u2500\u2500 GET: Retrieve site config \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n        \n        $stmt = $db->prepare(\"SELECT setting_key, setting_value FROM site_settings WHERE setting_key IN ('siteConfig', 'doctorContentOverrides')\");\n        $stmt->execute();\n        $rows = $stmt->fetchAll();\n\n        $siteConfig = null;\n        $doctorContentOverrides = null;\n\n        foreach ($rows as $row) {\n            $decoded = json_decode($row['setting_value'], true);\n            if ($row['setting_key'] === 'siteConfig') {\n                $siteConfig = $decoded;\n            } elseif ($row['setting_key'] === 'doctorContentOverrides') {\n                $doctorContentOverrides = $decoded;\n            }\n        }\n\n        \/\/ Merge doctorContentOverrides into siteConfig for backward compatibility\n        if ($siteConfig && $doctorContentOverrides) {\n            $siteConfig['doctorContentOverrides'] = $doctorContentOverrides;\n        } elseif ($doctorContentOverrides) {\n            $siteConfig = ['doctorContentOverrides' => $doctorContentOverrides];\n        }\n\n        \/\/ If nothing found, return a minimal default\n        if (!$siteConfig) {\n            $siteConfig = new stdClass();\n        }\n\n        successResponse($siteConfig);\n\n    } elseif ($method === 'POST') {\n        \/\/ \u2500\u2500 POST: Update site config \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n        \n        $user = getAuthUser();\n        $userId = $user ? $user['id'] : null;\n\n        $input = getJsonInput();\n\n        if (empty($input)) {\n            errorResponse('No content provided to save.', 400);\n        }\n\n        $now = date('Y-m-d H:i:s');\n\n        \/\/ Save siteConfig if present\n        if (isset($input['siteConfig'])) {\n            $siteConfigJson = json_encode($input['siteConfig'], JSON_UNESCAPED_UNICODE);\n            $stmt = $db->prepare('\n                INSERT INTO site_settings (setting_key, setting_value, setting_group, description, updated_by, updated_at)\n                VALUES (:key, :value, :group, :desc, :user_id, :now)\n                ON DUPLICATE KEY UPDATE\n                    setting_value = VALUES(setting_value),\n                    setting_group = VALUES(setting_group),\n                    updated_by = VALUES(updated_by),\n                    updated_at = VALUES(updated_at)\n            ');\n            $stmt->execute([\n                ':key' => 'siteConfig',\n                ':value' => $siteConfigJson,\n                ':group' => 'frontpage',\n                ':desc' => 'Site configuration for landing page',\n                ':user_id' => $userId,\n                ':now' => $now,\n            ]);\n        }\n\n        \/\/ Save doctorContentOverrides if present\n        if (isset($input['doctorContentOverrides'])) {\n            $overridesJson = json_encode($input['doctorContentOverrides'], JSON_UNESCAPED_UNICODE);\n            $stmt = $db->prepare('\n                INSERT INTO site_settings (setting_key, setting_value, setting_group, description, updated_by, updated_at)\n                VALUES (:key, :value, :group, :desc, :user_id, :now)\n                ON DUPLICATE KEY UPDATE\n                    setting_value = VALUES(setting_value),\n                    setting_group = VALUES(setting_group),\n                    updated_by = VALUES(updated_by),\n                    updated_at = VALUES(updated_at)\n            ');\n            $stmt->execute([\n                ':key' => 'doctorContentOverrides',\n                ':value' => $overridesJson,\n                ':group' => 'frontpage',\n                ':desc' => 'Doctor content overrides for landing page',\n                ':user_id' => $userId,\n                ':now' => $now,\n            ]);\n        }\n\n        \/\/ Log audit if user is authenticated\n        if ($userId) {\n            logAudit($userId, null, 'update', 'site_config', null, null, [\n                'keys_saved' => array_keys($input),\n            ]);\n        }\n\n        successResponse([\n            'siteConfig' => $input['siteConfig'] ?? null,\n            'doctorContentOverrides' => $input['doctorContentOverrides'] ?? null,\n            'updated_at' => $now,\n        ], 'Site configuration saved successfully');\n\n    } else {\n        errorResponse('Method not allowed', 405);\n    }\n} catch (\\Exception $e) {\n    error_log('Site config error: ' . $e->getMessage());\n    errorResponse('Failed to process site configuration', 500);\n}\n",
+                        "path": "\/public_html\/api\/settings\/site-config.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 51759,
+                "completion_tokens": 1663,
+                "total_tokens": 53422,
+                "prompt_cache_hit_tokens": 49536,
+                "prompt_cache_miss_tokens": 2223,
+                "prompt_tokens_details": {
+                    "cached_tokens": 49536
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 60
+                },
+                "cached_tokens": 49536
+            },
+            "time": 1785076667
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_KIfR9RNbIr8OFqQP6vWx4851",
+            "content": "Successfully wrote 919 bytes (33 lines) to \/public_html\/api\/notifications\/unread-count.php",
+            "is_error": false,
+            "time": 1785076668
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_GD11bDOFDCANUYpYMRmw2552",
+            "content": "Successfully wrote 5503 bytes (142 lines) to \/public_html\/api\/settings\/site-config.php",
+            "is_error": false,
+            "time": 1785076668
+        },
+        {
+            "id": "msg_f90fc761c1",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I see the unread-count.php has a zero that got stripped again. Let me check and fix it:\n\n`$stmt->prepare(\"SELECT COUNT(*) as count FROM notifications WHERE (user_id IS NULL OR user_id = :user_id) AND is_read = \");`\n\nThe `= ` should be `= ` (with zero at the end). The zero got stripped during write."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_AYXmDPvmuCo9m1Sc7IGv6824",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && php -r \"\n\\$path = 'public_html\/api\/notifications\/unread-count.php';\n\\$content = file_get_contents(\\$path);\n\/\/ Fix stripped zero: 'AND is_read = )' -> 'AND is_read = )'\n\\$zero = chr(48);\n\\$content = preg_replace('\/AND is_read = \\\\)\/', 'AND is_read = ' . \\$zero . ')', \\$content);\nfile_put_contents(\\$path, \\$content);\necho file_get_contents(\\$path);\n\" 2>&1"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 53484,
+                "completion_tokens": 241,
+                "total_tokens": 53725,
+                "prompt_cache_hit_tokens": 51712,
+                "prompt_cache_miss_tokens": 1772,
+                "prompt_tokens_details": {
+                    "cached_tokens": 51712
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 81
+                },
+                "cached_tokens": 51712
+            },
+            "time": 1785076672
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_AYXmDPvmuCo9m1Sc7IGv6824",
+            "content": "Unsuccessful stat on filename containing newline at \/var\/cpanel\/ea4\/ea_php_cli.pm line 87.\n<?php\n\/**\n * Notifications API - Unread Count\n * \n * GET \/api\/notifications\/unread-count.php\n * Returns the total count of unread notifications for the current user.\n * \n * Response:\n *   { \"success\": true, \"data\": { \"count\": 5 } }\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\nrequire_once __DIR__ . '\/..\/auth\/middleware.php';\n\nhandleCors();\nrequireMethod('GET');\n\n$user = requireAuth();\n\ntry {\n    $db = Database::getInstance();\n    \n    $stmt = $db->prepare(\"SELECT COUNT(*) as count FROM notifications WHERE (user_id IS NULL OR user_id = :user_id) AND is_read = \");\n    $stmt->execute([':user_id' => $user['id']]);\n    $count = (int)$stmt->fetch()['count'];\n    \n    successResponse(['count' => $count], 'Unread count retrieved');\n} catch (\\Exception $e) {\n    error_log('Unread count error: ' . $e->getMessage());\n    errorResponse('Failed to get unread count', 500);\n}\n",
+            "is_error": false,
+            "time": 1785076672
+        },
+        {
+            "id": "msg_7c98cf6f30",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The script didn't find the pattern to replace - maybe the issue is that the zero was already there? Let me check the raw bytes:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_UgkzhYq1LJ0REfFO6Lso5477",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && php -r \"\n\\$path = 'public_html\/api\/notifications\/unread-count.php';\n\\$content = file_get_contents(\\$path);\n\/\/ Show line 25\n\\$lines = explode(\\\"\\n\\\", \\$content);\necho 'Line 25: ';\nvar_dump(\\$lines[24]);\n\" 2>&1"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 54016,
+                "completion_tokens": 145,
+                "total_tokens": 54161,
+                "prompt_cache_hit_tokens": 53632,
+                "prompt_cache_miss_tokens": 384,
+                "prompt_tokens_details": {
+                    "cached_tokens": 53632
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 28
+                },
+                "cached_tokens": 53632
+            },
+            "time": 1785076675
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_UgkzhYq1LJ0REfFO6Lso5477",
+            "content": "Unsuccessful stat on filename containing newline at \/var\/cpanel\/ea4\/ea_php_cli.pm line 87.\nLine 25: string(48) \"    $stmt->execute([':user_id' => $user['id']]);\"\n",
+            "is_error": false,
+            "time": 1785076676
+        },
+        {
+            "id": "msg_c38c1144ad",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The line 25 is now the execute line. Let me check the prepare line."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_YhmZdyPlrTWs2N7CdBYP6978",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank && php -r \"\n\\$path = 'public_html\/api\/notifications\/unread-count.php';\n\\$content = file_get_contents(\\$path);\n\\$lines = explode(\\\"\\n\\\", \\$content);\nfor (\\$i = 22; \\$i <= 26; \\$i++) {\n    echo 'Line ' . (\\$i) . ': ';\n    var_dump(\\$lines[\\$i]);\n}\n\" 2>&1"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 54229,
+                "completion_tokens": 155,
+                "total_tokens": 54384,
+                "prompt_cache_hit_tokens": 54144,
+                "prompt_cache_miss_tokens": 85,
+                "prompt_tokens_details": {
+                    "cached_tokens": 54144
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 17
+                },
+                "cached_tokens": 54144
+            },
+            "time": 1785076678
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_YhmZdyPlrTWs2N7CdBYP6978",
+            "content": "Unsuccessful stat on filename containing newline at \/var\/cpanel\/ea4\/ea_php_cli.pm line 87.\nLine 22: string(4) \"    \"\nLine 23: string(133) \"    $stmt = $db->prepare(\"SELECT COUNT(*) as count FROM notifications WHERE (user_id IS NULL OR user_id = :user_id) AND is_read = \");\"\nLine 24: string(48) \"    $stmt->execute([':user_id' => $user['id']]);\"\nLine 25: string(42) \"    $count = (int)$stmt->fetch()['count'];\"\nLine 26: string(4) \"    \"\n",
+            "is_error": false,
+            "time": 1785076679
         }
     ]
 }
