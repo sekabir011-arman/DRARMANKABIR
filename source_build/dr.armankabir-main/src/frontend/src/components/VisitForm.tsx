@@ -610,7 +610,7 @@ interface VitalSignsForm {
 }
 
 interface VisitFormData {
-  patient_id?: bigint;
+  patient_id?: number;
   visit_type?: string;
   visit_date?: string;
   chief_complaint?: string;
@@ -648,10 +648,10 @@ interface VisitFormData {
 }
 
 interface VisitFormProps {
-  patientId: bigint;
+  patientId: number;
   patient?: {
     fullName?: string;
-    dateOfBirth?: bigint;
+    dateOfBirth?: number;
     gender?: string;
     address?: string;
   };
@@ -660,8 +660,8 @@ interface VisitFormProps {
   /** When provided, the form element will be attached to this ref so the parent page can call requestSubmit() */
   formRef?: React.RefObject<HTMLFormElement | null>;
   onSubmit: (data: {
-    patientId: bigint;
-    visitDate: bigint;
+    patientId: number;
+    visitDate: number;
     chiefComplaint: string;
     historyOfPresentIllness: string | null;
     vitalSigns: {
@@ -1515,7 +1515,7 @@ export default function VisitForm({
     // Save extended visit form data to localStorage
     try {
       const doctorEmail = getDoctorEmail();
-      const existingVisits = loadFromStorage<{ id: bigint }>(
+      const existingVisits = loadFromStorage<{ id: number }>(
         `visits_${doctorEmail}`,
       );
       const nextVisitId =
@@ -1523,7 +1523,7 @@ export default function VisitForm({
           ? 1n
           : existingVisits.reduce(
               (max, v) => (v.id > max ? v.id : max),
-              0n as bigint,
+              0n as number,
             ) + 1n;
       const extendedKey = `visit_form_data_${nextVisitId}_${doctorEmail}`;
       const extendedData = {

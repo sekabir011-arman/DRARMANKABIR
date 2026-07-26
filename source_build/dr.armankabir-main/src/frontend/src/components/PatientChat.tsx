@@ -45,7 +45,7 @@ export interface TeleconsultRecord {
 }
 
 interface PatientChatProps {
-  patientId: bigint;
+  patientId: number;
   currentRole: string;
   currentUserName: string;
   patientName?: string;
@@ -56,11 +56,11 @@ interface PatientChatProps {
 
 // ── Storage helpers ───────────────────────────────────────────────────────────
 
-function getChatKey(patientId: bigint) {
+function getChatKey(patientId: number) {
   return `patientChat_${patientId}`;
 }
 
-function loadMessages(patientId: bigint): ChatMessage[] {
+function loadMessages(patientId: number): ChatMessage[] {
   try {
     const raw = storage.getItem(getChatKey(patientId));
     return raw ? (JSON.parse(raw) as ChatMessage[]) : [];
@@ -69,11 +69,11 @@ function loadMessages(patientId: bigint): ChatMessage[] {
   }
 }
 
-function saveMessages(patientId: bigint, msgs: ChatMessage[]) {
+function saveMessages(patientId: number, msgs: ChatMessage[]) {
   storage.setItem(getChatKey(patientId), JSON.stringify(msgs));
 }
 
-export function loadTeleconsults(patientId: bigint): TeleconsultRecord[] {
+export function loadTeleconsults(patientId: number): TeleconsultRecord[] {
   try {
     const raw = storage.getItem(`teleconsults_${patientId}`);
     return raw ? (JSON.parse(raw) as TeleconsultRecord[]) : [];
@@ -82,13 +82,13 @@ export function loadTeleconsults(patientId: bigint): TeleconsultRecord[] {
   }
 }
 
-function saveTeleconsults(patientId: bigint, records: TeleconsultRecord[]) {
+function saveTeleconsults(patientId: number, records: TeleconsultRecord[]) {
   storage.setItem(`teleconsults_${patientId}`, JSON.stringify(records));
 }
 
 /** Mark all unread patient messages as seen by the doctor/admin */
 function markPatientMessagesSeen(
-  patientId: bigint,
+  patientId: number,
   seenBy: string,
 ): ChatMessage[] {
   const msgs = loadMessages(patientId);
@@ -124,7 +124,7 @@ const CLINICAL_ROLES = [
 // ── TeleconsultHistory sub-component (also exported for HistoryFeatures) ──────
 
 interface TeleconsultHistoryProps {
-  patientId: bigint;
+  patientId: number;
 }
 
 export function TeleconsultHistory({ patientId }: TeleconsultHistoryProps) {
@@ -212,7 +212,7 @@ export function TeleconsultHistory({ patientId }: TeleconsultHistoryProps) {
 // ── TeleconsultPanel — inline panel that appears above chat ───────────────────
 
 interface TeleconsultPanelProps {
-  patientId: bigint;
+  patientId: number;
   patientName: string;
   doctorName: string;
   doctorRole: string;

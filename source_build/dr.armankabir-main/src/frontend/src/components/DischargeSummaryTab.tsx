@@ -65,7 +65,7 @@ const CHECKLIST_ITEMS: ChecklistItem[] = [
   { label: "Patient educated", key: "educated" },
 ];
 
-function formatDate(ts: bigint) {
+function formatDate(ts: number) {
   return format(new Date(Number(ts / 1_000_000n)), "d MMM yyyy");
 }
 

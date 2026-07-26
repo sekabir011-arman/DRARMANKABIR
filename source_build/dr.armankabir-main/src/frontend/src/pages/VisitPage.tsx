@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import VisitForm from "../components/VisitForm";
 import { useCreateVisit, useGetPatient } from "../hooks/useQueries";
 
-function getPatientIdFromUrl(): bigint | null {
+function getPatientIdFromUrl(): number | null {
   // Try path param /Visit/<id>
   const pathParts = window.location.pathname.split("/");
   const visitIdx = pathParts.findIndex((p) => p.toLowerCase() === "visit");
@@ -27,7 +27,7 @@ function getPatientIdFromUrl(): bigint | null {
   if (id) {
     try {
       const s = String(id);
-      const raw = s.startsWith("__bigint__") ? s.slice(10) : s;
+      const raw = s.startsWith("__number__") ? s.slice(10) : s;
       const cleaned = raw.replace(/[^0-9]/g, "");
       if (cleaned) return BigInt(cleaned);
     } catch {}

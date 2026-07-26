@@ -130,7 +130,7 @@ import {
   saveSubmissions,
 } from "./patientDashboardTypes";
 
-function formatTime(time: bigint): string {
+function formatTime(time: number): string {
   return format(new Date(Number(time / 1000000n)), "MMM d, yyyy");
 }
 
@@ -287,7 +287,7 @@ function RedFlagMonitor({
   prescriptions,
   diagnoses,
 }: {
-  patientId: bigint;
+  patientId: number;
   latestVitals: Record<string, string> | null;
   allInvestigations: Array<{
     name: string;
@@ -903,7 +903,7 @@ function AppointmentsTab({
   currentRole,
   patientName,
 }: {
-  patientId: bigint | null;
+  patientId: number | null;
   currentRole: string;
   patientName: string;
 }) {
@@ -1366,7 +1366,7 @@ function HistoryTabContent({
   currentRole: string;
   setSelectedVisit: (v: Visit | null) => void;
   downloadSingleVisitPDF: (v: Visit) => void;
-  openRxForm: (diagnosis?: string, visitId?: bigint) => void;
+  openRxForm: (diagnosis?: string, visitId?: number) => void;
 }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -1604,7 +1604,7 @@ function AccountSettingsTab({
   prescriptionDrugChips,
   onSaveReminders,
 }: {
-  patientId: bigint | null;
+  patientId: number | null;
   registerNo?: string;
   currentRole: string;
   patientAccount?: PatientAccount | null;
@@ -1967,7 +1967,7 @@ function AccountSettingsTab({
 
 // ── Main PatientDashboardInner ─────────────────────────────────────────────────
 interface PatientDashboardInnerProps {
-  patientId: bigint;
+  patientId: number;
   patient: Patient;
   currentRole: "admin" | "doctor" | "staff" | "patient";
   /** Granular 6-tier role for permission-gated clinical actions */
@@ -1999,14 +1999,14 @@ interface PatientDashboardInnerProps {
   setShowPadPreview: (v: boolean) => void;
   loadSavedPads: () => void;
   savedPads: Array<Record<string, unknown>>;
-  openRxForm: (diagnosis?: string, visitId?: bigint) => void;
+  openRxForm: (diagnosis?: string, visitId?: number) => void;
   downloadVisitHistoryPDF: () => void;
   downloadSingleVisitPDF: (v: Visit) => void;
   downloadPrescriptionsPDF: () => void;
   downloadSinglePrescriptionPDF: (rx: Prescription) => void;
   age: number | null;
   initials: string;
-  formatDateTime: (t: bigint) => string;
+  formatDateTime: (t: number) => string;
 }
 
 export default function PatientDashboardInner({

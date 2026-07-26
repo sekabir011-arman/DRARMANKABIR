@@ -164,7 +164,7 @@ function CollapsibleSection({
 
 interface ProblemListProps {
   visits: Visit[];
-  patientId: bigint;
+  patientId: number;
   isDoctor: boolean;
 }
 

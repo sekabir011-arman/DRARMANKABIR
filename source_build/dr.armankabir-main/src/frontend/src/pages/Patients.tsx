@@ -37,7 +37,7 @@ import { storage } from "../lib/storageAdapter";
 
 const SKELETON_KEYS = ["sk1", "sk2", "sk3", "sk4", "sk5", "sk6"];
 
-function getAge(dateOfBirth?: bigint): string {
+function getAge(dateOfBirth?: number): string {
   if (!dateOfBirth) return "\u2014";
   const dob = new Date(Number(dateOfBirth / 1000000n));
   const age = Math.floor(
@@ -46,7 +46,7 @@ function getAge(dateOfBirth?: bigint): string {
   return `${age}y`;
 }
 
-function isIncompleteRegistration(patientId: bigint | string): boolean {
+function isIncompleteRegistration(patientId: number | string): boolean {
   try {
     return (
       storage.getItem(`patient_reg_incomplete_${String(patientId)}`) ===

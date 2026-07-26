@@ -447,7 +447,7 @@ export function ProceduresTab({
   patientId,
   canWrite,
 }: {
-  patientId: bigint;
+  patientId: number;
   canWrite: boolean;
 }) {
   const key = `patient_procedures_${patientId}`;
@@ -705,7 +705,7 @@ export function ComplaintsTab({
   patientName,
   canWrite,
 }: {
-  patientId: bigint;
+  patientId: number;
   patientName: string;
   canWrite: boolean;
 }) {
@@ -915,7 +915,7 @@ export function AdviceTab({
   patientId,
   canWrite,
 }: {
-  patientId: bigint;
+  patientId: number;
   canWrite: boolean;
 }) {
   const key = `patient_advice_${patientId}`;
@@ -1114,7 +1114,7 @@ export function TimelineTab({
   prescriptions,
   patient,
 }: {
-  patientId: bigint;
+  patientId: number;
   visits: Visit[];
   prescriptions: Prescription[];
   patient: Patient;
@@ -1342,7 +1342,7 @@ export function ChatTab({
   patientName,
   currentUserName,
 }: {
-  patientId: bigint;
+  patientId: number;
   patientName: string;
   currentUserName: string;
 }) {
@@ -1476,7 +1476,7 @@ export function AppointmentsTab({
   patientId,
   canWrite,
 }: {
-  patientId: bigint;
+  patientId: number;
   canWrite: boolean;
 }) {
   const key = `patient_appointments_${patientId}`;
@@ -1691,7 +1691,7 @@ export function AppointmentsTab({
 export function PendingTab({
   patientId,
   prescriptions,
-}: { patientId: bigint; prescriptions: Prescription[] }) {
+}: { patientId: number; prescriptions: Prescription[] }) {
   const now_ = new Date();
 
   type PendingItem = {
@@ -1862,7 +1862,7 @@ export function PendingTab({
 
 // ── Handover Tab ───────────────────────────────────────────────────────────────
 
-export function HandoverTab({ patientId }: { patientId: bigint }) {
+export function HandoverTab({ patientId }: { patientId: number }) {
   const key = `patient_handovers_${patientId}`;
   const [handovers, setHandovers] = useState<HandoverEntry[]>(() =>
     loadLS(key, seedHandovers()),
@@ -1968,7 +1968,7 @@ export function ReferralsTab({
   patientId,
   canWrite,
 }: {
-  patientId: bigint;
+  patientId: number;
   canWrite: boolean;
 }) {
   const key = `patient_referrals_${patientId}`;
@@ -2197,7 +2197,7 @@ export function SOAPNotesTab({
   isAdmitted,
   canWrite,
 }: {
-  patientId: bigint;
+  patientId: number;
   isAdmitted: boolean;
   canWrite: boolean;
 }) {
@@ -2461,7 +2461,7 @@ export function AccountTab({
   onEdit,
 }: {
   patient: Patient;
-  patientId: bigint;
+  patientId: number;
   isAdmin: boolean;
   onEdit: () => void;
 }) {
@@ -2651,7 +2651,7 @@ export function InvPaymentTab({
   patientId,
   patientName,
 }: {
-  patientId: bigint;
+  patientId: number;
   patientName: string;
 }) {
   const key = `patient_inv_payments_${patientId}`;

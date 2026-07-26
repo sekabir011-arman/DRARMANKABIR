@@ -49,7 +49,7 @@ function loadAllPatients(): PatientEntry[] {
 
 function getPatientIdStr(p: PatientEntry): string {
   const rawId = p.id;
-  return typeof rawId === "string" && rawId.startsWith("__bigint__")
+  return typeof rawId === "string" && rawId.startsWith("__number__")
     ? rawId.slice(10)
     : String(rawId);
 }

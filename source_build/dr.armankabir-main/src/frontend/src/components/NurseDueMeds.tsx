@@ -235,7 +235,7 @@ function loadAdmittedPatients(): Array<{ id: string; fullName: string }> {
         ) {
           const rawId = p.id;
           const pid =
-            typeof rawId === "string" && rawId.startsWith("__bigint__")
+            typeof rawId === "string" && rawId.startsWith("__number__")
               ? rawId.slice(10)
               : String(rawId);
           patients.push({

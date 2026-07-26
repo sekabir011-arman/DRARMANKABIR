@@ -292,7 +292,7 @@ function ReassignConsultantModal({
 }: {
   open: boolean;
   onClose: () => void;
-  patientId: bigint;
+  patientId: number;
   currentConsultantEmail?: string;
   currentUserEmail: string;
   currentUserName: string;
@@ -393,13 +393,13 @@ function ReassignConsultantModal({
   );
 }
 
-function getAge(dateOfBirth?: bigint): number | null {
+function getAge(dateOfBirth?: number): number | null {
   if (!dateOfBirth) return null;
   const dob = new Date(Number(dateOfBirth / 1000000n));
   return Math.floor((Date.now() - dob.getTime()) / (365.25 * 24 * 3600 * 1000));
 }
 
-function formatTime(time: bigint): string {
+function formatTime(time: number): string {
   return format(new Date(Number(time / 1000000n)), "MMM d, yyyy");
 }
 
@@ -412,7 +412,7 @@ function OverviewTab({
   prescriptions,
   onTabChange,
 }: {
-  patientId: bigint;
+  patientId: number;
   patient: {
     weight?: number;
     height?: number;
@@ -771,7 +771,7 @@ function OverviewTab({
 
 // ── Audit Trail Tab ───────────────────────────────────────────────────────────
 
-function AuditTab({ patientId }: { patientId: bigint }) {
+function AuditTab({ patientId }: { patientId: number }) {
   const { data: auditEntries = [] } = useGetAuditTrail(patientId);
 
   if (auditEntries.length === 0) {
@@ -849,7 +849,7 @@ function AuditTab({ patientId }: { patientId: bigint }) {
   );
 }
 
-function formatDateTime(time: bigint): string {
+function formatDateTime(time: number): string {
   return format(new Date(Number(time / 1000000n)), "MMM d, yyyy 'at' h:mm a");
 }
 
@@ -906,7 +906,7 @@ export default function PatientProfile() {
     ? (() => {
         try {
           const s = String(searchParams.id);
-          const raw = s.startsWith("__bigint__") ? s.slice(10) : s;
+          const raw = s.startsWith("__number__") ? s.slice(10) : s;
           const cleaned = raw.replace(/[^0-9]/g, "");
           return cleaned ? BigInt(cleaned) : null;
         } catch {
@@ -1000,7 +1000,7 @@ export default function PatientProfile() {
     [observations],
   );
 
-  const openRxForm = (diagnosis?: string, forVisitId?: bigint) => {
+  const openRxForm = (diagnosis?: string, forVisitId?: number) => {
     setRxInitialDiagnosis(diagnosis);
     setRxForceVisitData(!!forVisitId);
     // Load visit extended data — try getVisitFormData first (uses broad key scan),

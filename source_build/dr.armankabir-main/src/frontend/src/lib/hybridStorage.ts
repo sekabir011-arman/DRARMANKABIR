@@ -99,11 +99,11 @@ export function getDeviceId(): string {
   return 'php-mysql-' + Date.now();
 }
 
-function getLastSyncTs(): bigint {
+function getLastSyncTs(): number {
   return 0n;
 }
 
-export function setLastSyncTs(_ts: bigint): void {
+export function setLastSyncTs(_ts: number): void {
   // No sync needed
 }
 
@@ -159,7 +159,7 @@ export function saveClinicalEntitiesWithSync(
   // Clinical data goes directly to PHP API endpoints
 }
 
-export function nextClinicalId(_items: { id?: unknown }[]): bigint {
+export function nextClinicalId(_items: { id?: unknown }[]): number {
   return 1n;
 }
 

@@ -55,17 +55,17 @@ import { storage } from "../lib/storageAdapter";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function getAge(dob?: bigint): number | null {
+function getAge(dob?: number): number | null {
   if (!dob) return null;
   return Math.floor(
     (Date.now() - Number(dob / 1_000_000n)) / (365.25 * 24 * 3600 * 1000),
   );
 }
 
-function daysSince(ts?: bigint | string): number {
+function daysSince(ts?: number | string): number {
   if (!ts) return 0;
   const ms =
-    typeof ts === "bigint"
+    typeof ts === "number"
       ? Number(ts / 1_000_000n)
       : new Date(ts as string).getTime();
   return Math.floor((Date.now() - ms) / (1000 * 3600 * 24));
@@ -151,7 +151,7 @@ export function VitalEntryForm({
   patientId,
   onSaved,
   onCancel,
-}: { patientId: bigint; onSaved: () => void; onCancel: () => void }) {
+}: { patientId: number; onSaved: () => void; onCancel: () => void }) {
   const { currentDoctor } = useEmailAuth();
   const createObs = useCreateObservation();
   const [bp, setBp] = useState("");
@@ -276,7 +276,7 @@ export function AddDrugForm({
   patientId,
   onSaved,
   onCancel,
-}: { patientId: bigint; onSaved: () => void; onCancel: () => void }) {
+}: { patientId: number; onSaved: () => void; onCancel: () => void }) {
   const { currentDoctor } = useEmailAuth();
   const createOrder = useCreateOrder();
   const [name, setName] = useState("");
@@ -336,7 +336,7 @@ export function OrderTestForm({
   patientId,
   onSaved,
   onCancel,
-}: { patientId: bigint; onSaved: () => void; onCancel: () => void }) {
+}: { patientId: number; onSaved: () => void; onCancel: () => void }) {
   const { currentDoctor } = useEmailAuth();
   const createOrder = useCreateOrder();
   const COMMON = [

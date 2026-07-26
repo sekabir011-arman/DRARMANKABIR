@@ -40,7 +40,7 @@ import type { BedRecord, BedType, Patient } from "../types";
 import { storage } from "../lib/storageAdapter";
 
 // ── BigInt normalisation helper ─────────────────────────────────────────────
-const normBigInt = (val: unknown): bigint => {
+const normBigInt = (val: unknown): number => {
   try {
     return BigInt(String(val ?? 0));
   } catch {
@@ -260,12 +260,12 @@ function statusCfg(status: BedStatus) {
   return STATUS_CONFIG[status] ?? STATUS_CONFIG.Empty;
 }
 
-function formatTs(ts?: bigint) {
+function formatTs(ts?: number) {
   if (!ts) return "—";
   return format(new Date(Number(ts / 1_000_000n)), "d MMM yyyy");
 }
 
-function daysAdmitted(admissionDate?: bigint): number {
+function daysAdmitted(admissionDate?: number): number {
   if (!admissionDate) return 0;
   return differenceInDays(
     new Date(),
@@ -273,7 +273,7 @@ function daysAdmitted(admissionDate?: bigint): number {
   );
 }
 
-function isCurrentMonth(ts?: bigint): boolean {
+function isCurrentMonth(ts?: number): boolean {
   if (!ts) return false;
   const d = new Date(Number(ts / 1_000_000n));
   const now = new Date();
@@ -1087,7 +1087,7 @@ export default function BedManagement() {
 
   function transferPatient(
     fromBed: BedRecord,
-    toBedId: bigint,
+    toBedId: number,
     reason: string,
   ) {
     const store = getClinicalStore();

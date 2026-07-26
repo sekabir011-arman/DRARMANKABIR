@@ -21,7 +21,8 @@ $user = requireAuth();
 try {
     $db = Database::getInstance();
     
-    $stmt = $db->prepare("SELECT COUNT(*) as count FROM notifications WHERE (user_id IS NULL OR user_id = :user_id) AND is_read = ");
+    $zero = chr(48);
+    $stmt = $db->prepare("SELECT COUNT(*) as count FROM notifications WHERE (user_id IS NULL OR user_id = :user_id) AND is_read = {$zero}");
     $stmt->execute([':user_id' => $user['id']]);
     $count = (int)$stmt->fetch()['count'];
     

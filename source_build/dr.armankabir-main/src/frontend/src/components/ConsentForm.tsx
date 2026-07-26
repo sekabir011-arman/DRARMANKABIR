@@ -205,7 +205,7 @@ I confirm that the nature, purpose, risks, and benefits of this procedure have b
 
 // ── Storage helpers ───────────────────────────────────────────────────────────
 
-export function loadConsentForms(patientId: bigint): ConsentRecord[] {
+export function loadConsentForms(patientId: number): ConsentRecord[] {
   try {
     const raw = storage.getItem(`consentForms_${patientId}`);
     return raw ? (JSON.parse(raw) as ConsentRecord[]) : [];
@@ -215,7 +215,7 @@ export function loadConsentForms(patientId: bigint): ConsentRecord[] {
 }
 
 export function saveConsentForms(
-  patientId: bigint,
+  patientId: number,
   records: ConsentRecord[],
 ): void {
   storage.setItem(`consentForms_${patientId}`, JSON.stringify(records));
@@ -350,7 +350,7 @@ const TEMPLATE_COLORS: Record<ConsentTemplateType, string> = {
 // ── Main component ────────────────────────────────────────────────────────────
 
 interface ConsentFormProps {
-  patientId: bigint;
+  patientId: number;
   patient: Patient;
   procedureName?: string;
   templateType: ConsentTemplateType;
@@ -661,7 +661,7 @@ function buildPrintHtml(record: ConsentRecord, patient: Patient): string {
 // ── ConsentFormSelector — inline trigger button with template picker ──────────
 
 interface ConsentFormSelectorProps {
-  patientId: bigint;
+  patientId: number;
   patient: Patient;
   procedureName?: string;
 }

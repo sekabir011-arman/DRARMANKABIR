@@ -23,22 +23,22 @@ import { type DimsEntry, getDimsByDiagnosis, searchDims } from "./DimsData";
 import { storage } from "../lib/storageAdapter";
 
 interface InitialRxData {
-  prescriptionDate: bigint;
+  prescriptionDate: number;
   diagnosis: string | null;
   medications: Medication[];
   notes: string | null;
 }
 
 interface PrescriptionFormProps {
-  patientId: bigint;
-  visitId?: bigint;
+  patientId: number;
+  visitId?: number;
   patientName?: string;
   initialDiagnosis?: string;
   initialData?: InitialRxData;
   onSubmit: (data: {
-    patientId: bigint;
-    visitId: bigint | null;
-    prescriptionDate: bigint;
+    patientId: number;
+    visitId: number | null;
+    prescriptionDate: number;
     diagnosis: string | null;
     medications: Medication[];
     notes: string | null;

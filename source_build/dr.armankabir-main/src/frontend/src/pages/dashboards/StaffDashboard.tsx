@@ -145,7 +145,7 @@ function loadPendingPatients(): LocalPatient[] {
 }
 
 function updatePatientStatus(
-  patientId: string | number | bigint,
+  patientId: string | number | number,
   newStatus: string,
 ) {
   const idStr = String(patientId);
@@ -192,7 +192,7 @@ export default function StaffDashboard() {
     });
   };
 
-  function handleApprove(patientId: string | number | bigint) {
+  function handleApprove(patientId: string | number | number) {
     if (updatePatientStatus(patientId, "active")) {
       setPendingPatients((prev) =>
         prev.filter((p) => String(p.id) !== String(patientId)),
@@ -201,7 +201,7 @@ export default function StaffDashboard() {
     }
   }
 
-  function handleReject(patientId: string | number | bigint) {
+  function handleReject(patientId: string | number | number) {
     if (updatePatientStatus(patientId, "rejected")) {
       setPendingPatients((prev) =>
         prev.filter((p) => String(p.id) !== String(patientId)),

@@ -47,14 +47,14 @@ interface MedEntry {
 }
 
 interface NewPrescriptionModeProps {
-  patientId: bigint;
-  visitId?: bigint;
+  patientId: number;
+  visitId?: number;
   patientName?: string;
   initialDiagnosis?: string;
   onSubmit: (data: {
-    patientId: bigint;
-    visitId: bigint | null;
-    prescriptionDate: bigint;
+    patientId: number;
+    visitId: number | null;
+    prescriptionDate: number;
     diagnosis: string | null;
     medications: Medication[];
     notes: string | null;
@@ -249,7 +249,7 @@ interface VisitExtendedData {
   investigationAdvice?: string;
 }
 
-function loadVisitData(visitId: bigint | undefined): VisitExtendedData | null {
+function loadVisitData(visitId: number | undefined): VisitExtendedData | null {
   if (!visitId) return null;
   try {
     const doctorEmail = getDoctorEmail();
@@ -439,7 +439,7 @@ function buildClinicalSummary(vd: VisitExtendedData) {
 
 // ─── ClinicalSummaryPanel ─────────────────────────────────────────────────────
 
-function ClinicalSummaryPanel({ visitId }: { visitId?: bigint }) {
+function ClinicalSummaryPanel({ visitId }: { visitId?: number }) {
   const visitData = visitId ? loadVisitData(visitId) : null;
   const summary = visitData ? buildClinicalSummary(visitData) : null;
 

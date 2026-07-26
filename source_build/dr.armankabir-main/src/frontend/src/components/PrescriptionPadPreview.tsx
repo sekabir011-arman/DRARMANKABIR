@@ -68,7 +68,7 @@ interface Props {
   patientAge?: number;
   patientWeight?: string;
   registerNumber?: string;
-  patientId?: bigint;
+  patientId?: number;
   bloodGroup?: string;
   address?: string;
   sex?: string;

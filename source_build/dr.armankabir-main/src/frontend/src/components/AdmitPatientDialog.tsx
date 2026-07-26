@@ -30,7 +30,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   patient: Patient;
-  patientId: bigint;
+  patientId: number;
   viewerRole?: StaffRole;
   doctorName: string;
   latestVisit: Visit | null;

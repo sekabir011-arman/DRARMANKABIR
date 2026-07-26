@@ -337,7 +337,7 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
             ) {
               const rawId = p.id;
               const pid =
-                typeof rawId === "string" && rawId.startsWith("__bigint__")
+                typeof rawId === "string" && rawId.startsWith("__number__")
                   ? rawId.slice(10)
                   : String(rawId);
               admittedIds.add(pid);

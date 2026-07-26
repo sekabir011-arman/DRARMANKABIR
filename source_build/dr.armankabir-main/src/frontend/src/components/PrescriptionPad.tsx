@@ -37,7 +37,7 @@ interface PrescriptionPadProps {
   address?: string;
   sex?: string;
   linkedVisitId?: string;
-  patientId?: bigint | null;
+  patientId?: number | null;
   isAdmitted?: boolean;
   snapshotHeaderType?: PrescriptionHeaderType;
 }

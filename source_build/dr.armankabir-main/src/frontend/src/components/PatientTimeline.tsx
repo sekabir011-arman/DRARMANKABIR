@@ -129,7 +129,7 @@ const EVENT_CONFIG: Record<
 
 // ── Event loaders ─────────────────────────────────────────────────────────────
 
-function loadAllEvents(patientId: bigint, patient: Patient): TimelineEvent[] {
+function loadAllEvents(patientId: number, patient: Patient): TimelineEvent[] {
   const events: TimelineEvent[] = [];
   const patStr = String(patientId);
   const email = getDoctorEmail() || "default";
@@ -157,8 +157,8 @@ function loadAllEvents(patientId: bigint, patient: Patient): TimelineEvent[] {
     const patVisits = allVisits.filter((v) => String(v.patientId) === patStr);
     for (const v of patVisits) {
       const dateVal =
-        typeof v.visitDate === "bigint"
-          ? Number((v.visitDate as bigint) / 1_000_000n)
+        typeof v.visitDate === "number"
+          ? Number((v.visitDate as number) / 1_000_000n)
           : Number(v.visitDate ?? v.createdAt ?? Date.now());
       const isAdmitted =
         v.visitType === "admitted" || v.visitType === "inpatient";
@@ -183,8 +183,8 @@ function loadAllEvents(patientId: bigint, patient: Patient): TimelineEvent[] {
     const patRx = allRx.filter((r) => String(r.patientId) === patStr);
     for (const rx of patRx) {
       const dateVal =
-        typeof rx.prescriptionDate === "bigint"
-          ? Number((rx.prescriptionDate as bigint) / 1_000_000n)
+        typeof rx.prescriptionDate === "number"
+          ? Number((rx.prescriptionDate as number) / 1_000_000n)
           : Number(rx.prescriptionDate ?? rx.createdAt ?? Date.now());
       const meds = (rx.medications as Array<Record<string, unknown>>) ?? [];
       events.push({
@@ -480,7 +480,7 @@ function TimelineItem({
 // ── Main Component ────────────────────────────────────────────────────────────
 
 interface PatientTimelineProps {
-  patientId: bigint;
+  patientId: number;
   patient: Patient;
 }
 

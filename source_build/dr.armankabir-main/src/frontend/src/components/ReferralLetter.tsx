@@ -121,7 +121,7 @@ function getActiveMeds(patientId: string): string {
       const k = storage.key(i);
       if (!k?.startsWith("prescriptions_")) continue;
       const arr = JSON.parse(storage.getItem(k) || "[]") as Array<{
-        patientId?: string | bigint;
+        patientId?: string | number;
         medications?: Array<{
           drugForm?: string;
           drugName?: string;

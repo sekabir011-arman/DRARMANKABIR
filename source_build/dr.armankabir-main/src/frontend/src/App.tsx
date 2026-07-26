@@ -1281,7 +1281,7 @@ function AppRoot() {
             ) {
               const rawId = p.id;
               const pid =
-                typeof rawId === "string" && rawId.startsWith("__bigint__")
+                typeof rawId === "string" && rawId.startsWith("__number__")
                   ? rawId.slice(10)
                   : String(rawId);
               admittedIds.add(pid);
@@ -1416,7 +1416,7 @@ function AppRoot() {
               if (p.registerNumber === currentPatient.registerNumber) {
                 const rawId = p.id;
                 patId =
-                  typeof rawId === "string" && rawId.startsWith("__bigint__")
+                  typeof rawId === "string" && rawId.startsWith("__number__")
                     ? rawId.slice(10)
                     : String(rawId);
                 break outer;
@@ -1508,7 +1508,7 @@ function AppRoot() {
         for (const p of arr) {
           if (p.registerNumber === currentPatient.registerNumber) {
             const rawId = p.id;
-            return typeof rawId === "string" && rawId.startsWith("__bigint__")
+            return typeof rawId === "string" && rawId.startsWith("__number__")
               ? rawId.slice(10)
               : String(rawId);
           }
@@ -1999,7 +1999,7 @@ function PatientPortalView({
             const rawId = found.id;
             try {
               const idStr =
-                typeof rawId === "string" && rawId.startsWith("__bigint__")
+                typeof rawId === "string" && rawId.startsWith("__number__")
                   ? rawId.slice(10)
                   : String(rawId);
               const cleaned = idStr.replace(/[^0-9]/g, "");

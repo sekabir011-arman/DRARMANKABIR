@@ -12,14 +12,14 @@ import { storage } from "../lib/storageAdapter";
 // QR display: show URL in a bordered box with instructions
 
 interface PatientSummaryCardProps {
-  patientId: bigint;
+  patientId: number;
   patient: Patient;
   visits: Visit[];
   prescriptions: Prescription[];
   observations?: Record<string, unknown>[];
 }
 
-function getAge(dob?: bigint): string {
+function getAge(dob?: number): string {
   if (!dob) return "—";
   const years = Math.floor(
     (Date.now() - Number(dob / 1_000_000n)) / (365.25 * 24 * 3600 * 1000),

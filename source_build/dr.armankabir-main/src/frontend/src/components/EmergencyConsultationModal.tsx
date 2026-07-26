@@ -96,7 +96,7 @@ function calcAge(dob: string | number | undefined): string {
   if (!dob) return "";
   try {
     let ms: number;
-    if (typeof dob === "string" && dob.startsWith("__bigint__")) {
+    if (typeof dob === "string" && dob.startsWith("__number__")) {
       ms = Number(BigInt(dob.slice(10)) / 1000000n);
     } else if (typeof dob === "number") {
       // nanoseconds or ms?

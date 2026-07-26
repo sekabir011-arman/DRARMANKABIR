@@ -431,13 +431,13 @@ function emptyDrug(): RxDrug {
   };
 }
 
-function getAge(dateOfBirth?: bigint): number | null {
+function getAge(dateOfBirth?: number): number | null {
   if (!dateOfBirth) return null;
   const dob = new Date(Number(dateOfBirth / 1_000_000n));
   return Math.floor((Date.now() - dob.getTime()) / (365.25 * 24 * 3600 * 1000));
 }
 
-function parseAgeToApproxDob(ageStr: string): bigint | null {
+function parseAgeToApproxDob(ageStr: string): number | null {
   const age = Number.parseInt(ageStr, 10);
   if (Number.isNaN(age) || age < 0 || age > 130) return null;
   const year = new Date().getFullYear() - age;
@@ -1071,7 +1071,7 @@ export default function EmergencyPrescription() {
 
     setNpSaving(true);
     try {
-      let dob: bigint | null = null;
+      let dob: number | null = null;
       if (npForm.dobStr) {
         dob = BigInt(new Date(npForm.dobStr).getTime()) * 1_000_000n;
       } else if (npForm.ageStr) {

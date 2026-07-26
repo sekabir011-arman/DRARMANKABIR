@@ -45,7 +45,7 @@ type EntryType = (typeof SOAP_ENTRY_TYPES)[number];
 type AssessmentStatus = "Improving" | "Stable" | "Worsening";
 
 interface DailyProgressProps {
-  patientId: bigint;
+  patientId: number;
   doctorEmail: string;
   currentRole: "admin" | "doctor" | "staff" | "patient";
   viewerRole: StaffRole;
@@ -61,7 +61,7 @@ function ProblemListSection({
   prescriptions,
   canEdit,
 }: {
-  patientId: bigint;
+  patientId: number;
   doctorEmail: string;
   prescriptions: Prescription[];
   canEdit: boolean;

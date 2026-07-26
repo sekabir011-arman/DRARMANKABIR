@@ -191,7 +191,7 @@ export function getCurrentMedications(
   const seenDrugNames = new Set<string>();
 
   for (const rx of sorted) {
-    // Treat prescriptionDate (bigint, microseconds) as age
+    // Treat prescriptionDate (number, microseconds) as age
     const rxAgeMs = now - Number(rx.prescriptionDate) / 1_000;
     if (rxAgeMs > NINETY_DAYS_MS) continue;
 

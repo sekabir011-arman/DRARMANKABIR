@@ -52,22 +52,22 @@ import type { Prescription, Visit } from "../types";
 import type { StaffRole } from "../types";
 import { storage } from "../lib/storageAdapter";
 
-function getAge(dateOfBirth?: bigint): number | null {
+function getAge(dateOfBirth?: number): number | null {
   if (!dateOfBirth) return null;
   const dob = new Date(Number(dateOfBirth / 1000000n));
   return Math.floor((Date.now() - dob.getTime()) / (365.25 * 24 * 3600 * 1000));
 }
 
-function formatTime(time: bigint): string {
+function formatTime(time: number): string {
   return format(new Date(Number(time / 1000000n)), "MMM d, yyyy");
 }
 
-function formatDateTime(time: bigint): string {
+function formatDateTime(time: number): string {
   return format(new Date(Number(time / 1000000n)), "MMM d, yyyy 'at' h:mm a");
 }
 
 interface Props {
-  patientId?: bigint | null;
+  patientId?: number | null;
   currentRole: "admin" | "doctor" | "staff" | "patient";
   /** Granular 6-tier role — used for permission-gated clinical actions */
   viewerRole?: StaffRole;
@@ -91,7 +91,7 @@ export default function PatientDashboard({
       ? (() => {
           try {
             const s = String(search.id);
-            const raw = s.startsWith("__bigint__") ? s.slice(10) : s;
+            const raw = s.startsWith("__number__") ? s.slice(10) : s;
             const cleaned = raw.replace(/[^0-9]/g, "");
             return cleaned ? BigInt(cleaned) : null;
           } catch {
@@ -107,7 +107,7 @@ export default function PatientDashboard({
   // Visit form is a full-page route — no local modal state needed
 
   // Navigate to full-page visit form
-  const openVisitPage = (pid: bigint) => {
+  const openVisitPage = (pid: number) => {
     window.location.href = `/Visit?id=${pid}`;
   };
   const [showRxForm, setShowRxForm] = useState(false);
@@ -349,7 +349,7 @@ export default function PatientDashboard({
   }
 
   /** Mark a prescription as viewed by patient — stores viewedByPatientAt in localStorage */
-  function markPrescriptionViewed(rxId: bigint) {
+  function markPrescriptionViewed(rxId: number) {
     try {
       const key = `rx_viewed_by_patient_${String(rxId)}`;
       if (!storage.getItem(key)) {
@@ -397,7 +397,7 @@ export default function PatientDashboard({
 
   function openRxForm(
     diagnosis?: string,
-    forVisitId?: bigint,
+    forVisitId?: number,
     extendedData?: Record<string, unknown>,
     regNum?: string,
   ) {

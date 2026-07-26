@@ -145,8 +145,8 @@ class PrescriptionErrorBoundary extends Component<
 }
 
 interface UpgradedPrescriptionEMRProps {
-  patientId: bigint;
-  visitId?: bigint;
+  patientId: number;
+  visitId?: number;
   patientName?: string;
   patientAge?: number | null;
   patientGender?: string;
@@ -166,9 +166,9 @@ interface UpgradedPrescriptionEMRProps {
   /** Hospital name for admitted patients */
   hospitalName?: string;
   onSubmit: (data: {
-    patientId: bigint;
-    visitId: bigint | null;
-    prescriptionDate: bigint;
+    patientId: number;
+    visitId: number | null;
+    prescriptionDate: number;
     diagnosis: string | null;
     medications: Medication[];
     notes: string | null;
