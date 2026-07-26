@@ -262,7 +262,7 @@ function logAudit(
         // Use null for unauthenticated actions — FK is ON DELETE SET NULL
         // Verify user_id exists in users table to prevent FK violations
         $safeUserId = null;
-        if ($userId !== null && $userId > ) {
+        if ($userId !== null && $userId > 0) {
             $checkStmt = $db->prepare('SELECT 1 FROM users WHERE id = ?');
             $checkStmt->execute([$userId]);
             if ($checkStmt->fetchColumn()) {
@@ -271,7 +271,7 @@ function logAudit(
         }
         // Verify patient_id exists in patients table if provided
         $safePatientId = null;
-        if ($patientId !== null && $patientId > ) {
+        if ($patientId !== null && $patientId > 0) {
             $checkStmt = $db->prepare('SELECT 1 FROM patients WHERE id = ?');
             $checkStmt->execute([$patientId]);
             if ($checkStmt->fetchColumn()) {
@@ -290,7 +290,7 @@ function logAudit(
             ':entity_id' => $entityId,
             ':old_values' => $oldValues ? json_encode($oldValues) : null,
             ':new_values' => $newValues ? json_encode($newValues) : null,
-            ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? ($_SERVER['SERVER_ADDR'] ?? '127...1'),
+            ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? ($_SERVER['SERVER_ADDR'] ?? '127.0.0.1'),
             ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'CLI',
         ]);
     } catch (\Exception $e) {
