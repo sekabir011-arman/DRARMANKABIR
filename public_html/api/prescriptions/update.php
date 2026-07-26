@@ -17,7 +17,7 @@ requireMethod('POST');
 $user = requireAuth();
 $input = getJsonInput();
 
-$id = (int)($input['id'] ?? );
+$id = (int)($input['id'] ?? 0);
 if (!$id) errorResponse('Prescription ID is required', 400);
 
 try {
@@ -79,7 +79,7 @@ try {
                 ':instructions' => $med['instructions'] ?? null,
                 ':drug_form' => $med['drugForm'] ?? $med['drug_form'] ?? null,
                 ':route' => $med['route'] ?? null,
-                ':is_prn' => isset($med['isPrn']) ? (int)(filter_var($med['isPrn'], FILTER_VALIDATE_BOOLEAN)) : (isset($med['is_prn']) ? (int)$med['is_prn'] : ),
+                ':is_prn' => isset($med['isPrn']) ? (int)(filter_var($med['isPrn'], FILTER_VALIDATE_BOOLEAN)) : (isset($med['is_prn']) ? (int)$med['is_prn'] : 0),
                 ':prn_condition' => $med['prnCondition'] ?? $med['prn_condition'] ?? null,
                 ':iv_im_dose_format' => $med['ivImDoseFormat'] ?? $med['iv_im_dose_format'] ?? null,
                 ':loading_dose' => $med['loadingDose'] ?? $med['loading_dose'] ?? null,
