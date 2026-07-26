@@ -3,8 +3,8 @@
  * Create Prescription API
  * 
  * POST /api/prescriptions/create.php
- * Body: { patientId, visitId?, prescriptionDate?, diagnosis?, medications: [...], notes? }
- * Reads camelCase from frontend.
+ * Body: { patientId, visitId?, diagnosis, medications: [...], notes? }
+ * Accepts camelCase field names from frontend.
  */
 
 require_once __DIR__ . '/../database.php';
@@ -71,7 +71,7 @@ try {
             ':instructions' => $med['instructions'] ?? null,
             ':drug_form' => $med['drugForm'] ?? $med['drug_form'] ?? null,
             ':route' => $med['route'] ?? null,
-            ':is_prn' => isset($med['isPrn']) ? (int)(filter_var($med['isPrn'], FILTER_VALIDATE_BOOLEAN)) : (isset($med['is_prn']) ? (int)(filter_var($med['is_prn'], FILTER_VALIDATE_BOOLEAN)) : ),
+            ':is_prn' => isset($med['isPrn']) ? (int)(filter_var($med['isPrn'], FILTER_VALIDATE_BOOLEAN)) : (isset($med['is_prn']) ? (int)$med['is_prn'] : 0),
             ':prn_condition' => $med['prnCondition'] ?? $med['prn_condition'] ?? null,
             ':iv_im_dose_format' => $med['ivImDoseFormat'] ?? $med['iv_im_dose_format'] ?? null,
             ':loading_dose' => $med['loadingDose'] ?? $med['loading_dose'] ?? null,
