@@ -62,7 +62,7 @@
         }
     ],
     "created_at": 1784983610,
-    "updated_at": 1785054293,
+    "updated_at": 1785054315,
     "messages": [
         {
             "id": "msg_compact",
@@ -7223,6 +7223,225 @@
             "content": "No syntax errors detected in \/home\/drarmank\/public_html\/api\/prescriptions\/create.php\n",
             "is_error": false,
             "time": 1785054293
+        },
+        {
+            "id": "msg_7cb4909be7",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "OK, the PHP syntax is fine. Now let me rewrite the update.php for prescriptions and the get.php and delete.php, then rewrite the frontend service."
+                },
+                {
+                    "type": "text",
+                    "text": "Good \u2014 syntax is clean. Now let me rewrite the update.php and get.php for prescriptions:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_6uIH4DqcxzvJSYMIz1RF0927",
+                    "name": "write_file",
+                    "input": {
+                        "content": "<?php\n\/**\n * Update Prescription API\n * \n * POST \/api\/prescriptions\/update.php\n * Accepts camelCase field names: id, patientId, visitId?, diagnosis, notes, medications[...]\n * Medications are fully replaced (delete all, re-insert).\n *\/\n\nrequire_once __DIR__ . '\/..\/database.php';\nrequire_once __DIR__ . '\/..\/helpers.php';\nrequire_once __DIR__ . '\/..\/auth\/middleware.php';\n\nhandleCors();\nrequireMethod('POST');\n\n$user = requireAuth();\n$input = getJsonInput();\n\n$id = (int)($input['id'] ?? );\nif (!$id) errorResponse('Prescription ID is required', 400);\n\ntry {\n    $db = Database::getInstance();\n    \n    \/\/ Fetch existing\n    $stmt = $db->prepare('SELECT * FROM prescriptions WHERE id = :id');\n    $stmt->execute([':id' => $id]);\n    $existing = $stmt->fetch();\n    if (!$existing) errorResponse('Prescription not found', 404);\n    \n    $db->beginTransaction();\n    \n    \/\/ Update prescription fields\n    $stmt = $db->prepare('\n        UPDATE prescriptions SET \n            visit_id = :visit_id,\n            prescription_date = :prescription_date,\n            diagnosis = :diagnosis,\n            notes = :notes,\n            updated_at = NOW()\n        WHERE id = :id\n    ');\n    $stmt->execute([\n        ':visit_id' => isset($input['visitId']) ? (int)$input['visitId'] : $existing['visit_id'],\n        ':prescription_date' => $input['prescriptionDate'] ?? $existing['prescription_date'],\n        ':diagnosis' => $input['diagnosis'] ?? $existing['diagnosis'],\n        ':notes' => $input['notes'] ?? $existing['notes'],\n        ':id' => $id,\n    ]);\n    \n    \/\/ If medications provided, replace all\n    if (isset($input['medications']) && is_array($input['medications'])) {\n        \/\/ Delete old medications\n        $db->prepare('DELETE FROM prescription_medications WHERE prescription_id = :pid')->execute([':pid' => $id]);\n        \n        \/\/ Insert new medications\n        $medStmt = $db->prepare('\n            INSERT INTO prescription_medications (\n                prescription_id, name, dose, frequency, duration, instructions,\n                drug_form, route, is_prn, prn_condition,\n                iv_im_dose_format, loading_dose, maintenance_dose,\n                infusion_rate, infusion_unit, sort_order\n            ) VALUES (\n                :prescription_id, :name, :dose, :frequency, :duration, :instructions,\n                :drug_form, :route, :is_prn, :prn_condition,\n                :iv_im_dose_format, :loading_dose, :maintenance_dose,\n                :infusion_rate, :infusion_unit, :sort_order\n            )\n        ');\n        \n        foreach ($input['medications'] as $index => $med) {\n            $medStmt->execute([\n                ':prescription_id' => $id,\n                ':name' => $med['name'] ?? '',\n                ':dose' => $med['dose'] ?? null,\n                ':frequency' => $med['frequency'] ?? null,\n                ':duration' => $med['duration'] ?? null,\n                ':instructions' => $med['instructions'] ?? null,\n                ':drug_form' => $med['drugForm'] ?? $med['drug_form'] ?? null,\n                ':route' => $med['route'] ?? null,\n                ':is_prn' => isset($med['isPrn']) ? (int)(filter_var($med['isPrn'], FILTER_VALIDATE_BOOLEAN)) : (isset($med['is_prn']) ? (int)$med['is_prn'] : ),\n                ':prn_condition' => $med['prnCondition'] ?? $med['prn_condition'] ?? null,\n                ':iv_im_dose_format' => $med['ivImDoseFormat'] ?? $med['iv_im_dose_format'] ?? null,\n                ':loading_dose' => $med['loadingDose'] ?? $med['loading_dose'] ?? null,\n                ':maintenance_dose' => $med['maintenanceDose'] ?? $med['maintenance_dose'] ?? null,\n                ':infusion_rate' => $med['infusionRate'] ?? $med['infusion_rate'] ?? null,\n                ':infusion_unit' => $med['infusionUnit'] ?? $med['infusion_unit'] ?? null,\n                ':sort_order' => $index,\n            ]);\n        }\n    }\n    \n    $db->commit();\n    \n    logAudit($user['id'], $existing['patient_id'], 'update', 'prescription', $id, $existing);\n    successResponse(null, 'Prescription updated successfully');\n    \n} catch (\\Exception $e) {\n    if (isset($db) && $db->inTransaction()) {\n        $db->rollBack();\n    }\n    error_log('Update prescription error: ' . $e->getMessage());\n    errorResponse('Failed to update prescription', 500);\n}\n",
+                        "path": "\/public_html\/api\/prescriptions\/update.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 97635,
+                "completion_tokens": 1234,
+                "total_tokens": 98869,
+                "prompt_cache_hit_tokens": 97536,
+                "prompt_cache_miss_tokens": 99,
+                "prompt_tokens_details": {
+                    "cached_tokens": 97536
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 32
+                },
+                "cached_tokens": 97536
+            },
+            "time": 1785054302
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_6uIH4DqcxzvJSYMIz1RF0927",
+            "content": "Successfully wrote 4303 bytes (106 lines) to \/public_html\/api\/prescriptions\/update.php",
+            "is_error": false,
+            "time": 1785054303
+        },
+        {
+            "id": "msg_22884b575c",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I see the `` was stripped again on the `is_prn` default. Let me check and fix."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_WZhSaKi4qMJJY5SsQjDw9352",
+                    "name": "bash",
+                    "input": {
+                        "command": "grep -n \"is_prn\\|?? $\" \/home\/drarmank\/public_html\/api\/prescriptions\/update.php | head -5"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 98899,
+                "completion_tokens": 96,
+                "total_tokens": 98995,
+                "prompt_cache_hit_tokens": 97536,
+                "prompt_cache_miss_tokens": 1363,
+                "prompt_tokens_details": {
+                    "cached_tokens": 97536
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 24
+                },
+                "cached_tokens": 97536
+            },
+            "time": 1785054306
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_WZhSaKi4qMJJY5SsQjDw9352",
+            "content": "61:                drug_form, route, is_prn, prn_condition,\n66:                :drug_form, :route, :is_prn, :prn_condition,\n82:                ':is_prn' => isset($med['isPrn']) ? (int)(filter_var($med['isPrn'], FILTER_VALIDATE_BOOLEAN)) : (isset($med['is_prn']) ? (int)$med['is_prn'] : ),\n",
+            "is_error": false,
+            "time": 1785054306
+        },
+        {
+            "id": "msg_0b103bc5a6",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me also check the id default on line 9."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_a7iVWbHEIsqG0zfptXVg9637",
+                    "name": "bash",
+                    "input": {
+                        "command": "sed -n '9p' \/home\/drarmank\/public_html\/api\/prescriptions\/update.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 99108,
+                "completion_tokens": 76,
+                "total_tokens": 99184,
+                "prompt_cache_hit_tokens": 98944,
+                "prompt_cache_miss_tokens": 164,
+                "prompt_tokens_details": {
+                    "cached_tokens": 98944
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 12
+                },
+                "cached_tokens": 98944
+            },
+            "time": 1785054309
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_a7iVWbHEIsqG0zfptXVg9637",
+            "content": "\n",
+            "is_error": false,
+            "time": 1785054309
+        },
+        {
+            "id": "msg_18bf0dd35a",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me check for the `?? ` at the end of line 9."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_SZiltAvaoH81Av1clU2V9442",
+                    "name": "read_file",
+                    "input": {
+                        "limit": 3,
+                        "offset": 8,
+                        "path": "\/public_html\/api\/prescriptions\/update.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 99196,
+                "completion_tokens": 101,
+                "total_tokens": 99297,
+                "prompt_cache_hit_tokens": 99072,
+                "prompt_cache_miss_tokens": 124,
+                "prompt_tokens_details": {
+                    "cached_tokens": 99072
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 16
+                },
+                "cached_tokens": 99072
+            },
+            "time": 1785054312
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_SZiltAvaoH81Av1clU2V9442",
+            "content": "    8 |  *\/\n    9 | \n   10 | require_once __DIR__ . '\/..\/database.php';",
+            "is_error": false,
+            "time": 1785054312
+        },
+        {
+            "id": "msg_f3e479340a",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Actually the id is at line 9 in the original but let me check what's currently at line 9. It might have a blank line."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_jk4E8qpYSgyIUD7slD2b6345",
+                    "name": "read_file",
+                    "input": {
+                        "limit": 5,
+                        "offset": 17,
+                        "path": "\/public_html\/api\/prescriptions\/update.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 99332,
+                "completion_tokens": 115,
+                "total_tokens": 99447,
+                "prompt_cache_hit_tokens": 99200,
+                "prompt_cache_miss_tokens": 132,
+                "prompt_tokens_details": {
+                    "cached_tokens": 99200
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 30
+                },
+                "cached_tokens": 99200
+            },
+            "time": 1785054315
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_jk4E8qpYSgyIUD7slD2b6345",
+            "content": "   17 | $user = requireAuth();\n   18 | $input = getJsonInput();\n   19 | \n   20 | $id = (int)($input['id'] ?? );\n   21 | if (!$id) errorResponse('Prescription ID is required', 400);",
+            "is_error": false,
+            "time": 1785054315
         }
     ]
 }
