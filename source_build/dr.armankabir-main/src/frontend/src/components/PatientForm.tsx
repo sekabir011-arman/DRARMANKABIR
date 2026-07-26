@@ -1,23 +1,4 @@
-interface DuplicateMatch {/** Scan server for duplicate patients via API */
-async function checkDuplicatePatient(phone: string, email: string): Promise<DuplicateMatch | null> {
-  if (!phone && !email) return null;
-  try {
-    const { patientService } = await import('../services/patients');
-    const results = await patientService.search(phone || email);
-    for (const p of results) {
-      if (phone && p.phone?.trim() === phone) return { patient: p, matchField: 'phone' };
-      if (email && p.email?.trim().toLowerCase() === email.toLowerCase()) return { patient: p, matchField: 'email' };
-    }
-  } catch {}
-  return null;
-}
-
-interface DuplicateMatch {function ageToApproxDob(age: string): string {function ageToApproxDob(age: string): string {
-  const n = Number.parseInt(age);
-  if (Number.isNaN(n) || n <  || n > 130) return "";
-  const year = new Date().getFullYear() - n;
-  return `${year}-01-01`;
-}import type { Patient } from "../types";import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -141,6 +122,17 @@ export default function PatientForm({
     height: patient?.height != null ? cmToFeetInches(patient.height) : "",
     patientType: patient?.patientType ?? "outdoor",
   });
+
+  const [photo, setPhoto] = useState<string | null>(existingPhoto);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Duplicate detection state ──────────────────────────────────────────────
+  const [duplicateMatch, setDuplicateMatch] = useState<DuplicateMatch | null>(
+    null,
+  );
+  const [proceedAnyway, setProceedAnyway] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Check for duplicates when phone or email changes (debounced 500ms)
   // Only for new patient registration (no existing patient prop)
   useEffect(() => {
@@ -161,7 +153,7 @@ export default function PatientForm({
         const query = phone || email;
         const { patientService } = await import('../services/patients');
         const results = await patientService.search(query);
-        
+
         let match: DuplicateMatch | null = null;
         if (phone) {
           const found = results.find((p) => p.phone?.trim() === phone);
@@ -187,7 +179,7 @@ export default function PatientForm({
     setForm((prev) => ({ ...prev, [key]: val }));
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files?.[];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
@@ -339,7 +331,7 @@ export default function PatientForm({
           <Input
             id="ageInput"
             type="number"
-            min="0"
+            min=""
             max="130"
             value={form.ageInput}
             onChange={(e) => {
@@ -452,7 +444,7 @@ export default function PatientForm({
             onChange={(e) => set("weight", e.target.value)}
             placeholder="65"
             type="number"
-            step="0.1"
+            step=".1"
           />
         </div>
         <div className="space-y-1.5">
@@ -474,12 +466,12 @@ export default function PatientForm({
           data-ocid="patient_form.duplicate_warning"
         >
           <div className="flex items-start gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
-            <div className="flex-1 min-w-0">
+            <AlertTriangle className="w-4 h-4 text-amber-600 mt-.5 shrink-" />
+            <div className="flex-1 min-w-">
               <p className="text-sm font-semibold text-amber-800">
                 Possible duplicate patient
               </p>
-              <p className="text-xs text-amber-700 mt-0.5">
+              <p className="text-xs text-amber-700 mt-.5">
                 A patient with this{" "}
                 <strong>
                   {duplicateMatch.matchField === "phone"
