@@ -34,22 +34,22 @@ export function calculateAge(dob: string): number | null {
   const today = new Date();
   let age = today.getFullYear() - birth.getFullYear();
   const m = today.getMonth() - birth.getMonth();
-  if (m <  || (m ===  && today.getDate() < birth.getDate())) age--;
-  return age >=  ? age : null;
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  return age >= 0 ? age : null;
 }
 
 function feetInchesToCm(str: string): number | null {
   const match = str.match(/(\d+)['\s]*(?:ft)?['\s]*(\d*)["\s]*(?:in)?/i);
   if (!match) return null;
-  const feet = Number.parseInt(match[1]) || ;
-  const inches = Number.parseInt(match[2]) || ;
+  const feet = Number.parseInt(match[1]) || 0;
+  const inches = Number.parseInt(match[2]) || 0;
   const cm = feet * 30.48 + inches * 2.54;
-  return cm >  ? Math.round(cm * 10) / 10 : null;
+  return cm > 0 ? Math.round(cm * 10) / 10 : null;
 }
 
 function ageToApproxDob(age: string): string {
   const n = Number.parseInt(age);
-  if (Number.isNaN(n) || n <  || n > 130) return "";
+  if (Number.isNaN(n) || n < 0 || n > 130) return "";
   const year = new Date().getFullYear() - n;
   return `${year}-01-01`;
 }
@@ -99,7 +99,7 @@ export default function PatientForm({
   isLoading,
 }: PatientFormProps) {
   const dob = patient?.dateOfBirth
-    ? patient.dateOfBirth.substring(, 10)
+    ? patient.dateOfBirth.substring(0, 10)
     : "";
 
   const existingPhoto =
@@ -179,7 +179,7 @@ export default function PatientForm({
     setForm((prev) => ({ ...prev, [key]: val }));
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[];
+    const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
@@ -331,7 +331,7 @@ export default function PatientForm({
           <Input
             id="ageInput"
             type="number"
-            min=""
+            min="0"
             max="130"
             value={form.ageInput}
             onChange={(e) => {
@@ -444,7 +444,7 @@ export default function PatientForm({
             onChange={(e) => set("weight", e.target.value)}
             placeholder="65"
             type="number"
-            step=".1"
+            step="0.1"
           />
         </div>
         <div className="space-y-1.5">
@@ -466,12 +466,12 @@ export default function PatientForm({
           data-ocid="patient_form.duplicate_warning"
         >
           <div className="flex items-start gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-600 mt-.5 shrink-" />
-            <div className="flex-1 min-w-">
+            <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+            <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-amber-800">
                 Possible duplicate patient
               </p>
-              <p className="text-xs text-amber-700 mt-.5">
+              <p className="text-xs text-amber-700 mt-0.5">
                 A patient with this{" "}
                 <strong>
                   {duplicateMatch.matchField === "phone"
