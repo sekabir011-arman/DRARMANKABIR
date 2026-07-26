@@ -182,23 +182,6 @@ export default function PatientForm({
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [form.phone, form.email, patient]);
-        // Silently fail — duplicate check is a UX bonus, not critical
-        setDuplicateMatch(null);
-      }
-    }, 500);
-
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [form.phone, form.email, patient]);
-      setDuplicateMatch(match);
-      if (match) setProceedAnyway(false);
-    }, 500);
-
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [form.phone, form.email, patient]);
 
   const set = (key: keyof typeof form, val: string) =>
     setForm((prev) => ({ ...prev, [key]: val }));
