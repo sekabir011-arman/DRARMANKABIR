@@ -47,7 +47,7 @@
         }
     ],
     "created_at": 1784983610,
-    "updated_at": 1785078077,
+    "updated_at": 1785078492,
     "messages": [
         {
             "id": "msg_compact",
@@ -3293,6 +3293,13 @@
             "content": "This command is blocked for safety reasons.",
             "is_error": true,
             "time": 1785078077
+        },
+        {
+            "id": "msg_31c074b2e2",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785078492
         }
     ]
 }
