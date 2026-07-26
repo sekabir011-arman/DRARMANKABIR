@@ -107,3 +107,4 @@ Stack trace:
 #0 Command line code(2): PDO->__construct()
 #1 {main}
   thrown in Command line code on line 2
+[26-Jul-2026 15:08:27 UTC] PHP Parse error:  syntax error, unexpected token ";" in Command line code on line 6
