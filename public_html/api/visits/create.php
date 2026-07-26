@@ -3,7 +3,7 @@
  * Create Visit API
  * 
  * POST /api/visits/create.php
- * Body: { patientId, visitType, visitDate, chiefComplaint, historyOfPresentIllness, vitalSigns, physicalExamination, diagnosis, notes }
+ * Reads camelCase field names from frontend.
  */
 
 require_once __DIR__ . '/../database.php';
@@ -40,7 +40,7 @@ try {
     
     $stmt->execute([
         ':patient_id' => (int)$input['patientId'],
-        ':visit_type' => $input['visitType'],
+        ':visit_type' => $visitType,
         ':visit_date' => $input['visitDate'] ?? date('Y-m-d'),
         ':chief_complaint' => $input['chiefComplaint'] ?? null,
         ':vital_signs' => $vitalSigns,
@@ -57,6 +57,11 @@ try {
     $fetchStmt = $db->prepare('SELECT v.*, u.full_name as doctor_name FROM visits v LEFT JOIN users u ON v.created_by = u.id WHERE v.id = :id');
     $fetchStmt->execute([':id' => $visitId]);
     $visit = $fetchStmt->fetch();
+    
+    // Decode vital_signs JSON
+    if ($visit && isset($visit['vital_signs'])) {
+        $visit['vital_signs'] = json_decode($visit['vital_signs'], true);
+    }
     
     logAudit($user['id'], $visit['patient_id'], 'create', 'visit', $visitId);
     
