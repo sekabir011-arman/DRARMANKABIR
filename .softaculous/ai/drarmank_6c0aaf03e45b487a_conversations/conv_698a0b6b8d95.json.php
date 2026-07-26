@@ -77,7 +77,7 @@
         }
     ],
     "created_at": 1784983610,
-    "updated_at": 1785052443,
+    "updated_at": 1785053111,
     "messages": [
         {
             "id": "msg_compact",
@@ -5976,6 +5976,13 @@
             "content": "  163 | export interface VitalSigns {\n  164 |   bloodPressure?: string;\n  165 |   pulse?: string;\n  166 |   temperature?: string;\n  167 |   oxygenSaturation?: string;\n  168 |   respiratoryRate?: string;\n  169 |   weight?: string;\n  170 |   height?: string;\n  171 | }\n  172 | \n  173 | export interface Medication {\n  174 |   name: string;\n  175 |   dose: string;\n  176 |   frequency: string;\n  177 |   duration: string;",
             "is_error": false,
             "time": 1785052443
+        },
+        {
+            "id": "msg_6c8db0b0ed",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785053111
         }
     ]
 }

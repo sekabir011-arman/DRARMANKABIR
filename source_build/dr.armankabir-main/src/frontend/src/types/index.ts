@@ -250,6 +250,9 @@ export interface Patient {
 export interface Visit {
   id: number;
   patientId: number;
+  patientName?: string;
+  patientPhone?: string;
+  doctorName?: string;
   visitDate: string;
   chiefComplaint: string;
   historyOfPresentIllness?: string;
@@ -263,7 +266,9 @@ export interface Visit {
     | "emergency"
     | "follow-up"
     | "admitted";
+  createdBy?: number;
   createdAt: string;
+  updatedAt?: string;
 }
 export interface Prescription {
   id: number;
