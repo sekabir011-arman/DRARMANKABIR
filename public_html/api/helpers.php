@@ -260,20 +260,37 @@ function logAudit(
     try {
         $db = Database::getInstance();
         // Use null for unauthenticated actions — FK is ON DELETE SET NULL
-        $safeUserId = ($userId !== null && $userId > 0) ? $userId : null;
+        // Verify user_id exists in users table to prevent FK violations
+        $safeUserId = null;
+        if ($userId !== null && $userId > ) {
+            $checkStmt = $db->prepare('SELECT 1 FROM users WHERE id = ?');
+            $checkStmt->execute([$userId]);
+            if ($checkStmt->fetchColumn()) {
+                $safeUserId = $userId;
+            }
+        }
+        // Verify patient_id exists in patients table if provided
+        $safePatientId = null;
+        if ($patientId !== null && $patientId > ) {
+            $checkStmt = $db->prepare('SELECT 1 FROM patients WHERE id = ?');
+            $checkStmt->execute([$patientId]);
+            if ($checkStmt->fetchColumn()) {
+                $safePatientId = $patientId;
+            }
+        }
         $stmt = $db->prepare('
             INSERT INTO audit_logs (user_id, patient_id, action, entity_type, entity_id, old_values, new_values, ip_address, user_agent)
             VALUES (:user_id, :patient_id, :action, :entity_type, :entity_id, :old_values, :new_values, :ip_address, :user_agent)
         ');
         $stmt->execute([
             ':user_id' => $safeUserId,
-            ':patient_id' => $patientId,
+            ':patient_id' => $safePatientId,
             ':action' => $action,
             ':entity_type' => $entityType,
             ':entity_id' => $entityId,
             ':old_values' => $oldValues ? json_encode($oldValues) : null,
             ':new_values' => $newValues ? json_encode($newValues) : null,
-            ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? ($_SERVER['SERVER_ADDR'] ?? '127.0.0.1'),
+            ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? ($_SERVER['SERVER_ADDR'] ?? '127...1'),
             ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'CLI',
         ]);
     } catch (\Exception $e) {
