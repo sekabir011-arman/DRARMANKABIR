@@ -3,13 +3,14 @@
  *
  * CRUD operations for patient visits/encounters.
  * All data is persisted in MySQL via the PHP API.
+ * CamelCase frontend ↔ snake_case PHP API (with mapper).
  */
 
 import { get, post, del } from '../lib/apiClient';
-import type { Visit, VitalSigns } from '../types';
-import { mapListFromApi, mapFromApi, type Mapping, toNumber, parseJsonObject } from '../lib/mappers';
+import type { Visit } from '../types';
+import { mapListFromApi, mapFromApi, type Mapping, toNumber } from '../lib/mappers';
 
-// ── Visit API mapping: camelCase DTO ↔ snake_case API ───────────────────
+// ── Visit API mapping ────────────────────────────────────────────────────
 
 const visitMapping: Mapping<Visit> = {
   id: 'id',
@@ -28,7 +29,7 @@ const visitMapping: Mapping<Visit> = {
 const visitTransforms = {
   id: (v: any) => toNumber(v) ?? ,
   patientId: (v: any) => toNumber(v) ?? ,
-  vitalSigns: (v: any) => parseJsonObject(v) as VitalSigns | null,
+  vitalSigns: (v: any) => (v && typeof v === 'object' ? v : null),
 };
 
 // ── Request DTOs ─────────────────────────────────────────────────────────
@@ -38,7 +39,7 @@ export interface CreateVisitData {
   visitDate?: string;
   chiefComplaint?: string;
   historyOfPresentIllness?: string | null;
-  vitalSigns?: VitalSigns;
+  vitalSigns?: Record<string, any> | null;
   physicalExamination?: string | null;
   diagnosis?: string | null;
   notes?: string | null;
@@ -71,14 +72,14 @@ export const visitService = {
   async create(data: CreateVisitData): Promise<Visit> {
     const payload: Record<string, any> = {
       patientId: data.patientId,
+      visitDate: data.visitDate || new Date().toISOString().split('T')[],
+      chiefComplaint: data.chiefComplaint || null,
+      historyOfPresentIllness: data.historyOfPresentIllness || null,
+      vitalSigns: data.vitalSigns || null,
+      physicalExamination: data.physicalExamination || null,
+      diagnosis: data.diagnosis || null,
+      notes: data.notes || null,
       visitType: data.visitType ?? 'outpatient',
-      visitDate: data.visitDate,
-      chiefComplaint: data.chiefComplaint,
-      historyOfPresentIllness: data.historyOfPresentIllness,
-      vitalSigns: data.vitalSigns,
-      physicalExamination: data.physicalExamination,
-      diagnosis: data.diagnosis,
-      notes: data.notes,
     };
     const result = await post<Record<string, any>>('/visits/create.php', payload);
     return mapFromApi<Visit>(result, visitMapping, visitTransforms)!;
@@ -86,22 +87,24 @@ export const visitService = {
 
   /** Update an existing visit — PHP reads camelCase */
   async update(data: UpdateVisitData): Promise<Visit> {
-    const payload: Record<string, any> = { id: data.id };
-    if (data.patientId !== undefined) payload.patientId = data.patientId;
+    const payload: Record<string, any> = {
+      id: data.id,
+      patientId: data.patientId,
+    };
     if (data.visitDate !== undefined) payload.visitDate = data.visitDate;
-    if (data.visitType !== undefined) payload.visitType = data.visitType;
     if (data.chiefComplaint !== undefined) payload.chiefComplaint = data.chiefComplaint;
     if (data.historyOfPresentIllness !== undefined) payload.historyOfPresentIllness = data.historyOfPresentIllness;
     if (data.vitalSigns !== undefined) payload.vitalSigns = data.vitalSigns;
     if (data.physicalExamination !== undefined) payload.physicalExamination = data.physicalExamination;
     if (data.diagnosis !== undefined) payload.diagnosis = data.diagnosis;
     if (data.notes !== undefined) payload.notes = data.notes;
+    if (data.visitType !== undefined) payload.visitType = data.visitType;
     const result = await post<Record<string, any>>('/visits/update.php', payload);
     return mapFromApi<Visit>(result, visitMapping, visitTransforms)!;
   },
 
   /** Delete a visit */
-  async delete(id: number, patientId: number): Promise<void> {
+  async delete(id: number, _patientId: number): Promise<void> {
     await del('/visits/delete.php', { id });
   },
 
