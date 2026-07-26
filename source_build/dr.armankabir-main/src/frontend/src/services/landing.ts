@@ -82,17 +82,18 @@ export const landingService = {
     }
   },
 
-  /** Get site configuration */
+  /** Get site configuration from frontpage content */
   async getSiteConfig(): Promise<SiteConfig | null> {
     try {
-      return await get<SiteConfig>('/settings/site-config.php');
+      const result = await get<{ siteConfig?: SiteConfig }>('/frontpage/get.php', { key: 'siteConfig' });
+      return result?.siteConfig ?? null;
     } catch {
       return null;
     }
   },
 
-  /** Update site configuration */
+  /** Update site configuration via frontpage save */
   async updateSiteConfig(config: Partial<SiteConfig>): Promise<void> {
-    await post('/settings/site-config.php', config);
+    await post('/frontpage/save.php', { siteConfig: config });
   },
 };

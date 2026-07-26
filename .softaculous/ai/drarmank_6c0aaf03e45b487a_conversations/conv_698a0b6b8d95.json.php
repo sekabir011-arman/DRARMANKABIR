@@ -42,7 +42,7 @@
         }
     ],
     "created_at": 1784983610,
-    "updated_at": 1785076244,
+    "updated_at": 1785076657,
     "messages": [
         {
             "id": "msg_compact",
@@ -1443,6 +1443,172 @@
             "content": "    1 | <?php\n    2 | \/**\n    3 |  * Front Page Save API - MySQL Single Source of Truth\n    4 |  * \n    5 |  * POST \/api\/frontpage\/save.php\n    6 |  * Saves front page content (siteConfig + doctorContentOverrides) to MySQL.\n    7 |  * Returns the saved data with server-side timestamp on success.\n    8 |  * \n    9 |  * Request body (JSON):\n   10 |  *   { \"siteConfig\": { ... }, \"doctorContentOverrides\": { ... } }\n   11 |  * \n   12 |  * Response (success):\n   13 |  *   { \"success\": true, \"data\": { \"siteConfig\": {...}, \"doctorContentOverrides\": {...}, \"updated_at\": \"...\" }, \"message\": \"...\" }\n   14 |  * \n   15 |  * Response (error):\n   16 |  *   { \"success\": false, \"message\": \"...\", \"errors\": {...} }\n   17 |  *\/\n   18 | \n   19 | require_once __DIR__ . '\/..\/database.php';\n   20 | require_once __DIR__ . '\/..\/helpers.php';\n   21 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   22 | \n   23 | handleCors();\n   24 | requireMethod('POST');\n   25 | \n   26 | \/\/ Try to authenticate\n   27 | $user = getAuthUser();\n   28 | $userId = $user ? $user['id'] : null;\n   29 | \n   30 | $input = getJsonInput();\n   31 | \n   32 | \/\/ Extract content from input\n   33 | $allContent = [];\n   34 | if (isset($input['siteConfig']) || isset($input['doctorContentOverrides'])) {\n   35 |     $allContent = $input;\n   36 | } else {\n   37 |     $allContent = $input;\n   38 | }\n   39 | \n   40 | \/\/ Validate that we have at least some content\n   41 | if (empty($allContent)) {\n   42 |     errorResponse('No content provided to save.', 400);\n   43 | }\n   44 | \n   45 | try {\n   46 |     $db = Database::getInstance();\n   47 |     $now = date('Y-m-d H:i:s');\n   48 |     \n   49 |     \/\/ Save siteConfig if present\n   50 |     if (isset($allContent['siteConfig'])) {\n   51 |         $siteConfigJson = json_encode($allContent['siteConfig'], JSON_UNESCAPED_UNICODE);\n   52 |         $stmt = $db->prepare('\n   53 |             INSERT INTO site_settings (setting_key, setting_value, setting_group, description, updated_by, updated_at)\n   54 |             VALUES (:key, :value, :group, :desc, :user_id, :now)\n   55 |             ON DUPLICATE KEY UPDATE\n   56 |                 setting_value = VALUES(setting_value),\n   57 |                 setting_group = VALUES(setting_group),\n   58 |                 updated_by = VALUES(updated_by),\n   59 |                 updated_at = VALUES(updated_at)\n   60 |         ');\n   61 |         $stmt->execute([\n   62 |             ':key' => 'siteConfig',\n   63 |             ':value' => $siteConfigJson,\n   64 |             ':group' => 'frontpage',\n   65 |             ':desc' => 'Site configuration for landing page',\n   66 |             ':user_id' => $userId,\n   67 |             ':now' => $now,\n   68 |         ]);\n   69 |     }\n   70 |     \n   71 |     \/\/ Save doctorContentOverrides if present\n   72 |     if (isset($allContent['doctorContentOverrides'])) {\n   73 |         $overridesJson = json_encode($allContent['doctorContentOverrides'], JSON_UNESCAPED_UNICODE);\n   74 |         $stmt = $db->prepare('\n   75 |             INSERT INTO site_settings (setting_key, setting_value, setting_group, description, updated_by, updated_at)\n   76 |             VALUES (:key, :value, :group, :desc, :user_id, :now)\n   77 |             ON DUPLICATE KEY UPDATE\n   78 |                 setting_value = VALUES(setting_value),\n   79 |                 setting_group = VALUES(setting_group),\n   80 |                 updated_by = VALUES(updated_by),\n   81 |                 updated_at = VALUES(updated_at)\n   82 |         ');\n   83 |         $stmt->execute([\n   84 |             ':key' => 'doctorContentOverrides',\n   85 |             ':value' => $overridesJson,\n   86 |             ':group' => 'frontpage',\n   87 |             ':desc' => 'Doctor content overrides for landing page',\n   88 |             ':user_id' => $userId,\n   89 |             ':now' => $now,\n   90 |         ]);\n   91 |     }\n   92 |     \n   93 |     \/\/ Log the update\n   94 |     if ($userId > 0) {\n   95 |         logAudit($userId, null, 'update', 'frontpage', null, null, [\n   96 |             'keys_saved' => array_keys($allContent),\n   97 |         ]);\n   98 |     }\n   99 |     \n  100 |     \/\/ Return the saved data with server-side timestamp\n  101 |     successResponse([\n  102 |         'siteConfig' => $allContent['siteConfig'] ?? null,\n  103 |         'doctorContentOverrides' => $allContent['doctorContentOverrides'] ?? null,\n  104 |         'updated_at' => $now,\n  105 |     ], 'Front page content saved successfully');\n  106 |     \n  107 | } catch (\\Exception $e) {\n  108 |     error_log('Front page save error: ' . $e->getMessage());\n  109 |     errorResponse('Failed to save front page content. Server error: ' . $e->getMessage(), 500);\n  110 | }\n  111 |",
             "is_error": false,
             "time": 1785076244
+        },
+        {
+            "id": "msg_50a2ef8e36",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785076463
+        },
+        {
+            "id": "msg_975f3e71ee",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785076649
+        },
+        {
+            "id": "msg_aeef3906ec",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me continue the systematic review. I need to check:\n1. The `landingService.getSiteConfig()` calls `\/settings\/site-config.php` which doesn't exist in the PHP API directory\n2. The `landingService.updateSiteConfig()` calls post to `\/settings\/site-config.php` which also doesn't exist\n3. The notifications service references endpoints like `\/notifications\/unread-count.php`, `\/notifications\/mark-read.php`, `\/notifications\/mark-all-read.php` which may not exist\n\nLet me check what PHP endpoints actually exist for these."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me check if the `site-config.php` endpoint exists and verify the remaining PHP endpoints:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_FmZnYEVVGvG1B8XNiIXA6945",
+                    "name": "bash",
+                    "input": {
+                        "command": "find \/home\/drarmank\/public_html\/api -name \"site-config.php\" -o -name \"unread-count.php\" -o -name \"mark-read.php\" -o -name \"mark-all-read.php\" 2>\/dev\/null; echo \"---\"; ls \/home\/drarmank\/public_html\/api\/notifications\/ 2>\/dev\/null"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 48933,
+                "completion_tokens": 252,
+                "total_tokens": 49185,
+                "prompt_cache_hit_tokens": 40192,
+                "prompt_cache_miss_tokens": 8741,
+                "prompt_tokens_details": {
+                    "cached_tokens": 40192
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 117
+                },
+                "cached_tokens": 40192
+            },
+            "time": 1785076653
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_FmZnYEVVGvG1B8XNiIXA6945",
+            "content": "\/home\/drarmank\/public_html\/api\/notifications\/mark-read.php\n\/home\/drarmank\/public_html\/api\/notifications\/mark-all-read.php\n---\ncreate.php\ndelete.php\nlist.php\nmark-all-read.php\nmark-read.php\n",
+            "is_error": false,
+            "time": 1785076653
+        },
+        {
+            "id": "msg_d9178d00c8",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "So:\n- `site-config.php` doesn't exist under `\/api\/settings\/` or anywhere else. The `landingService.getSiteConfig()` and `updateSiteConfig()` methods call endpoints that don't exist. This is a problem.\n- `unread-count.php` doesn't exist under `\/api\/notifications\/` - the notification service references it but it doesn't exist.\n\nLet me fix these issues. I need to:\n1. Create `\/api\/settings\/site-config.php` that handles both GET and POST for site configuration\n2. Create `\/api\/notifications\/unread-count.php` \n3. Or alternatively update the frontend services to use existing endpoints\n\nLet me check what the frontend services actually need and create the missing endpoints."
+                },
+                {
+                    "type": "text",
+                    "text": "Found missing endpoints. Let me check what's needed and create them:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_DTmTZ4PsAStg76fTmTkA2833",
+                    "name": "read_file",
+                    "input": {
+                        "path": "\/public_html\/api\/notifications\/list.php"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_IKMKqh6s8uZAWS6Prfrn8363",
+                    "name": "read_file",
+                    "input": {
+                        "path": "\/public_html\/api\/notifications\/create.php"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_02_WhFJtTu1TPh1Z2vXlgnw3077",
+                    "name": "read_file",
+                    "input": {
+                        "path": "\/public_html\/api\/notifications\/delete.php"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_03_4rPx0XuGYinXWpULXMU57978",
+                    "name": "read_file",
+                    "input": {
+                        "path": "\/public_html\/api\/notifications\/mark-read.php"
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_04_fC9NGDeJl7XsWuqi09ex4740",
+                    "name": "read_file",
+                    "input": {
+                        "path": "\/public_html\/api\/notifications\/mark-all-read.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 49249,
+                "completion_tokens": 379,
+                "total_tokens": 49628,
+                "prompt_cache_hit_tokens": 49152,
+                "prompt_cache_miss_tokens": 97,
+                "prompt_tokens_details": {
+                    "cached_tokens": 49152
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 156
+                },
+                "cached_tokens": 49152
+            },
+            "time": 1785076657
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_DTmTZ4PsAStg76fTmTkA2833",
+            "content": "    1 | <?php\n    2 | \/**\n    3 |  * Notifications API - List\n    4 |  * \n    5 |  * GET \/api\/notifications\/list.php?patient_id=123&unread_only=1\n    6 |  *\/\n    7 | \n    8 | require_once __DIR__ . '\/..\/database.php';\n    9 | require_once __DIR__ . '\/..\/helpers.php';\n   10 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   11 | \n   12 | handleCors();\n   13 | requireMethod('GET');\n   14 | \n   15 | $user = requireAuth();\n   16 | $pagination = getPaginationParams();\n   17 | \n   18 | try {\n   19 |     $db = Database::getInstance();\n   20 |     \n   21 |     $where = ['(n.user_id IS NULL OR n.user_id = :user_id)'];\n   22 |     $params = [':user_id' => $user['id']];\n   23 |     \n   24 |     $patientId = getParam('patient_id', '');\n   25 |     if ($patientId) {\n   26 |         $where[] = 'n.patient_id = :patient_id';\n   27 |         $params[':patient_id'] = (int)$patientId;\n   28 |     }\n   29 |     \n   30 |     if (getParam('unread_only', '')) {\n   31 |         $where[] = 'n.is_read = 0';\n   32 |     }\n   33 |     \n   34 |     $type = getParam('type', '');\n   35 |     if ($type) {\n   36 |         $where[] = 'n.type = :type';\n   37 |         $params[':type'] = $type;\n   38 |     }\n   39 |     \n   40 |     $whereClause = 'WHERE ' . implode(' AND ', $where);\n   41 |     \n   42 |     $countStmt = $db->prepare(\"SELECT COUNT(*) as total FROM notifications n $whereClause\");\n   43 |     $countStmt->execute($params);\n   44 |     $total = (int)$countStmt->fetch()['total'];\n   45 |     \n   46 |     $stmt = $db->prepare(\"\n   47 |         SELECT n.*, u.full_name as created_by_name\n   48 |         FROM notifications n\n   49 |         LEFT JOIN users u ON n.created_by = u.id\n   50 |         $whereClause\n   51 |         ORDER BY n.created_at DESC\n   52 |         LIMIT :limit OFFSET :offset\n   53 |     \");\n   54 |     \n   55 |     foreach ($params as $key => $val) {\n   56 |         $stmt->bindValue($key, $val);\n   57 |     }\n   58 |     $stmt->bindValue(':limit', $pagination['limit'], PDO::PARAM_INT);\n   59 |     $stmt->bindValue(':offset', $pagination['offset'], PDO::PARAM_INT);\n   60 |     $stmt->execute();\n   61 |     \n   62 |     $notifications = $stmt->fetchAll();\n   63 |     \n   64 |     paginatedResponse($notifications, $total, $pagination['page'], $pagination['limit']);\n   65 | } catch (\\Exception $e) {\n   66 |     error_log('List notifications error: ' . $e->getMessage());\n   67 |     errorResponse('Failed to fetch notifications', 500);\n   68 | }\n   69 |",
+            "is_error": false,
+            "time": 1785076657
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_IKMKqh6s8uZAWS6Prfrn8363",
+            "content": "    1 | <?php\n    2 | \/**\n    3 |  * Notifications API - Create\n    4 |  * \n    5 |  * POST \/api\/notifications\/create.php\n    6 |  *\/\n    7 | \n    8 | require_once __DIR__ . '\/..\/database.php';\n    9 | require_once __DIR__ . '\/..\/helpers.php';\n   10 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n   11 | \n   12 | handleCors();\n   13 | requireMethod('POST');\n   14 | \n   15 | $user = requireAuth();\n   16 | $input = getJsonInput();\n   17 | \n   18 | $missing = validateRequired($input, ['title', 'type']);\n   19 | if ($missing) {\n   20 |     errorResponse('Missing required fields', 400, ['missing_fields' => $missing]);\n   21 | }\n   22 | \n   23 | try {\n   24 |     $db = Database::getInstance();\n   25 |     \n   26 |     $stmt = $db->prepare('\n   27 |         INSERT INTO notifications (user_id, patient_id, type, title, message, link_url, created_by)\n   28 |         VALUES (:user_id, :patient_id, :notif_type, :title, :message, :link_url, :created_by)\n   29 |     ');\n   30 |     \n   31 |     $stmt->execute([\n   32 |         ':user_id' => isset($input['user_id']) ? (int)$input['user_id'] : null,\n   33 |         ':patient_id' => isset($input['patient_id']) ? (int)$input['patient_id'] : null,\n   34 |         ':notif_type' => $input['type'],\n   35 |         ':title' => $input['title'],\n   36 |         ':message' => $input['message'] ?? null,\n   37 |         ':link_url' => $input['link_url'] ?? $input['link'] ?? null,\n   38 |         ':created_by' => $user['id'],\n   39 |     ]);\n   40 |     \n   41 |     $notificationId = (int)$db->lastInsertId();\n   42 |     \n   43 |     successResponse(['id' => $notificationId], 'Notification created');\n   44 | } catch (\\Exception $e) {\n   45 |     error_log('Create notification error: ' . $e->getMessage());\n   46 |     errorResponse('Failed to create notification', 500);\n   47 | }\n   48 |",
+            "is_error": false,
+            "time": 1785076657
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_02_WhFJtTu1TPh1Z2vXlgnw3077",
+            "content": "    1 | <?php\n    2 | require_once __DIR__ . '\/..\/database.php';\n    3 | require_once __DIR__ . '\/..\/helpers.php';\n    4 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n    5 | handleCors();\n    6 | requireMethod('POST');\n    7 | $user = requireAuth();\n    8 | $input = getJsonInput();\n    9 | $id = (int)($input['id'] ?? null);\n   10 | if (!$id) errorResponse('Notification ID is required', 400);\n   11 | try {\n   12 |     $db = Database::getInstance();\n   13 |     $stmt = $db->prepare('DELETE FROM notifications WHERE id = :id AND user_id = :user_id');\n   14 |     $stmt->execute([':id' => $id, ':user_id' => $user['id']]);\n   15 |     successResponse(null, 'Notification deleted successfully');\n   16 | } catch (\\Exception $e) {\n   17 |     error_log('Delete notification error: ' . $e->getMessage());\n   18 |     errorResponse('Failed to delete notification', 500);\n   19 | }\n   20 |",
+            "is_error": false,
+            "time": 1785076657
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_03_4rPx0XuGYinXWpULXMU57978",
+            "content": "    1 | <?php\n    2 | require_once __DIR__ . '\/..\/database.php';\n    3 | require_once __DIR__ . '\/..\/helpers.php';\n    4 | require_once __DIR__ . '\/..\/auth\/middleware.php';\n    5 | handleCors();\n    6 | requireMethod('POST');\n    7 | $user = requireAuth();\n    8 | $input = getJsonInput();\n    9 | $id = (int)($input['id'] ?? null);\n   10 | if (!$id) errorResponse('Notification ID is required', 400);\n   11 | try {\n   12 |     $db = Database::getInstance();\n   13 |     $stmt = $db->prepare(\"UPDATE notifications SET is_read = 1, read_at = NOW() WHERE id = :id AND user_id = :user_id\");\n   14 |     $stmt->execute([':id' => $id, ':user_id' => $user['id']]);\n   15 |     successResponse(null, 'Notification marked as read');\n   16 | } catch (\\Exception $e) {\n   17 |     error_log('Mark read notification error: ' . $e->getMessage());\n   18 |     errorResponse('Failed to mark notification as read', 500);\n   19 | }\n   20 |",
+            "is_error": false,
+            "time": 1785076657
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_04_fC9NGDeJl7XsWuqi09ex4740",
+            "content": "    1 | <?php\n    2 | require_once __DIR__ . \"\/..\/database.php\";\n    3 | require_once __DIR__ . \"\/..\/helpers.php\";\n    4 | require_once __DIR__ . \"\/..\/auth\/middleware.php\";\n    5 | handleCors();\n    6 | requireMethod(\"POST\");\n    7 | $user = requireAuth();\n    8 | $unread = 0;\n    9 | try {\n   10 |     $db = Database::getInstance();\n   11 |     $stmt = $db->prepare(\"UPDATE notifications SET is_read = 1, read_at = NOW() WHERE user_id = :user_id AND is_read = :unread\");\n   12 |     $stmt->execute([\":user_id\" => $user[\"id\"], \":unread\" => $unread]);\n   13 |     successResponse(null, \"All notifications marked as read\");\n   14 | } catch (\\Exception $e) {\n   15 |     error_log(\"Mark all read error: \" . $e->getMessage());\n   16 |     errorResponse(\"Failed to mark notifications as read\", 500);\n   17 | }\n   18 |",
+            "is_error": false,
+            "time": 1785076657
         }
     ]
 }
