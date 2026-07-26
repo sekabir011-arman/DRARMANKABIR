@@ -141,10 +141,7 @@ export default function PatientForm({
     height: patient?.height != null ? cmToFeetInches(patient.height) : "",
     patientType: patient?.patientType ?? "outdoor",
   });
-
-  const [photo, setPhoto] = useState<string | null>(existingPhoto);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  // Check for duplicates when phone or email changes (debounced 50ms)
+  // Check for duplicates when phone or email changes (debounced 500ms)
   // Only for new patient registration (no existing patient prop)
   useEffect(() => {
     if (patient) return; // editing existing — skip
@@ -159,26 +156,32 @@ export default function PatientForm({
         return;
       }
 
+      // Search via API
       try {
-        // Check via API — not localStorage
+        const query = phone || email;
         const { patientService } = await import('../services/patients');
+        const results = await patientService.search(query);
+        
         let match: DuplicateMatch | null = null;
-
         if (phone) {
-          const results = await patientService.search(phone);
           const found = results.find((p) => p.phone?.trim() === phone);
           if (found) match = { patient: found, matchField: 'phone' };
         }
-
         if (!match && email) {
-          const results = await patientService.search(email);
           const found = results.find((p) => p.email?.trim().toLowerCase() === email);
           if (found) match = { patient: found, matchField: 'email' };
         }
-
         setDuplicateMatch(match);
-        if (match) setProceedAnyway(false);
       } catch {
+        setDuplicateMatch(null);
+      }
+      if (match) setProceedAnyway(false);
+    }, 500);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [form.phone, form.email, patient]);
         // Silently fail — duplicate check is a UX bonus, not critical
         setDuplicateMatch(null);
       }
