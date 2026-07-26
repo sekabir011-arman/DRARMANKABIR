@@ -16,7 +16,7 @@ requireMethod('POST');
 $user = requireAuth();
 $input = getJsonInput();
 
-$id = (int)($input['id'] ?? );
+$id = (int)($input['id'] ?? 0);
 if (!$id) errorResponse('Visit ID is required', 400);
 
 try {

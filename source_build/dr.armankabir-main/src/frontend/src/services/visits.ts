@@ -27,8 +27,8 @@ const visitMapping: Mapping<Visit> = {
 };
 
 const visitTransforms = {
-  id: (v: any) => toNumber(v) ?? ,
-  patientId: (v: any) => toNumber(v) ?? ,
+  id: (v: any) => toNumber(v) ?? 0,
+  patientId: (v: any) => toNumber(v) ?? 0,
   vitalSigns: (v: any) => (v && typeof v === 'object' ? v : null),
 };
 
@@ -72,7 +72,7 @@ export const visitService = {
   async create(data: CreateVisitData): Promise<Visit> {
     const payload: Record<string, any> = {
       patientId: data.patientId,
-      visitDate: data.visitDate || new Date().toISOString().split('T')[],
+      visitDate: data.visitDate || new Date().toISOString().split('T')[0],
       chiefComplaint: data.chiefComplaint || null,
       historyOfPresentIllness: data.historyOfPresentIllness || null,
       vitalSigns: data.vitalSigns || null,
