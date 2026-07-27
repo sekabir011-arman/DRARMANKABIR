@@ -51,6 +51,11 @@ export const admissionService = {
 
   // ── Beds ─────────────────────────────────────────────────────────────────────
 
+  /** Get all beds */
+  async getAllBeds(): Promise<BedRecord[]> {
+    return get<BedRecord[]>('/beds/list.php');
+  },
+
   /** Get all beds in a ward */
   async getBedsByWard(ward: string): Promise<BedRecord[]> {
     return get<BedRecord[]>('/beds/list.php', { ward });
