@@ -581,3 +581,63 @@ export function savePrescriptionRecords(patientId: number | string, records: any
     // silently ignore
   }
 }
+
+// ── Drug reminders helpers (localStorage) ────────────────────────────────
+
+function drugRemindersKey(patientId: number | string): string {
+  return `drugReminders_${patientId}`;
+}
+
+function loadDrugReminders(patientId: number | string): any[] {
+  try {
+    const raw = localStorage.getItem(drugRemindersKey(patientId));
+    if (!raw) return [];
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+}
+
+function saveDrugReminders(patientId: number | string, reminders: any[]): void {
+  try {
+    localStorage.setItem(drugRemindersKey(patientId), JSON.stringify(reminders));
+  } catch {
+    // silently ignore
+  }
+}
+
+export function autoPopulateDrugReminders(patientId: number | string, medications: any[], prescriptionId?: string): void {
+  const existing = loadDrugReminders(patientId);
+  const updated = [...existing];
+  for (const med of medications) {
+    const drugName = med.name || med.drugName || '';
+    if (!drugName) continue;
+    const existingIdx = updated.findIndex(
+      (r: any) => r.drugName.toLowerCase() === drugName.toLowerCase(),
+    );
+    if (existingIdx >= ) {
+      updated[existingIdx] = {
+        ...updated[existingIdx],
+        prescriptionId: prescriptionId ?? updated[existingIdx].prescriptionId,
+        dose: med.dose || updated[existingIdx].dose,
+        frequency: med.frequency || updated[existingIdx].frequency,
+        status: 'active',
+        lastModified: new Date().toISOString(),
+      };
+    } else {
+      updated.push({
+        id: `reminder_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+        patientId: String(patientId),
+        drugName,
+        dose: med.dose,
+        frequency: med.frequency,
+        startDate: new Date().toISOString(),
+        prescriptionId,
+        status: 'active',
+        reminderTimes: [],
+        lastModified: new Date().toISOString(),
+      });
+    }
+  }
+  saveDrugReminders(patientId, updated);
+}
