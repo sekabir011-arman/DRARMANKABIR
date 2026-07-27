@@ -615,7 +615,7 @@ export function autoPopulateDrugReminders(patientId: number | string, medication
     const existingIdx = updated.findIndex(
       (r: any) => r.drugName.toLowerCase() === drugName.toLowerCase(),
     );
-    if (existingIdx >= )) {
+    if (existingIdx >= 0) {
       updated[existingIdx] = {
         ...updated[existingIdx],
         prescriptionId: prescriptionId ?? updated[existingIdx].prescriptionId,
