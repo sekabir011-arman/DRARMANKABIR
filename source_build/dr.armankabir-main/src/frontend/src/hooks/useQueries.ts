@@ -353,6 +353,15 @@ export function useGetBedsByWard(ward: string | null) {
   });
 }
 
+/** Get all beds */
+export function useGetAllBeds() {
+  return useQuery<BedRecord[]>({
+    queryKey: ['beds', 'all'],
+    queryFn: () => admissionService.getAllBeds(),
+  });
+}
+
+/** Create a bed record (alias: useCreateBedRecord) */
 export function useCreateBed() {
   const qc = useQueryClient();
   return useMutation({

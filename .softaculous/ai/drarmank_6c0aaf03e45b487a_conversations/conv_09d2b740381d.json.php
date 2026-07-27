@@ -47,7 +47,7 @@
         }
     ],
     "created_at": 1785091298,
-    "updated_at": 1785132909,
+    "updated_at": 1785149841,
     "messages": [
         {
             "id": "msg_compact",
@@ -6521,6 +6521,13 @@
             "content": "   52 |   \/\/ \u2500\u2500 Beds \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   53 | \n   54 |   \/** Get all beds *\/\n   55 |   async getAllBeds(): Promise<BedRecord[]> {\n   56 |     return get<BedRecord[]>('\/beds\/list.php');\n   57 |   },\n   58 | \n   59 |   \/** Get all beds in a ward *\/\n   60 |   async getBedsByWard(ward: string): Promise<BedRecord[]> {\n   61 |     return get<BedRecord[]>('\/beds\/list.php', { ward });\n   62 |   },\n   63 | \n   64 |   \/** Create a new bed *\/\n   65 |   async createBed(data: { ward: string; bedNumber: string; bedType?: string }): Promise<BedRecord> {\n   66 |     return post<BedRecord>('\/beds\/create.php', data);\n   67 |   },\n   68 | \n   69 |   \/** Assign a patient to a bed *\/\n   70 |   async assignBed(bedId: number, patientId: number): Promise<void> {\n   71 |     await post('\/beds\/assign.php', { bed_id: bedId, patient_id: patientId });\n   72 |   },\n   73 | \n   74 |   \/** Release a bed *\/\n   75 |   async releaseBed(bedId: number): Promise<void> {\n   76 |     await post('\/beds\/release.php', { bed_id: bedId });\n   77 |   },\n   78 | };\n   79 |",
             "is_error": false,
             "time": 1785132909
+        },
+        {
+            "id": "msg_bffbfffa26",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785149841
         }
     ]
 }
