@@ -344,7 +344,6 @@ export function useCreateOrder() {
 }
 
 // ─── Beds & Admissions ─────────────────────────────────────────────────────
-
 export function useGetAllBeds() {
   return useQuery<BedRecord[]>({
     queryKey: ['beds'],
@@ -352,7 +351,37 @@ export function useGetAllBeds() {
   });
 }
 
+export function useGetBedsByWard(ward: string | null) {
+  return useQuery<BedRecord[]>({
+    queryKey: ['beds', ward],
+    queryFn: () => admissionService.getBedsByWard(ward!),
+    enabled: !!ward,
+  });
+}
+
 export function useCreateBedRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: { bedNumber: string; ward: string; hospitalName?: string; floor?: string; bedType?: string }) =>
+      admissionService.createBed({
+        ward: data.ward,
+        bedNumber: data.bedNumber,
+        bedType: data.bedType,
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['beds'] }),
+  });
+}
+
+export function useAssignBed() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: { bedId: number; patientId: number; patientName?: string }) =>
+      admissionService.assignBed(data.bedId, data.patientId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['beds'] }),
+  });
+}
+
+export function useCreateBed() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (data: { ward: string; bedNumber: string; bedType?: string }) =>
