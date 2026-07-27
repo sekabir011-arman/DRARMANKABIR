@@ -94,7 +94,7 @@ export const patientService = {
     );
     return {
       items: mapListFromApi<Patient>(result.items, patientMapping, patientTransforms),
-      total: result.pagination?.total 
+      total: result.pagination?.total ?? ,
     };
   },
 
