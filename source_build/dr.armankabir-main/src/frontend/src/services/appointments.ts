@@ -99,7 +99,7 @@ export const appointmentService = {
     };
     const result = await post<Record<string, any>>('/appointments/create.php', payload);
     // create.php returns { id, serial_number } — map via getById
-    const apptId = result?.id ?? ,
+    const apptId = result?.id 
     if (apptId) return (await this.getById(apptId))!;
     return result as unknown as Appointment;
   },
