@@ -33,7 +33,7 @@ const appointmentMapping: Mapping<Appointment> = {
 };
 
 const appointmentTransforms = {
-  id: (v: any) => toNumber(v) ?? ,
+  id: (v: any) => toNumber(v),
   patientId: (v: any) => toNumber(v),
   doctorId: (v: any) => toNumber(v),
   serialNumber: (v: any) => toNumber(v) ?? ,
