@@ -19,8 +19,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import type {
 import { storage } from "../lib/storageAdapter";
+import type {
   ClinicalNote,
   Encounter,
   Patient,
