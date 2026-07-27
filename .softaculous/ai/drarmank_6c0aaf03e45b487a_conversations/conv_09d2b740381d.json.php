@@ -47,7 +47,7 @@
         }
     ],
     "created_at": 1785091298,
-    "updated_at": 1785120936,
+    "updated_at": 1785120962,
     "messages": [
         {
             "id": "msg_compact",
@@ -3331,6 +3331,225 @@
             "content": "Layout.tsx:53:import { storage } from \"lib\/storageAdapter\";\n",
             "is_error": false,
             "time": 1785120936
+        },
+        {
+            "id": "msg_c8ad528943",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me fix that one too."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_vINThYpNJYnPo2O2J5Dp6670",
+                    "name": "edit_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/Layout.tsx",
+                        "old_string": "import { storage } from \"lib\/storageAdapter\";",
+                        "new_string": "import { storage } from \"@\/lib\/storageAdapter\";"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 75964,
+                "completion_tokens": 124,
+                "total_tokens": 76088,
+                "prompt_cache_hit_tokens": 75904,
+                "prompt_cache_miss_tokens": 60,
+                "prompt_tokens_details": {
+                    "cached_tokens": 75904
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 7
+                },
+                "cached_tokens": 75904
+            },
+            "time": 1785120939
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_vINThYpNJYnPo2O2J5Dp6670",
+            "content": "Edited source_build\/dr.armankabir-main\/src\/frontend\/src\/Layout.tsx (1 replacement)\n- import { storage } from \"lib\/storageAdapter\";\n+ import { storage } from \"@\/lib\/storageAdapter\";",
+            "is_error": false,
+            "time": 1785120940
+        },
+        {
+            "id": "msg_8c5c2e6f12",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now let me also check for any other potential build issues by scanning for `from \"` patterns that might be missing prefixes."
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me also check for other `from` import issues before rebuilding."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_Gigsj16dvG2e3zBByxiM3412",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && grep -rn 'from \"' --include=\"*.ts\" --include=\"*.tsx\" 2>\/dev\/null | grep -v 'from \"@\/lib\/' | grep -v 'from \"'\"'\"'.\/' | grep -v 'from \"'\"'\"'..\/' | grep -v 'from \"'\"'\"'@\/' | grep -v 'from \"'\"'\"'declarations\/' | grep -v 'node_modules'"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 76149,
+                "completion_tokens": 197,
+                "total_tokens": 76346,
+                "prompt_cache_hit_tokens": 76032,
+                "prompt_cache_miss_tokens": 117,
+                "prompt_tokens_details": {
+                    "cached_tokens": 76032
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 25
+                },
+                "cached_tokens": 76032
+            },
+            "time": 1785120944
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_Gigsj16dvG2e3zBByxiM3412",
+            "content": "components\/WalkInReceiptModal.tsx:6:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/WalkInReceiptModal.tsx:7:import { FileDown, MessageCircle, Receipt, RotateCcw, X } from \"lucide-react\";\ncomponents\/WalkInReceiptModal.tsx:8:import { useRef, useState } from \"react\";\ncomponents\/WalkInReceiptModal.tsx:9:import { toast } from \"sonner\";\ncomponents\/WalkInReceiptModal.tsx:10:import type { MoneyReceiptData, PaymentMethod, RefundRecord } from \"..\/types\";\ncomponents\/WalkInReceiptModal.tsx:18:} from \".\/MoneyReceipt\";\ncomponents\/NewPrescriptionMode.tsx:1:import { Alert, AlertDescription } from \"@\/components\/ui\/alert\";\ncomponents\/NewPrescriptionMode.tsx:2:import { Badge } from \"@\/components\/ui\/badge\";\ncomponents\/NewPrescriptionMode.tsx:3:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/NewPrescriptionMode.tsx:4:import { Input } from \"@\/components\/ui\/input\";\ncomponents\/NewPrescriptionMode.tsx:5:import { Label } from \"@\/components\/ui\/label\";\ncomponents\/NewPrescriptionMode.tsx:6:import { ScrollArea } from \"@\/components\/ui\/scroll-area\";\ncomponents\/NewPrescriptionMode.tsx:7:import { Tabs, TabsContent, TabsList, TabsTrigger } from \"@\/components\/ui\/tabs\";\ncomponents\/NewPrescriptionMode.tsx:8:import { Textarea } from \"@\/components\/ui\/textarea\";\ncomponents\/NewPrescriptionMode.tsx:9:import { getDoctorEmail } from \"@\/hooks\/useQueries\";\ncomponents\/NewPrescriptionMode.tsx:21:} from \"lucide-react\";\ncomponents\/NewPrescriptionMode.tsx:22:import { useEffect, useRef, useState } from \"react\";\ncomponents\/NewPrescriptionMode.tsx:23:import type { Medication } from \"..\/types\";\ncomponents\/NewPrescriptionMode.tsx:24:import { type DimsEntry, getDimsByDiagnosis, searchDims } from \".\/DimsData\";\ncomponents\/NewPrescriptionMode.tsx:25:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/PatientForm.tsx:1:import { Badge } from \"@\/components\/ui\/badge\";\ncomponents\/PatientForm.tsx:2:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/PatientForm.tsx:3:import { Input } from \"@\/components\/ui\/input\";\ncomponents\/PatientForm.tsx:4:import { Label } from \"@\/components\/ui\/label\";\ncomponents\/PatientForm.tsx:11:} from \"@\/components\/ui\/select\";\ncomponents\/PatientForm.tsx:19:} from \"lucide-react\";\ncomponents\/PatientForm.tsx:20:import { useEffect, useRef, useState } from \"react\";\ncomponents\/PatientForm.tsx:21:import type { Patient } from \"..\/types\";\ncomponents\/InvestigationPayment.tsx:6:import { Badge } from \"@\/components\/ui\/badge\";\ncomponents\/InvestigationPayment.tsx:7:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/InvestigationPayment.tsx:8:import { Checkbox } from \"@\/components\/ui\/checkbox\";\ncomponents\/InvestigationPayment.tsx:9:import { Input } from \"@\/components\/ui\/input\";\ncomponents\/InvestigationPayment.tsx:10:import { Label } from \"@\/components\/ui\/label\";\ncomponents\/InvestigationPayment.tsx:21:} from \"lucide-react\";\ncomponents\/InvestigationPayment.tsx:22:import { useEffect, useRef, useState } from \"react\";\ncomponents\/InvestigationPayment.tsx:23:import { toast } from \"sonner\";\ncomponents\/InvestigationPayment.tsx:30:} from \"..\/types\";\ncomponents\/InvestigationPayment.tsx:32:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/InvestigationPayment.tsx:43:} from \".\/MoneyReceipt\";\ncomponents\/TreatmentTemplates.ts:1:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/MoneyReceipt.tsx:13:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/MoneyReceipt.tsx:14:import { Input } from \"@\/components\/ui\/input\";\ncomponents\/MoneyReceipt.tsx:15:import { Label } from \"@\/components\/ui\/label\";\ncomponents\/MoneyReceipt.tsx:22:} from \"@\/components\/ui\/select\";\ncomponents\/MoneyReceipt.tsx:32:} from \"lucide-react\";\ncomponents\/MoneyReceipt.tsx:33:import { useRef, useState } from \"react\";\ncomponents\/MoneyReceipt.tsx:34:import { toast } from \"sonner\";\ncomponents\/MoneyReceipt.tsx:36:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/MoneyReceipt.tsx:41:} from \"..\/types\";\ncomponents\/AIAssistantPanel.tsx:9:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/AIAssistantPanel.tsx:10:import { ScrollArea } from \"@\/components\/ui\/scroll-area\";\ncomponents\/AIAssistantPanel.tsx:11:import { Tabs, TabsContent, TabsList, TabsTrigger } from \"@\/components\/ui\/tabs\";\ncomponents\/AIAssistantPanel.tsx:12:import { format } from \"date-fns\";\ncomponents\/AIAssistantPanel.tsx:25:} from \"lucide-react\";\ncomponents\/AIAssistantPanel.tsx:26:import { useRef, useState } from \"react\";\ncomponents\/AIAssistantPanel.tsx:27:import { toast } from \"sonner\";\ncomponents\/AIAssistantPanel.tsx:28:import { useEmailAuth } from \"..\/hooks\/useEmailAuth\";\ncomponents\/AIAssistantPanel.tsx:29:import { appendAuditLog } from \"..\/hooks\/useAdminSave\";\ncomponents\/AIAssistantPanel.tsx:30:import { checkExtendedClinicalAlerts } from \"..\/lib\/clinicalIntelligence\";\ncomponents\/AIAssistantPanel.tsx:31:import type { ExtendedAlertInput } from \"..\/types\";\ncomponents\/AIAssistantPanel.tsx:32:import type { Patient, Prescription, Visit } from \"..\/types\";\ncomponents\/PrescriptionForm.tsx:1:import { Alert, AlertDescription } from \"@\/components\/ui\/alert\";\ncomponents\/PrescriptionForm.tsx:2:import { Badge } from \"@\/components\/ui\/badge\";\ncomponents\/PrescriptionForm.tsx:3:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/PrescriptionForm.tsx:4:import { Input } from \"@\/components\/ui\/input\";\ncomponents\/PrescriptionForm.tsx:5:import { Label } from \"@\/components\/ui\/label\";\ncomponents\/PrescriptionForm.tsx:6:import { ScrollArea } from \"@\/components\/ui\/scroll-area\";\ncomponents\/PrescriptionForm.tsx:7:import { Textarea } from \"@\/components\/ui\/textarea\";\ncomponents\/PrescriptionForm.tsx:19:} from \"lucide-react\";\ncomponents\/PrescriptionForm.tsx:20:import { useEffect, useRef, useState } from \"react\";\ncomponents\/PrescriptionForm.tsx:21:import type { Medication } from \"..\/types\";\ncomponents\/PrescriptionForm.tsx:22:import { type DimsEntry, getDimsByDiagnosis, searchDims } from \".\/DimsData\";\ncomponents\/PrescriptionForm.tsx:23:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/MusculoskeletalExam.tsx:1:import { Badge } from \"@\/components\/ui\/badge\";\ncomponents\/MusculoskeletalExam.tsx:2:import { Card, CardContent, CardHeader, CardTitle } from \"@\/components\/ui\/card\";\ncomponents\/MusculoskeletalExam.tsx:3:import { Input } from \"@\/components\/ui\/input\";\ncomponents\/MusculoskeletalExam.tsx:4:import { Label } from \"@\/components\/ui\/label\";\ncomponents\/MusculoskeletalExam.tsx:5:import React, { useState } from \"react\";\ncomponents\/MusculoskeletalExam.tsx:6:import CustomBadgeAdder from \".\/CustomBadgeAdder\";\ncomponents\/GastrointestinalExam.tsx:1:import { Badge } from \"@\/components\/ui\/badge\";\ncomponents\/GastrointestinalExam.tsx:2:import { Card, CardContent, CardHeader, CardTitle } from \"@\/components\/ui\/card\";\ncomponents\/GastrointestinalExam.tsx:3:import { Label } from \"@\/components\/ui\/label\";\ncomponents\/GastrointestinalExam.tsx:4:import React, { useState } from \"react\";\ncomponents\/GastrointestinalExam.tsx:5:import CustomBadgeAdder from \".\/CustomBadgeAdder\";\ncomponents\/ui\/tabs.tsx:3:import * as TabsPrimitive from \"@radix-ui\/react-tabs\";\ncomponents\/ui\/tabs.tsx:4:import type * as React from \"react\";\ncomponents\/ui\/accordion.tsx:3:import * as AccordionPrimitive from \"@radix-ui\/react-accordion\";\ncomponents\/ui\/accordion.tsx:4:import { ChevronDownIcon } from \"lucide-react\";\ncomponents\/ui\/accordion.tsx:5:import type * as React from \"react\";\ncomponents\/ui\/table.tsx:3:import type * as React from \"react\";\ncomponents\/ui\/toggle-group.tsx:3:import * as ToggleGroupPrimitive from \"@radix-ui\/react-toggle-group\";\ncomponents\/ui\/toggle-group.tsx:4:import type { VariantProps } from \"class-variance-authority\";\ncomponents\/ui\/toggle-group.tsx:5:import * as React from \"react\";\ncomponents\/ui\/toggle-group.tsx:7:import { toggleVariants } from \"@\/components\/ui\/toggle\";\ncomponents\/ui\/card.tsx:1:import type * as React from \"react\";\ncomponents\/ui\/alert.tsx:1:import { type VariantProps, cva } from \"class-variance-authority\";\ncomponents\/ui\/alert.tsx:2:import type * as React from \"react\";\ncomponents\/ui\/context-menu.tsx:3:import * as ContextMenuPrimitive from \"@radix-ui\/react-context-menu\";\ncomponents\/ui\/context-menu.tsx:4:import { CheckIcon, ChevronRightIcon, CircleIcon } from \"lucide-react\";\ncomponents\/ui\/context-menu.tsx:5:import type * as React from \"react\";\ncomponents\/ui\/separator.tsx:3:import * as SeparatorPrimitive from \"@radix-ui\/react-separator\";\ncomponents\/ui\/separator.tsx:4:import type * as React from \"react\";\ncomponents\/ui\/collapsible.tsx:3:import * as CollapsiblePrimitive from \"@radix-ui\/react-collapsible\";\ncomponents\/ui\/progress.tsx:3:import * as ProgressPrimitive from \"@radix-ui\/react-progress\";\ncomponents\/ui\/progress.tsx:4:import type * as React from \"react\";\ncomponents\/ui\/scroll-area.tsx:3:import * as ScrollAreaPrimitive from \"@radix-ui\/react-scroll-area\";\ncomponents\/ui\/scroll-area.tsx:4:import type * as React from \"react\";\ncomponents\/ui\/navigation-menu.tsx:1:import * as NavigationMenuPrimitive from \"@radix-ui\/react-navigation-menu\";\ncomponents\/ui\/navigation-menu.tsx:2:import { cva } from \"class-variance-authority\";\ncomponents\/ui\/navigation-menu.tsx:3:import { ChevronDownIcon } from \"lucide-react\";\ncomponents\/ui\/navigation-menu.tsx:4:import type * as React from \"react\";\ncomponents\/ui\/resizable.tsx:3:import { GripVerticalIcon } from \"lucide-react\";\ncomponents\/ui\/resizable.tsx:4:import type * as React from \"react\";\ncomponents\/ui\/resizable.tsx:5:import * as ResizablePrimitive from \"react-resizable-panels\";\ncomponents\/ui\/toggle.tsx:3:import * as TogglePrimitive from \"@radix-ui\/react-toggle\";\ncomponents\/ui\/toggle.tsx:4:import { type VariantProps, cva } from \"class-variance-authority\";\ncomponents\/ui\/toggle.tsx:5:import type * as React from \"react\";\ncomponents\/ui\/pagination.tsx:5:} from \"lucide-react\";\ncomponents\/ui\/pagination.tsx:6:import type * as React from \"react\";\ncomponents\/ui\/pagination.tsx:8:import { type Button, buttonVariants } from \"@\/components\/ui\/button\";\ncomponents\/ui\/input.tsx:1:import type * as React from \"react\";\ncomponents\/ui\/breadcrumb.tsx:1:import { Slot } from \"@radix-ui\/react-slot\";\ncomponents\/ui\/breadcrumb.tsx:2:import { ChevronRight, MoreHorizontal } from \"lucide-react\";\ncomponents\/ui\/breadcrumb.tsx:3:import type * as React from \"react\";\ncomponents\/ui\/menubar.tsx:3:import * as MenubarPrimitive from \"@radix-ui\/react-menubar\";\ncomponents\/ui\/menubar.tsx:4:import { CheckIcon, ChevronRightIcon, CircleIcon } from \"lucide-react\";\ncomponents\/ui\/menubar.tsx:5:import type * as React from \"react\";\ncomponents\/ui\/input-otp.tsx:3:import { OTPInput, OTPInputContext } from \"input-otp\";\ncomponents\/ui\/input-otp.tsx:4:import { MinusIcon } from \"lucide-react\";\ncomponents\/ui\/input-otp.tsx:5:import * as React from \"react\";\ncomponents\/ui\/drawer.tsx:3:import type * as React from \"react\";\ncomponents\/ui\/drawer.tsx:4:import { Drawer as DrawerPrimitive } from \"vaul\";\ncomponents\/ui\/tooltip.tsx:3:import * as TooltipPrimitive from \"@radix-ui\/react-tooltip\";\ncomponents\/ui\/tooltip.tsx:4:import type * as React from \"react\";\ncomponents\/ui\/command.tsx:3:import { Command as CommandPrimitive } from \"cmdk\";\ncomponents\/ui\/command.tsx:4:import { SearchIcon } from \"lucide-react\";\ncomponents\/ui\/command.tsx:5:import type * as React from \"react\";\ncomponents\/ui\/command.tsx:13:} from \"@\/components\/ui\/dialog\";\ncomponents\/ui\/form.tsx:3:import type * as LabelPrimitive from \"@radix-ui\/react-label\";\ncomponents\/ui\/form.tsx:4:import { Slot } from \"@radix-ui\/react-slot\";\ncomponents\/ui\/form.tsx:5:import * as React from \"react\";\ncomponents\/ui\/form.tsx:14:} from \"react-hook-form\";\ncomponents\/ui\/form.tsx:16:import { Label } from \"@\/components\/ui\/label\";\ncomponents\/ui\/badge.tsx:1:import { Slot } from \"@radix-ui\/react-slot\";\ncomponents\/ui\/badge.tsx:2:import { type VariantProps, cva } from \"class-variance-authority\";\ncomponents\/ui\/badge.tsx:3:import type * as React from \"react\";\ncomponents\/ui\/sheet.tsx:3:import * as SheetPrimitive from \"@radix-ui\/react-dialog\";\ncomponents\/ui\/sheet.tsx:4:import { XIcon } from \"lucide-react\";\ncomponents\/ui\/sheet.tsx:5:import type * as React from \"react\";\ncomponents\/ui\/dropdown-menu.tsx:3:import * as DropdownMenuPrimitive from \"@radix-ui\/react-dropdown-menu\";\ncomponents\/ui\/dropdown-menu.tsx:4:import { CheckIcon, ChevronRightIcon, CircleIcon } from \"lucide-react\";\ncomponents\/ui\/dropdown-menu.tsx:5:import type * as React from \"react\";\ncomponents\/ui\/avatar.tsx:3:import * as AvatarPrimitive from \"@radix-ui\/react-avatar\";\ncomponents\/ui\/avatar.tsx:4:import type * as React from \"react\";\ncomponents\/ui\/aspect-ratio.tsx:3:import * as AspectRatioPrimitive from \"@radix-ui\/react-aspect-ratio\";\ncomponents\/ui\/sonner.tsx:3:import { useTheme } from \"next-themes\";\ncomponents\/ui\/sonner.tsx:4:import { Toaster as Sonner, type ToasterProps } from \"sonner\";\ncomponents\/ui\/hover-card.tsx:3:import * as HoverCardPrimitive from \"@radix-ui\/react-hover-card\";\ncomponents\/ui\/hover-card.tsx:4:import type * as React from \"react\";\ncomponents\/ui\/switch.tsx:3:import * as SwitchPrimitive from \"@radix-ui\/react-switch\";\ncomponents\/ui\/switch.tsx:4:import type * as React from \"react\";\ncomponents\/ui\/alert-dialog.tsx:3:import * as AlertDialogPrimitive from \"@radix-ui\/react-alert-dialog\";\ncomponents\/ui\/alert-dialog.tsx:4:import type * as React from \"react\";\ncomponents\/ui\/alert-dialog.tsx:6:import { buttonVariants } from \"@\/components\/ui\/button\";\ncomponents\/ui\/sidebar.tsx:3:import { Slot } from \"@radix-ui\/react-slot\";\ncomponents\/ui\/sidebar.tsx:4:import { type VariantProps, cva } from \"class-variance-authority\";\ncomponents\/ui\/sidebar.tsx:5:import { PanelLeftIcon } from \"lucide-react\";\ncomponents\/ui\/sidebar.tsx:6:import * as React from \"react\";\ncomponents\/ui\/sidebar.tsx:8:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/ui\/sidebar.tsx:9:import { Input } from \"@\/components\/ui\/input\";\ncomponents\/ui\/sidebar.tsx:10:import { Separator } from \"@\/components\/ui\/separator\";\ncomponents\/ui\/sidebar.tsx:17:} from \"@\/components\/ui\/sheet\";\ncomponents\/ui\/sidebar.tsx:18:import { Skeleton } from \"@\/components\/ui\/skeleton\";\ncomponents\/ui\/sidebar.tsx:24:} from \"@\/components\/ui\/tooltip\";\ncomponents\/ui\/sidebar.tsx:25:import { useIsMobile } from \"@\/hooks\/use-mobile\";\ncomponents\/ui\/checkbox.tsx:3:import * as CheckboxPrimitive from \"@radix-ui\/react-checkbox\";\ncomponents\/ui\/checkbox.tsx:4:import { CheckIcon } from \"lucide-react\";\ncomponents\/ui\/checkbox.tsx:5:import type * as React from \"react\";\ncomponents\/ui\/label.tsx:3:import * as LabelPrimitive from \"@radix-ui\/react-label\";\ncomponents\/ui\/label.tsx:4:import type * as React from \"react\";\ncomponents\/ui\/calendar.tsx:7:} from \"lucide-react\";\ncomponents\/ui\/calendar.tsx:8:import * as React from \"react\";\ncomponents\/ui\/calendar.tsx:13:} from \"react-day-picker\";\ncomponents\/ui\/calendar.tsx:15:import { Button, buttonVariants } from \"@\/components\/ui\/button\";\ncomponents\/ui\/textarea.tsx:1:import type * as React from \"react\";\ncomponents\/ui\/dialog.tsx:3:import * as DialogPrimitive from \"@radix-ui\/react-dialog\";\ncomponents\/ui\/dialog.tsx:4:import { XIcon } from \"lucide-react\";\ncomponents\/ui\/dialog.tsx:5:import type * as React from \"react\";\ncomponents\/ui\/select.tsx:3:import * as SelectPrimitive from \"@radix-ui\/react-select\";\ncomponents\/ui\/select.tsx:4:import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from \"lucide-react\";\ncomponents\/ui\/select.tsx:5:import type * as React from \"react\";\ncomponents\/ui\/button.tsx:1:import { Slot } from \"@radix-ui\/react-slot\";\ncomponents\/ui\/button.tsx:2:import { type VariantProps, cva } from \"class-variance-authority\";\ncomponents\/ui\/button.tsx:3:import type * as React from \"react\";\ncomponents\/ui\/popover.tsx:3:import * as PopoverPrimitive from \"@radix-ui\/react-popover\";\ncomponents\/ui\/popover.tsx:4:import type * as React from \"react\";\ncomponents\/ui\/carousel.tsx:5:} from \"embla-carousel-react\";\ncomponents\/ui\/carousel.tsx:6:import { ArrowLeft, ArrowRight } from \"lucide-react\";\ncomponents\/ui\/carousel.tsx:7:import * as React from \"react\";\ncomponents\/ui\/carousel.tsx:9:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/ui\/radio-group.tsx:3:import * as RadioGroupPrimitive from \"@radix-ui\/react-radio-group\";\ncomponents\/ui\/radio-group.tsx:4:import { CircleIcon } from \"lucide-react\";\ncomponents\/ui\/radio-group.tsx:5:import type * as React from \"react\";\ncomponents\/ui\/chart.tsx:3:import * as React from \"react\";\ncomponents\/ui\/chart.tsx:4:import * as RechartsPrimitive from \"recharts\";\ncomponents\/ui\/slider.tsx:3:import * as SliderPrimitive from \"@radix-ui\/react-slider\";\ncomponents\/ui\/slider.tsx:4:import * as React from \"react\";\ncomponents\/DailyProgressNote.tsx:12:import { Badge } from \"@\/components\/ui\/badge\";\ncomponents\/DailyProgressNote.tsx:13:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/DailyProgressNote.tsx:14:import { Input } from \"@\/components\/ui\/input\";\ncomponents\/DailyProgressNote.tsx:15:import { Label } from \"@\/components\/ui\/label\";\ncomponents\/DailyProgressNote.tsx:16:import { Textarea } from \"@\/components\/ui\/textarea\";\ncomponents\/DailyProgressNote.tsx:17:import { format } from \"date-fns\";\ncomponents\/DailyProgressNote.tsx:42:} from \"lucide-react\";\ncomponents\/DailyProgressNote.tsx:43:import { useEffect, useMemo, useRef, useState } from \"react\";\ncomponents\/DailyProgressNote.tsx:44:import { toast } from \"sonner\";\ncomponents\/DailyProgressNote.tsx:45:import { useRolePermissions } from \"..\/hooks\/useRolePermissions\";\ncomponents\/DailyProgressNote.tsx:46:import type { NoteState } from \"..\/pages\/WardRound\";\ncomponents\/DailyProgressNote.tsx:47:import { saveNoteState } from \"..\/pages\/WardRound\";\ncomponents\/DailyProgressNote.tsx:48:import type { Prescription, StaffRole, VitalSigns } from \"..\/types\";\ncomponents\/DailyProgressNote.tsx:49:import { STAFF_ROLE_LABELS } from \"..\/types\";\ncomponents\/DailyProgressNote.tsx:50:import DrainMonitor from \".\/DrainMonitor\";\ncomponents\/DailyProgressNote.tsx:51:import IOChart from \".\/IOChart\";\ncomponents\/DailyProgressNote.tsx:52:import SystemicExaminationSection from \".\/SystemicExaminationSection\";\ncomponents\/DailyProgressNote.tsx:53:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/PrescriptionEnhancements.tsx:10:import { Badge } from \"@\/components\/ui\/badge\";\ncomponents\/PrescriptionEnhancements.tsx:11:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/PrescriptionEnhancements.tsx:12:import { Skeleton } from \"@\/components\/ui\/skeleton\";\ncomponents\/PrescriptionEnhancements.tsx:13:import { format } from \"date-fns\";\ncomponents\/PrescriptionEnhancements.tsx:22:} from \"lucide-react\";\ncomponents\/PrescriptionEnhancements.tsx:23:import { useState } from \"react\";\ncomponents\/PrescriptionEnhancements.tsx:24:import type { MedicationWithMeta, Prescription } from \"..\/types\";\ncomponents\/PrescriptionEnhancements.tsx:28:} from \"..\/utils\/clinicalUtils\";\ncomponents\/TestimonialsSection.tsx:1:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/TestimonialsSection.tsx:2:import { Card, CardContent } from \"@\/components\/ui\/card\";\ncomponents\/TestimonialsSection.tsx:8:} from \"@\/components\/ui\/dialog\";\ncomponents\/TestimonialsSection.tsx:9:import { Input } from \"@\/components\/ui\/input\";\ncomponents\/TestimonialsSection.tsx:10:import { Label } from \"@\/components\/ui\/label\";\ncomponents\/TestimonialsSection.tsx:11:import { Textarea } from \"@\/components\/ui\/textarea\";\ncomponents\/TestimonialsSection.tsx:19:} from \"lucide-react\";\ncomponents\/TestimonialsSection.tsx:20:import { motion } from \"motion\/react\";\ncomponents\/TestimonialsSection.tsx:21:import { useCallback, useState } from \"react\";\ncomponents\/TestimonialsSection.tsx:22:import { toast } from \"sonner\";\ncomponents\/TestimonialsSection.tsx:23:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/PrescriptionHeaderPanel.tsx:6:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/PrescriptionHeaderPanel.tsx:12:} from \"@\/components\/ui\/dialog\";\ncomponents\/PrescriptionHeaderPanel.tsx:13:import { Input } from \"@\/components\/ui\/input\";\ncomponents\/PrescriptionHeaderPanel.tsx:14:import { Label } from \"@\/components\/ui\/label\";\ncomponents\/PrescriptionHeaderPanel.tsx:24:} from \"lucide-react\";\ncomponents\/PrescriptionHeaderPanel.tsx:25:import { useRef, useState } from \"react\";\ncomponents\/PrescriptionHeaderPanel.tsx:26:import { toast } from \"sonner\";\ncomponents\/PrescriptionHeaderPanel.tsx:31:} from \"..\/hooks\/useQueries\";\ncomponents\/PrescriptionHeaderPanel.tsx:32:import type { PrescriptionHeaderType } from \"..\/types\";\ncomponents\/PrescriptionHeaderPanel.tsx:33:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/ClassroomSettings.tsx:1:import { Badge } from \"@\/components\/ui\/badge\";\ncomponents\/ClassroomSettings.tsx:2:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/ClassroomSettings.tsx:9:} from \"@\/components\/ui\/card\";\ncomponents\/ClassroomSettings.tsx:10:import { Checkbox } from \"@\/components\/ui\/checkbox\";\ncomponents\/ClassroomSettings.tsx:11:import { Input } from \"@\/components\/ui\/input\";\ncomponents\/ClassroomSettings.tsx:12:import { Label } from \"@\/components\/ui\/label\";\ncomponents\/ClassroomSettings.tsx:19:} from \"@\/components\/ui\/select\";\ncomponents\/ClassroomSettings.tsx:20:import { Tabs, TabsContent, TabsList, TabsTrigger } from \"@\/components\/ui\/tabs\";\ncomponents\/ClassroomSettings.tsx:21:import { Textarea } from \"@\/components\/ui\/textarea\";\ncomponents\/ClassroomSettings.tsx:22:import type { DoctorKey } from \"@\/data\/doctorsData\";\ncomponents\/ClassroomSettings.tsx:23:import { useDoctorContent } from \"@\/hooks\/useDoctorContent\";\ncomponents\/ClassroomSettings.tsx:42:} from \"lucide-react\";\ncomponents\/ClassroomSettings.tsx:43:import { useRef, useState } from \"react\";\ncomponents\/ClassroomSettings.tsx:44:import { toast } from \"sonner\";\ncomponents\/ConsentForm.tsx:5:import { Badge } from \"@\/components\/ui\/badge\";\ncomponents\/ConsentForm.tsx:6:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/ConsentForm.tsx:7:import { Label } from \"@\/components\/ui\/label\";\ncomponents\/ConsentForm.tsx:8:import { Textarea } from \"@\/components\/ui\/textarea\";\ncomponents\/ConsentForm.tsx:9:import { format } from \"date-fns\";\ncomponents\/ConsentForm.tsx:10:import { CheckCircle2, Printer, X } from \"lucide-react\";\ncomponents\/ConsentForm.tsx:11:import { useCallback, useEffect, useRef, useState } from \"react\";\ncomponents\/ConsentForm.tsx:12:import { toast } from \"sonner\";\ncomponents\/ConsentForm.tsx:13:import { useEmailAuth } from \"..\/hooks\/useEmailAuth\";\ncomponents\/ConsentForm.tsx:14:import type { Patient } from \"..\/types\";\ncomponents\/ConsentForm.tsx:15:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/LandingAdmin\/AnnouncementManager.tsx:1:import React, { useState, useCallback, useMemo } from \"react\";\ncomponents\/LandingAdmin\/AnnouncementManager.tsx:2:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/LandingAdmin\/AnnouncementManager.tsx:3:import { Dialog, DialogContent, DialogHeader, DialogTitle } from \"@\/components\/ui\/dialog\";\ncomponents\/LandingAdmin\/AnnouncementManager.tsx:4:import { Input } from \"@\/components\/ui\/input\";\ncomponents\/LandingAdmin\/AnnouncementManager.tsx:5:import { Label } from \"@\/components\/ui\/label\";\ncomponents\/LandingAdmin\/AnnouncementManager.tsx:6:import { Textarea } from \"@\/components\/ui\/textarea\";\ncomponents\/LandingAdmin\/AnnouncementManager.tsx:7:import { XCircle, CheckCircle2 } from \"lucide-react\";\ncomponents\/LandingAdmin\/AnnouncementManager.tsx:8:import { toast } from \"sonner\";\ncomponents\/PatientTimeline.tsx:6:import { Badge } from \"@\/components\/ui\/badge\";\ncomponents\/PatientTimeline.tsx:7:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/PatientTimeline.tsx:8:import { Checkbox } from \"@\/components\/ui\/checkbox\";\ncomponents\/PatientTimeline.tsx:9:import { Label } from \"@\/components\/ui\/label\";\ncomponents\/PatientTimeline.tsx:10:import { format } from \"date-fns\";\ncomponents\/PatientTimeline.tsx:25:} from \"lucide-react\";\ncomponents\/PatientTimeline.tsx:26:import { useMemo, useState } from \"react\";\ncomponents\/PatientTimeline.tsx:27:import { getDoctorEmail } from \"..\/hooks\/useQueries\";\ncomponents\/PatientTimeline.tsx:28:import type { Patient } from \"..\/types\";\ncomponents\/PatientTimeline.tsx:29:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/AdmitPatientDialog.tsx:5:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/AdmitPatientDialog.tsx:6:import { Checkbox } from \"@\/components\/ui\/checkbox\";\ncomponents\/AdmitPatientDialog.tsx:12:} from \"@\/components\/ui\/dialog\";\ncomponents\/AdmitPatientDialog.tsx:13:import { Input } from \"@\/components\/ui\/input\";\ncomponents\/AdmitPatientDialog.tsx:14:import { Label } from \"@\/components\/ui\/label\";\ncomponents\/AdmitPatientDialog.tsx:15:import { format } from \"date-fns\";\ncomponents\/AdmitPatientDialog.tsx:16:import { BedDouble, Building2, Stethoscope, UserCheck } from \"lucide-react\";\ncomponents\/AdmitPatientDialog.tsx:17:import { useState } from \"react\";\ncomponents\/AdmitPatientDialog.tsx:18:import { toast } from \"sonner\";\ncomponents\/AdmitPatientDialog.tsx:19:import { loadRegistry } from \"..\/hooks\/useAdminSave\";\ncomponents\/AdmitPatientDialog.tsx:24:} from \"..\/hooks\/useQueries\";\ncomponents\/AdmitPatientDialog.tsx:25:import type { Patient, Prescription, Visit } from \"..\/types\";\ncomponents\/AdmitPatientDialog.tsx:26:import type { StaffRole } from \"..\/types\";\ncomponents\/AdmitPatientDialog.tsx:27:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/ClinicalAlertsPanel.tsx:6:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/ClinicalAlertsPanel.tsx:16:} from \"lucide-react\";\ncomponents\/ClinicalAlertsPanel.tsx:17:import { useEffect, useRef, useState } from \"react\";\ncomponents\/ClinicalAlertsPanel.tsx:18:import { toast } from \"sonner\";\ncomponents\/ClinicalAlertsPanel.tsx:22:} from \"..\/lib\/clinicalIntelligence\";\ncomponents\/ClinicalAlertsPanel.tsx:24:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/ClinicalAlertsPanel.tsx:29:} from \"..\/types\";\ncomponents\/InvestigationTracker.tsx:5:import { Badge } from \"@\/components\/ui\/badge\";\ncomponents\/InvestigationTracker.tsx:6:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/InvestigationTracker.tsx:7:import { Input } from \"@\/components\/ui\/input\";\ncomponents\/InvestigationTracker.tsx:8:import { Label } from \"@\/components\/ui\/label\";\ncomponents\/InvestigationTracker.tsx:15:} from \"@\/components\/ui\/select\";\ncomponents\/InvestigationTracker.tsx:16:import { Textarea } from \"@\/components\/ui\/textarea\";\ncomponents\/InvestigationTracker.tsx:26:} from \"lucide-react\";\ncomponents\/InvestigationTracker.tsx:27:import { useState } from \"react\";\ncomponents\/InvestigationTracker.tsx:28:import { toast } from \"sonner\";\ncomponents\/InvestigationTracker.tsx:29:import { buildWhatsAppUrl, normalisePhone } from \"..\/lib\/whatsappTemplates\";\ncomponents\/InvestigationTracker.tsx:30:import type { StaffRole } from \"..\/types\";\ncomponents\/InvestigationTracker.tsx:31:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/VitalVerification.tsx:5:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/VitalVerification.tsx:11:} from \"@\/components\/ui\/dialog\";\ncomponents\/VitalVerification.tsx:12:import { Textarea } from \"@\/components\/ui\/textarea\";\ncomponents\/VitalVerification.tsx:13:import { format } from \"date-fns\";\ncomponents\/VitalVerification.tsx:21:} from \"lucide-react\";\ncomponents\/VitalVerification.tsx:22:import { useState } from \"react\";\ncomponents\/VitalVerification.tsx:23:import { toast } from \"sonner\";\ncomponents\/VitalVerification.tsx:24:import { useEmailAuth } from \"..\/hooks\/useEmailAuth\";\ncomponents\/VitalVerification.tsx:25:import { useRolePermissions } from \"..\/hooks\/useRolePermissions\";\ncomponents\/VitalVerification.tsx:26:import type { VitalVerificationStatus } from \"..\/types\";\ncomponents\/VitalVerification.tsx:27:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/CustomBadgeAdder.tsx:1:import { Badge } from \"@\/components\/ui\/badge\";\ncomponents\/CustomBadgeAdder.tsx:2:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/CustomBadgeAdder.tsx:3:import { Input } from \"@\/components\/ui\/input\";\ncomponents\/CustomBadgeAdder.tsx:4:import { Check, Pencil, Plus, X } from \"lucide-react\";\ncomponents\/CustomBadgeAdder.tsx:5:import { useRef, useState } from \"react\";\ncomponents\/PatientChat.tsx:1:import { Badge } from \"@\/components\/ui\/badge\";\ncomponents\/PatientChat.tsx:2:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/PatientChat.tsx:3:import { Label } from \"@\/components\/ui\/label\";\ncomponents\/PatientChat.tsx:4:import { ScrollArea } from \"@\/components\/ui\/scroll-area\";\ncomponents\/PatientChat.tsx:5:import { Textarea } from \"@\/components\/ui\/textarea\";\ncomponents\/PatientChat.tsx:6:import { format, formatDistanceToNow } from \"date-fns\";\ncomponents\/PatientChat.tsx:16:} from \"lucide-react\";\ncomponents\/PatientChat.tsx:17:import { useEffect, useRef, useState } from \"react\";\ncomponents\/PatientChat.tsx:18:import { toast } from \"sonner\";\ncomponents\/PatientChat.tsx:19:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/PreviousInvestigationTable.tsx:1:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/PreviousInvestigationTable.tsx:7:} from \"@\/components\/ui\/dialog\";\ncomponents\/PreviousInvestigationTable.tsx:8:import { Input } from \"@\/components\/ui\/input\";\ncomponents\/PreviousInvestigationTable.tsx:9:import { Label } from \"@\/components\/ui\/label\";\ncomponents\/PreviousInvestigationTable.tsx:17:} from \"@\/components\/ui\/table\";\ncomponents\/PreviousInvestigationTable.tsx:26:} from \"lucide-react\";\ncomponents\/PreviousInvestigationTable.tsx:27:import { useRef, useState } from \"react\";\ncomponents\/PreviousInvestigationTable.tsx:37:} from \"recharts\";\ncomponents\/PreviousInvestigationTable.tsx:38:import { toast } from \"sonner\";\ncomponents\/DrainMonitor.tsx:6:import { Button } from \"@\/components\/ui\/button\";\ncomponents\/DrainMonitor.tsx:7:import { Input } from \"@\/components\/ui\/input\";\ncomponents\/DrainMonitor.tsx:8:import { Label } from \"@\/components\/ui\/label\";\ncomponents\/DrainMonitor.tsx:9:import { format } from \"date-fns\";\ncomponents\/DrainMonitor.tsx:10:import { AlertTriangle, FlaskConical, Plus, Trash2 } from \"lucide-react\";\ncomponents\/DrainMonitor.tsx:11:import { useMemo, useState } from \"react\"\n... [output truncated]",
+            "is_error": false,
+            "time": 1785120944
+        },
+        {
+            "id": "msg_44e8a9e440",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The `..\/lib\/storageAdapter` imports are fine - they use relative paths which resolve correctly in Vite. The issue was with `\"lib\/storageAdapter\"` which didn't have the `@\/` prefix. Let me check if there are more bare imports like that."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_UZDxqXKGQtbc9Z8QOTB49837",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && grep -rn 'from \"' --include=\"*.ts\" --include=\"*.tsx\" 2>\/dev\/null | grep '\"lib\/' | grep -v '\"..\/lib\/' | grep -v '\"@\/lib\/'"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 84543,
+                "completion_tokens": 171,
+                "total_tokens": 84714,
+                "prompt_cache_hit_tokens": 76288,
+                "prompt_cache_miss_tokens": 8255,
+                "prompt_tokens_details": {
+                    "cached_tokens": 76288
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 58
+                },
+                "cached_tokens": 76288
+            },
+            "time": 1785120948
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_UZDxqXKGQtbc9Z8QOTB49837",
+            "content": "\n[Exit code: 1]",
+            "is_error": true,
+            "time": 1785120949
+        },
+        {
+            "id": "msg_b62d66baf1",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "text",
+                    "text": "Good - no more bare `\"lib\/\"` imports. Let's try the build again."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ET_sxARMgByTMYo5X1fuOzw6393",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend && export PATH=\"\/opt\/alt\/alt-nodejs20\/root\/usr\/bin:$PATH\" && npm run build 2>&1",
+                        "timeout": 120
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 84733,
+                "completion_tokens": 128,
+                "total_tokens": 84861,
+                "prompt_cache_hit_tokens": 84608,
+                "prompt_cache_miss_tokens": 125,
+                "prompt_tokens_details": {
+                    "cached_tokens": 84608
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 0
+                },
+                "cached_tokens": 84608
+            },
+            "time": 1785120951
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ET_sxARMgByTMYo5X1fuOzw6393",
+            "content": "\n> @caffeine\/template-frontend@0.0.0 build\n> vite build && pnpm copy:env\n\nx Build failed in 5.70s\nerror during build:\n[vite:esbuild] Transform failed with 1 error:\n\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/AppointmentPayment.tsx:45:7: ERROR: Expected \"as\" but found \"{\"\nfile: \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/AppointmentPayment.tsx:45:7\n\nExpected \"as\" but found \"{\"\n43 |  } from \"..\/components\/MoneyReceipt\";\n44 |  import type {\n45 |  import { storage } from \"..\/lib\/storageAdapter\";\n   |         ^\n46 |    InvoiceState,\n47 |    MoneyReceiptData,\n\n    at failureErrorWithLog (\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/node_modules\/esbuild\/lib\/main.js:1472:15)\n    at \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/node_modules\/esbuild\/lib\/main.js:755:50\n    at responseCallbacks.<computed> (\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/node_modules\/esbuild\/lib\/main.js:622:9)\n    at handleIncomingPacket (\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/node_modules\/esbuild\/lib\/main.js:677:12)\n    at Socket.readFromStdout (\/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/node_modules\/esbuild\/lib\/main.js:600:7)\n    at Socket.emit (node:events:518:28)\n    at addChunk (node:internal\/streams\/readable:561:12)\n    at readableAddChunkPushByteMode (node:internal\/streams\/readable:512:3)\n    at Readable.push (node:internal\/streams\/readable:392:5)\n    at Pipe.onStreamRead (node:internal\/stream_base_commons:191:23)\n\n[Exit code: 1]",
+            "is_error": true,
+            "time": 1785120959
+        },
+        {
+            "id": "msg_6a57d3c6b7",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "More corrupted imports. It seems like multiple files have been corrupted. Let me look at line 44-48 of AppointmentPayment.tsx."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_kxMkTZ01du7T8wXjUNkx9630",
+                    "name": "read_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/AppointmentPayment.tsx",
+                        "offset": 40,
+                        "limit": 15
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 85373,
+                "completion_tokens": 127,
+                "total_tokens": 85500,
+                "prompt_cache_hit_tokens": 84608,
+                "prompt_cache_miss_tokens": 765,
+                "prompt_tokens_details": {
+                    "cached_tokens": 84608
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 28
+                },
+                "cached_tokens": 84608
+            },
+            "time": 1785120962
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_kxMkTZ01du7T8wXjUNkx9630",
+            "content": "   40 |   generateTypedReceiptNumber,\n   41 |   saveReceiptToStore,\n   42 |   sendReceiptWhatsApp,\n   43 | } from \"..\/components\/MoneyReceipt\";\n   44 | import type {\n   45 | import { storage } from \"..\/lib\/storageAdapter\";\n   46 |   InvoiceState,\n   47 |   MoneyReceiptData,\n   48 |   PaymentMethod,\n   49 |   RefundRecord,\n   50 | } from \"..\/types\";\n   51 | \n   52 | \/\/ \u2500\u2500 Constants \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   53 | \n   54 | const APT_PAYMENTS_KEY = \"appointmentPayments\";",
+            "is_error": false,
+            "time": 1785120962
         }
     ]
 }

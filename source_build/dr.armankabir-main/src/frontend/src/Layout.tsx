@@ -50,7 +50,7 @@ import {
   STAFF_ROLE_TEXT_COLOR,
 } from "./types";
 import type { StaffRole } from "./types";
-import { storage } from "lib/storageAdapter";
+import { storage } from "@/lib/storageAdapter";
 
 // Roles
 const MED_ALERT_ROLES: StaffRole[] = ["nurse", "intern_doctor"];
