@@ -47,7 +47,7 @@
         }
     ],
     "created_at": 1785091298,
-    "updated_at": 1785151105,
+    "updated_at": 1785151125,
     "messages": [
         {
             "id": "msg_compact",
@@ -6906,6 +6906,225 @@
             "content": "continue",
             "attachments": [],
             "time": 1785151105
+        },
+        {
+            "id": "msg_5384bcca81",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The issue is clear - there are duplicate function definitions in `useQueries.ts`. Lines 347-391 define `useGetAllBeds`, `useGetBedsByWard`, `useCreateBedRecord`, `useAssignBed`, `useCreateBed`. Then lines 393-426 have duplicates of `useAssignBed`, `useGetBedsByWard`, `useGetAllBeds`, `useCreateBed`.\n\nThis causes a build error because of duplicate exports. I need to remove lines 393-426 which are the duplicate set."
+                },
+                {
+                    "type": "text",
+                    "text": "The issue is duplicate function declarations. Lines 393-426 are duplicates of lines 347-391. I need to remove the duplicates."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_g4goxBdNQiuZBnq1aAXP9038",
+                    "name": "edit_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts",
+                        "old_string": "  });\n}\n\nexport function useAssignBed() {\n  const qc = useQueryClient();\n  return useMutation({\n    mutationFn: async (data: { bedId: number; patientId: number }) =>\n      admissionService.assignBed(data.bedId, data.patientId),\n    onSuccess: () => qc.invalidateQueries({ queryKey: ['beds'] }),\n  });\n}\n\nexport function useGetBedsByWard(ward: string | null) {\n  return useQuery<BedRecord[]>({\n    queryKey: ['beds', ward],\n    queryFn: () => admissionService.getBedsByWard(ward!),\n    enabled: !!ward,\n  });\n}\n\n\/** Get all beds *\/\nexport function useGetAllBeds() {\n  return useQuery<BedRecord[]>({\n    queryKey: ['beds', 'all'],\n    queryFn: () => admissionService.getAllBeds(),\n  });\n}\n\n\/** Create a bed record (alias: useCreateBedRecord) *\/\nexport function useCreateBed() {\n  const qc = useQueryClient();\n  return useMutation({\n    mutationFn: async (data: { ward: string; bedNumber: string; bedType?: string }) =>\n      admissionService.createBed(data),\n    onSuccess: () => qc.invalidateQueries({ queryKey: ['beds'] }),\n  });\n}\n\nexport function useGetAdmissionHistory",
+                        "new_string": "  });\n}\n\nexport function useGetAdmissionHistory"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 94686,
+                "completion_tokens": 544,
+                "total_tokens": 95230,
+                "prompt_cache_hit_tokens": 91648,
+                "prompt_cache_miss_tokens": 3038,
+                "prompt_tokens_details": {
+                    "cached_tokens": 91648
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 115
+                },
+                "cached_tokens": 91648
+            },
+            "time": 1785151111
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_g4goxBdNQiuZBnq1aAXP9038",
+            "content": "Edited source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts (1 replacement)\n- \n+   });\n+ }\n+ \n+ export function useGetAdmissionHistory",
+            "is_error": false,
+            "time": 1785151112
+        },
+        {
+            "id": "msg_1624bdf0d4",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Wait, the replacement doesn't look right. Let me check the result."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_Z7Uw01JrIc0a9uV1niSA8602",
+                    "name": "read_file",
+                    "input": {
+                        "limit": 10,
+                        "offset": 385,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 95287,
+                "completion_tokens": 113,
+                "total_tokens": 95400,
+                "prompt_cache_hit_tokens": 95104,
+                "prompt_cache_miss_tokens": 183,
+                "prompt_tokens_details": {
+                    "cached_tokens": 95104
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 15
+                },
+                "cached_tokens": 95104
+            },
+            "time": 1785151115
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_Z7Uw01JrIc0a9uV1niSA8602",
+            "content": "  385 | }\n  386 | \n  387 | export function useCreateBed() {\n  388 |   const qc = useQueryClient();\n  389 |   return useMutation({\n  390 |     mutationFn: async (data: { ward: string; bedNumber: string; bedType?: string }) =>\n  391 |       admissionService.createBed(data),\n  392 |     onSuccess: () => qc.invalidateQueries({ queryKey: ['beds'] }),\n  393 |   });\n  394 | }",
+            "is_error": false,
+            "time": 1785151115
+        },
+        {
+            "id": "msg_c448f999bf",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Hmm, the edit seems to have only removed the first duplicate block but kept `useCreateBed`. Let me check lines 347-430 more carefully now."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_5QiQAPhjafec6uGow2Pl3285",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && grep -n 'export function' hooks\/useQueries.ts | head -30"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 95520,
+                "completion_tokens": 117,
+                "total_tokens": 95637,
+                "prompt_cache_hit_tokens": 95360,
+                "prompt_cache_miss_tokens": 160,
+                "prompt_tokens_details": {
+                    "cached_tokens": 95360
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 33
+                },
+                "cached_tokens": 95360
+            },
+            "time": 1785151119
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_5QiQAPhjafec6uGow2Pl3285",
+            "content": "4:export function useGetAdmissionHistory\/**\n42:export function useGetAllPatients() {\n52:export function useGetPatient(id: number | null) {\n60:export function useCreatePatient() {\n86:export function useUpdatePatient() {\n116:export function useDeletePatient() {\n128:export function useGetVisitsByPatient(patientId: number | null) {\n136:export function useCreateVisit() {\n157:export function useDeleteVisit() {\n168:export function useUpdateVisit() {\n192:export function useGetPrescriptionsByPatient(patientId: number | null) {\n200:export function useCreatePrescription() {\n218:export function useDeletePrescription() {\n229:export function useUpdatePrescription() {\n250:export function useGetCallerUserProfile() {\n257:export function useGetCallerUserRole() {\n264:export function useSaveCallerUserProfile() {\n277:export function useGetEncountersByPatient(patientId: number | null) {\n285:export function useCreateEncounter() {\n295:export function useGetObservationsByPatient(patientId: number | null) {\n303:export function useCreateObservation() {\n313:export function useGetClinicalNotesByPatient(patientId: number | null) {\n321:export function useCreateClinicalNote() {\n331:export function useGetOrdersByPatient(patientId: number | null) {\n339:export function useCreateOrder() {\n350:export function useGetAllBeds() {\n357:export function useGetBedsByWard(ward: string | null) {\n365:export function useCreateBedRecord() {\n378:export function useAssignBed() {\n387:export function useCreateBed() {\n",
+            "is_error": false,
+            "time": 1785151119
+        },
+        {
+            "id": "msg_7885b795ef",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Hmm, there's something weird. Line 4 says `export function useGetAdmissionHistory` which shouldn't be there. It looks like my replacement accidentally merged lines. Let me check lines 1-10 of the file."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_KSDdSV4lq9TPJMB6hBxp7780",
+                    "name": "read_file",
+                    "input": {
+                        "limit": 50,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 96013,
+                "completion_tokens": 130,
+                "total_tokens": 96143,
+                "prompt_cache_hit_tokens": 95616,
+                "prompt_cache_miss_tokens": 397,
+                "prompt_tokens_details": {
+                    "cached_tokens": 95616
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 48
+                },
+                "cached_tokens": 95616
+            },
+            "time": 1785151122
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_KSDdSV4lq9TPJMB6hBxp7780",
+            "content": "    1 |   });\n    2 | }\n    3 | \n    4 | export function useGetAdmissionHistory\/**\n    5 |  * React Query hooks \u2014 PHP\/MySQL Backend\n    6 |  *\n    7 |  * All CRUD operations now target the PHP\/MySQL API via the service layer.\n    8 |  * No localStorage, sessionStorage, or IndexedDB is used for business data.\n    9 |  * No canister actors or sync queue code.\n   10 |  * IDs are number (MySQL INT\/BIGINT).\n   11 |  *\/\n   12 | \n   13 | import { useMutation, useQuery, useQueryClient } from '@tanstack\/react-query';\n   14 | import {\n   15 |   patientService,\n   16 |   visitService,\n   17 |   prescriptionService,\n   18 |   appointmentService,\n   19 |   clinicalNotesService,\n   20 |   admissionService,\n   21 |   vitalService,\n   22 |   userService,\n   23 | } from '..\/services';\n   24 | import type {\n   25 |   AdmissionHistory,\n   26 |   BedRecord,\n   27 |   ClinicalAlert,\n   28 |   ClinicalNote,\n   29 |   ClinicalOrder,\n   30 |   DrugReminder,\n   31 |   Encounter,\n   32 |   Observation,\n   33 |   Patient,\n   34 |   Prescription,\n   35 |   UserProfile,\n   36 |   Visit,\n   37 |   VitalSigns,\n   38 | } from '..\/types';\n   39 | \n   40 | \/\/ \u2500\u2500\u2500 Patients \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   41 | \n   42 | export function useGetAllPatients() {\n   43 |   return useQuery<Patient[]>({\n   44 |     queryKey: ['patients'],\n   45 |     queryFn: async () => {\n   46 |       const result = await patientService.getAll(100);\n   47 |       return result.items;\n   48 |     },\n   49 |   });\n   50 | }",
+            "is_error": false,
+            "time": 1785151122
+        },
+        {
+            "id": "msg_28405de51b",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The edit created a corruption - `useGetAdmissionHistory` got merged with the doc comment. I need to fix this by reading the file fully and rewriting it properly. Let me read the whole file."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_eAyM0nKUPGq1sKTbTV9I3927",
+                    "name": "read_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/hooks\/useQueries.ts"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 96581,
+                "completion_tokens": 108,
+                "total_tokens": 96689,
+                "prompt_cache_hit_tokens": 96128,
+                "prompt_cache_miss_tokens": 453,
+                "prompt_tokens_details": {
+                    "cached_tokens": 96128
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 42
+                },
+                "cached_tokens": 96128
+            },
+            "time": 1785151125
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_eAyM0nKUPGq1sKTbTV9I3927",
+            "content": "    1 |   });\n    2 | }\n    3 | \n    4 | export function useGetAdmissionHistory\/**\n    5 |  * React Query hooks \u2014 PHP\/MySQL Backend\n    6 |  *\n    7 |  * All CRUD operations now target the PHP\/MySQL API via the service layer.\n    8 |  * No localStorage, sessionStorage, or IndexedDB is used for business data.\n    9 |  * No canister actors or sync queue code.\n   10 |  * IDs are number (MySQL INT\/BIGINT).\n   11 |  *\/\n   12 | \n   13 | import { useMutation, useQuery, useQueryClient } from '@tanstack\/react-query';\n   14 | import {\n   15 |   patientService,\n   16 |   visitService,\n   17 |   prescriptionService,\n   18 |   appointmentService,\n   19 |   clinicalNotesService,\n   20 |   admissionService,\n   21 |   vitalService,\n   22 |   userService,\n   23 | } from '..\/services';\n   24 | import type {\n   25 |   AdmissionHistory,\n   26 |   BedRecord,\n   27 |   ClinicalAlert,\n   28 |   ClinicalNote,\n   29 |   ClinicalOrder,\n   30 |   DrugReminder,\n   31 |   Encounter,\n   32 |   Observation,\n   33 |   Patient,\n   34 |   Prescription,\n   35 |   UserProfile,\n   36 |   Visit,\n   37 |   VitalSigns,\n   38 | } from '..\/types';\n   39 | \n   40 | \/\/ \u2500\u2500\u2500 Patients \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   41 | \n   42 | export function useGetAllPatients() {\n   43 |   return useQuery<Patient[]>({\n   44 |     queryKey: ['patients'],\n   45 |     queryFn: async () => {\n   46 |       const result = await patientService.getAll(100);\n   47 |       return result.items;\n   48 |     },\n   49 |   });\n   50 | }\n   51 | \n   52 | export function useGetPatient(id: number | null) {\n   53 |   return useQuery<Patient | null>({\n   54 |     queryKey: ['patient', id?.toString()],\n   55 |     queryFn: () => patientService.getById(id!),\n   56 |     enabled: !!id,\n   57 |   });\n   58 | }\n   59 | \n   60 | export function useCreatePatient() {\n   61 |   const qc = useQueryClient();\n   62 |   return useMutation({\n   63 |     mutationFn: async (data: {\n   64 |       fullName: string;\n   65 |       nameBn?: string | null;\n   66 |       dateOfBirth?: string | null;\n   67 |       gender?: string;\n   68 |       phone?: string | null;\n   69 |       email?: string | null;\n   70 |       address?: string | null;\n   71 |       bloodGroup?: string | null;\n   72 |       weight?: number | null;\n   73 |       height?: number | null;\n   74 |       allergies?: string[];\n   75 |       chronicConditions?: string[];\n   76 |       pastSurgicalHistory?: string | null;\n   77 |       patientType?: string;\n   78 |       photo?: string | null;\n   79 |     }) => {\n   80 |       return patientService.create(data);\n   81 |     },\n   82 |     onSuccess: () => qc.invalidateQueries({ queryKey: ['patients'] }),\n   83 |   });\n   84 | }\n   85 | \n   86 | export function useUpdatePatient() {\n   87 |   const qc = useQueryClient();\n   88 |   return useMutation({\n   89 |     mutationFn: async (data: {\n   90 |       id: number;\n   91 |       fullName?: string;\n   92 |       nameBn?: string | null;\n   93 |       dateOfBirth?: string | null;\n   94 |       gender?: string;\n   95 |       phone?: string | null;\n   96 |       email?: string | null;\n   97 |       address?: string | null;\n   98 |       bloodGroup?: string | null;\n   99 |       weight?: number | null;\n  100 |       height?: number | null;\n  101 |       allergies?: string[];\n  102 |       chronicConditions?: string[];\n  103 |       pastSurgicalHistory?: string | null;\n  104 |       patientType?: string;\n  105 |       photo?: string | null;\n  106 |     }) => {\n  107 |       return patientService.update(data);\n  108 |     },\n  109 |     onSuccess: (_, vars) => {\n  110 |       qc.invalidateQueries({ queryKey: ['patients'] });\n  111 |       qc.invalidateQueries({ queryKey: ['patient', vars.id.toString()] });\n  112 |     },\n  113 |   });\n  114 | }\n  115 | \n  116 | export function useDeletePatient() {\n  117 |   const qc = useQueryClient();\n  118 |   return useMutation({\n  119 |     mutationFn: async (id: number) => {\n  120 |       await patientService.delete(id);\n  121 |     },\n  122 |     onSuccess: () => qc.invalidateQueries({ queryKey: ['patients'] }),\n  123 |   });\n  124 | }\n  125 | \n  126 | \/\/ \u2500\u2500\u2500 Visits \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  127 | \n  128 | export function useGetVisitsByPatient(patientId: number | null) {\n  129 |   return useQuery<Visit[]>({\n  130 |     queryKey: ['visits', patientId?.toString()],\n  131 |     queryFn: () => visitService.getByPatient(patientId!),\n  132 |     enabled: !!patientId,\n  133 |   });\n  134 | }\n  135 | \n  136 | export function useCreateVisit() {\n  137 |   const qc = useQueryClient();\n  138 |   return useMutation({\n  139 |     mutationFn: async (data: {\n  140 |       patientId: number;\n  141 |       visitDate?: string;\n  142 |       chiefComplaint?: string;\n  143 |       historyOfPresentIllness?: string | null;\n  144 |       vitalSigns?: VitalSigns;\n  145 |       physicalExamination?: string | null;\n  146 |       diagnosis?: string | null;\n  147 |       notes?: string | null;\n  148 |       visitType?: string;\n  149 |     }) => {\n  150 |       return visitService.create(data);\n  151 |     },\n  152 |     onSuccess: (_, vars) =>\n  153 |       qc.invalidateQueries({ queryKey: ['visits', vars.patientId.toString()] }),\n  154 |   });\n  155 | }\n  156 | \n  157 | export function useDeleteVisit() {\n  158 |   const qc = useQueryClient();\n  159 |   return useMutation({\n  160 |     mutationFn: async ({ id, patientId }: { id: number; patientId: number }) => {\n  161 |       await visitService.delete(id, patientId);\n  162 |     },\n  163 |     onSuccess: (_, vars) =>\n  164 |       qc.invalidateQueries({ queryKey: ['visits', vars.patientId.toString()] }),\n  165 |   });\n  166 | }\n  167 | \n  168 | export function useUpdateVisit() {\n  169 |   const qc = useQueryClient();\n  170 |   return useMutation({\n  171 |     mutationFn: async (data: {\n  172 |       id: number;\n  173 |       patientId: number;\n  174 |       visitDate?: string;\n  175 |       chiefComplaint?: string;\n  176 |       historyOfPresentIllness?: string | null;\n  177 |       vitalSigns?: VitalSigns;\n  178 |       physicalExamination?: string | null;\n  179 |       diagnosis?: string | null;\n  180 |       notes?: string | null;\n  181 |       visitType?: string;\n  182 |     }) => {\n  183 |       return visitService.update(data);\n  184 |     },\n  185 |     onSuccess: (_, vars) =>\n  186 |       qc.invalidateQueries({ queryKey: ['visits', vars.patientId.toString()] }),\n  187 |   });\n  188 | }\n  189 | \n  190 | \/\/ \u2500\u2500\u2500 Prescriptions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  191 | \n  192 | export function useGetPrescriptionsByPatient(patientId: number | null) {\n  193 |   return useQuery<Prescription[]>({\n  194 |     queryKey: ['prescriptions', patientId?.toString()],\n  195 |     queryFn: () => prescriptionService.getByPatient(patientId!),\n  196 |     enabled: !!patientId,\n  197 |   });\n  198 | }\n  199 | \n  200 | export function useCreatePrescription() {\n  201 |   const qc = useQueryClient();\n  202 |   return useMutation({\n  203 |     mutationFn: async (data: {\n  204 |       patientId: number;\n  205 |       visitId?: number | null;\n  206 |       prescriptionDate?: string;\n  207 |       diagnosis?: string | null;\n  208 |       medications: import('..\/types').Medication[];\n  209 |       notes?: string | null;\n  210 |     }) => {\n  211 |       return prescriptionService.create(data);\n  212 |     },\n  213 |     onSuccess: (_, vars) =>\n  214 |       qc.invalidateQueries({ queryKey: ['prescriptions', vars.patientId.toString()] }),\n  215 |   });\n  216 | }\n  217 | \n  218 | export function useDeletePrescription() {\n  219 |   const qc = useQueryClient();\n  220 |   return useMutation({\n  221 |     mutationFn: async ({ id, patientId }: { id: number; patientId: number }) => {\n  222 |       await prescriptionService.delete(id, patientId);\n  223 |     },\n  224 |     onSuccess: (_, vars) =>\n  225 |       qc.invalidateQueries({ queryKey: ['prescriptions', vars.patientId.toString()] }),\n  226 |   });\n  227 | }\n  228 | \n  229 | export function useUpdatePrescription() {\n  230 |   const qc = useQueryClient();\n  231 |   return useMutation({\n  232 |     mutationFn: async (data: {\n  233 |       id: number;\n  234 |       patientId: number;\n  235 |       visitId?: number | null;\n  236 |       prescriptionDate?: string;\n  237 |       diagnosis?: string | null;\n  238 |       medications: import('..\/types').Medication[];\n  239 |       notes?: string | null;\n  240 |     }) => {\n  241 |       return prescriptionService.update(data);\n  242 |     },\n  243 |     onSuccess: (_, vars) =>\n  244 |       qc.invalidateQueries({ queryKey: ['prescriptions', vars.patientId.toString()] }),\n  245 |   });\n  246 | }\n  247 | \n  248 | \/\/ \u2500\u2500\u2500 User profile \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  249 | \n  250 | export function useGetCallerUserProfile() {\n  251 |   return useQuery<UserProfile | null>({\n  252 |     queryKey: ['userProfile'],\n  253 |     queryFn: () => userService.getProfile(),\n  254 |   });\n  255 | }\n  256 | \n  257 | export function useGetCallerUserRole() {\n  258 |   return useQuery<string>({\n  259 |     queryKey: ['userRole'],\n  260 |     queryFn: () => userService.getRole(),\n  261 |   });\n  262 | }\n  263 | \n  264 | export function useSaveCallerUserProfile() {\n  265 |   const qc = useQueryClient();\n  266 |   return useMutation({\n  267 |     mutationFn: async (profile: UserProfile) => {\n  268 |       await userService.updateProfile(profile);\n  269 |       return profile;\n  270 |     },\n  271 |     onSuccess: () => qc.invalidateQueries({ queryKey: ['userProfile'] }),\n  272 |   });\n  273 | }\n  274 | \n  275 | \/\/ \u2500\u2500\u2500 Clinical Data Hooks \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  276 | \n  277 | export function useGetEncountersByPatient(patientId: number | null) {\n  278 |   return useQuery<Encounter[]>({\n  279 |     queryKey: ['encounters', patientId?.toString()],\n  280 |     queryFn: () => clinicalNotesService.getEncountersByPatient(patientId!),\n  281 |     enabled: !!patientId,\n  282 |   });\n  283 | }\n  284 | \n  285 | export function useCreateEncounter() {\n  286 |   const qc = useQueryClient();\n  287 |   return useMutation({\n  288 |     mutationFn: async (data: { patientId: number; encounterData: Record<string, unknown> }) =>\n  289 |       clinicalNotesService.createEncounter(data.patientId, data.encounterData),\n  290 |     onSuccess: (_, vars) =>\n  291 |       qc.invalidateQueries({ queryKey: ['encounters', vars.patientId.toString()] }),\n  292 |   });\n  293 | }\n  294 | \n  295 | export function useGetObservationsByPatient(patientId: number | null) {\n  296 |   return useQuery<Observation[]>({\n  297 |     queryKey: ['observations', patientId?.toString()],\n  298 |     queryFn: () => clinicalNotesService.getObservationsByPatient(patientId!),\n  299 |     enabled: !!patientId,\n  300 |   });\n  301 | }\n  302 | \n  303 | export function useCreateObservation() {\n  304 |   const qc = useQueryClient();\n  305 |   return useMutation({\n  306 |     mutationFn: async (data: { patientId: number; observationData: Record<string, unknown> }) =>\n  307 |       clinicalNotesService.createObservation(data.patientId, data.observationData),\n  308 |     onSuccess: (_, vars) =>\n  309 |       qc.invalidateQueries({ queryKey: ['observations', vars.patientId.toString()] }),\n  310 |   });\n  311 | }\n  312 | \n  313 | export function useGetClinicalNotesByPatient(patientId: number | null) {\n  314 |   return useQuery<ClinicalNote[]>({\n  315 |     queryKey: ['clinicalNotes', patientId?.toString()],\n  316 |     queryFn: () => clinicalNotesService.getNotesByPatient(patientId!),\n  317 |     enabled: !!patientId,\n  318 |   });\n  319 | }\n  320 | \n  321 | export function useCreateClinicalNote() {\n  322 |   const qc = useQueryClient();\n  323 |   return useMutation({\n  324 |     mutationFn: async (data: { patientId: number; noteData: Record<string, unknown> }) =>\n  325 |       clinicalNotesService.createNote(data.patientId, data.noteData),\n  326 |     onSuccess: (_, vars) =>\n  327 |       qc.invalidateQueries({ queryKey: ['clinicalNotes', vars.patientId.toString()] }),\n  328 |   });\n  329 | }\n  330 | \n  331 | export function useGetOrdersByPatient(patientId: number | null) {\n  332 |   return useQuery<ClinicalOrder[]>({\n  333 |     queryKey: ['orders', patientId?.toString()],\n  334 |     queryFn: () => clinicalNotesService.getOrdersByPatient(patientId!),\n  335 |     enabled: !!patientId,\n  336 |   });\n  337 | }\n  338 | \n  339 | export function useCreateOrder() {\n  340 |   const qc = useQueryClient();\n  341 |   return useMutation({\n  342 |     mutationFn: async (data: { patientId: number; orderData: Record<string, unknown> }) =>\n  343 |       clinicalNotesService.createOrder(data.patientId, data.orderData),\n  344 |     onSuccess: (_, vars) =>\n  345 |       qc.invalidateQueries({ queryKey: ['orders', vars.patientId.toString()] }),\n  346 |   });\n  347 | }\n  348 | \n  349 | \/\/ \u2500\u2500\u2500 Beds & Admissions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  350 | export function useGetAllBeds() {\n  351 |   return useQuery<BedRecord[]>({\n  352 |     queryKey: ['beds'],\n  353 |     queryFn: () => admissionService.getAllBeds(),\n  354 |   });\n  355 | }\n  356 | \n  357 | export function useGetBedsByWard(ward: string | null) {\n  358 |   return useQuery<BedRecord[]>({\n  359 |     queryKey: ['beds', ward],\n  360 |     queryFn: () => admissionService.getBedsByWard(ward!),\n  361 |     enabled: !!ward,\n  362 |   });\n  363 | }\n  364 | \n  365 | export function useCreateBedRecord() {\n  366 |   const qc = useQueryClient();\n  367 |   return useMutation({\n  368 |     mutationFn: async (data: { bedNumber: string; ward: string; hospitalName?: string; floor?: string; bedType?: string }) =>\n  369 |       admissionService.createBed({\n  370 |         ward: data.ward,\n  371 |         bedNumber: data.bedNumber,\n  372 |         bedType: data.bedType,\n  373 |       }),\n  374 |     onSuccess: () => qc.invalidateQueries({ queryKey: ['beds'] }),\n  375 |   });\n  376 | }\n  377 | \n  378 | export function useAssignBed() {\n  379 |   const qc = useQueryClient();\n  380 |   return useMutation({\n  381 |     mutationFn: async (data: { bedId: number; patientId: number; patientName?: string }) =>\n  382 |       admissionService.assignBed(data.bedId, data.patientId),\n  383 |     onSuccess: () => qc.invalidateQueries({ queryKey: ['beds'] }),\n  384 |   });\n  385 | }\n  386 | \n  387 | export function useCreateBed() {\n  388 |   const qc = useQueryClient();\n  389 |   return useMutation({\n  390 |     mutationFn: async (data: { ward: string; bedNumber: string; bedType?: string }) =>\n  391 |       admissionService.createBed(data),\n  392 |     onSuccess: () => qc.invalidateQueries({ queryKey: ['beds'] }),\n  393 |   });\n  394 | }\n  395 | \n  396 | \/\/ \u2500\u2500\u2500 Drug Reminders & Alerts \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  397 | \n  398 | export function useGetDrugReminders() {\n  399 |   return useQuery<DrugReminder[]>({\n  400 |     queryKey: ['drugReminders'],\n  401 |     queryFn: async () => {\n  402 |       const { get } = await import('..\/lib\/apiClient');\n  403 |       return get<DrugReminder[]>('\/drugs\/reminders.php');\n  404 |     },\n  405 |   });\n  406 | }\n  407 | \n  408 | export function useGetClinicalAlerts() {\n  409 |   return useQuery<ClinicalAlert[]>({\n  410 |     queryKey: ['clinicalAlerts'],\n  411 |     queryFn: async () => {\n  412 |       const { get } = await import('..\/lib\/apiClient');\n  413 |       return get<ClinicalAlert[]>('\/clinical\/alerts-list.php');\n  414 |     },\n  415 |   });\n  416 | }\n  417 | \n  418 | \/\/ \u2500\u2500\u2500 Appointments \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  419 | \n  420 | export function useGetAppointmentsByPatient(patientId: number | null) {\n  421 |   return useQuery<any[]>({\n  422 |     queryKey: ['appointments', patientId?.toString()],\n  423 |     queryFn: () => appointmentService.getByPatient(patientId!),\n  424 |     enabled: !!patientId,\n  425 |   });\n  426 | }\n  427 | \n  428 | export function useCreateAppointment() {\n  429 |   const qc = useQueryClient();\n  430 |   return useMutation({\n  431 |     mutationFn: async (data: {\n  432 |       patientId: number;\n  433 |       appointmentDate?: string;\n  434 |       doctorName?: string;\n  435 |       reason?: string;\n  436 |       status?: string;\n  437 |     }) => {\n  438 |       return appointmentService.create(data);\n  439 |     },\n  440 |     onSuccess: () => qc.invalidateQueries({ queryKey: ['appointments'] }),\n  441 |   });\n  442 | }\n  443 | \n  444 | \/\/ \u2500\u2500\u2500 Vitals \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  445 | \n  446 | export function useGetVitalsByPatient(patientId: number | null) {\n  447 |   return useQuery<any[]>({\n  448 |     queryKey: ['vitals', patientId?.toString()],\n  449 |     queryFn: () => vitalService.getByPatient(patientId!),\n  450 |     enabled: !!patientId,\n  451 |   });\n  452 | }\n  453 | \n  454 | export function useCreateVitals() {\n  455 |   const qc = useQueryClient();\n  456 |   return useMutation({\n  457 |     mutationFn: async (data: {\n  458 |       patientId: number;\n  459 |       vitalSigns: VitalSigns;\n  460 |       recordedAt?: string;\n  461 |     }) => {\n  462 |       return vitalService.create(data);\n  463 |     },\n  464 |     onSuccess: (_, vars) =>\n  465 |       qc.invalidateQueries({ queryKey: ['vitals', vars.patientId.toString()] }),\n  466 |   });\n  467 | }\n  468 | \n  469 | \/\/ \u2500\u2500\u2500 Sync status (no-op \u2014 always online with PHP) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  470 | \n  471 | export function useSyncStatus() {\n  472 |   return useQuery({\n  473 |     queryKey: ['syncStatus'],\n  474 |     queryFn: async () => ({\n  475 |       isOnline: navigator.onLine,\n  476 |       pendingChanges: false,\n  477 |       lastSyncAt: new Date(),\n  478 |     }),\n  479 |   });\n  480 | }\n  481 | \n  482 | export function isNetworkOnline(): boolean {\n  483 |   return navigator.onLine;\n  484 | }\n  485 | \n  486 | \/\/ \u2500\u2500\u2500 Legacy helpers \u2014 all deprecated, kept only for type compatibility \u2500\u2500\u2500\u2500\n  487 | \n  488 | import type { Medication } from '..\/types';\n  489 | \n  490 | \/** @deprecated Use patientService directly *\/\n  491 | export function saveToStorage<T>(_key: string, _data: T[]): void {\n  492 |   \/\/ No-op \u2014 storage is server-side\n  493 | }\n  494 | \n  495 | \/** @deprecated Use patientService directly *\/\n  496 | export function loadFromStorage<T>(_key: string): T[] {\n  497 |   return [];\n  498 | }\n  499 | \n  500 | \/** @deprecated Use patientService directly *\/\n  501 | export function loadFromAllDoctorKeys<T>(_prefix: string): T[] {\n  502 |   return [];\n  503 | }\n  504 | \n  505 | \/** @deprecated \u2014 email is retrieved from PHP session *\/\n  506 | export function getDoctorEmail(): string {\n  507 |   return '';\n  508 | }\n  509 | \n  510 | \/** @deprecated \u2014 email comes from PHP session *\/\n  511 | export function setCanonicalUserEmail(_email: string): void {\n  512 |   \/\/ No-op \u2014 email comes from PHP session\n  513 | }\n  514 | \n  515 | \/** @deprecated *\/\n  516 | export function clearCanonicalUserEmail(): void {\n  517 |   \/\/ No-op\n  518 | }\n  519 | \n  520 | \/** @deprecated *\/\n  521 | export function storageKey(prefix: string): string {\n  522 |   return prefix;\n  523 | }\n  524 | \n  525 | \/** @deprecated *\/\n  526 | export function getVisitFormData(_visitId: string | number | null): Record<string, any> | null {\n  527 |   return null;\n  528 | }\n  529 | \n  530 | \/** @deprecated *\/\n  531 | export function generateRegisterNumber(): string {\n  532 |   return '';\n  533 | }\n  534 | \n  535 | \/** @deprecated *\/\n  536 | export function createPatientInStorage(_data: Record<string, unknown>): Patient {\n  537 |   throw new Error('createPatientInStorage is deprecated. Use patientService.create() instead.');\n  538 | }\n  539 | \n  540 | \/** @deprecated \u2014 Canister actor not used *\/\n  541 | export function setCanisterActor(_actor: unknown): void {\n  542 |   \/\/ No-op\n  543 | }\n  544 | \n  545 | \/** @deprecated *\/\n  546 | export function getCanisterActor(): unknown | null {\n  547 |   return null;\n  548 | }\n  549 |",
+            "is_error": false,
+            "time": 1785151125
         }
     ]
 }
