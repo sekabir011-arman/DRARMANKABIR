@@ -32,7 +32,7 @@
         }
     ],
     "created_at": 1785091298,
-    "updated_at": 1785156137,
+    "updated_at": 1785156421,
     "messages": [
         {
             "id": "msg_compact",
@@ -7710,6 +7710,13 @@
             "content": "  });\n}\nfunction useDischargePatient() {\n  const qc = useQueryClient();\n  return useMutation({\n    mutationFn: async (data) => {\n      const key = storageKey(\"patients\");\n      const patients = loadFromStorage(key);\n      const updated = patients.map(\n        (p2) => p2.id === data.patientId ? {\n          ...p2,\n          status: \"Discharged\",\n          isAdmitted: false,\n          patientType: \"outdoor\",\n          dischargeDate: (\/* @__PURE__ *\/ new Date()).toISOString()\n        } : p2\n      );\n      saveToStorage(key, updated);\n      const admissions = loadAdmissionHistory(data.patientId);\n      const updatedAdmissions = admissions.map(\n        (a2) => a2.status === \"active\" ? {\n          ...a2,\n          status: \"discharged\",\n          dischargedOn: (\/* @__PURE__ *\/ new Date()).toISOString()\n        } : a2\n      );\n      saveAdmissionHistory(data.patientId, updatedAdmissions);\n      const auditAll = getClinicalEntities(\"auditTrail\");\n      const entry = {\n        id: nextClinicalId(auditAll),\n        entityType: \"Patient\",\n        entityId: data.patientId,\n        fieldName: \"status\",\n        beforeValue: \"Admitted\",\n        afterValue: \"Discharged\",\n        changedBy: { toString: () => \"local\" },\n        changedByName: data.dischargedBy,\n        changedByRole: data.dischargedByRole,\n        changedAt: BigInt(Date.now()) * 1000000n,\n        reason: \"Patient discharged\"\n      };\n      saveClinicalEntities(\"auditTrail\", [...auditAll, entry]);\n    },\n    onSuccess: (_2, vars) => {\n      qc.invalidateQueries({ queryKey: [\"patients\"] });\n      qc.invalidateQueries({\n        queryKey: [\"patient\", vars.patientId.toString()]\n      });\n",
             "is_error": false,
             "time": 1785156137
+        },
+        {
+            "id": "msg_599dd66e7d",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785156421
         }
     ]
 }
