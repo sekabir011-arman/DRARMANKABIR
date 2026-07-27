@@ -60,11 +60,8 @@ const Staff = lazy(() => import("./pages/Staff"));
 const TotalIncome = lazy(() => import("./pages/TotalIncome"));
 const VisitPage = lazy(() => import("./pages/VisitPage"));
 const WardRound = lazy(() => import("./pages/WardRound"));
-import {
-  ROLE_HIERARCHY_ORDER,
-  STAFF_ROLE_COLORS,
-  STAFF_ROLE_LABELS,
-import type { StaffRole } from "./types";
+// Note: ROLE_HIERARCHY_ORDER, STAFF_ROLE_COLORS, STAFF_ROLE_LABELS, StaffRole 
+// were removed as they are not used in this file.
 
 // ── Route tree ────────────────────────────────────────────────────────────────
 
