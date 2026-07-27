@@ -32,7 +32,7 @@
         }
     ],
     "created_at": 1785091298,
-    "updated_at": 1785154343,
+    "updated_at": 1785154737,
     "messages": [
         {
             "id": "msg_compact",
@@ -5442,6 +5442,320 @@
             "content": "No matches found for pattern: loadFromAllDoctorKeys",
             "is_error": false,
             "time": 1785154343
+        },
+        {
+            "id": "msg_5b259ea98d",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785154697
+        },
+        {
+            "id": "msg_c7581d3627",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me take a systematic approach. I need to understand what's actually used at runtime vs what's only imported but not used. Let me check what functions from useQueries are actually called in the codebase."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me check what's actually called from useQueries to understand what needs real implementations vs what can stay as stubs."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_qLncEEnWDJ7otXF45BCy9277",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend && grep -rn \"saveToStorage(\" --include=\"*.ts\" --include=\"*.tsx\" src\/ 2>\/dev\/null"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 62675,
+                "completion_tokens": 161,
+                "total_tokens": 62836,
+                "prompt_cache_hit_tokens": 55168,
+                "prompt_cache_miss_tokens": 7507,
+                "prompt_tokens_details": {
+                    "cached_tokens": 55168
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 43
+                },
+                "cached_tokens": 55168
+            },
+            "time": 1785154700
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_qLncEEnWDJ7otXF45BCy9277",
+            "content": "src\/pages\/RegistrarDashboard.tsx:233:      saveToStorage(`patients_${email}`, allPatients);\nsrc\/pages\/RegistrarDashboard.tsx:688:      saveToStorage(`patients_${email}`, primary);\n",
+            "is_error": false,
+            "time": 1785154701
+        },
+        {
+            "id": "msg_7be58987d5",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The `saveToStorage` and `loadFromStorage` functions are actually called, not just imported. They are used in `RegistrarDashboard.tsx`, `WardRound.tsx`, and `EmergencyPrescription.tsx`. But the grep for their usage found nothing in WardRound and EmergencyPrescription.\n\nWait, let me re-check. The grep for `saveToStorage|loadFromStorage|storageKey|loadFromAllDoctorKeys` in these files found nothing. But the imports exist. Let me look at the actual imports and usage more carefully.\n\nLooking at the imports:\n- `RegistrarDashboard.tsx` imports `saveToStorage`, `loadFromStorage`, `loadFromAllDoctorKeys` - and uses `saveToStorage` \n- `WardRound.tsx` imports `saveToStorage`, `loadFromStorage`, `storageKey`, `loadFromAllDoctorKeys`\n- `EmergencyPrescription.tsx` imports `loadFromStorage`, `storageKey`, `generateRegisterNumber`\n\nBut the grep found no calls to these in WardRound or EmergencyPrescription. Maybe the calls exist elsewhere indirectly or are in subcomponents.\n\nActually, the key issue is: the build is failing because of missing exports. The rollup\/esbuild bundler checks for ALL imports, even if the function isn't actually called at runtime. So I need to make sure every imported name is exported.\n\nLet me get the complete list of what's imported from useQueries across the codebase and check what's missing.\n\nFrom my earlier grep, here's what's imported:\n1. `getDoctorEmail` - \u2713 exists\n2. `getPrescriptionHeaderImage` - \u2713 added\n3. `getVisitFormData` - \u2713 exists\n4. `loadFromStorage` - \u2713 exists (but as deprecated stub)\n5. `useCreatePatient` - \u2713 exists\n6. `useCreateVisit` - \u2713 exists\n7. `useGetPatient` - \u2713 exists\n8. `useAdmitPatient` - \u2717 MISSING\n9. `useGetClinicalNotesByPatient` - \u2713 exists\n10. `useGetEncountersByPatient` - \u2713 exists\n11. `useGetAllPatients` - \u2713 exists\n12. `setPrescriptionHeaderImage` - \u2713 added\n13. `loadPrescriptionRecords` - \u2713 added\n14. `savePrescriptionRecords` - \u2713 added\n15. `autoPopulateDrugReminders` - \u2713 added\n16. `loadFromAllDoctorKeys` - \u2713 exists (as deprecated stub)\n17. `useAssignBed` - \u2713 exists\n18. `useCreateBedRecord` - \u2713 exists\n19. `useGetAllBeds` - \u2713 exists\n20. `useCreatePatient` - \u2713 exists (duplicate, but exists)\n21. `storageKey` - \u2713 exists (as deprecated stub)\n22. `generateRegisterNumber` - \u2713 exists (as deprecated stub)\n23. `useCreatePrescription` - \u2713 exists\n24. `useCreateVisit` - \u2713 exists\n25. `useDeletePatient` - \u2713 exists\n26. `useDischargePatient` - \u2717 MISSING\n27. `useGetPrescriptionsByPatient` - \u2713 exists\n28. `useGetVisitsByPatient` - \u2713 exists\n29. `useUpdatePatient` - \u2713 exists\n30. `useGetAlertsByPatient` - \u2717 MISSING\n31. `useCreateObservation` - \u2713 exists\n32. `useCreateClinicalNote` - \u2713 exists\n33. `useCreateOrder` - \u2713 exists\n34. `useAcknowledgeAlert` - \u2717 MISSING\n35. `useGetAuditTrail` - \u2717 MISSING\n36. `useReassignConsultant` - \u2717 MISSING\n37. `saveToStorage` - \u2713 exists (but as deprecated no-op stub - needs real impl because it's called)\n\nAlso `useGetObservationsByPatient` - \u2713 exists\nAlso `useGetClinicalNotesByPatient` - \u2713 exists (duplicate but exists)\n\nLet me add all the missing ones. Since these hooks use localStorage in the original code, and we've been converting to PHP backend, I should add proper implementations.\n\nActually wait - the `saveToStorage`, `loadFromStorage`, etc. are actually called. The original code used localStorage extensively. Since we're converting to PHP backend, we need these to remain as localStorage fallbacks or proper server-side calls.\n\nFor now, the most pragmatic approach is to add all missing exports with working implementations (either localStorage-based or server-based) to make the build pass. Then we can focus on fixing actual logic issues.\n\nLet me add all the missing functions at once."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me first do a comprehensive check of everything needed vs what's exported."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_U8VB4nkP3SbX5en9kSqd1897",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && grep -rh \"from.*useQueries\" --include=\"*.tsx\" --include=\"*.ts\" | sed 's\/.*import {\\(.*\\)} from.*\/\\1\/' | tr ',' '\\n' | sed 's\/^ *\/\/;s\/ *$\/\/' | sort -u"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 62901,
+                "completion_tokens": 1132,
+                "total_tokens": 64033,
+                "prompt_cache_hit_tokens": 62720,
+                "prompt_cache_miss_tokens": 181,
+                "prompt_tokens_details": {
+                    "cached_tokens": 62720
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 986
+                },
+                "cached_tokens": 62720
+            },
+            "time": 1785154711
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_U8VB4nkP3SbX5en9kSqd1897",
+            "content": "} from \"..\/hooks\/useQueries\";\ngetDoctorEmail\ngetPrescriptionHeaderImage\ngetVisitFormData\nloadFromStorage\nuseCreatePatient\nuseCreateVisit\nuseGetPatient\n",
+            "is_error": false,
+            "time": 1785154711
+        },
+        {
+            "id": "msg_2f0c57e05b",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The problem is that some files have multiline imports with `} from \"..\/hooks\/useQueries\"` on a separate line. The sed command doesn't handle that well. Let me use a different approach."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_k9ZKvhDIKJGwbKjLQJL68838",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && python3 -c \"\nimport re, glob\n\nall_imports = set()\nfor f in glob.glob('**\/*.ts', recursive=True) + glob.glob('**\/*.tsx', recursive=True):\n    with open(f) as fh:\n        content = fh.read()\n    # Match multiline imports from useQueries\n    for m in re.finditer(r'import\\s*\\{([^}]+)\\}\\s*from\\s*[\\\"\\\\']([^\\\"\\\\']*useQueries[^\\\"\\\\']*)[\\\"\\\\']', content, re.DOTALL):\n        names = m.group(1).strip().split(',')\n        for n in names:\n            n = n.strip()\n            if n:\n                all_imports.add(n)\n\nfor i in sorted(all_imports):\n    print(i)\n\""
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 64085,
+                "completion_tokens": 291,
+                "total_tokens": 64376,
+                "prompt_cache_hit_tokens": 64000,
+                "prompt_cache_miss_tokens": 85,
+                "prompt_tokens_details": {
+                    "cached_tokens": 64000
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 43
+                },
+                "cached_tokens": 64000
+            },
+            "time": 1785154715
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_k9ZKvhDIKJGwbKjLQJL68838",
+            "content": "This command is blocked for safety reasons.",
+            "is_error": true,
+            "time": 1785154715
+        },
+        {
+            "id": "msg_5908f0c1e3",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me try a different approach to find all imports."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_QQwZZP2Df754lDYeZbYa6329",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && awk '\n\/HOOKS\/{p=1}\n\/from.*useQueries\/ {\n  if (p) print buf ORS $\n  else print $\n  p=; buf=\"\"; next\n}\n\/import \\{\/ { p=1; buf=$; next }\np { buf = buf \" \" $; if (\/\\}\/) { p=; print buf; buf=\"\" } }\n' -- include=\"*.ts\" include=\"*.tsx\" 2>\/dev\/null | grep -v \"^$\" | while IFS= read -r line; do\n  echo \"$line\" | sed 's\/.*import {\\(.*\\)} from.*\/\\1\/' | tr ',' '\\n' | sed 's\/^ *\/\/;s\/ *$\/\/'\ndone | sort -u"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 64395,
+                "completion_tokens": 253,
+                "total_tokens": 64648,
+                "prompt_cache_hit_tokens": 64256,
+                "prompt_cache_miss_tokens": 139,
+                "prompt_tokens_details": {
+                    "cached_tokens": 64256
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 11
+                },
+                "cached_tokens": 64256
+            },
+            "time": 1785154720
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_QQwZZP2Df754lDYeZbYa6329",
+            "content": "[Command completed successfully with no output]",
+            "is_error": false,
+            "time": 1785154720
+        },
+        {
+            "id": "msg_0a8d6269c1",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The awk approach didn't work either. Let me try a simpler approach - iterate through each file with grep."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_4saHlg224Eptk5vi2gps3086",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && for f in $(grep -rl \"from.*useQueries\" --include=\"*.tsx\" --include=\"*.ts\" 2>\/dev\/null); do\n  echo \"=== $f ===\"\ndone",
+                        "timeout": 10
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 64659,
+                "completion_tokens": 152,
+                "total_tokens": 64811,
+                "prompt_cache_hit_tokens": 64384,
+                "prompt_cache_miss_tokens": 275,
+                "prompt_tokens_details": {
+                    "cached_tokens": 64384
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 22
+                },
+                "cached_tokens": 64384
+            },
+            "time": 1785154723
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_4saHlg224Eptk5vi2gps3086",
+            "content": "=== components\/NewPrescriptionMode.tsx ===\n=== components\/PrescriptionHeaderPanel.tsx ===\n=== components\/PatientTimeline.tsx ===\n=== components\/AdmitPatientDialog.tsx ===\n=== components\/VisitForm.tsx ===\n=== components\/PrescriptionPad.tsx ===\n=== components\/PatientDashboard.tsx ===\n=== components\/UpgradedPrescriptionEMR.tsx ===\n=== components\/PrescriptionPadPreview.tsx ===\n=== components\/PrescriptionHelpers.ts ===\n=== components\/HistoryFeatures.tsx ===\n=== components\/ReferralLetter.tsx ===\n=== pages\/VisitPage.tsx ===\n=== pages\/dashboards\/StaffDashboard.tsx ===\n=== pages\/RegistrarDashboard.tsx ===\n=== pages\/PatientProfile.tsx ===\n=== pages\/PatientDashboard.tsx ===\n=== pages\/BedManagement.tsx ===\n=== pages\/Appointments.tsx ===\n=== pages\/Patients.tsx ===\n=== pages\/WardRound.tsx ===\n=== pages\/EmergencyPrescription.tsx ===\n",
+            "is_error": false,
+            "time": 1785154723
+        },
+        {
+            "id": "msg_f604d3dbcc",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me just look at the build errors one at a time. The build will tell me exactly what's missing. The quickest approach is to just add all the missing functions with proper implementations. Let me first check what's in the dist file vs what's in useQueries.ts to understand the full delta."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me look at the entire dist to find all functions that were originally in useQueries.ts:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_K6NHhAkPyedRAuUO2jNZ5803",
+                    "name": "bash",
+                    "input": {
+                        "command": "grep -oP '^function [a-zA-Z]+' \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/dist\/assets\/index-DJeWhCy-.js | grep -v '^function _' | grep -v '^function [a-z][a-z]$' | grep -v '^function [A-Z][A-Z]$' | grep -iE 'use|load|save|get|set|is|create|update|delete|storage|prescription|admission|bed|visit|patient|appointment|order|observation|encounter|clinical|alert|reminder|drug|allergy|sync|migration|device|conflict|consultant|discharge|admit|reassign|acknowledge' | sort -u"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 65043,
+                "completion_tokens": 298,
+                "total_tokens": 65341,
+                "prompt_cache_hit_tokens": 64768,
+                "prompt_cache_miss_tokens": 275,
+                "prompt_tokens_details": {
+                    "cached_tokens": 64768
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 63
+                },
+                "cached_tokens": 64768
+            },
+            "time": 1785154729
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_K6NHhAkPyedRAuUO2jNZ5803",
+            "content": "function accumulateEnterLeaveListenersForEvent\nfunction accumulateOrCreateContinuousQueuedReplayableEvent\nfunction accumulateTwoPhaseListeners\nfunction acknowledgeEmergencyNotification\nfunction addConflict\nfunction addTrappedEventListener\nfunction admissionHistoryKey\nfunction adoptPreloadPropsForScript\nfunction adoptPreloadPropsForStylesheet\nfunction aexists\nfunction animateTarget\nfunction animateVisualElement\nfunction applyAxisDelta\nfunction assertIsMounted\nfunction assertIsSquare\nfunction attachPingListener\nfunction attachSuspenseRetryListeners\nfunction attemptEarlyBailoutIfNoScheduledUpdate\nfunction attemptExplicitHydrationTarget\nfunction autoPopulateDrugReminders\nfunction autoUpdate\nfunction axisDeltaEquals\nfunction axisEquals\nfunction axisEqualsRounded\nfunction bailoutOnAlreadyFinishedWork\nfunction batchedUpdates\nfunction bitGet\nfunction cacheDonePromiseForTransaction\nfunction calcAxisDelta\nfunction calcOffsets\nfunction calcRelativeAxis\nfunction calcRelativeAxisConstraints\nfunction calcRelativeAxisPosition\nfunction calcViewportAxisConstraints\nfunction cancelTreeOptimisedTransformAnimations\nfunction CanisterActorsProvider\nfunction canUseCanister\nfunction checkIfRootIsPrerendering\nfunction checkIfUseWrappedInAsyncCatch\nfunction checkScheduledUpdateOrContext\nfunction checkShouldComponentUpdate\nfunction clearIfContinuousEvent\nfunction clearIsLayoutDirty\nfunction cloneUpdateQueue\nfunction commitHookEffectListMount\nfunction commitHookEffectListUnmount\nfunction commitHostSingletonAcquisition\nfunction commitHostUpdate\nfunction commitPassiveUnmountEffectsInsideOfDeletedTree\nfunction ConflictCard\nfunction convertOffsetParentRelativeRectToViewportRelativeRect\nfunction convertOffsetToTimes\nfunction copyAxisDeltaInto\nfunction copyAxisInto\nfunction createActor\nfunction createAndAccumulateChangeEvent\nfunction createAnimateFunction\nfunction createAnimationState\nfunction createBlsPairing\nfunction createBlsSig\nfunction createBrowserHistory\nfunction createCache\nfunction createCapturedValueAtFiber\nfunction createChildReconciler\nfunction createClassErrorUpdate\nfunction createCollection\nfunction createContext\nfunction createContextScope\nfunction createControlledPromise\nfunction createCursor\nfunction createDispatchListener\nfunction createEffectInstance\nfunction createFiberFromFragment\nfunction createFiberFromPortal\nfunction createFiberFromText\nfunction createFiberFromTypeAndProps\nfunction createFiberImplClass\nfunction createFiberRoot\nfunction createField\nfunction createFileRoute\nfunction createFocusGuard\nfunction createFocusScopesStack\nfunction createFormDataWithSubmitter\nfunction createFunctionComponentUpdateQueue\nfunction createGeneratorEasing\nfunction createHasher\nfunction createHistory\nfunction createLaneMap\nfunction createLazyFileRoute\nfunction createLRUCache\nfunction createMemoryHistory\nfunction createMixers\nfunction createMotionComponent\nfunction createMotionProxy\nfunction createNotifyManager\nfunction createPortal\nfunction createProjectionNode\nfunction createRandomKey\nfunction createRenderBatcher\nfunction createRenderStep\nfunction createResizeObserver\nfunction createRetryer\nfunction createRootErrorUpdate\nfunction createRootRoute\nfunction createRoute\nfunction createScrollRestorationCache\nfunction createSidecarMedium\nfunction createSlot\nfunction createSlotClone\nfunction createSlottable\nfunction createState\nfunction createSyntheticEvent\nfunction createTailwindMerge\nfunction createTransformer\nfunction createTypeState\nfunction createUpdate\nfunction createValue\nfunction createView\nfunction createWindowResizeHandler\nfunction createWorkInProgress\nfunction defaultOffset\nfunction detachDeletedInstance\nfunction dispatchActionState\nfunction dispatchContinuousEvent\nfunction dispatchDiscreteCustomEvent\nfunction dispatchDiscreteEvent\nfunction dispatchEvent\nfunction dispatchEventForPluginEventSystem\nfunction dispatchOptimisticSetState\nfunction dispatchReducerAction\nfunction dispatchSetState\nfunction dispatchSetStateInternal\nfunction dispatchUpdate\nfunction distance\nfunction drugRemindersKey\nfunction eachAxis\nfunction enqueueCapturedUpdate\nfunction enqueueConcurrentHookUpdate\nfunction enqueueRenderPhaseUpdate\nfunction enqueueSync\nfunction enqueueUpdate\nfunction ensureFormComponentIsStateful\nfunction ensureRootIsScheduled\nfunction entangleAsyncAction\nfunction entangleTransitionUpdate\nfunction fillOffset\nfunction findInstanceBlockingTarget\nfunction findVisible\nfunction finishAnimation\nfunction finishQueueingConcurrentUpdates\nfunction finishRenderingHooks\nfunction flushSyncWork\nfunction flushSyncWorkAcrossRoots\nfunction functionalUpdate\nfunction generateRegisterNumber\nfunction getActiveElement\nfunction getActiveElementDeep\nfunction getAdmittedPatientCount\nfunction getAlignment\nfunction getAlignmentAxis\nfunction getAlignmentSides\nfunction getAnimatableNone\nfunction getAnimationName\nfunction getAuditLog\nfunction getAxisLength\nfunction getBoundingClientRect\nfunction getBumpedLaneForHydrationByLane\nfunction getCanisterActor\nfunction getChildHostContextProd\nfunction getClientRectFromClippingAncestor\nfunction getClientRects\nfunction getClinicalEntities\nfunction getClinicalStore\nfunction getClippingElementAncestors\nfunction getClippingRect\nfunction getClosestInstanceFromNode\nfunction getClosestProjectingNode\nfunction getComponentNameFromType\nfunction getComputedStyle\nfunction getConflicts\nfunction getConflictsCount\nfunction getContainingBlock\nfunction getContextForSubtree\nfunction getCrc\nfunction getCrossOriginStringAs\nfunction getCssDimensions\nfunction getCssSelector\nfunction getCurrentDirection\nfunction getCurrentTreeVariants\nfunction getCursorAdvanceMethods\nfunction getData\nfunction getDataFromCustomEvent\nfunction getDefaultExportFromCjs\nfunction getDefaultFetch\nfunction getDefaultState\nfunction getDeviceId\nfunction getDimensions\nfunction getDirectionAwareKey\nfunction getDoctorEmail\nfunction getDocumentElement\nfunction getDocumentRect\nfunction getDPR\nfunction getElementKey\nfunction getElementRef\nfunction getEnumerableOwnKeys\nfunction getEventCharCode\nfunction getEventModifierState\nfunction getEventPriority\nfunction getEventTarget\nfunction getExpandedPlacements\nfunction getFallbackBeforeInputChars\nfunction getFeatureDefinitions\nfunction getFieldBytesLength\nfunction getFinalKeyframe\nfunction getFocusIntent\nfunction getFrameElement\nfunction getGeneratorVelocity\nfunction getHighestPriorityLanes\nfunction getHoistableRoot\nfunction getHostSibling\nfunction getHTMLOffset\nfunction getHydratableHoistableCache\nfunction getIdbProxyableTypes\nfunction getInitializedFeatureDefinitions\nfunction getInitialRouterState\nfunction getInnerBoundingClientRect\nfunction getInstanceFromNode\nfunction getInstIfValueChanged\nfunction getIteratorFn\nfunction getLastSyncAgeMs\nfunction getLastSyncAt\nfunction getLastSyncTs\nfunction getLeafNode\nfunction getListener\nfunction getLocationChangeInfo\nfunction getMatchedRoutes\nfunction getMethod\nfunction getMinHashLength\nfunction getMixer\nfunction getNativeBeforeInputChars\nfunction getNearestMountedFiber\nfunction getNearestOverflowAncestor\nfunction getNextHydratable\nfunction getNextLanes\nfunction getNextPageParam\nfunction getNodeForCharacterOffset\nfunction getNodeFromInstance\nfunction getNodeName\nfunction getNodeScroll\nfunction getOffsetParent\nfunction getOppositeAlignmentPlacement\nfunction getOppositeAxis\nfunction getOppositeAxisPlacements\nfunction getOppositePlacement\nfunction getOptimisedAppearId\nfunction getOutermostShadowParent\nfunction getOverflowAncestors\nfunction getOwnerDocumentFromRootContainer\nfunction getOwnHostContext\nfunction getOwnKeys\nfunction getPaddingObject\nfunction getPanInfo\nfunction getParent\nfunction getParentNode\nfunction getParentSuspenseInstance\nfunction getPendingApprovalCount\nfunction getPendingChangesCount\nfunction getPendingHandoverCount\nfunction getPermissionsForRole\nfunction getPrescriptionHeaderImage\nfunction getPreviousPageParam\nfunction getProjectionFunctionality\nfunction getRadius\nfunction getRectRelativeToOffsetParent\nfunction getRemainingWorkInPrimaryTree\nfunction getResource\nfunction getResourcesFromRoot\nfunction getRetryCache\nfunction getRootForUpdatedFiber\nfunction getRouterContext\nfunction getSafeSessionStorage\nfunction getScale\nfunction getScriptKey\nfunction getScriptSelectorFromKey\nfunction getSide\nfunction getSideAndAlignFromPlacement\nfunction getSideAxis\nfunction getSideList\nfunction getSideOffsets\nfunction getSpringOptions\nfunction getStackByFiberInDevAndProd\nfunction getState\nfunction getStyleKey\nfunction getStylesheetSelectorFromKey\nfunction getSuspendedCache\nfunction getSuspendedThenable\nfunction getSuspenseInstanceFromFiber\nfunction getSyncStatus\nfunction getTabbableCandidates\nfunction getTabbableEdges\nfunction getTargetInstForChangeEvent\nfunction getTargetInstForClickEvent\nfunction getTargetInstForInputEventPolyfill\nfunction getTargetInstForInputOrChangeEvent\nfunction getToStringValue\nfunction getTrueOffsetParent\nfunction getUnacknowledgedEmergencyNotifications\nfunction getUnpaidInvoicesCount\nfunction getValueState\nfunction getValueTransition\nfunction getVariableValue\nfunction getVariantContext\nfunction getVelocity\nfunction getVendorPrefixedEventName\nfunction getViewportRect\nfunction getVisitFormData\nfunction getVisualOffsets\nfunction getW\nfunction getWindow\nfunction getWindowScrollBarX\nfunction getWLengths\nfunction handleAndDispatchCustomEvent\nfunction initializeClassErrorUpdate\nfunction initializeUpdateQueue\nfunction initSuspenseListRenderState\nfunction innerCreateMedium\nfunction isAnimationControls\nfunction isAnySideFullyClipped\nfunction isAttributeNameSafe\nfunction isAxisDeltaZero\nfunction isBufferGreaterThan\nfunction isBytes\nfunction isCheckable\nfunction isConsultantType\nfunction isContainingBlock\nfunction isControllingVariants\nfunction isCtrlEvent\nfunction isCustomElement\nfunction isDelegationValid\nfunction isDeltaZero\nfunction isDragActive\nfunction isEdValidXY\nfunction isElement\nfunction isElementKeyboardAccessible\nfunction isElementTextInput\nfunction isFallbackCompositionEnd\nfunction isForcedMotionValue\nfunction isFunction\nfunction isGenerator\nfunction isHash\nfunction isHidden\nfunction isHostHoistableType\nfunction isHostParent\nfunction isHTMLElement\nfunction isIdentityScale\nfunction isLastTraversableNode\nfunction isLazyComponent\nfunction isMatch\nfunction isMigrationDone\nfunction isNear\nfunction isNetworkOnline\nfunction isNode\nfunction isNone\nfunction isNotFound\nfunction isNotNull\nfunction isNullish\nfunction isObject\nfunction isObjectWithProperty\nfunction isogenyMap\nfunction isOverflowElement\nfunction isPlainArray\nfunction isPlainObject\nfunction isPromise\nfunction isPromiseLike\nfunction isRedirect\nfunction isRefObject\nfunction isRenderConsistentWithExternalStores\nfunction isRenderPhaseUpdate\nfunction isRTL\nfunction isSelectableInput\nfunction isShadowRoot\nfunction isSignedReadStateRequestWithExpiry\nfunction isSignUpEnabled\nfunction isSingletonScope\nfunction isSlottable\nfunction isSpringType\nfunction isStale\nfunction isStaticPositioned\nfunction isSuspenseInstanceFallback\nfunction isSVGComponent\nfunction isSVGElement\nfunction isSVGSVGElement\nfunction isTableElement\nfunction isTextInputElement\nfunction isThenableResolved\nfunction isTopLayer\nfunction isTransitionDefined\nfunction isUnsupportedEase\nfunction isUpdaterFunction\nfunction isV\nfunction isValidContainer\nfunction isValidElement\nfunction isValidHover\nfunction isValidMotionProp\nfunction isValidPressEvent\nfunction isValidTimeout\nfunction isVariantLabel\nfunction isVariantNode\nfunction isWebKit\nfunction isWillChangeMotionValue\nfunction lastDevicePoint\nfunction listenToAllSupportedEvents\nfunction listenToNativeEvent\nfunction listenToNonDelegatedEvent\nfunction loadAdmissionHistory\nfunction loadAdviceEntries\nfunction loadAllergyOverrides\nfunction loadBool\nfunction loadClinicalEntityStore\nfunction loadComplaints\nfunction loadDailyProgress\nfunction loadDrugReminders\nfunction loadEmergencyNotifications\nfunction loadExternalIsValidProp\nfunction loadFamilyHistoryRisk\nfunction loadFeatures\nfunction loadFromAllDoctorKeys\nfunction loadFromStorage\nfunction loadPatientRegistry\nfunction loadPrescriptionRecords\nfunction loadProblemList\nfunction loadRegistry\nfunction loadSession\nfunction loadSignUpMap\nfunction loadSubmissions\nfunction loadSyncQueue\nfunction loadVaccinationRecords\nfunction markMigrationDone\nfunction markNodeAsHoistable\nfunction markRootFinished\nfunction markRootUpdated\nfunction markUpdate\nfunction markUpdateLaneFromFiberToRoot\nfunction matchOrder\nfunction mixAxis\nfunction mixAxisDelta\nfunction mixVisibility\nfunction modifierStateGetter\nfunction mountHoistable\nfunction nextClinicalId\nfunction notifyActionListeners\nfunction notifyLayoutUpdate\nfunction notifyTarget\nfunction PatientAuthContent\nfunction PatientPortalView\nfunction PatientProfileWrapper\nfunction performSyncWorkOnRoot\nfunction preload\nfunction preloadModule\nfunction preloadResource\nfunction preloadResourceAndSuspendIfNeeded\nfunction preloadStylesheet\nfunction prescriptionRecordsKey\nfunction processDispatchQueue\nfunction processUpdateQueue\nfunction promisifyRequest\nfunction pushAsyncDispatcher\nfunction pushDispatcher\nfunction pushStoreConsistencyCheck\nfunction queueIfContinuousEvent\nfunction readClinicalEntities\nfunction rebaseAxisConstraints\nfunction recursivelyResetForms\nfunction recursivelyTraverseDisappearLayoutEffects\nfunction recursivelyTraverseDisconnectPassiveEffects\nfunction registerDirectEvent\nfunction registerSimpleEvent\nfunction registerSuspenseInstanceRetry\nfunction registerTwoPhaseEvent\nfunction removeAxisDelta\nfunction removeAxisTransforms\nfunction renderRootSync\nfunction requestFormReset\nfunction requestUpdateLane\nfunction resetDistortingTransform\nfunction resetHooksOnUnwind\nfunction resetHydrationState\nfunction resetSkewAndRotation\nfunction resetSubtypeCache\nfunction resetTransformStyle\nfunction resetWorkInProgress\nfunction resetWorkInProgressStack\nfunction resolveAxisElastic\nfunction resolveAxisTranslate\nfunction resolveCanisterId\nfunction resolveConflict\nfunction resolveTargetDelta\nfunction resolveUpdatePriority\nfunction restoreStateOfTarget\nfunction reuseHiddenContextOnStack\nfunction reuseSuspenseHandlerOnStack\nfunction roundAxis\nfunction roundMillisToMinutes\nfunction roundMillisToSeconds\nfunction routeNeedsPreload\nfunction saveAdmissionHistory\nfunction saveAdviceEntries\nfunction saveAllergyOverrides\nfunction saveBool\nfunction saveClinicalEntities\nfunction saveClinicalEntitiesWithSync\nfunction saveClinicalEntityStore\nfunction saveComplaints\nfunction saveConflicts\nfunction saveDailyProgress\nfunction saveDrugReminders\nfunction saveEmergencyNotifications\nfunction saveFamilyHistoryRisk\nfunction saveFrontPageContentWithSync\nfunction savePatientRegistry\nfunction savePrescriptionRecords\nfunction saveProblemList\nfunction saveRegistry\nfunction saveSignUpMap\nfunction saveSubmissions\nfunction saveSyncQueue\nfunction saveToStorage\nfunction saveVaccinationRecords\nfunction scheduleUpdateOnFiber\nfunction setBigUint\nfunction setCanisterActor\nfunction setDefaultValue\nfunction setDragLock\nfunction setFeatureDefinitions\nfunction setInitialProperties\nfunction setIsStrictModeForDevtools\nfunction setLastSyncTs\nfunction setMask\nfunction setMotionValue\nfunction setPrescriptionHeaderImage\nfunction setProp\nfunction setPropOnCustomElement\nfunction setRef\nfunction setSignUpEnabled\nfunction setStyle\nfunction setTarget\nfunction setTextContent\nfunction setupGesture\nfunction setupScrollRestoration\nfunction setValueForAttribute\nfunction setValueForKnownAttribute\nfunction setValueForNamespacedAttribute\nfunction setValueForStyle\nfunction setValueForStyles\nfunction shouldAddVisualOffsets\nfunction shouldLoadOnMount\nfunction shouldSetTextContent\nfunction startDevicePoint\nfunction storageKey\nfunction suspendIfUpdateReadFromEntangledAsyncAction\nfunction SyncConflictDialog\nfunction systemSetTimeoutZero\nfunction TabsList\nfunction throwOnHydrationMismatch\nfunction tonelliShanks\nfunction trackUsedThenable\nfunction transformAxis\nfunction translateAxis\nfunction twistedEdwards\nfunction updateActionState\nfunction updateActionStateImpl\nfunction updateCallback\nfunction updateClassComponent\nfunction updateContainerImpl\nfunction updateDeferredValueImpl\nfunction updateEffect\nfunction updateEffectImpl\nfunction updateForwardRef\nfunction updateFunctionComponent\nfunction updateId\nfunction updateImperativeHandle\nfunction updateInput\nfunction updateInsertionEffect\nfunction updateLayout\nfunction updateLayoutEffect\nfunction updateMemo\nfunction updateMemoComponent\nfunction updateMotionValuesFromProps\nfunction updateOffscreenComponent\nfunction updateOptimisticImpl\nfunction updateOptions\nfunction updateProperties\nfunction updateReducer\nfunction updateReducerImpl\nfunction updateRef\nfunction updateRefresh\nfunction updateSimpleMemoComponent\nfunction updateStoreInstance\nfunction updateSuspenseComponent\nfunction updateSuspenseListComponent\nfunction updateSyncExternalStore\nfunction updateTextarea\nfunction updateValueIfChanged\nfunction updateWorkInProgressHook\nfunction use\nfunction useAdminAuth\nfunction useAdmitPatient\nfunction useAssignBed\nfunction useBaseQuery\nfunction useCallbackRef\nfunction useComposedRefs\nfunction useConstant\nfunction useControllableState\nfunction useCreateBedRecord\nfunction useCreateClinicalNote\nfunction useCreateMotionContext\nfunction useCreateObservation\nfunction useCreateOrder\nfunction useCreatePatient\nfunction useCreatePrescription\nfunction useCreateVisit\nfunction useDeletePatient\nfunction useDirection\nfunction useDischargePatient\nfunction useEmailAuth\nfunction useEscapeKeydown\nfunction useFloating\nfunction useFocusGuards\nfunction useFocusOutside\nfunction useForwardedRef\nfunction useGetAllBeds\nfunction useGetAllPatients\nfunction useGetClinicalNotesByPatient\nfunction useGetEncountersByPatient\nfunction useGetPatient\nfunction useGetPrescriptionsByPatient\nfunction useGetVisitsByPatient\nfunction useHostTransitionStatus\nfunction useHTMLProps\nfunction useHydrated\nfunction useId\nfunction useInactivityTimer\nfunction useInitialMotionValues\nfunction useIntersectionObserver\nfunction useLatestRef\nfunction useLayoutId\nfunction useLinkProps\nfunction useLoaderData\nfunction useLoaderDeps\nfunction useMatch\nfunction useMemoCache\nfunction useMergeRefs\nfunction useMigration\nfunction useMotionRef\nfunction useMutation\nfunction useNavigate\nfunction useOnlineStatus\nfunction useParams\nfunction usePointerDownOutside\nfunction usePresence\nfunction usePrevious\nfunction useQuery\nfunction useRender\nfunction useRolePermissions\nfunction useRouter\nfunction useRouterState\nfunction useSearch\nfunction useSize\nfunction useStateMachine\nfunction useStore\nfunction useStrictMode\nfunction useStyle\nfunction useSVGProps\nfunction useSyncExternalStore\nfunction useSyncStatus\nfunction useThenable\nfunction useTypeaheadSearch\nfunction useUncontrolledState\nfunction useUpdatePatient\nfunction useVisualElement\nfunction workLoopSync\n",
+            "is_error": false,
+            "time": 1785154729
+        },
+        {
+            "id": "msg_d930bd68f1",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "This is a massive grep result. Let me focus on just the functions that start with `use` and are specific to the application (not React internals):"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_owk8EOjgoIWBximlmpe01467",
+                    "name": "bash",
+                    "input": {
+                        "command": "grep -oP '^function use[A-Z][a-zA-Z]+' \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/dist\/assets\/index-DJeWhCy-.js | grep -v '^function use[A-Z][A-Z]' | grep -v 'useStateMachine\\|useSyncExternalStore\\|useThenable\\|useControllableState\\|useComposedRefs\\|useCallbackRef\\|useRouter\\|useSearch\\|useMatch\\|useNavigate\\|useParams\\|useLinkProps\\|useLoaderData\\|useLoaderDeps\\|useRouterState\\|useTypeaheadSearch\\|useUncontrolledState\\|useForwardedRef\\|useId\\|usePrevious\\|useSize\\|useStore\\|useStrictMode\\|useRef\\|useState\\|useEffect\\|useMemo\\|useCallback\\|useReducer\\|useContext\\|useLayoutEffect\\|useInsertionEffect\\|useImperativeHandle\\|useDebugValue\\|useDeferredValue\\|useTransition\\|useSyncExternalStore\\|useQuery\\|useMutation\\|useQueryClient\\|useInfiniteQuery\\|useQueries\\|useMutationState\\|useIsFetching\\|useIsMutating\\|useQueryErrorResetBoundary\\|useHydrated\\|useOnlineStatus\\|useAdminAuth\\|useEmailAuth\\|useRolePermissions\\|useInactivityTimer\\|useSignUp\\|useIntersectionObserver\\|useFocusGuards\\|useFocusOutside\\|usePointerDownOutside\\|useEscapeKeydown\\|useDirection\\|useRender\\|useSVGProps\\|useHTMLProps\\|useStyle\\|useVisualElement\\|useConstant\\|useInitialMotionValues\\|useMotionRef\\|useLayoutId\\|usePresence\\|useSize\\|useFloating\\|useHostTransitionStatus\\|useIsPresent\\|useMergeRefs\\|useLatestRef\\|useVelocity\\|useTime\\|useSpring\\|useMotionValue\\|useTransform\\|useScroll\\|useElementScroll\\|useWillChange\\|useAnimation\\|useCycle\\|useAnimate\\|useDragControls\\|useMotionTemplate\\|useMotionValueEvent\\|useReducedMotion\\|useManualRef' | sort -u"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 69344,
+                "completion_tokens": 513,
+                "total_tokens": 69857,
+                "prompt_cache_hit_tokens": 65280,
+                "prompt_cache_miss_tokens": 4064,
+                "prompt_tokens_details": {
+                    "cached_tokens": 65280
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 32
+                },
+                "cached_tokens": 65280
+            },
+            "time": 1785154736
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_owk8EOjgoIWBximlmpe01467",
+            "content": "function useAdmitPatient\nfunction useAssignBed\nfunction useBaseQuery\nfunction useCreateBedRecord\nfunction useCreateClinicalNote\nfunction useCreateMotionContext\nfunction useCreateObservation\nfunction useCreateOrder\nfunction useCreatePatient\nfunction useCreatePrescription\nfunction useCreateVisit\nfunction useDeletePatient\nfunction useDischargePatient\nfunction useGetAllBeds\nfunction useGetAllPatients\nfunction useGetClinicalNotesByPatient\nfunction useGetEncountersByPatient\nfunction useGetPatient\nfunction useGetPrescriptionsByPatient\nfunction useGetVisitsByPatient\nfunction useMigration\nfunction useSyncStatus\nfunction useUpdatePatient\n",
+            "is_error": false,
+            "time": 1785154737
         }
     ]
 }

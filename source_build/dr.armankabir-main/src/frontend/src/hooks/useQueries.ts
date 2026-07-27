@@ -558,6 +558,146 @@ export function setPrescriptionHeaderImage(type: string, imageDataUrl: string, d
   localStorage.setItem(key, imageDataUrl);
 }
 
+// ── Admission / Discharge hooks ──────────────────────────────────────────
+
+export function useAdmitPatient() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: {
+      patientId: number;
+      hospitalName: string;
+      ward: string;
+      bed: string;
+      admittedOn: string;
+      admittedBy: string;
+      admittedByRole: string;
+      reasonForAdmission?: string;
+      carriedOverComplaints?: string[];
+      carriedOverDiagnosis?: string[];
+      carriedOverDrugHistory?: string[];
+      carriedOverPrescriptions?: string[];
+      isIntern?: boolean;
+      consultantAssignment?: { email: string; name: string; assignedAt: string; assignedBy: string };
+    }) => {
+      return admissionService.admit({
+        patientId: data.patientId,
+        ward: data.ward,
+        bedId: undefined, // PHP endpoint can parse bed as string
+        admittedBy: data.admittedBy,
+        diagnosis: data.reasonForAdmission,
+        notes: JSON.stringify({
+          hospitalName: data.hospitalName,
+          bed: data.bed,
+          carriedOverComplaints: data.carriedOverComplaints,
+          carriedOverDiagnosis: data.carriedOverDiagnosis,
+          carriedOverDrugHistory: data.carriedOverDrugHistory,
+          carriedOverPrescriptions: data.carriedOverPrescriptions,
+          isIntern: data.isIntern,
+          consultantAssignment: data.consultantAssignment,
+        }),
+      });
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['patients'] });
+      qc.invalidateQueries({ queryKey: ['patient', vars.patientId.toString()] });
+      qc.invalidateQueries({ queryKey: ['admissionHistory', vars.patientId.toString()] });
+    },
+  });
+}
+
+export function useDischargePatient() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: {
+      patientId: number;
+      dischargedBy?: string;
+      dischargedByRole?: string;
+    }) => {
+      // Call discharge endpoint
+      await admissionService.discharge(, {
+        dischargedBy: data.dischargedBy,
+        dischargeSummary: 'Patient discharged',
+      });
+      return data;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['patients'] });
+      qc.invalidateQueries({ queryKey: ['patient', vars.patientId.toString()] });
+      qc.invalidateQueries({ queryKey: ['admissionHistory', vars.patientId.toString()] });
+    },
+  });
+}
+
+// ── Clinical alerts hooks ────────────────────────────────────────────────
+
+export function useGetAlertsByPatient(patientId: number | null) {
+  return useQuery<any[]>({
+    queryKey: ['alerts', patientId?.toString()],
+    queryFn: async () => {
+      try {
+        const { get } = await import('../lib/apiClient');
+        return get<any[]>('/clinical/alerts-list.php', { patient_id: patientId });
+      } catch {
+        return [];
+      }
+    },
+    enabled: !!patientId,
+  });
+}
+
+export function useAcknowledgeAlert() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (alertId: number | string) => {
+      const { post } = await import('../lib/apiClient');
+      await post('/clinical/alerts-acknowledge.php', { alert_id: alertId });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['alerts'] }),
+  });
+}
+
+export function useGetAuditTrail(patientId: number | null) {
+  return useQuery<any[]>({
+    queryKey: ['auditTrail', patientId?.toString()],
+    queryFn: async () => {
+      try {
+        const { get } = await import('../lib/apiClient');
+        return get<any[]>('/audit/list.php', { patient_id: patientId });
+      } catch {
+        return [];
+      }
+    },
+    enabled: !!patientId,
+  });
+}
+
+export function useReassignConsultant() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: {
+      patientId: number;
+      newConsultant: { email: string; name: string };
+      assignedBy: string;
+      assignedByName: string;
+      assignedByRole: string;
+    }) => {
+      const { post } = await import('../lib/apiClient');
+      await post('/patients/reassign-consultant.php', {
+        patient_id: data.patientId,
+        consultant_email: data.newConsultant.email,
+        consultant_name: data.newConsultant.name,
+        assigned_by: data.assignedBy,
+        assigned_by_name: data.assignedByName,
+        assigned_by_role: data.assignedByRole,
+      });
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['patients'] });
+      qc.invalidateQueries({ queryKey: ['patient', vars.patientId.toString()] });
+    },
+  });
+}
+
 // ── Prescription records helpers (localStorage) ──────────────────────────
 
 function prescriptionRecordsKey(patientId: number | string): string {
