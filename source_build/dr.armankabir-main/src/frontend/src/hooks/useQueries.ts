@@ -530,7 +530,7 @@ export function loadFromStorage<T>(key: string): T[] {
 export function loadFromAllDoctorKeys<T>(prefix: string): T[] {
   try {
     const results: T[] = [];
-    for (let i = ; i < localStorage.length; i++) {
+    for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key?.startsWith(`${prefix}_`)) {
         try {
@@ -594,7 +594,7 @@ export function getVisitFormData(visitId: string | number | null): Record<string
     const raw = localStorage.getItem(`visit_form_data_${id}_${email}`);
     if (raw) return JSON.parse(raw);
   } catch { /* ignore */ }
-  for (let i = ; i < localStorage.length; i++) {
+  for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
     if (key?.startsWith(`visit_form_data_${id}_`)) {
       try {
