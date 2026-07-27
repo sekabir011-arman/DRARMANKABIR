@@ -480,53 +480,137 @@ export function isNetworkOnline(): boolean {
   return navigator.onLine;
 }
 
-// ─── Legacy helpers — all deprecated, kept only for type compatibility ────
+// ─── Legacy helpers — localStorage fallbacks ─────────────────────────────
 
 import type { Medication } from '../types';
 
-/** @deprecated Use patientService directly */
-export function saveToStorage<T>(_key: string, _data: T[]): void {
-  // No-op — storage is server-side
+const CANONICAL_EMAIL_KEY = 'app_current_user_email';
+
+function serializeBigInt(value: any): any {
+  if (typeof value === 'bigint') return `__bigint__${value.toString()}`;
+  if (Array.isArray(value)) return value.map(serializeBigInt);
+  if (value !== null && typeof value === 'object') {
+    const result: Record<string, any> = {};
+    for (const [k, v] of Object.entries(value)) result[k] = serializeBigInt(v);
+    return result;
+  }
+  return value;
 }
 
-/** @deprecated Use patientService directly */
-export function loadFromStorage<T>(_key: string): T[] {
-  return [];
+function deserializeBigInt(value: any): any {
+  if (typeof value === 'string' && value.startsWith('__bigint__')) return BigInt(value.slice(10));
+  if (Array.isArray(value)) return value.map(deserializeBigInt);
+  if (value !== null && typeof value === 'object') {
+    const result: Record<string, any> = {};
+    for (const [k, v] of Object.entries(value)) result[k] = deserializeBigInt(v);
+    return result;
+  }
+  return value;
 }
 
-/** @deprecated Use patientService directly */
-export function loadFromAllDoctorKeys<T>(_prefix: string): T[] {
-  return [];
+export function saveToStorage<T>(key: string, data: T[]): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(serializeBigInt(data)));
+  } catch (err) {
+    console.error('saveToStorage error:', key, err);
+    throw err;
+  }
 }
 
-/** @deprecated — email is retrieved from PHP session */
+export function loadFromStorage<T>(key: string): T[] {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return [];
+    return deserializeBigInt(JSON.parse(raw));
+  } catch {
+    return [];
+  }
+}
+
+export function loadFromAllDoctorKeys<T>(prefix: string): T[] {
+  try {
+    const results: T[] = [];
+    for (let i = ; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith(`${prefix}_`)) {
+        try {
+          const raw = localStorage.getItem(key);
+          if (!raw) continue;
+          const items = deserializeBigInt(JSON.parse(raw));
+          if (Array.isArray(items)) results.push(...items);
+        } catch { /* skip */ }
+      }
+    }
+    return results;
+  } catch {
+    return [];
+  }
+}
+
 export function getDoctorEmail(): string {
-  return '';
+  try {
+    const canonical = localStorage.getItem(CANONICAL_EMAIL_KEY);
+    if (canonical) return canonical;
+    const raw = localStorage.getItem('staff_auth');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed?.email) {
+        localStorage.setItem(CANONICAL_EMAIL_KEY, parsed.email);
+        return parsed.email;
+      }
+    }
+    const sessionId = localStorage.getItem('medicare_current_doctor');
+    if (sessionId) {
+      const registry = JSON.parse(localStorage.getItem('medicare_doctors_registry') || '[]');
+      const doctor = registry.find((d: any) => d.id === sessionId);
+      if (doctor?.email) {
+        localStorage.setItem(CANONICAL_EMAIL_KEY, doctor.email);
+        return doctor.email;
+      }
+    }
+    return 'default';
+  } catch {
+    return 'default';
+  }
 }
 
-/** @deprecated — email comes from PHP session */
-export function setCanonicalUserEmail(_email: string): void {
-  // No-op — email comes from PHP session
+export function setCanonicalUserEmail(email: string): void {
+  localStorage.setItem(CANONICAL_EMAIL_KEY, email);
 }
 
-/** @deprecated */
 export function clearCanonicalUserEmail(): void {
-  // No-op
+  localStorage.removeItem(CANONICAL_EMAIL_KEY);
 }
 
-/** @deprecated */
 export function storageKey(prefix: string): string {
-  return prefix;
+  return `${prefix}_${getDoctorEmail()}`;
 }
 
-/** @deprecated */
-export function getVisitFormData(_visitId: string | number | null): Record<string, any> | null {
+export function getVisitFormData(visitId: string | number | null): Record<string, any> | null {
+  if (!visitId) return null;
+  const id = String(visitId);
+  const email = getDoctorEmail();
+  try {
+    const raw = localStorage.getItem(`visit_form_data_${id}_${email}`);
+    if (raw) return JSON.parse(raw);
+  } catch { /* ignore */ }
+  for (let i = ; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key?.startsWith(`visit_form_data_${id}_`)) {
+      try {
+        const raw = localStorage.getItem(key);
+        if (raw) return JSON.parse(raw);
+      } catch { /* ignore */ }
+    }
+  }
   return null;
 }
 
-/** @deprecated */
 export function generateRegisterNumber(): string {
-  return '';
+  const counter = Number.parseInt(localStorage.getItem('medicare_register_counter') || '') + 1;
+  localStorage.setItem('medicare_register_counter', String(counter));
+  const year = new Date().getFullYear().toString().slice(-2);
+  return `MR${year}${String(counter).padStart(5, '')}`;
 }
 
 /** @deprecated */
