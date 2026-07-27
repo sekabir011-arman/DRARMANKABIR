@@ -80,7 +80,7 @@ export const prescriptionService = {
       notes: data.notes ?? null,
     });
     // create.php returns { id, message } — fetch full record
-    const rxId = result?.id ?? ;
+    const rxId = result?.id ?? ,
     if (rxId) return (await this.getById(rxId))!;
     return result as unknown as Prescription;
   },
