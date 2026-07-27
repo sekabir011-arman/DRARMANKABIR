@@ -32,8 +32,8 @@ import {
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import type {
 import { storage } from "../lib/storageAdapter";
+import type {
   InvoiceState,
   MoneyReceiptData,
   PaymentMethod,
