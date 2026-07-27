@@ -24,8 +24,8 @@ const prescriptionMapping: Mapping<Prescription> = {
 };
 
 const prescriptionTransforms = {
-  id: (v: any) => toNumber(v) 
-  patientId: (v: any) => toNumber(v) 
+  id: (v: any) => toNumber(v),
+  patientId: (v: any) => toNumber(v),
   visitId: (v: any) => toNumber(v),
   medications: (v: any) => (Array.isArray(v) ? v : []),
 };
