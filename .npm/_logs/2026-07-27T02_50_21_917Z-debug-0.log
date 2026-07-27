@@ -1,0 +1,1096 @@
+0 verbose cli /opt/alt/alt-nodejs20/root/usr/bin/node /opt/alt/alt-nodejs20/root/usr/bin/npm
+1 info using npm@10.8.2
+2 info using node@v20.18.3
+3 silly config load:file:/opt/alt/alt-nodejs20/root/usr/lib/node_modules/npm/npmrc
+4 silly config load:file:/home/drarmank/source_build/dr.armankabir-main/src/frontend/.npmrc
+5 silly config load:file:/home/drarmank/.npmrc
+6 silly config load:file:/opt/alt/alt-nodejs20/root/usr/etc/npmrc
+7 verbose title npm install rollup@4.9.6
+8 verbose argv "install" "rollup@4.9.6"
+9 verbose logfile logs-max:10 dir:/home/drarmank/.npm/_logs/2026-07-27T02_50_21_917Z-
+10 verbose logfile /home/drarmank/.npm/_logs/2026-07-27T02_50_21_917Z-debug-0.log
+11 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+12 silly logfile done cleaning log files
+13 silly idealTree buildDeps
+14 silly fetch manifest rollup@4.9.6
+15 silly packumentCache full:https://registry.npmjs.org/rollup cache-miss
+16 http fetch GET 200 https://registry.npmjs.org/rollup 481ms (cache revalidated)
+17 silly packumentCache full:https://registry.npmjs.org/rollup set size:6266245 disposed:false
+18 silly placeDep ROOT rollup@4.9.6 REPLACE for: @caffeine/template-frontend@0.0.0 want: 4.9.6
+19 silly fetch manifest @types/estree@1.0.5
+20 silly packumentCache full:https://registry.npmjs.org/@types%2festree cache-miss
+21 silly fetch manifest @rollup/rollup-darwin-x64@4.9.6
+22 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-darwin-x64 cache-miss
+23 silly fetch manifest @rollup/rollup-darwin-arm64@4.9.6
+24 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-darwin-arm64 cache-miss
+25 silly fetch manifest @rollup/rollup-android-arm64@4.9.6
+26 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-android-arm64 cache-miss
+27 silly fetch manifest @rollup/rollup-linux-x64-gnu@4.9.6
+28 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-x64-gnu cache-miss
+29 silly fetch manifest @rollup/rollup-linux-x64-musl@4.9.6
+30 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-x64-musl cache-miss
+31 silly fetch manifest @rollup/rollup-win32-x64-msvc@4.9.6
+32 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-win32-x64-msvc cache-miss
+33 silly fetch manifest @rollup/rollup-linux-arm64-gnu@4.9.6
+34 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-arm64-gnu cache-miss
+35 silly fetch manifest @rollup/rollup-win32-ia32-msvc@4.9.6
+36 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-win32-ia32-msvc cache-miss
+37 silly fetch manifest @rollup/rollup-android-arm-eabi@4.9.6
+38 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-android-arm-eabi cache-miss
+39 silly fetch manifest @rollup/rollup-linux-arm64-musl@4.9.6
+40 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-arm64-musl cache-miss
+41 silly fetch manifest @rollup/rollup-win32-arm64-msvc@4.9.6
+42 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-win32-arm64-msvc cache-miss
+43 silly fetch manifest @rollup/rollup-linux-riscv64-gnu@4.9.6
+44 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-riscv64-gnu cache-miss
+45 silly fetch manifest @rollup/rollup-linux-arm-gnueabihf@4.9.6
+46 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-arm-gnueabihf cache-miss
+47 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-linux-x64-gnu 157ms (cache revalidated)
+48 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-x64-gnu set size:351448 disposed:false
+49 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-linux-arm-gnueabihf 207ms (cache revalidated)
+50 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-arm-gnueabihf set size:360057 disposed:false
+51 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-win32-x64-msvc 236ms (cache revalidated)
+52 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-win32-x64-msvc set size:349164 disposed:false
+53 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-android-arm-eabi 241ms (cache revalidated)
+54 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-android-arm-eabi set size:354106 disposed:false
+55 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-android-arm64 251ms (cache revalidated)
+56 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-android-arm64 set size:350588 disposed:false
+57 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-win32-arm64-msvc 255ms (cache revalidated)
+58 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-win32-arm64-msvc set size:354097 disposed:false
+59 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-linux-arm64-musl 264ms (cache revalidated)
+60 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-arm64-musl set size:311828 disposed:false
+61 http fetch GET 200 https://registry.npmjs.org/@types%2festree 279ms (cache revalidated)
+62 silly packumentCache full:https://registry.npmjs.org/@types%2festree set size:76072 disposed:false
+63 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-linux-riscv64-gnu 272ms (cache revalidated)
+64 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-riscv64-gnu set size:282649 disposed:false
+65 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-darwin-x64 290ms (cache revalidated)
+66 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-darwin-x64 set size:344144 disposed:false
+67 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-linux-x64-musl 305ms (cache revalidated)
+68 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-x64-musl set size:350832 disposed:false
+69 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-linux-arm64-gnu 313ms (cache revalidated)
+70 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-arm64-gnu set size:356403 disposed:false
+71 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-win32-ia32-msvc 320ms (cache revalidated)
+72 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-win32-ia32-msvc set size:352564 disposed:false
+73 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-darwin-arm64 331ms (cache revalidated)
+74 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-darwin-arm64 set size:349039 disposed:false
+75 silly placeDep ROOT @rollup/rollup-android-arm-eabi@4.9.6 OK for: rollup@4.9.6 want: 4.9.6
+76 silly placeDep ROOT @rollup/rollup-android-arm64@4.9.6 OK for: rollup@4.9.6 want: 4.9.6
+77 silly placeDep ROOT @rollup/rollup-darwin-arm64@4.9.6 OK for: rollup@4.9.6 want: 4.9.6
+78 silly placeDep ROOT @rollup/rollup-darwin-x64@4.9.6 OK for: rollup@4.9.6 want: 4.9.6
+79 silly placeDep ROOT @rollup/rollup-linux-arm-gnueabihf@4.9.6 OK for: rollup@4.9.6 want: 4.9.6
+80 silly placeDep ROOT @rollup/rollup-linux-arm64-gnu@4.9.6 OK for: rollup@4.9.6 want: 4.9.6
+81 silly placeDep ROOT @rollup/rollup-linux-arm64-musl@4.9.6 OK for: rollup@4.9.6 want: 4.9.6
+82 silly placeDep ROOT @rollup/rollup-linux-riscv64-gnu@4.9.6 OK for: rollup@4.9.6 want: 4.9.6
+83 silly placeDep ROOT @rollup/rollup-linux-x64-gnu@4.9.6 OK for: rollup@4.9.6 want: 4.9.6
+84 silly placeDep ROOT @rollup/rollup-linux-x64-musl@4.9.6 OK for: rollup@4.9.6 want: 4.9.6
+85 silly placeDep ROOT @rollup/rollup-win32-arm64-msvc@4.9.6 OK for: rollup@4.9.6 want: 4.9.6
+86 silly placeDep ROOT @rollup/rollup-win32-ia32-msvc@4.9.6 OK for: rollup@4.9.6 want: 4.9.6
+87 silly placeDep ROOT @rollup/rollup-win32-x64-msvc@4.9.6 OK for: rollup@4.9.6 want: 4.9.6
+88 silly placeDep ROOT @types/estree@1.0.5 OK for: rollup@4.9.6 want: 1.0.5
+89 silly fetch manifest rollup@^4.20.0
+90 silly packumentCache full:https://registry.npmjs.org/rollup cache-miss
+91 http fetch GET 200 https://registry.npmjs.org/rollup 22ms (cache hit)
+92 silly packumentCache full:https://registry.npmjs.org/rollup set size:6266245 disposed:false
+93 silly placeDep node_modules/vite rollup@4.62.3 OK for: vite@5.4.21 want: ^4.20.0
+94 silly fetch manifest @types/estree@1.0.9
+95 silly packumentCache full:https://registry.npmjs.org/@types%2festree cache-hit
+96 silly fetch manifest @rollup/rollup-darwin-x64@4.62.3
+97 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-darwin-x64 cache-hit
+98 silly fetch manifest @rollup/rollup-freebsd-x64@4.62.3
+99 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-freebsd-x64 cache-miss
+100 silly fetch manifest @rollup/rollup-openbsd-x64@4.62.3
+101 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-openbsd-x64 cache-miss
+102 silly fetch manifest @rollup/rollup-darwin-arm64@4.62.3
+103 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-darwin-arm64 cache-hit
+104 silly fetch manifest @rollup/rollup-android-arm64@4.62.3
+105 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-android-arm64 cache-hit
+106 silly fetch manifest @rollup/rollup-freebsd-arm64@4.62.3
+107 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-freebsd-arm64 cache-miss
+108 silly fetch manifest @rollup/rollup-linux-x64-gnu@4.62.3
+109 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-x64-gnu cache-hit
+110 silly fetch manifest @rollup/rollup-win32-x64-gnu@4.62.3
+111 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-win32-x64-gnu cache-miss
+112 silly fetch manifest @rollup/rollup-linux-x64-musl@4.62.3
+113 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-x64-musl cache-hit
+114 silly fetch manifest @rollup/rollup-win32-x64-msvc@4.62.3
+115 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-win32-x64-msvc cache-hit
+116 silly fetch manifest @rollup/rollup-linux-arm64-gnu@4.62.3
+117 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-arm64-gnu cache-hit
+118 silly fetch manifest @rollup/rollup-linux-ppc64-gnu@4.62.3
+119 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-ppc64-gnu cache-miss
+120 silly fetch manifest @rollup/rollup-linux-s390x-gnu@4.62.3
+121 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-s390x-gnu cache-miss
+122 silly fetch manifest @rollup/rollup-win32-ia32-msvc@4.62.3
+123 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-win32-ia32-msvc cache-hit
+124 silly fetch manifest @rollup/rollup-android-arm-eabi@4.62.3
+125 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-android-arm-eabi cache-hit
+126 silly fetch manifest @rollup/rollup-linux-arm64-musl@4.62.3
+127 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-arm64-musl cache-hit
+128 silly fetch manifest @rollup/rollup-linux-ppc64-musl@4.62.3
+129 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-ppc64-musl cache-miss
+130 silly fetch manifest @rollup/rollup-win32-arm64-msvc@4.62.3
+131 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-win32-arm64-msvc cache-hit
+132 silly fetch manifest @rollup/rollup-linux-loong64-gnu@4.62.3
+133 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-loong64-gnu cache-miss
+134 silly fetch manifest @rollup/rollup-linux-riscv64-gnu@4.62.3
+135 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-riscv64-gnu cache-hit
+136 silly fetch manifest @rollup/rollup-openharmony-arm64@4.62.3
+137 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-openharmony-arm64 cache-miss
+138 silly fetch manifest @rollup/rollup-linux-loong64-musl@4.62.3
+139 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-loong64-musl cache-miss
+140 silly fetch manifest @rollup/rollup-linux-riscv64-musl@4.62.3
+141 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-riscv64-musl cache-miss
+142 silly fetch manifest @rollup/rollup-linux-arm-gnueabihf@4.62.3
+143 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-arm-gnueabihf cache-hit
+144 silly fetch manifest @rollup/rollup-linux-arm-musleabihf@4.62.3
+145 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-arm-musleabihf cache-miss
+146 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-freebsd-x64 111ms (cache revalidated)
+147 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-freebsd-x64 set size:196788 disposed:false
+148 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-freebsd-arm64 114ms (cache revalidated)
+149 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-freebsd-arm64 set size:198792 disposed:false
+150 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-openbsd-x64 118ms (cache revalidated)
+151 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-openbsd-x64 set size:41533 disposed:false
+152 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-openharmony-arm64 119ms (cache revalidated)
+153 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-openharmony-arm64 set size:81762 disposed:false
+154 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-linux-ppc64-gnu 130ms (cache revalidated)
+155 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-ppc64-gnu set size:101087 disposed:false
+156 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-linux-riscv64-musl 120ms (cache revalidated)
+157 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-riscv64-musl set size:128668 disposed:false
+158 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-linux-loong64-musl 125ms (cache revalidated)
+159 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-loong64-musl set size:43003 disposed:false
+160 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-linux-ppc64-musl 133ms (cache revalidated)
+161 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-ppc64-musl set size:42649 disposed:false
+162 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-linux-loong64-gnu 136ms (cache revalidated)
+163 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-loong64-gnu set size:80961 disposed:false
+164 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-win32-x64-gnu 148ms (cache revalidated)
+165 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-win32-x64-gnu set size:72210 disposed:false
+166 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-linux-arm-musleabihf 136ms (cache revalidated)
+167 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-arm-musleabihf set size:254268 disposed:false
+168 http fetch GET 200 https://registry.npmjs.org/@rollup%2frollup-linux-s390x-gnu 406ms (cache revalidated)
+169 silly packumentCache full:https://registry.npmjs.org/@rollup%2frollup-linux-s390x-gnu set size:256252 disposed:false
+170 silly placeDep node_modules/vite @rollup/rollup-android-arm-eabi@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+171 silly placeDep node_modules/vite @rollup/rollup-android-arm64@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+172 silly placeDep node_modules/vite @rollup/rollup-darwin-arm64@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+173 silly placeDep node_modules/vite @rollup/rollup-darwin-x64@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+174 silly placeDep ROOT @rollup/rollup-freebsd-arm64@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+175 silly placeDep ROOT @rollup/rollup-freebsd-x64@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+176 silly placeDep node_modules/vite @rollup/rollup-linux-arm-gnueabihf@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+177 silly placeDep ROOT @rollup/rollup-linux-arm-musleabihf@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+178 silly placeDep node_modules/vite @rollup/rollup-linux-arm64-gnu@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+179 silly placeDep node_modules/vite @rollup/rollup-linux-arm64-musl@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+180 silly placeDep ROOT @rollup/rollup-linux-loong64-gnu@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+181 silly placeDep ROOT @rollup/rollup-linux-loong64-musl@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+182 silly placeDep ROOT @rollup/rollup-linux-ppc64-gnu@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+183 silly placeDep ROOT @rollup/rollup-linux-ppc64-musl@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+184 silly placeDep node_modules/vite @rollup/rollup-linux-riscv64-gnu@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+185 silly placeDep ROOT @rollup/rollup-linux-riscv64-musl@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+186 silly placeDep ROOT @rollup/rollup-linux-s390x-gnu@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+187 silly placeDep node_modules/vite @rollup/rollup-linux-x64-gnu@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+188 silly placeDep node_modules/vite @rollup/rollup-linux-x64-musl@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+189 silly placeDep ROOT @rollup/rollup-openbsd-x64@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+190 silly placeDep ROOT @rollup/rollup-openharmony-arm64@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+191 silly placeDep node_modules/vite @rollup/rollup-win32-arm64-msvc@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+192 silly placeDep node_modules/vite @rollup/rollup-win32-ia32-msvc@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+193 silly placeDep ROOT @rollup/rollup-win32-x64-gnu@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+194 silly placeDep node_modules/vite @rollup/rollup-win32-x64-msvc@4.62.3 OK for: rollup@4.62.3 want: 4.62.3
+195 silly placeDep node_modules/vite @types/estree@1.0.9 OK for: rollup@4.62.3 want: 1.0.9
+196 silly reify mark retired [
+196 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-x64-gnu'
+196 silly reify ]
+197 silly reify mark retired [
+197 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@types/estree'
+197 silly reify ]
+198 silly reify mark retired [
+198 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/rollup',
+198 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/.bin/rollup'
+198 silly reify ]
+199 silly reify moves {
+199 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-x64-gnu': '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/.rollup-linux-x64-gnu-eNGN34ux',
+199 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@types/estree': '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@types/.estree-jzGUAQN2',
+199 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/rollup': '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/.rollup-H5CSDFWH',
+199 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/.bin/rollup': '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/.bin/.rollup-LiRJZN04'
+199 silly reify }
+200 silly audit bulk request {
+200 silly audit   '@alloc/quick-lru': [ '5.2.0' ],
+200 silly audit   '@babel/code-frame': [ '7.29.7' ],
+200 silly audit   '@babel/compat-data': [ '7.29.7' ],
+200 silly audit   '@babel/core': [ '7.29.7' ],
+200 silly audit   '@babel/generator': [ '7.29.7' ],
+200 silly audit   '@babel/helper-compilation-targets': [ '7.29.7' ],
+200 silly audit   '@babel/helper-globals': [ '7.29.7' ],
+200 silly audit   '@babel/helper-module-imports': [ '7.29.7' ],
+200 silly audit   '@babel/helper-module-transforms': [ '7.29.7' ],
+200 silly audit   '@babel/helper-plugin-utils': [ '7.29.7' ],
+200 silly audit   '@babel/helper-string-parser': [ '7.29.7' ],
+200 silly audit   '@babel/helper-validator-identifier': [ '7.29.7' ],
+200 silly audit   '@babel/helper-validator-option': [ '7.29.7' ],
+200 silly audit   '@babel/helpers': [ '7.29.7' ],
+200 silly audit   '@babel/parser': [ '7.29.7' ],
+200 silly audit   '@babel/plugin-transform-react-jsx-self': [ '7.29.7' ],
+200 silly audit   '@babel/plugin-transform-react-jsx-source': [ '7.29.7' ],
+200 silly audit   '@babel/runtime': [ '7.29.7' ],
+200 silly audit   '@babel/template': [ '7.29.7' ],
+200 silly audit   '@babel/traverse': [ '7.29.7' ],
+200 silly audit   '@babel/types': [ '7.29.7' ],
+200 silly audit   '@biomejs/biome': [ '1.9.4' ],
+200 silly audit   '@biomejs/cli-darwin-arm64': [ '1.9.4' ],
+200 silly audit   '@biomejs/cli-darwin-x64': [ '1.9.4' ],
+200 silly audit   '@biomejs/cli-linux-arm64': [ '1.9.4' ],
+200 silly audit   '@biomejs/cli-linux-arm64-musl': [ '1.9.4' ],
+200 silly audit   '@biomejs/cli-linux-x64': [ '1.9.4' ],
+200 silly audit   '@biomejs/cli-linux-x64-musl': [ '1.9.4' ],
+200 silly audit   '@biomejs/cli-win32-arm64': [ '1.9.4' ],
+200 silly audit   '@biomejs/cli-win32-x64': [ '1.9.4' ],
+200 silly audit   '@date-fns/tz': [ '1.5.0' ],
+200 silly audit   '@dimforge/rapier3d-compat': [ '0.12.0' ],
+200 silly audit   '@esbuild/aix-ppc64': [ '0.21.5' ],
+200 silly audit   '@esbuild/android-arm': [ '0.21.5' ],
+200 silly audit   '@esbuild/android-arm64': [ '0.21.5' ],
+200 silly audit   '@esbuild/android-x64': [ '0.21.5' ],
+200 silly audit   '@esbuild/darwin-arm64': [ '0.21.5' ],
+200 silly audit   '@esbuild/darwin-x64': [ '0.21.5' ],
+200 silly audit   '@esbuild/freebsd-arm64': [ '0.21.5' ],
+200 silly audit   '@esbuild/freebsd-x64': [ '0.21.5' ],
+200 silly audit   '@esbuild/linux-arm': [ '0.21.5' ],
+200 silly audit   '@esbuild/linux-arm64': [ '0.21.5' ],
+200 silly audit   '@esbuild/linux-ia32': [ '0.21.5' ],
+200 silly audit   '@esbuild/linux-loong64': [ '0.21.5' ],
+200 silly audit   '@esbuild/linux-mips64el': [ '0.21.5' ],
+200 silly audit   '@esbuild/linux-ppc64': [ '0.21.5' ],
+200 silly audit   '@esbuild/linux-riscv64': [ '0.21.5' ],
+200 silly audit   '@esbuild/linux-s390x': [ '0.21.5' ],
+200 silly audit   '@esbuild/linux-x64': [ '0.21.5' ],
+200 silly audit   '@esbuild/netbsd-x64': [ '0.21.5' ],
+200 silly audit   '@esbuild/openbsd-x64': [ '0.21.5' ],
+200 silly audit   '@esbuild/sunos-x64': [ '0.21.5' ],
+200 silly audit   '@esbuild/win32-arm64': [ '0.21.5' ],
+200 silly audit   '@esbuild/win32-ia32': [ '0.21.5' ],
+200 silly audit   '@esbuild/win32-x64': [ '0.21.5' ],
+200 silly audit   '@floating-ui/core': [ '1.8.0' ],
+200 silly audit   '@floating-ui/dom': [ '1.8.0' ],
+200 silly audit   '@floating-ui/react-dom': [ '2.1.9' ],
+200 silly audit   '@floating-ui/utils': [ '0.2.12' ],
+200 silly audit   '@jridgewell/gen-mapping': [ '0.3.13' ],
+200 silly audit   '@jridgewell/remapping': [ '2.3.5' ],
+200 silly audit   '@jridgewell/resolve-uri': [ '3.1.2' ],
+200 silly audit   '@jridgewell/sourcemap-codec': [ '1.5.5' ],
+200 silly audit   '@jridgewell/trace-mapping': [ '0.3.31' ],
+200 silly audit   '@mediapipe/tasks-vision': [ '0.10.17' ],
+200 silly audit   '@monogrid/gainmap-js': [ '3.4.0' ],
+200 silly audit   '@nodelib/fs.scandir': [ '2.1.5' ],
+200 silly audit   '@nodelib/fs.stat': [ '2.0.5' ],
+200 silly audit   '@nodelib/fs.walk': [ '1.2.8' ],
+200 silly audit   '@pmndrs/cannon-worker-api': [ '2.4.0' ],
+200 silly audit   '@radix-ui/number': [ '1.1.3' ],
+200 silly audit   '@radix-ui/primitive': [ '1.1.7' ],
+200 silly audit   '@radix-ui/react-accordion': [ '1.2.20' ],
+200 silly audit   '@radix-ui/react-alert-dialog': [ '1.1.23' ],
+200 silly audit   '@radix-ui/react-arrow': [ '1.1.15' ],
+200 silly audit   '@radix-ui/react-aspect-ratio': [ '1.1.15' ],
+200 silly audit   '@radix-ui/react-avatar': [ '1.2.6' ],
+200 silly audit   '@radix-ui/react-checkbox': [ '1.3.11' ],
+200 silly audit   '@radix-ui/react-collapsible': [ '1.1.20' ],
+200 silly audit   '@radix-ui/react-collection': [ '1.1.15' ],
+200 silly audit   '@radix-ui/react-compose-refs': [ '1.1.5' ],
+200 silly audit   '@radix-ui/react-context': [ '1.2.2' ],
+200 silly audit   '@radix-ui/react-context-menu': [ '2.3.7' ],
+200 silly audit   '@radix-ui/react-dialog': [ '1.1.23' ],
+200 silly audit   '@radix-ui/react-direction': [ '1.1.4' ],
+200 silly audit   '@radix-ui/react-dismissable-layer': [ '1.1.19' ],
+200 silly audit   '@radix-ui/react-dropdown-menu': [ '2.1.24' ],
+200 silly audit   '@radix-ui/react-focus-guards': [ '1.1.6' ],
+200 silly audit   '@radix-ui/react-focus-scope': [ '1.1.16' ],
+200 silly audit   '@radix-ui/react-hover-card': [ '1.1.23' ],
+200 silly audit   '@radix-ui/react-id': [ '1.1.4' ],
+200 silly audit   '@radix-ui/react-label': [ '2.1.15' ],
+200 silly audit   '@radix-ui/react-menu': [ '2.1.24' ],
+200 silly audit   '@radix-ui/react-menubar': [ '1.1.24' ],
+200 silly audit   '@radix-ui/react-navigation-menu': [ '1.2.22' ],
+200 silly audit   '@radix-ui/react-popover': [ '1.1.23' ],
+200 silly audit   '@radix-ui/react-popper': [ '1.3.7' ],
+200 silly audit   '@radix-ui/react-portal': [ '1.1.17' ],
+200 silly audit   '@radix-ui/react-presence': [ '1.1.10' ],
+200 silly audit   '@radix-ui/react-primitive': [ '2.1.10' ],
+200 silly audit   '@radix-ui/react-progress': [ '1.1.16' ],
+200 silly audit   '@radix-ui/react-radio-group': [ '1.4.7' ],
+200 silly audit   '@radix-ui/react-roving-focus': [ '1.1.19' ],
+200 silly audit   '@radix-ui/react-scroll-area': [ '1.2.18' ],
+200 silly audit   '@radix-ui/react-select': [ '2.3.7' ],
+200 silly audit   '@radix-ui/react-separator': [ '1.1.15' ],
+200 silly audit   '@radix-ui/react-slider': [ '1.4.7' ],
+200 silly audit   '@radix-ui/react-slot': [ '1.3.3' ],
+200 silly audit   '@radix-ui/react-switch': [ '1.3.7' ],
+200 silly audit   '@radix-ui/react-tabs': [ '1.1.21' ],
+200 silly audit   '@radix-ui/react-toggle': [ '1.1.18' ],
+200 silly audit   '@radix-ui/react-toggle-group': [ '1.1.19' ],
+200 silly audit   '@radix-ui/react-tooltip': [ '1.2.16' ],
+200 silly audit   '@radix-ui/react-use-callback-ref': [ '1.1.4' ],
+200 silly audit   '@radix-ui/react-use-controllable-state': [ '1.2.6' ],
+200 silly audit   '@radix-ui/react-use-effect-event': [ '0.0.5' ],
+200 silly audit   '@radix-ui/react-use-is-hydrated': [ '0.1.3' ],
+200 silly audit   '@radix-ui/react-use-layout-effect': [ '1.1.4' ],
+200 silly audit   '@radix-ui/react-use-previous': [ '1.1.4' ],
+200 silly audit   '@radix-ui/react-use-rect': [ '1.1.4' ],
+200 silly audit   '@radix-ui/react-use-size': [ '1.1.4' ],
+200 silly audit   '@radix-ui/react-visually-hidden': [ '1.2.11' ],
+200 silly audit   '@radix-ui/rect': [ '1.1.3' ],
+200 silly audit   '@react-three/cannon': [ '6.6.0' ],
+200 silly audit   '@react-three/drei': [ '10.0.8' ],
+200 silly audit   '@react-three/fiber': [ '9.1.4' ],
+200 silly audit   '@rolldown/pluginutils': [ '1.0.0-beta.27' ],
+200 silly audit   '@tabby_ai/hijri-converter': [ '1.0.5' ],
+200 silly audit   '@tailwindcss/container-queries': [ '0.1.1' ],
+200 silly audit   '@tailwindcss/typography': [ '0.5.10' ],
+200 silly audit   '@tanstack/history': [ '1.131.2' ],
+200 silly audit   '@tanstack/query-core': [ '5.101.4' ],
+200 silly audit   '@tanstack/react-query': [ '5.101.4' ],
+200 silly audit   '@tanstack/react-router': [ '1.131.50' ],
+200 silly audit   '@tanstack/react-store': [ '0.7.7' ],
+200 silly audit   '@tanstack/router-core': [ '1.131.50' ],
+200 silly audit   '@tanstack/store': [ '0.7.7' ],
+200 silly audit   '@tweenjs/tween.js': [ '23.1.3' ],
+200 silly audit   '@types/babel__core': [ '7.20.5' ],
+200 silly audit   '@types/babel__generator': [ '7.27.0' ],
+200 silly audit   '@types/babel__template': [ '7.4.4' ],
+200 silly audit   '@types/babel__traverse': [ '7.28.0' ],
+200 silly audit   '@types/d3-array': [ '3.2.2' ],
+200 silly audit   '@types/d3-color': [ '3.1.3' ],
+200 silly audit   '@types/d3-ease': [ '3.0.2' ],
+200 silly audit   '@types/d3-interpolate': [ '3.0.4' ],
+200 silly audit   '@types/d3-path': [ '3.1.1' ],
+200 silly audit   '@types/d3-scale': [ '4.0.9' ],
+200 silly audit   '@types/d3-shape': [ '3.1.8' ],
+200 silly audit   '@types/d3-time': [ '3.0.4' ],
+200 silly audit   '@types/d3-timer': [ '3.0.2' ],
+200 silly audit   '@types/draco3d': [ '1.4.10' ],
+200 silly audit   '@types/js-cookie': [ '3.0.6' ],
+200 silly audit   '@types/node': [ '20.19.43' ],
+200 silly audit   '@types/offscreencanvas': [ '2019.7.3' ],
+200 silly audit   '@types/react': [ '19.1.17' ],
+200 silly audit   '@types/react-dom': [ '19.1.11' ],
+200 silly audit   '@types/react-reconciler': [ '0.28.9' ],
+200 silly audit   '@types/stats.js': [ '0.17.4' ],
+200 silly audit   '@types/three': [ '0.176.0' ],
+200 silly audit   '@types/webxr': [ '0.5.24' ],
+200 silly audit   '@use-gesture/core': [ '10.3.1' ],
+200 silly audit   '@use-gesture/react': [ '10.3.1' ],
+200 silly audit   '@vitejs/plugin-react': [ '4.7.0' ],
+200 silly audit   '@webgpu/types': [ '0.1.71' ],
+200 silly audit   '@xobotyi/scrollbar-width': [ '1.9.5' ],
+200 silly audit   'any-promise': [ '1.3.0' ],
+200 silly audit   anymatch: [ '3.1.3' ],
+200 silly audit   arg: [ '5.0.2' ],
+200 silly audit   'aria-hidden': [ '1.2.6' ],
+200 silly audit   autoprefixer: [ '10.5.4' ],
+200 silly audit   'base64-arraybuffer': [ '1.0.2' ],
+200 silly audit   'base64-js': [ '1.5.1' ],
+200 silly audit   'baseline-browser-mapping': [ '2.11.4' ],
+200 silly audit   'bidi-js': [ '1.0.3' ],
+200 silly audit   'binary-extensions': [ '2.3.0' ],
+200 silly audit   braces: [ '3.0.3' ],
+200 silly audit   browserslist: [ '4.28.7' ],
+200 silly audit   buffer: [ '6.0.3' ],
+200 silly audit   'camelcase-css': [ '2.0.1' ],
+200 silly audit   'camera-controls': [ '2.10.1' ],
+200 silly audit   'caniuse-lite': [ '1.0.30001806' ],
+200 silly audit   'cannon-es': [ '0.20.0' ],
+200 silly audit   'cannon-es-debugger': [ '1.0.0' ],
+200 silly audit   chokidar: [ '3.6.0' ],
+200 silly audit   'glob-parent': [ '5.1.2', '6.0.2' ],
+200 silly audit   'class-variance-authority': [ '0.7.1' ],
+200 silly audit   clsx: [ '2.1.1' ],
+200 silly audit   cmdk: [ '1.1.1' ],
+200 silly audit   commander: [ '4.1.1' ],
+200 silly audit   'convert-source-map': [ '2.0.0' ],
+200 silly audit   'cookie-es': [ '1.2.3' ],
+200 silly audit   'copy-to-clipboard': [ '3.3.3' ],
+200 silly audit   'cross-env': [ '7.0.3' ],
+200 silly audit   'cross-spawn': [ '7.0.6' ],
+200 silly audit   'css-in-js-utils': [ '3.1.0' ],
+200 silly audit   'css-line-break': [ '2.1.0' ],
+200 silly audit   'css-tree': [ '1.1.3' ],
+200 silly audit   cssesc: [ '3.0.0' ],
+200 silly audit   csstype: [ '3.2.3' ],
+200 silly audit   'd3-array': [ '3.2.4' ],
+200 silly audit   'd3-color': [ '3.1.0' ],
+200 silly audit   'd3-ease': [ '3.0.1' ],
+200 silly audit   'd3-format': [ '3.1.2' ],
+200 silly audit   'd3-interpolate': [ '3.0.1' ],
+200 silly audit   'd3-path': [ '3.1.0' ],
+200 silly audit   'd3-scale': [ '4.0.2' ],
+200 silly audit   'd3-shape': [ '3.2.0' ],
+200 silly audit   'd3-time': [ '3.1.0' ],
+200 silly audit   'd3-time-format': [ '4.1.0' ],
+200 silly audit   'd3-timer': [ '3.0.1' ],
+200 silly audit   'date-fns': [ '3.6.0', '4.4.0' ],
+200 silly audit   'date-fns-jalali': [ '4.1.0-0' ],
+200 silly audit   debug: [ '4.4.3' ],
+200 silly audit   'decimal.js-light': [ '2.5.1' ],
+200 silly audit   'detect-gpu': [ '5.0.70' ],
+200 silly audit   'detect-node-es': [ '1.1.0' ],
+200 silly audit   didyoumean: [ '1.2.2' ],
+200 silly audit   dlv: [ '1.1.3' ],
+200 silly audit   'dom-helpers': [ '5.2.1' ],
+200 silly audit   dotenv: [ '16.6.1' ],
+200 silly audit   'dotenv-cli': [ '8.0.0' ],
+200 silly audit   'dotenv-expand': [ '10.0.0' ],
+200 silly audit   draco3d: [ '1.5.7' ],
+200 silly audit   'electron-to-chromium': [ '1.5.396' ],
+200 silly audit   'embla-carousel': [ '8.6.0' ],
+200 silly audit   'embla-carousel-react': [ '8.6.0' ],
+200 silly audit   'embla-carousel-reactive-utils': [ '8.6.0' ],
+200 silly audit   'error-stack-parser': [ '2.1.4' ],
+200 silly audit   'es-errors': [ '1.3.0' ],
+200 silly audit   esbuild: [ '0.21.5' ],
+200 silly audit   escalade: [ '3.2.0' ],
+200 silly audit   eventemitter3: [ '5.0.4', '4.0.7' ],
+200 silly audit   'fast-deep-equal': [ '3.1.3' ],
+200 silly audit   'fast-diff': [ '1.3.0' ],
+200 silly audit   'fast-equals': [ '5.4.1' ],
+200 silly audit   'fast-glob': [ '3.3.3' ],
+200 silly audit   'fast-shallow-equal': [ '1.0.0' ],
+200 silly audit   'fastest-stable-stringify': [ '2.0.2' ],
+200 silly audit   fastq: [ '1.20.1' ],
+200 silly audit   fflate: [ '0.8.3', '0.6.11' ],
+200 silly audit   'fill-range': [ '7.1.1' ],
+200 silly audit   'fraction.js': [ '5.3.4' ],
+200 silly audit   'framer-motion': [ '12.42.2' ],
+200 silly audit   fsevents: [ '2.3.3' ],
+200 silly audit   'function-bind': [ '1.1.2' ],
+200 silly audit   gensync: [ '1.0.0-beta.2' ],
+200 silly audit   'get-nonce': [ '1.0.1' ],
+200 silly audit   'glsl-noise': [ '0.0.0' ],
+200 silly audit   hasown: [ '2.0.4' ],
+200 silly audit   'hls.js': [ '1.6.16' ],
+200 silly audit   html2canvas: [ '1.4.1' ],
+200 silly audit   'hyphenate-style-name': [ '1.1.0' ],
+200 silly audit   ieee754: [ '1.2.1' ],
+200 silly audit   immediate: [ '3.0.6' ],
+200 silly audit   'inline-style-prefixer': [ '7.0.1' ],
+200 silly audit   'input-otp': [ '1.4.2' ],
+200 silly audit   internmap: [ '2.0.3' ],
+200 silly audit   'is-binary-path': [ '2.1.0' ],
+200 silly audit   'is-core-module': [ '2.16.2' ],
+200 silly audit   'is-extglob': [ '2.1.1' ],
+200 silly audit   'is-glob': [ '4.0.3' ],
+200 silly audit   'is-number': [ '7.0.0' ],
+200 silly audit   'is-promise': [ '2.2.2' ],
+200 silly audit   isbot: [ '5.2.1' ],
+200 silly audit   isexe: [ '2.0.0' ],
+200 silly audit   'its-fine': [ '2.0.0' ],
+200 silly audit   jiti: [ '1.21.7' ],
+200 silly audit   'js-cookie': [ '3.0.8' ],
+200 silly audit   'js-tokens': [ '4.0.0' ],
+200 silly audit   jsesc: [ '3.1.0' ],
+200 silly audit   json5: [ '2.2.3' ],
+200 silly audit   lie: [ '3.3.0' ],
+200 silly audit   lilconfig: [ '3.1.3' ],
+200 silly audit   'lines-and-columns': [ '1.2.4' ],
+200 silly audit   lodash: [ '4.18.1' ],
+200 silly audit   'lodash-es': [ '4.18.1' ],
+200 silly audit   'lodash.castarray': [ '4.4.0' ],
+200 silly audit   'lodash.clonedeep': [ '4.5.0' ],
+200 silly audit   'lodash.isequal': [ '4.5.0' ],
+200 silly audit   'lodash.isplainobject': [ '4.0.6' ],
+200 silly audit   'lodash.merge': [ '4.6.2' ],
+200 silly audit   'loose-envify': [ '1.4.0' ],
+200 silly audit   'lru-cache': [ '5.1.1' ],
+200 silly audit   'lucide-react': [ '0.511.0' ],
+200 silly audit   maath: [ '0.10.8' ],
+200 silly audit   'mdn-data': [ '2.0.14' ],
+200 silly audit   merge2: [ '1.4.1' ],
+200 silly audit   meshline: [ '3.3.1' ],
+200 silly audit   meshoptimizer: [ '0.18.1' ],
+200 silly audit   micromatch: [ '4.0.8' ],
+200 silly audit   minimist: [ '1.2.8' ],
+200 silly audit   motion: [ '12.42.2' ],
+200 silly audit   'motion-dom': [ '12.42.2' ],
+200 silly audit   'motion-utils': [ '12.39.0' ],
+200 silly audit   ms: [ '2.1.3' ],
+200 silly audit   mz: [ '2.7.0' ],
+200 silly audit   'nano-css': [ '5.6.2' ],
+200 silly audit   nanoid: [ '3.3.16' ],
+200 silly audit   'next-themes': [ '0.4.6' ],
+200 silly audit   'node-releases': [ '2.0.51' ],
+200 silly audit   'normalize-path': [ '3.0.0' ],
+200 silly audit   'object-assign': [ '4.1.1' ],
+200 silly audit   'object-hash': [ '3.0.0' ],
+200 silly audit   parchment: [ '3.0.0' ],
+200 silly audit   'path-key': [ '3.1.1' ],
+200 silly audit   'path-parse': [ '1.0.7' ],
+200 silly audit   picocolors: [ '1.1.1' ],
+200 silly audit   picomatch: [ '2.3.2', '4.0.5' ],
+200 silly audit   pify: [ '2.3.0' ],
+200 silly audit   pirates: [ '4.0.7' ],
+200 silly audit   postcss: [ '8.5.23' ],
+200 silly audit   'postcss-import': [ '15.1.0' ],
+200 silly audit   'postcss-js': [ '4.1.0' ],
+200 silly audit   'postcss-load-config': [ '6.0.1' ],
+200 silly audit   'postcss-nested': [ '6.2.0' ],
+200 silly audit   'postcss-selector-parser': [ '6.1.4', '6.0.10' ],
+200 silly audit   'postcss-value-parser': [ '4.2.0' ],
+200 silly audit   potpack: [ '1.0.2' ],
+200 silly audit   'promise-worker-transferable': [ '1.0.4' ],
+200 silly audit   'prop-types': [ '15.8.1' ],
+200 silly audit   'react-is': [ '16.13.1', '18.3.1' ],
+200 silly audit   'queue-microtask': [ '1.2.3' ],
+200 silly audit   quill: [ '2.0.3' ],
+200 silly audit   'quill-delta': [ '5.1.0' ],
+200 silly audit   react: [ '19.1.9' ],
+200 silly audit   'react-day-picker': [ '9.14.0' ],
+200 silly audit   'react-dom': [ '19.1.9' ],
+200 silly audit   scheduler: [ '0.26.0', '0.25.0' ],
+200 silly audit   'react-hook-form': [ '7.83.0' ],
+200 silly audit   'react-icons': [ '5.7.0' ],
+200 silly audit   'react-quill-new': [ '3.4.6' ],
+200 silly audit   'react-reconciler': [ '0.31.0' ],
+200 silly audit   'react-refresh': [ '0.17.0' ],
+200 silly audit   'react-remove-scroll': [ '2.7.2' ],
+200 silly audit   'react-remove-scroll-bar': [ '2.3.8' ],
+200 silly audit   'react-resizable-panels': [ '2.1.9' ],
+200 silly audit   'react-smooth': [ '4.0.4' ],
+200 silly audit   'react-style-singleton': [ '2.2.3' ],
+200 silly audit   'react-transition-group': [ '4.4.5' ],
+200 silly audit   'react-universal-interface': [ '0.6.2' ],
+200 silly audit   'react-use': [ '17.6.1' ],
+200 silly audit   'react-use-measure': [ '2.1.7' ],
+200 silly audit   'read-cache': [ '1.0.0' ],
+200 silly audit   readdirp: [ '3.6.0' ],
+200 silly audit   recharts: [ '2.15.4' ],
+200 silly audit   'recharts-scale': [ '0.4.5' ],
+200 silly audit   'require-from-string': [ '2.0.2' ],
+200 silly audit   'resize-observer-polyfill': [ '1.5.1' ],
+200 silly audit   resolve: [ '1.22.12' ],
+200 silly audit   reusify: [ '1.1.0' ],
+200 silly audit   'rtl-css-js': [ '1.16.1' ],
+200 silly audit   'run-parallel': [ '1.2.0' ],
+200 silly audit   screenfull: [ '5.2.0' ],
+200 silly audit   semver: [ '6.3.1' ],
+200 silly audit   seroval: [ '1.5.6' ],
+200 silly audit   'seroval-plugins': [ '1.5.6' ],
+200 silly audit   'set-harmonic-interval': [ '1.0.1' ],
+200 silly audit   'shebang-command': [ '2.0.0' ],
+200 silly audit   'shebang-regex': [ '3.0.0' ],
+200 silly audit   sonner: [ '1.7.4' ],
+200 silly audit   'source-map': [ '0.6.1', '0.5.6' ],
+200 silly audit   'source-map-js': [ '1.2.1' ],
+200 silly audit   'stack-generator': [ '2.0.10' ],
+200 silly audit   stackframe: [ '1.3.4' ],
+200 silly audit   'stacktrace-gps': [ '3.1.2' ],
+200 silly audit   'stacktrace-js': [ '2.0.2' ],
+200 silly audit   'stats-gl': [ '2.4.2' ],
+200 silly audit   three: [ '0.170.0', '0.176.0' ],
+200 silly audit   'stats.js': [ '0.17.0' ],
+200 silly audit   stylis: [ '4.4.0' ],
+200 silly audit   sucrase: [ '3.35.1' ],
+200 silly audit   'supports-preserve-symlinks-flag': [ '1.0.0' ],
+200 silly audit   'suspend-react': [ '0.1.3' ],
+200 silly audit   'tailwind-merge': [ '2.6.1' ],
+200 silly audit   tailwindcss: [ '3.4.19' ],
+200 silly audit   'tailwindcss-animate': [ '1.0.7' ],
+200 silly audit   'text-segmentation': [ '1.0.3' ],
+200 silly audit   thenify: [ '3.3.1' ],
+200 silly audit   'thenify-all': [ '1.6.0' ],
+200 silly audit   'three-mesh-bvh': [ '0.8.3' ],
+200 silly audit   'three-stdlib': [ '2.36.1' ],
+200 silly audit   'throttle-debounce': [ '3.0.1' ],
+200 silly audit   'tiny-invariant': [ '1.3.3' ],
+200 silly audit   'tiny-warning': [ '1.0.3' ],
+200 silly audit   tinyglobby: [ '0.2.17' ],
+200 silly audit   fdir: [ '6.5.0' ],
+200 silly audit   'to-regex-range': [ '5.0.1' ],
+200 silly audit   'toggle-selection': [ '1.0.6' ],
+200 silly audit   'troika-three-text': [ '0.52.5' ],
+200 silly audit   'troika-three-utils': [ '0.52.5' ],
+200 silly audit   'troika-worker-utils': [ '0.52.0' ],
+200 silly audit   'ts-easing': [ '0.2.0' ],
+200 silly audit   'ts-interface-checker': [ '0.1.13' ],
+200 silly audit   tslib: [ '2.8.1' ],
+200 silly audit   'tunnel-rat': [ '0.1.2' ],
+200 silly audit   zustand: [ '4.5.7', '5.0.14' ],
+200 silly audit   typescript: [ '5.9.3' ],
+200 silly audit   'undici-types': [ '6.21.0' ],
+200 silly audit   'update-browserslist-db': [ '1.2.3' ],
+200 silly audit   'use-callback-ref': [ '1.3.3' ],
+200 silly audit   'use-sidecar': [ '1.1.3' ],
+200 silly audit   'use-sync-external-store': [ '1.6.0' ],
+200 silly audit   'util-deprecate': [ '1.0.2' ],
+200 silly audit   'utility-types': [ '3.11.0' ],
+200 silly audit   utrie: [ '1.0.2' ],
+200 silly audit   vaul: [ '1.1.2' ],
+200 silly audit   'victory-vendor': [ '36.9.2' ],
+200 silly audit   vite: [ '5.4.21' ],
+200 silly audit   'vite-plugin-environment': [ '1.1.3' ],
+200 silly audit   'webgl-constants': [ '1.1.1' ],
+200 silly audit   'webgl-sdf-generator': [ '1.1.1' ],
+200 silly audit   which: [ '2.0.2' ],
+200 silly audit   yallist: [ '3.1.1' ],
+200 silly audit   rollup: [ '4.9.6', '4.62.3' ],
+200 silly audit   '@rollup/rollup-android-arm-eabi': [ '4.9.6', '4.62.3' ],
+200 silly audit   '@rollup/rollup-android-arm64': [ '4.9.6', '4.62.3' ],
+200 silly audit   '@rollup/rollup-darwin-arm64': [ '4.9.6', '4.62.3' ],
+200 silly audit   '@rollup/rollup-darwin-x64': [ '4.9.6', '4.62.3' ],
+200 silly audit   '@rollup/rollup-linux-arm-gnueabihf': [ '4.9.6', '4.62.3' ],
+200 silly audit   '@rollup/rollup-linux-arm64-gnu': [ '4.9.6', '4.62.3' ],
+200 silly audit   '@rollup/rollup-linux-arm64-musl': [ '4.9.6', '4.62.3' ],
+200 silly audit   '@rollup/rollup-linux-riscv64-gnu': [ '4.9.6', '4.62.3' ],
+200 silly audit   '@rollup/rollup-linux-x64-gnu': [ '4.9.6', '4.62.3' ],
+200 silly audit   '@rollup/rollup-linux-x64-musl': [ '4.9.6', '4.62.3' ],
+200 silly audit   '@rollup/rollup-win32-arm64-msvc': [ '4.9.6', '4.62.3' ],
+200 silly audit   '@rollup/rollup-win32-ia32-msvc': [ '4.9.6', '4.62.3' ],
+200 silly audit   '@rollup/rollup-win32-x64-msvc': [ '4.9.6', '4.62.3' ],
+200 silly audit   '@types/estree': [ '1.0.5', '1.0.9' ],
+200 silly audit   '@rollup/rollup-freebsd-arm64': [ '4.62.3' ],
+200 silly audit   '@rollup/rollup-freebsd-x64': [ '4.62.3' ],
+200 silly audit   '@rollup/rollup-linux-arm-musleabihf': [ '4.62.3' ],
+200 silly audit   '@rollup/rollup-linux-loong64-gnu': [ '4.62.3' ],
+200 silly audit   '@rollup/rollup-linux-loong64-musl': [ '4.62.3' ],
+200 silly audit   '@rollup/rollup-linux-ppc64-gnu': [ '4.62.3' ],
+200 silly audit   '@rollup/rollup-linux-ppc64-musl': [ '4.62.3' ],
+200 silly audit   '@rollup/rollup-linux-riscv64-musl': [ '4.62.3' ],
+200 silly audit   '@rollup/rollup-linux-s390x-gnu': [ '4.62.3' ],
+200 silly audit   '@rollup/rollup-openbsd-x64': [ '4.62.3' ],
+200 silly audit   '@rollup/rollup-openharmony-arm64': [ '4.62.3' ],
+200 silly audit   '@rollup/rollup-win32-x64-gnu': [ '4.62.3' ]
+200 silly audit }
+201 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-win32-x64-gnu
+202 silly reify mark deleted [
+202 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-win32-x64-gnu'
+202 silly reify ]
+203 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-openharmony-arm64
+204 silly reify mark deleted [
+204 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-openharmony-arm64'
+204 silly reify ]
+205 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-openbsd-x64
+206 silly reify mark deleted [
+206 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-openbsd-x64'
+206 silly reify ]
+207 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-s390x-gnu
+208 silly reify mark deleted [
+208 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-s390x-gnu'
+208 silly reify ]
+209 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-riscv64-musl
+210 silly reify mark deleted [
+210 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-riscv64-musl'
+210 silly reify ]
+211 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-ppc64-musl
+212 silly reify mark deleted [
+212 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-ppc64-musl'
+212 silly reify ]
+213 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-ppc64-gnu
+214 silly reify mark deleted [
+214 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-ppc64-gnu'
+214 silly reify ]
+215 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-loong64-musl
+216 silly reify mark deleted [
+216 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-loong64-musl'
+216 silly reify ]
+217 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-loong64-gnu
+218 silly reify mark deleted [
+218 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-loong64-gnu'
+218 silly reify ]
+219 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-arm-musleabihf
+220 silly reify mark deleted [
+220 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-arm-musleabihf'
+220 silly reify ]
+221 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-freebsd-x64
+222 silly reify mark deleted [
+222 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-freebsd-x64'
+222 silly reify ]
+223 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-freebsd-arm64
+224 silly reify mark deleted [
+224 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-freebsd-arm64'
+224 silly reify ]
+225 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-win32-x64-msvc
+226 silly reify mark deleted [
+226 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-win32-x64-msvc'
+226 silly reify ]
+227 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-win32-ia32-msvc
+228 silly reify mark deleted [
+228 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-win32-ia32-msvc'
+228 silly reify ]
+229 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-win32-arm64-msvc
+230 silly reify mark deleted [
+230 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-win32-arm64-msvc'
+230 silly reify ]
+231 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-x64-musl
+232 silly reify mark deleted [
+232 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-x64-musl'
+232 silly reify ]
+233 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-riscv64-gnu
+234 silly reify mark deleted [
+234 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-riscv64-gnu'
+234 silly reify ]
+235 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-arm64-musl
+236 silly reify mark deleted [
+236 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-arm64-musl'
+236 silly reify ]
+237 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-arm64-gnu
+238 silly reify mark deleted [
+238 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-arm64-gnu'
+238 silly reify ]
+239 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-arm-gnueabihf
+240 silly reify mark deleted [
+240 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-linux-arm-gnueabihf'
+240 silly reify ]
+241 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-darwin-x64
+242 silly reify mark deleted [
+242 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-darwin-x64'
+242 silly reify ]
+243 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-darwin-arm64
+244 silly reify mark deleted [
+244 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-darwin-arm64'
+244 silly reify ]
+245 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-android-arm64
+246 silly reify mark deleted [
+246 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-android-arm64'
+246 silly reify ]
+247 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-android-arm-eabi
+248 silly reify mark deleted [
+248 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@rollup/rollup-android-arm-eabi'
+248 silly reify ]
+249 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/fsevents
+250 silly reify mark deleted [
+250 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/fsevents'
+250 silly reify ]
+251 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/win32-x64
+252 silly reify mark deleted [
+252 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/win32-x64'
+252 silly reify ]
+253 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/win32-ia32
+254 silly reify mark deleted [
+254 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/win32-ia32'
+254 silly reify ]
+255 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/win32-arm64
+256 silly reify mark deleted [
+256 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/win32-arm64'
+256 silly reify ]
+257 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/sunos-x64
+258 silly reify mark deleted [
+258 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/sunos-x64'
+258 silly reify ]
+259 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/openbsd-x64
+260 silly reify mark deleted [
+260 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/openbsd-x64'
+260 silly reify ]
+261 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/netbsd-x64
+262 silly reify mark deleted [
+262 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/netbsd-x64'
+262 silly reify ]
+263 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/linux-s390x
+264 silly reify mark deleted [
+264 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/linux-s390x'
+264 silly reify ]
+265 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/linux-riscv64
+266 silly reify mark deleted [
+266 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/linux-riscv64'
+266 silly reify ]
+267 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/linux-ppc64
+268 silly reify mark deleted [
+268 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/linux-ppc64'
+268 silly reify ]
+269 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/linux-mips64el
+270 silly reify mark deleted [
+270 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/linux-mips64el'
+270 silly reify ]
+271 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/linux-loong64
+272 silly reify mark deleted [
+272 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/linux-loong64'
+272 silly reify ]
+273 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/linux-ia32
+274 silly reify mark deleted [
+274 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/linux-ia32'
+274 silly reify ]
+275 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/linux-arm64
+276 silly reify mark deleted [
+276 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/linux-arm64'
+276 silly reify ]
+277 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/linux-arm
+278 silly reify mark deleted [
+278 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/linux-arm'
+278 silly reify ]
+279 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/freebsd-x64
+280 silly reify mark deleted [
+280 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/freebsd-x64'
+280 silly reify ]
+281 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/freebsd-arm64
+282 silly reify mark deleted [
+282 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/freebsd-arm64'
+282 silly reify ]
+283 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/darwin-x64
+284 silly reify mark deleted [
+284 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/darwin-x64'
+284 silly reify ]
+285 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/darwin-arm64
+286 silly reify mark deleted [
+286 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/darwin-arm64'
+286 silly reify ]
+287 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/android-x64
+288 silly reify mark deleted [
+288 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/android-x64'
+288 silly reify ]
+289 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/android-arm64
+290 silly reify mark deleted [
+290 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/android-arm64'
+290 silly reify ]
+291 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/android-arm
+292 silly reify mark deleted [
+292 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/android-arm'
+292 silly reify ]
+293 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/aix-ppc64
+294 silly reify mark deleted [
+294 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@esbuild/aix-ppc64'
+294 silly reify ]
+295 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@biomejs/cli-win32-x64
+296 silly reify mark deleted [
+296 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@biomejs/cli-win32-x64'
+296 silly reify ]
+297 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@biomejs/cli-win32-arm64
+298 silly reify mark deleted [
+298 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@biomejs/cli-win32-arm64'
+298 silly reify ]
+299 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@biomejs/cli-linux-arm64-musl
+300 silly reify mark deleted [
+300 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@biomejs/cli-linux-arm64-musl'
+300 silly reify ]
+301 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@biomejs/cli-linux-arm64
+302 silly reify mark deleted [
+302 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@biomejs/cli-linux-arm64'
+302 silly reify ]
+303 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@biomejs/cli-darwin-x64
+304 silly reify mark deleted [
+304 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@biomejs/cli-darwin-x64'
+304 silly reify ]
+305 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@biomejs/cli-darwin-arm64
+306 silly reify mark deleted [
+306 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/@biomejs/cli-darwin-arm64'
+306 silly reify ]
+307 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-win32-x64-msvc
+308 silly reify mark deleted [
+308 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-win32-x64-msvc'
+308 silly reify ]
+309 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-win32-ia32-msvc
+310 silly reify mark deleted [
+310 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-win32-ia32-msvc'
+310 silly reify ]
+311 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-win32-arm64-msvc
+312 silly reify mark deleted [
+312 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-win32-arm64-msvc'
+312 silly reify ]
+313 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-linux-x64-musl
+314 silly reify mark deleted [
+314 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-linux-x64-musl'
+314 silly reify ]
+315 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-linux-riscv64-gnu
+316 silly reify mark deleted [
+316 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-linux-riscv64-gnu'
+316 silly reify ]
+317 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-linux-arm64-musl
+318 silly reify mark deleted [
+318 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-linux-arm64-musl'
+318 silly reify ]
+319 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-linux-arm64-gnu
+320 silly reify mark deleted [
+320 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-linux-arm64-gnu'
+320 silly reify ]
+321 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-linux-arm-gnueabihf
+322 silly reify mark deleted [
+322 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-linux-arm-gnueabihf'
+322 silly reify ]
+323 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-darwin-x64
+324 silly reify mark deleted [
+324 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-darwin-x64'
+324 silly reify ]
+325 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-darwin-arm64
+326 silly reify mark deleted [
+326 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-darwin-arm64'
+326 silly reify ]
+327 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-android-arm64
+328 silly reify mark deleted [
+328 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-android-arm64'
+328 silly reify ]
+329 verbose reify failed optional dependency /home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-android-arm-eabi
+330 silly reify mark deleted [
+330 silly reify   '/home/drarmank/source_build/dr.armankabir-main/src/frontend/node_modules/vite/node_modules/@rollup/rollup-android-arm-eabi'
+330 silly reify ]
+331 silly tarball no local data for rollup@https://registry.npmjs.org/rollup/-/rollup-4.9.6.tgz. Extracting by manifest.
+332 silly tarball no local data for @biomejs/cli-linux-x64-musl@https://registry.npmjs.org/@biomejs/cli-linux-x64-musl/-/cli-linux-x64-musl-1.9.4.tgz. Extracting by manifest.
+333 silly tarball no local data for @rollup/rollup-linux-x64-gnu@https://registry.npmjs.org/@rollup/rollup-linux-x64-gnu/-/rollup-linux-x64-gnu-4.9.6.tgz. Extracting by manifest.
+334 silly tarball no local data for @types/estree@https://registry.npmjs.org/@types/estree/-/estree-1.0.5.tgz. Extracting by manifest.
+335 http fetch POST 200 https://registry.npmjs.org/-/npm/v1/security/advisories/bulk 462ms
+336 silly audit report {
+336 silly audit report   esbuild: [
+336 silly audit report     {
+336 silly audit report       id: 1102341,
+336 silly audit report       url: 'https://github.com/advisories/GHSA-67mh-4wv8-2f99',
+336 silly audit report       title: 'esbuild enables any website to send any requests to the development server and read the response',
+336 silly audit report       severity: 'moderate',
+336 silly audit report       vulnerable_versions: '<=0.24.2',
+336 silly audit report       cwe: [Array],
+336 silly audit report       cvss: [Object]
+336 silly audit report     }
+336 silly audit report   ],
+336 silly audit report   quill: [
+336 silly audit report     {
+336 silly audit report       id: 1116451,
+336 silly audit report       url: 'https://github.com/advisories/GHSA-v3m3-f69x-jf25',
+336 silly audit report       title: 'Quill is vulnerable to XSS via HTML export feature',
+336 silly audit report       severity: 'low',
+336 silly audit report       vulnerable_versions: '=2.0.3',
+336 silly audit report       cwe: [Array],
+336 silly audit report       cvss: [Object]
+336 silly audit report     }
+336 silly audit report   ],
+336 silly audit report   vite: [
+336 silly audit report     {
+336 silly audit report       id: 1120784,
+336 silly audit report       url: 'https://github.com/advisories/GHSA-v6wh-96g9-6wx3',
+336 silly audit report       title: 'launch-editor: NTLMv2 hash disclosure via UNC path handling on Windows',
+336 silly audit report       severity: 'moderate',
+336 silly audit report       vulnerable_versions: '<=6.4.2',
+336 silly audit report       cwe: [Array],
+336 silly audit report       cvss: [Object]
+336 silly audit report     },
+336 silly audit report     {
+336 silly audit report       id: 1116229,
+336 silly audit report       url: 'https://github.com/advisories/GHSA-4w7w-66w2-5vf9',
+336 silly audit report       title: 'Vite Vulnerable to Path Traversal in Optimized Deps `.map` Handling',
+336 silly audit report       severity: 'moderate',
+336 silly audit report       vulnerable_versions: '<=6.4.1',
+336 silly audit report       cwe: [Array],
+336 silly audit report       cvss: [Object]
+336 silly audit report     },
+336 silly audit report     {
+336 silly audit report       id: 1123525,
+336 silly audit report       url: 'https://github.com/advisories/GHSA-fx2h-pf6j-xcff',
+336 silly audit report       title: 'vite: `server.fs.deny` bypass on Windows alternate paths',
+336 silly audit report       severity: 'high',
+336 silly audit report       vulnerable_versions: '<=6.4.2',
+336 silly audit report       cwe: [Array],
+336 silly audit report       cvss: [Object]
+336 silly audit report     }
+336 silly audit report   ],
+336 silly audit report   rollup: [
+336 silly audit report     {
+336 silly audit report       id: 1099764,
+336 silly audit report       url: 'https://github.com/advisories/GHSA-gcx4-mw62-g8wm',
+336 silly audit report       title: 'DOM Clobbering Gadget found in rollup bundled scripts that leads to XSS',
+336 silly audit report       severity: 'high',
+336 silly audit report       vulnerable_versions: '>=4.0.0 <4.22.4',
+336 silly audit report       cwe: [Array],
+336 silly audit report       cvss: [Object]
+336 silly audit report     },
+336 silly audit report     {
+336 silly audit report       id: 1113515,
+336 silly audit report       url: 'https://github.com/advisories/GHSA-mw96-cpmx-2vgc',
+336 silly audit report       title: 'Rollup 4 has Arbitrary File Write via Path Traversal',
+336 silly audit report       severity: 'high',
+336 silly audit report       vulnerable_versions: '>=4.0.0 <4.59.0',
+336 silly audit report       cwe: [Array],
+336 silly audit report       cvss: [Object]
+336 silly audit report     }
+336 silly audit report   ]
+336 silly audit report }
+337 silly packumentCache corgi:https://registry.npmjs.org/esbuild cache-miss
+338 silly packumentCache corgi:https://registry.npmjs.org/quill cache-miss
+339 silly packumentCache corgi:https://registry.npmjs.org/vite cache-miss
+340 silly packumentCache corgi:https://registry.npmjs.org/rollup cache-miss
+341 http fetch GET 200 https://registry.npmjs.org/@types/estree/-/estree-1.0.5.tgz 229ms (cache miss)
+342 http fetch GET 200 https://registry.npmjs.org/vite 166ms (cache revalidated)
+343 silly packumentCache corgi:https://registry.npmjs.org/vite set size:2288699 disposed:false
+344 http fetch GET 200 https://registry.npmjs.org/esbuild 361ms (cache revalidated)
+345 silly packumentCache corgi:https://registry.npmjs.org/esbuild set size:887361 disposed:false
+346 http fetch GET 200 https://registry.npmjs.org/quill 541ms (cache revalidated)
+347 silly packumentCache corgi:https://registry.npmjs.org/quill set size:153675 disposed:false
+348 http fetch GET 200 https://registry.npmjs.org/rollup/-/rollup-4.9.6.tgz 1022ms (cache miss)
+349 http fetch GET 200 https://registry.npmjs.org/@rollup/rollup-linux-x64-gnu/-/rollup-linux-x64-gnu-4.9.6.tgz 1024ms (cache miss)
+350 http fetch GET 200 https://registry.npmjs.org/rollup 858ms (cache miss)
+351 silly packumentCache corgi:https://registry.npmjs.org/rollup set size:undefined disposed:false
+352 silly packumentCache corgi:https://registry.npmjs.org/react-quill-new cache-miss
+353 http fetch GET 200 https://registry.npmjs.org/react-quill-new 193ms (cache revalidated)
+354 silly packumentCache corgi:https://registry.npmjs.org/react-quill-new set size:37561 disposed:false
+355 silly packumentCache corgi:https://registry.npmjs.org/@vitejs%2fplugin-react cache-miss
+356 silly packumentCache corgi:https://registry.npmjs.org/vite-plugin-environment cache-miss
+357 http fetch GET 200 https://registry.npmjs.org/@vitejs%2fplugin-react 406ms (cache revalidated)
+358 silly packumentCache corgi:https://registry.npmjs.org/@vitejs%2fplugin-react set size:116307 disposed:false
+359 http fetch GET 200 https://registry.npmjs.org/vite-plugin-environment 502ms (cache revalidated)
+360 silly packumentCache corgi:https://registry.npmjs.org/vite-plugin-environment set size:11950 disposed:false
+361 http fetch GET 200 https://registry.npmjs.org/@biomejs/cli-linux-x64-musl/-/cli-linux-x64-musl-1.9.4.tgz 2965ms (cache miss)
+362 silly ADD
+363 silly ADD
+364 silly ADD
+365 silly ADD
+366 silly ADD
+367 silly ADD
+368 silly ADD
+369 silly ADD
+370 silly ADD
+371 silly ADD
+372 silly ADD
+373 silly ADD
+374 silly ADD
+375 silly ADD
+376 silly ADD
+377 silly ADD
+378 silly ADD
+379 silly ADD
+380 silly ADD
+381 silly ADD
+382 silly ADD
+383 silly ADD
+384 silly ADD
+385 silly ADD
+386 silly ADD
+387 silly ADD
+388 silly ADD
+389 silly ADD
+390 silly ADD
+391 silly ADD
+392 silly ADD
+393 silly ADD
+394 silly ADD
+395 silly ADD
+396 silly ADD
+397 silly ADD
+398 silly ADD
+399 silly ADD
+400 silly ADD
+401 silly ADD
+402 silly ADD
+403 silly ADD
+404 silly ADD
+405 silly ADD
+406 silly ADD
+407 silly ADD
+408 silly ADD
+409 silly ADD
+410 silly ADD
+411 silly ADD node_modules/@biomejs/cli-linux-x64-musl
+412 silly ADD
+413 silly ADD
+414 silly ADD
+415 silly ADD
+416 silly ADD node_modules/vite/node_modules/@types/estree
+417 silly ADD
+418 silly ADD
+419 silly ADD
+420 silly ADD
+421 silly ADD node_modules/vite/node_modules/@rollup/rollup-linux-x64-gnu
+422 silly ADD
+423 silly ADD
+424 silly ADD
+425 silly ADD
+426 silly ADD
+427 silly ADD
+428 silly ADD
+429 silly ADD
+430 silly ADD node_modules/vite/node_modules/rollup
+431 silly CHANGE node_modules/rollup
+432 silly CHANGE node_modules/@types/estree
+433 silly CHANGE node_modules/@rollup/rollup-linux-x64-gnu
+434 verbose cwd /home/drarmank/source_build/dr.armankabir-main/src/frontend
+435 verbose os Linux 4.18.0-553.121.1.lve.el8.x86_64
+436 verbose node v20.18.3
+437 verbose npm  v10.8.2
+438 verbose exit 0
+439 info ok

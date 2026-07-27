@@ -81,6 +81,7 @@
     "react-resizable-panels": "^2.1.7",
     "react-use": "~17.6.0",
     "recharts": "^2.15.1",
+    "rollup": "^4.9.6",
     "sonner": "^1.7.4",
     "tailwind-merge": "^2.5.2",
     "three": "^0.176.0",

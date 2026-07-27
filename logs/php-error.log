@@ -118,3 +118,4 @@ Stack trace:
 #0 Command line code(9): PDO->query()
 #1 {main}
   thrown in Command line code on line 9
+[27-Jul-2026 00:30:37 Asia/Dhaka] Database connection failed: SQLSTATE[08004] [1040] Too many connections
