@@ -20,8 +20,8 @@ import {
   calculateNEWS2,
   checkExtendedClinicalAlerts,
 } from "../lib/clinicalIntelligence";
-import type {
 import { storage } from "../lib/storageAdapter";
+import type {
   ExtendedAlert,
   ExtendedAlertInput,
   Patient,
