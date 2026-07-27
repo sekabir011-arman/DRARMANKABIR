@@ -39,8 +39,8 @@ import PreviousInvestigationTable, {
 import QuestionStepper from "./QuestionStepper";
 import RespiratoryExam from "./RespiratoryExam";
 import SystemicExaminationSection from "./SystemicExaminationSection";
-import {
 import { storage } from "../lib/storageAdapter";
+import {
   loadFamilyHistoryRisk,
   saveFamilyHistoryRisk,
 } from "./patientDashboardTypes";
