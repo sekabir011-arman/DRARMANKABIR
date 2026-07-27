@@ -3,8 +3,8 @@
  * Extracted to keep PatientDashboard.tsx and pages/PatientDashboard.tsx DRY.
  */
 
-import type {
 import { storage } from "../lib/storageAdapter";
+import type {
   AllergyOverrideRecord,
   FamilyHistoryRisk,
   VaccinationRecord,
