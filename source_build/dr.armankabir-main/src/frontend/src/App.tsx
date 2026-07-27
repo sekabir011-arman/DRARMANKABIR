@@ -34,7 +34,7 @@ import { motion } from "motion/react";
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Layout from "./Layout";
 import { useAdminAuth } from "./hooks/useAdminAuth";
-import { storage } from "lib/storageAdapter";
+import { storage } from "@/lib/storageAdapter";
 
 const AppointmentPayment = lazy(() => import("./pages/AppointmentPayment"));
 const Appointments = lazy(() => import("./pages/Appointments"));
