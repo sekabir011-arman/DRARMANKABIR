@@ -345,6 +345,31 @@ export function useCreateOrder() {
 
 // ─── Beds & Admissions ─────────────────────────────────────────────────────
 
+export function useGetAllBeds() {
+  return useQuery<BedRecord[]>({
+    queryKey: ['beds'],
+    queryFn: () => admissionService.getAllBeds(),
+  });
+}
+
+export function useCreateBedRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: { ward: string; bedNumber: string; bedType?: string }) =>
+      admissionService.createBed(data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['beds'] }),
+  });
+}
+
+export function useAssignBed() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: { bedId: number; patientId: number }) =>
+      admissionService.assignBed(data.bedId, data.patientId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['beds'] }),
+  });
+}
+
 export function useGetBedsByWard(ward: string | null) {
   return useQuery<BedRecord[]>({
     queryKey: ['beds', ward],
