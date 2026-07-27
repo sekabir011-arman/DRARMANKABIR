@@ -51,7 +51,7 @@ const patientMapping: Mapping<Patient> = {
 };
 
 const patientTransforms = {
-  id: (v: any) => toNumber(v) ?? ,
+  id: (v: any) => toNumber(v),
   weight: (v: any) => toNumber(v),
   height: (v: any) => toNumber(v),
   allergies: (v: any) => parseJsonArray(v),
