@@ -7,12 +7,13 @@
 6 silly config load:file:/opt/alt/alt-nodejs20/root/usr/etc/npmrc
 7 verbose title npm run build
 8 verbose argv "run" "build"
-9 verbose logfile logs-max:10 dir:/home/drarmank/.npm/_logs/2026-07-27T02_49_45_805Z-
-10 verbose logfile /home/drarmank/.npm/_logs/2026-07-27T02_49_45_805Z-debug-0.log
-11 silly logfile done cleaning log files
-12 verbose cwd /home/drarmank/source_build/dr.armankabir-main/src/frontend
-13 verbose os Linux 4.18.0-553.121.1.lve.el8.x86_64
-14 verbose node v20.18.3
-15 verbose npm  v10.8.2
-16 verbose exit 1
-17 verbose code 1
+9 verbose logfile logs-max:10 dir:/home/drarmank/.npm/_logs/2026-07-27T05_00_39_624Z-
+10 verbose logfile /home/drarmank/.npm/_logs/2026-07-27T05_00_39_624Z-debug-0.log
+11 silly logfile start cleaning logs, removing 1 files
+12 silly logfile done cleaning log files
+13 verbose cwd /home/drarmank/source_build/dr.armankabir-main/src/frontend
+14 verbose os Linux 4.18.0-553.121.1.lve.el8.x86_64
+15 verbose node v20.18.3
+16 verbose npm  v10.8.2
+17 verbose exit 1
+18 verbose code 1
