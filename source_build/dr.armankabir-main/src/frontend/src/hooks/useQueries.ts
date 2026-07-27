@@ -543,3 +543,17 @@ export function setCanisterActor(_actor: unknown): void {
 export function getCanisterActor(): unknown | null {
   return null;
 }
+
+// ── Prescription header image helpers (localStorage) ──────────────────────
+
+export function getPrescriptionHeaderImage(type: string, doctorEmail?: string): string | null {
+  const email = doctorEmail ?? getDoctorEmail();
+  const key = `prescriptionHeaders_${type}_${email}`;
+  return localStorage.getItem(key);
+}
+
+export function setPrescriptionHeaderImage(type: string, imageDataUrl: string, doctorEmail?: string): void {
+  const email = doctorEmail ?? getDoctorEmail();
+  const key = `prescriptionHeaders_${type}_${email}`;
+  localStorage.setItem(key, imageDataUrl);
+}
