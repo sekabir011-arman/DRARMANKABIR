@@ -47,7 +47,7 @@
         }
     ],
     "created_at": 1785091298,
-    "updated_at": 1785150622,
+    "updated_at": 1785151105,
     "messages": [
         {
             "id": "msg_compact",
@@ -6899,6 +6899,13 @@
             "content": "  340 |       clinicalNotesService.createOrder(data.patientId, data.orderData),\n  341 |     onSuccess: (_, vars) =>\n  342 |       qc.invalidateQueries({ queryKey: ['orders', vars.patientId.toString()] }),\n  343 |   });\n  344 | }\n  345 | \n  346 | \/\/ \u2500\u2500\u2500 Beds & Admissions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  347 | export function useGetAllBeds() {\n  348 |   return useQuery<BedRecord[]>({\n  349 |     queryKey: ['beds'],\n  350 |     queryFn: () => admissionService.getAllBeds(),\n  351 |   });\n  352 | }\n  353 | \n  354 | export function useGetBedsByWard(ward: string | null) {\n  355 |   return useQuery<BedRecord[]>({\n  356 |     queryKey: ['beds', ward],\n  357 |     queryFn: () => admissionService.getBedsByWard(ward!),\n  358 |     enabled: !!ward,\n  359 |   });\n  360 | }\n  361 | \n  362 | export function useCreateBedRecord() {\n  363 |   const qc = useQueryClient();\n  364 |   return useMutation({\n  365 |     mutationFn: async (data: { bedNumber: string; ward: string; hospitalName?: string; floor?: string; bedType?: string }) =>\n  366 |       admissionService.createBed({\n  367 |         ward: data.ward,\n  368 |         bedNumber: data.bedNumber,\n  369 |         bedType: data.bedType,\n  370 |       }),\n  371 |     onSuccess: () => qc.invalidateQueries({ queryKey: ['beds'] }),\n  372 |   });\n  373 | }\n  374 | \n  375 | export function useAssignBed() {\n  376 |   const qc = useQueryClient();\n  377 |   return useMutation({\n  378 |     mutationFn: async (data: { bedId: number; patientId: number; patientName?: string }) =>\n  379 |       admissionService.assignBed(data.bedId, data.patientId),\n  380 |     onSuccess: () => qc.invalidateQueries({ queryKey: ['beds'] }),\n  381 |   });\n  382 | }\n  383 | \n  384 | export function useCreateBed() {\n  385 |   const qc = useQueryClient();\n  386 |   return useMutation({\n  387 |     mutationFn: async (data: { ward: string; bedNumber: string; bedType?: string }) =>\n  388 |       admissionService.createBed(data),\n  389 |     onSuccess: () => qc.invalidateQueries({ queryKey: ['beds'] }),\n  390 |   });\n  391 | }\n  392 | \n  393 | export function useAssignBed() {\n  394 |   const qc = useQueryClient();\n  395 |   return useMutation({\n  396 |     mutationFn: async (data: { bedId: number; patientId: number }) =>\n  397 |       admissionService.assignBed(data.bedId, data.patientId),\n  398 |     onSuccess: () => qc.invalidateQueries({ queryKey: ['beds'] }),\n  399 |   });\n  400 | }\n  401 | \n  402 | export function useGetBedsByWard(ward: string | null) {\n  403 |   return useQuery<BedRecord[]>({\n  404 |     queryKey: ['beds', ward],\n  405 |     queryFn: () => admissionService.getBedsByWard(ward!),\n  406 |     enabled: !!ward,\n  407 |   });\n  408 | }\n  409 | \n  410 | \/** Get all beds *\/\n  411 | export function useGetAllBeds() {\n  412 |   return useQuery<BedRecord[]>({\n  413 |     queryKey: ['beds', 'all'],\n  414 |     queryFn: () => admissionService.getAllBeds(),\n  415 |   });\n  416 | }\n  417 | \n  418 | \/** Create a bed record (alias: useCreateBedRecord) *\/\n  419 | export function useCreateBed() {\n  420 |   const qc = useQueryClient();\n  421 |   return useMutation({\n  422 |     mutationFn: async (data: { ward: string; bedNumber: string; bedType?: string }) =>\n  423 |       admissionService.createBed(data),\n  424 |     onSuccess: () => qc.invalidateQueries({ queryKey: ['beds'] }),\n  425 |   });\n  426 | }\n  427 | \n  428 | export function useGetAdmissionHistory(patientId: number | null) {\n  429 |   return useQuery<AdmissionHistory[]>({",
             "is_error": false,
             "time": 1785150622
+        },
+        {
+            "id": "msg_dd0a17e2b2",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785151105
         }
     ]
 }

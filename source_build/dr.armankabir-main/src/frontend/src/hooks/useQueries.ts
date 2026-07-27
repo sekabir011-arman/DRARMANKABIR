@@ -390,49 +390,6 @@ export function useCreateBed() {
   });
 }
 
-export function useAssignBed() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (data: { bedId: number; patientId: number }) =>
-      admissionService.assignBed(data.bedId, data.patientId),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['beds'] }),
-  });
-}
-
-export function useGetBedsByWard(ward: string | null) {
-  return useQuery<BedRecord[]>({
-    queryKey: ['beds', ward],
-    queryFn: () => admissionService.getBedsByWard(ward!),
-    enabled: !!ward,
-  });
-}
-
-/** Get all beds */
-export function useGetAllBeds() {
-  return useQuery<BedRecord[]>({
-    queryKey: ['beds', 'all'],
-    queryFn: () => admissionService.getAllBeds(),
-  });
-}
-
-/** Create a bed record (alias: useCreateBedRecord) */
-export function useCreateBed() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (data: { ward: string; bedNumber: string; bedType?: string }) =>
-      admissionService.createBed(data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['beds'] }),
-  });
-}
-
-export function useGetAdmissionHistory(patientId: number | null) {
-  return useQuery<AdmissionHistory[]>({
-    queryKey: ['admissions', patientId?.toString()],
-    queryFn: () => admissionService.getByPatient(patientId!),
-    enabled: !!patientId,
-  });
-}
-
 // ─── Drug Reminders & Alerts ───────────────────────────────────────────────
 
 export function useGetDrugReminders() {
