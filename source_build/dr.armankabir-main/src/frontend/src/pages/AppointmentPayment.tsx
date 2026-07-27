@@ -41,8 +41,8 @@ import {
   saveReceiptToStore,
   sendReceiptWhatsApp,
 } from "../components/MoneyReceipt";
-import type {
 import { storage } from "../lib/storageAdapter";
+import type {
   InvoiceState,
   MoneyReceiptData,
   PaymentMethod,

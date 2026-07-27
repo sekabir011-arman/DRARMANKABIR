@@ -47,7 +47,7 @@
         }
     ],
     "created_at": 1785091298,
-    "updated_at": 1785120962,
+    "updated_at": 1785120996,
     "messages": [
         {
             "id": "msg_compact",
@@ -3550,6 +3550,344 @@
             "content": "   40 |   generateTypedReceiptNumber,\n   41 |   saveReceiptToStore,\n   42 |   sendReceiptWhatsApp,\n   43 | } from \"..\/components\/MoneyReceipt\";\n   44 | import type {\n   45 | import { storage } from \"..\/lib\/storageAdapter\";\n   46 |   InvoiceState,\n   47 |   MoneyReceiptData,\n   48 |   PaymentMethod,\n   49 |   RefundRecord,\n   50 | } from \"..\/types\";\n   51 | \n   52 | \/\/ \u2500\u2500 Constants \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   53 | \n   54 | const APT_PAYMENTS_KEY = \"appointmentPayments\";",
             "is_error": false,
             "time": 1785120962
+        },
+        {
+            "id": "msg_3fe4d055db",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "This file is also corrupted - the `import type {` on line 44 is incomplete and then `import { storage } from \"..\/lib\/storageAdapter\";` is inserted in the middle of the type import block.\n\nLet me check if there's a pattern here. Let me look at the raw file to see what the original import block should look like. The `import type {` probably imports `InvoiceState, MoneyReceiptData, PaymentMethod, RefundRecord` from `\"..\/types\"`. And there should be a separate `import { storage } from \"..\/lib\/storageAdapter\";` line.\n\nThe corruption is:\n```\n44 | import type {\n45 | import { storage } from \"..\/lib\/storageAdapter\";\n46 |   InvoiceState,\n47 |   MoneyReceiptData,\n48 |   PaymentMethod,\n49 |   RefundRecord,\n50 | } from \"..\/types\";\n```\n\nIt should be:\n```\nimport { storage } from \"..\/lib\/storageAdapter\";\nimport type {\n  InvoiceState,\n  MoneyReceiptData,\n  PaymentMethod,\n  RefundRecord,\n} from \"..\/types\";\n```\n\nLet me fix this."
+                },
+                {
+                    "type": "text",
+                    "text": "More corrupted imports. Let me fix this file too."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_6keXlxGgf4Z9MF4kXAH78460",
+                    "name": "edit_file",
+                    "input": {
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/AppointmentPayment.tsx",
+                        "old_string": "import type {\nimport { storage } from \"..\/lib\/storageAdapter\";\n  InvoiceState,\n  MoneyReceiptData,\n  PaymentMethod,\n  RefundRecord,\n} from \"..\/types\";",
+                        "new_string": "import { storage } from \"..\/lib\/storageAdapter\";\nimport type {\n  InvoiceState,\n  MoneyReceiptData,\n  PaymentMethod,\n  RefundRecord,\n} from \"..\/types\";"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 85654,
+                "completion_tokens": 416,
+                "total_tokens": 86070,
+                "prompt_cache_hit_tokens": 85376,
+                "prompt_cache_miss_tokens": 278,
+                "prompt_tokens_details": {
+                    "cached_tokens": 85376
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 231
+                },
+                "cached_tokens": 85376
+            },
+            "time": 1785120968
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_6keXlxGgf4Z9MF4kXAH78460",
+            "content": "Edited source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/AppointmentPayment.tsx (1 replacement)\n- import type {\n- import { storage } from \"..\/lib\/storageAdapter\";\n-   InvoiceState,\n-   MoneyReceiptData,\n-   PaymentMethod,\n-   RefundRecord,\n- } from \"..\/types\";\n+ import { storage } from \"..\/lib\/storageAdapter\";\n+ import type {\n+   InvoiceState,\n+   MoneyReceiptData,\n+   PaymentMethod,\n+   RefundRecord,\n+ } from \"..\/types\";",
+            "is_error": false,
+            "time": 1785120968
+        },
+        {
+            "id": "msg_bca31f332f",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "This pattern of corrupted imports is suspicious. Let me check if there's a broader issue - let me search for all instances where `import { storage }` appears right after an `import type {` line."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me check for more of these corrupted import patterns across the codebase."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_7ShFenOn4JYhjVEAmJmU6248",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && grep -B1 '^import { storage }' --include=\"*.tsx\" --include=\"*.ts\" 2>\/dev\/null | grep -B1 'storage'"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 86201,
+                "completion_tokens": 160,
+                "total_tokens": 86361,
+                "prompt_cache_hit_tokens": 86016,
+                "prompt_cache_miss_tokens": 185,
+                "prompt_tokens_details": {
+                    "cached_tokens": 86016
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 42
+                },
+                "cached_tokens": 86016
+            },
+            "time": 1785120972
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_7ShFenOn4JYhjVEAmJmU6248",
+            "content": "\n[Exit code: 1]",
+            "is_error": true,
+            "time": 1785120972
+        },
+        {
+            "id": "msg_26372e88c5",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "That didn't work well. Let me try a different approach - search for files where `import { storage }` is on a line right after `import type {`."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_n4UfkNUzCGhNVSNk8AYF9800",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && grep -rn 'import { storage }' --include=\"*.tsx\" --include=\"*.ts\" 2>\/dev\/null"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 86380,
+                "completion_tokens": 128,
+                "total_tokens": 86508,
+                "prompt_cache_hit_tokens": 86272,
+                "prompt_cache_miss_tokens": 108,
+                "prompt_tokens_details": {
+                    "cached_tokens": 86272
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 34
+                },
+                "cached_tokens": 86272
+            },
+            "time": 1785120975
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_n4UfkNUzCGhNVSNk8AYF9800",
+            "content": "components\/NewPrescriptionMode.tsx:25:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/InvestigationPayment.tsx:32:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/TreatmentTemplates.ts:1:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/MoneyReceipt.tsx:36:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/PrescriptionForm.tsx:23:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/DailyProgressNote.tsx:53:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/TestimonialsSection.tsx:23:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/PrescriptionHeaderPanel.tsx:33:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/ConsentForm.tsx:15:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/PatientTimeline.tsx:29:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/AdmitPatientDialog.tsx:27:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/ClinicalAlertsPanel.tsx:24:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/InvestigationTracker.tsx:31:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/VitalVerification.tsx:27:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/PatientChat.tsx:19:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/DrainMonitor.tsx:22:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/VisitForm.tsx:43:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/GallerySection.tsx:7:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/MedicationAdminRecord.tsx:25:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/PrescriptionPDFManager.tsx:6:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/AdmissionTimeline.tsx:26:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/AdmissionHistory.tsx:40:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/DischargeSummaryTab.tsx:23:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/NurseDueMeds.tsx:13:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/PatientTabs.tsx:29:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/PatientSummaryCard.tsx:10:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/HandoverSystem.tsx:51:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/AdviceTemplates.ts:1:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/PrescriptionHelpers.ts:13:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/IOChart.tsx:23:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/EmergencyConsultationModal.tsx:21:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/patientDashboardTypes.ts:7:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/ReferralLetter.tsx:34:import { storage } from \"..\/lib\/storageAdapter\";\ncomponents\/ProcedureLog.tsx:44:import { storage } from \"..\/lib\/storageAdapter\";\nLayout.tsx:53:import { storage } from \"@\/lib\/storageAdapter\";\nlib\/storageAdapter.ts:8: *   import { storage } from '..\/lib\/storageAdapter';\nApp.tsx:37:import { storage } from \"@\/lib\/storageAdapter\";\npages\/InvestigationPaymentPage.tsx:22:import { storage } from \"..\/lib\/storageAdapter\";\npages\/Settings.tsx:70:import { storage } from \"..\/lib\/storageAdapter\";\npages\/ProcedurePayment.tsx:39:import { storage } from \"..\/lib\/storageAdapter\";\npages\/dashboards\/AdminDashboard.tsx:37:import { storage } from \"..\/..\/lib\/storageAdapter\";\npages\/dashboards\/ConsultantDashboard.tsx:35:import { storage } from \"..\/..\/lib\/storageAdapter\";\npages\/dashboards\/MedicalOfficerDashboard.tsx:26:import { storage } from \"..\/..\/lib\/storageAdapter\";\npages\/dashboards\/NurseDashboard.tsx:54:import { storage } from \"..\/..\/lib\/storageAdapter\";\npages\/dashboards\/InternDashboard.tsx:18:import { storage } from \"..\/..\/lib\/storageAdapter\";\npages\/dashboards\/StaffDashboard.tsx:29:import { storage } from \"..\/..\/lib\/storageAdapter\";\npages\/AuditLog.tsx:54:import { storage } from \"..\/lib\/storageAdapter\";\npages\/SerialDisplay.tsx:17:import { storage } from \"..\/lib\/storageAdapter\";\npages\/OutstandingBalances.tsx:20:import { storage } from \"..\/lib\/storageAdapter\";\npages\/AppointmentPayment.tsx:44:import { storage } from \"..\/lib\/storageAdapter\";\npages\/Staff.tsx:8:import { storage } from \"..\/lib\/storageAdapter\";\npages\/PatientProfile.tsx:121:import { storage } from \"..\/lib\/storageAdapter\";\npages\/PatientDashboard.tsx:53:import { storage } from \"..\/lib\/storageAdapter\";\npages\/BedManagement.tsx:40:import { storage } from \"..\/lib\/storageAdapter\";\npages\/TotalIncome.tsx:28:import { storage } from \"..\/lib\/storageAdapter\";\npages\/Appointments.tsx:63:import { storage } from \"..\/lib\/storageAdapter\";\npages\/OtherPayment.tsx:35:import { storage } from \"..\/lib\/storageAdapter\";\npages\/Patients.tsx:36:import { storage } from \"..\/lib\/storageAdapter\";\npages\/WardRound.tsx:54:import { storage } from \"..\/lib\/storageAdapter\";\npages\/EmergencyPrescription.tsx:90:import { storage } from \"..\/lib\/storageAdapter\";\n",
+            "is_error": false,
+            "time": 1785120976
+        },
+        {
+            "id": "msg_8304dab2ad",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Most of these are normal imports - `import { storage } from \"..\/lib\/storageAdapter\";` or `import { storage } from \"@\/lib\/storageAdapter\";`. The issue is that some files have this import line inserted in a place where it corrupts an `import type { ... }` block.\n\nLet me check the specific files that have the corrupted pattern - check for `import type {` followed immediately by `import { storage }`"
+                },
+                {
+                    "type": "text",
+                    "text": "Let me check all the files that might have this import corruption pattern more efficiently."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_DtFv93EszCuIgrMNnETx5020",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && for f in pages\/InvestigationPaymentPage.tsx pages\/Settings.tsx pages\/ProcedurePayment.tsx pages\/AuditLog.tsx pages\/OutstandingBalances.tsx pages\/Staff.tsx pages\/PatientProfile.tsx pages\/PatientDashboard.tsx pages\/BedManagement.tsx pages\/TotalIncome.tsx pages\/Appointments.tsx pages\/OtherPayment.tsx pages\/Patients.tsx pages\/EmergencyPrescription.tsx; do\n  if grep -q 'import type {' \"$f\" 2>\/dev\/null; then\n    types_line=$(grep -n 'import type {' \"$f\" 2>\/dev\/null | head -1 | cut -d: -f1)\n    storage_line=$(grep -n 'import { storage }' \"$f\" 2>\/dev\/null | head -1 | cut -d: -f1)\n    if [ -n \"$types_line\" ] && [ -n \"$storage_line\" ] && [ $((storage_line)) -eq $((types_line + 1)) ]; then\n      echo \"CORRUPTED: $f (type line $types_line, storage line $storage_line, next line)\"\n      sed -n \"$((types_line)),$((storage_line + 4))p\" \"$f\" 2>\/dev\/null\n      echo \"---\"\n    fi\n  fi\ndone"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 87778,
+                "completion_tokens": 459,
+                "total_tokens": 88237,
+                "prompt_cache_hit_tokens": 86400,
+                "prompt_cache_miss_tokens": 1378,
+                "prompt_tokens_details": {
+                    "cached_tokens": 86400
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 90
+                },
+                "cached_tokens": 86400
+            },
+            "time": 1785120982
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_DtFv93EszCuIgrMNnETx5020",
+            "content": "CORRUPTED: pages\/ProcedurePayment.tsx (type line 38, storage line 39, next line)\nimport type {\nimport { storage } from \"..\/lib\/storageAdapter\";\n  InvestigationLineItem,\n  MoneyReceiptData,\n  PaymentMethod,\n  RefundRecord,\n---\nCORRUPTED: pages\/AuditLog.tsx (type line 53, storage line 54, next line)\nimport type { AuditEntry } from \"..\/types\";\nimport { storage } from \"..\/lib\/storageAdapter\";\n\n\/\/ \u2500\u2500 Helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nfunction getClinicalAuditEntries(): AuditEntry[] {\n---\nCORRUPTED: pages\/Staff.tsx (type line 7, storage line 8, next line)\nimport type { StaffShift, AttendanceRecord, LeaveRequest } from \"..\/services\/staffData\";\nimport { storage } from \"..\/lib\/storageAdapter\";\nimport { Badge } from \"@\/components\/ui\/badge\";\nimport { Button } from \"@\/components\/ui\/button\";\nimport { Input } from \"@\/components\/ui\/input\";\nimport { Label } from \"@\/components\/ui\/label\";\n---\nCORRUPTED: pages\/PatientProfile.tsx (type line 120, storage line 121, next line)\nimport type { Patient, Prescription, StaffRole, Visit } from \"..\/types\";\nimport { storage } from \"..\/lib\/storageAdapter\";\n\nconst RX_SKELETON_KEYS = [\"rsk1\", \"rsk2\", \"rsk3\"];\n\/\/ \u2500\u2500 On-Duty Staff Card \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n---\nCORRUPTED: pages\/BedManagement.tsx (type line 39, storage line 40, next line)\nimport type { BedRecord, BedType, Patient } from \"..\/types\";\nimport { storage } from \"..\/lib\/storageAdapter\";\n\n\/\/ \u2500\u2500 BigInt normalisation helper \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst normBigInt = (val: unknown): number => {\n  try {\n---\nCORRUPTED: pages\/TotalIncome.tsx (type line 27, storage line 28, next line)\nimport type { MoneyReceiptData } from \"..\/types\";\nimport { storage } from \"..\/lib\/storageAdapter\";\n\n\/\/ \u2500\u2500 Storage keys \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nconst PROC_PAYMENTS_KEY = \"procedurePayments\";\n---\nCORRUPTED: pages\/OtherPayment.tsx (type line 34, storage line 35, next line)\nimport type { MoneyReceiptData, PaymentMethod, RefundRecord } from \"..\/types\";\nimport { storage } from \"..\/lib\/storageAdapter\";\n\nconst OTHER_PAYMENTS_KEY = \"other_payments_index\";\nconst ADV_PAYMENTS_KEY = \"advance_payments\";\n\n---\nCORRUPTED: pages\/Patients.tsx (type line 35, storage line 36, next line)\nimport type { Patient } from \"..\/types\";\nimport { storage } from \"..\/lib\/storageAdapter\";\n\nconst SKELETON_KEYS = [\"sk1\", \"sk2\", \"sk3\", \"sk4\", \"sk5\", \"sk6\"];\n\nfunction getAge(dateOfBirth?: number): string {\n---\nCORRUPTED: pages\/EmergencyPrescription.tsx (type line 89, storage line 90, next line)\nimport type { Medication, Patient, Prescription } from \"..\/types\";\nimport { storage } from \"..\/lib\/storageAdapter\";\n\n\/\/ \u2500\u2500 Constants \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nconst DRUG_FORMS = [\n---\n",
+            "is_error": false,
+            "time": 1785120982
+        },
+        {
+            "id": "msg_307a0dd73b",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "All these files have the same pattern: `import { storage } from \"..\/lib\/storageAdapter\";` is placed directly after `import type {` without a proper closing. But wait - looking at the actual output, the `import type {` line actually closes properly on a subsequent line, and then `import { storage }` is the next line. Let me look more carefully...\n\nActually, looking at the output:\n```\npages\/ProcedurePayment.tsx (type line 38, storage line 39, next line)\nimport type {\nimport { storage } from \"..\/lib\/storageAdapter\";\n  InvestigationLineItem,\n  MoneyReceiptData,\n  PaymentMethod,\n  RefundRecord,\n```\n\nThis IS corrupted - the `import type {` on line 38 has no closing `}` and `import { storage }` is line 39 inside the type import block.\n\nBut for the others:\n```\npages\/AuditLog.tsx (type line 53, storage line 54, next line)\nimport type { AuditEntry } from \"..\/types\";\nimport { storage } from \"..\/lib\/storageAdapter\";\n```\n\nThis one looks correct - `import type { AuditEntry } from \"..\/types\";` is a complete line, then `import { storage } from \"..\/lib\/storageAdapter\";` is a separate import.\n\nWait, let me re-read the code. The grep showed `import type {` and `import { storage }` on consecutive lines. For AuditLog.tsx, line 53 has `import type { AuditEntry } from \"..\/types\";` and line 54 has `import { storage } from \"..\/lib\/storageAdapter\";` - that's fine, they're separate import statements.\n\nBut for ProcedurePayment.tsx:\n```\n38: import type {\n39: import { storage } from \"..\/lib\/storageAdapter\";\n40:   InvestigationLineItem,\n41:   MoneyReceiptData,\n42:   PaymentMethod,\n43:   RefundRecord,\n```\n\nThis IS corrupted - the `import type {` on line 38 isn't closed, and line 39 has `import { storage }` inserted inside it. This needs fixing.\n\nWait, let me re-check my check script logic. The check I did was:\n```\ntypes_line = line number of `import type {`\nstorage_line = line number of `import { storage }`\nif (storage_line == types_line + 1) {\n    print CORRUPTED\n}\n```\n\nBut that pattern would incorrectly flag cases where the `import type` is a single-line statement (e.g., `import type { AuditEntry } from \"..\/types\";`) and the very next line is the storage import. In those cases, the types import is complete and the storage import is a separate, valid import.\n\nLet me verify the actual files more carefully."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ZjZRsucJwKtOiy7kfZeD4956",
+                    "name": "read_file",
+                    "input": {
+                        "offset": 36,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/ProcedurePayment.tsx",
+                        "limit": 10
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_hHgAFtABl7FWVdr8Di0N5224",
+                    "name": "read_file",
+                    "input": {
+                        "offset": 50,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/AuditLog.tsx",
+                        "limit": 10
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 88985,
+                "completion_tokens": 756,
+                "total_tokens": 89741,
+                "prompt_cache_hit_tokens": 88192,
+                "prompt_cache_miss_tokens": 793,
+                "prompt_tokens_details": {
+                    "cached_tokens": 88192
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 573
+                },
+                "cached_tokens": 88192
+            },
+            "time": 1785120991
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ZjZRsucJwKtOiy7kfZeD4956",
+            "content": "   36 |   sendReceiptWhatsApp,\n   37 | } from \"..\/components\/MoneyReceipt\";\n   38 | import type {\n   39 | import { storage } from \"..\/lib\/storageAdapter\";\n   40 |   InvestigationLineItem,\n   41 |   MoneyReceiptData,\n   42 |   PaymentMethod,\n   43 |   RefundRecord,\n   44 | } from \"..\/types\";\n   45 |",
+            "is_error": false,
+            "time": 1785120991
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_hHgAFtABl7FWVdr8Di0N5224",
+            "content": "   50 | import { useEmailAuth } from \"..\/hooks\/useEmailAuth\";\n   51 | import { type AuditLogEntry, getAuditLog } from \"..\/hooks\/useAdminSave\";\n   52 | import { useRolePermissions } from \"..\/hooks\/useRolePermissions\";\n   53 | import type { AuditEntry } from \"..\/types\";\n   54 | import { storage } from \"..\/lib\/storageAdapter\";\n   55 | \n   56 | \/\/ \u2500\u2500 Helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   57 | \n   58 | function getClinicalAuditEntries(): AuditEntry[] {\n   59 |   try {",
+            "is_error": false,
+            "time": 1785120991
+        },
+        {
+            "id": "msg_d2c25b9265",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "OK, so:\n- `ProcedurePayment.tsx` - line 38-44 IS corrupted (import type { doesn't close, storage import is inside the type block)\n- `AuditLog.tsx` - lines 53-54 are actually correct (two separate valid import statements)\n\nLet me only fix the truly corrupted ones. Let me check each file to see which ones are actually corrupted vs. just having valid consecutive imports."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_DBhRRCtpuwpPTIYMjmXC3830",
+                    "name": "read_file",
+                    "input": {
+                        "offset": 5,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/Staff.tsx",
+                        "limit": 10
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_01_DtV2W24QOLJ2NgL22S524991",
+                    "name": "read_file",
+                    "input": {
+                        "offset": 118,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/PatientProfile.tsx",
+                        "limit": 10
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_02_EUG22TBamzeOW14EMvU78490",
+                    "name": "read_file",
+                    "input": {
+                        "offset": 37,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/BedManagement.tsx",
+                        "limit": 10
+                    }
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_03_cMZArQaMBP91k1iq8ICK5733",
+                    "name": "read_file",
+                    "input": {
+                        "offset": 87,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/EmergencyPrescription.tsx",
+                        "limit": 10
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 89975,
+                "completion_tokens": 439,
+                "total_tokens": 90414,
+                "prompt_cache_hit_tokens": 89728,
+                "prompt_cache_miss_tokens": 247,
+                "prompt_tokens_details": {
+                    "cached_tokens": 89728
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 88
+                },
+                "cached_tokens": 89728
+            },
+            "time": 1785120996
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_DBhRRCtpuwpPTIYMjmXC3830",
+            "content": "    5 | import { paymentService } from \"..\/services\/payments\";\n    6 | import { staffDataService } from \"..\/services\/staffData\";\n    7 | import type { StaffShift, AttendanceRecord, LeaveRequest } from \"..\/services\/staffData\";\n    8 | import { storage } from \"..\/lib\/storageAdapter\";\n    9 | import { Badge } from \"@\/components\/ui\/badge\";\n   10 | import { Button } from \"@\/components\/ui\/button\";\n   11 | import { Input } from \"@\/components\/ui\/input\";\n   12 | import { Label } from \"@\/components\/ui\/label\";\n   13 | import {\n   14 |   Select,",
+            "is_error": false,
+            "time": 1785120996
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_01_DtV2W24QOLJ2NgL22S524991",
+            "content": "  118 |   checkVitalAlerts,\n  119 | } from \"..\/lib\/clinicalIntelligence\";\n  120 | import type { Patient, Prescription, StaffRole, Visit } from \"..\/types\";\n  121 | import { storage } from \"..\/lib\/storageAdapter\";\n  122 | \n  123 | const RX_SKELETON_KEYS = [\"rsk1\", \"rsk2\", \"rsk3\"];\n  124 | \/\/ \u2500\u2500 On-Duty Staff Card \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  125 | \n  126 | function getCurrentShiftType(): \"morning\" | \"evening\" | \"night\" {\n  127 |   const h = new Date().getHours();",
+            "is_error": false,
+            "time": 1785120996
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_02_EUG22TBamzeOW14EMvU78490",
+            "content": "   37 | } from \"..\/hooks\/useQueries\";\n   38 | import { getClinicalStore, saveClinicalStore } from \"..\/lib\/clinicalStore\";\n   39 | import type { BedRecord, BedType, Patient } from \"..\/types\";\n   40 | import { storage } from \"..\/lib\/storageAdapter\";\n   41 | \n   42 | \/\/ \u2500\u2500 BigInt normalisation helper \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   43 | const normBigInt = (val: unknown): number => {\n   44 |   try {\n   45 |     return BigInt(String(val ?? 0));\n   46 |   } catch {",
+            "is_error": false,
+            "time": 1785120996
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_03_cMZArQaMBP91k1iq8ICK5733",
+            "content": "   87 |   useGetAllPatients,\n   88 | } from \"..\/hooks\/useQueries\";\n   89 | import type { Medication, Patient, Prescription } from \"..\/types\";\n   90 | import { storage } from \"..\/lib\/storageAdapter\";\n   91 | \n   92 | \/\/ \u2500\u2500 Constants \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   93 | \n   94 | const DRUG_FORMS = [\n   95 |   \"Tab.\",\n   96 |   \"Cap.\",",
+            "is_error": false,
+            "time": 1785120996
         }
     ]
 }
