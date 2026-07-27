@@ -1,7 +1,4 @@
-  });
-}
-
-export function useGetAdmissionHistory/**
+/**
  * React Query hooks — PHP/MySQL Backend
  *
  * All CRUD operations now target the PHP/MySQL API via the service layer.
