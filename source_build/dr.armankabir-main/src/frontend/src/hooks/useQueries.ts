@@ -557,3 +557,27 @@ export function setPrescriptionHeaderImage(type: string, imageDataUrl: string, d
   const key = `prescriptionHeaders_${type}_${email}`;
   localStorage.setItem(key, imageDataUrl);
 }
+
+// ── Prescription records helpers (localStorage) ──────────────────────────
+
+function prescriptionRecordsKey(patientId: number | string): string {
+  return `prescriptionRecords_${patientId}`;
+}
+
+export function loadPrescriptionRecords(patientId: number | string): any[] {
+  try {
+    const raw = localStorage.getItem(prescriptionRecordsKey(patientId));
+    if (!raw) return [];
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+}
+
+export function savePrescriptionRecords(patientId: number | string, records: any[]): void {
+  try {
+    localStorage.setItem(prescriptionRecordsKey(patientId), JSON.stringify(records));
+  } catch {
+    // silently ignore
+  }
+}
