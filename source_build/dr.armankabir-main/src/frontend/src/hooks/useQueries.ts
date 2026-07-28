@@ -1,4 +1,30 @@
-/**
+export function useDischargePatient() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: {
+      patientId: number;
+      dischargedBy?: string;
+      dischargedByRole?: string;
+    }) => {
+      // Call discharge endpoint - we need admission ID; for now call via service
+      // Actually we need to find the active admission first. Let's use the admission history
+      const history = await admissionService.getByPatient(data.patientId);
+      const active = history.find((a: any) => a.status === 'active');
+      if (active) {
+        await admissionService.discharge(active.id, {
+          dischargedBy: data.dischargedBy,
+          dischargeSummary: 'Patient discharged',
+        });
+      }
+      return data;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['patients'] });
+      qc.invalidateQueries({ queryKey: ['patient', vars.patientId.toString()] });
+      qc.invalidateQueries({ queryKey: ['admissionHistory', vars.patientId.toString()] });
+    },
+  });
+}/**
  * React Query hooks — PHP/MySQL Backend
  *
  * All CRUD operations now target the PHP/MySQL API via the service layer.

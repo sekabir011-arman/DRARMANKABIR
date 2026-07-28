@@ -1,6 +1,6 @@
 <?php exit(); ?>
 {
-    "fetched_at": 1785072053,
+    "fetched_at": 1785172023,
     "models": {
         "big-pickle": {
             "name": "big-pickle",
@@ -192,6 +192,10 @@
         },
         "kimi-k2.7-code": {
             "name": "kimi-k2.7-code",
+            "context_window": 128000
+        },
+        "kimi-k3": {
+            "name": "kimi-k3",
             "context_window": 128000
         },
         "minimax-m2.5": {

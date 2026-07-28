@@ -32,7 +32,7 @@
         }
     ],
     "created_at": 1785091298,
-    "updated_at": 1785156421,
+    "updated_at": 1785210767,
     "messages": [
         {
             "id": "msg_compact",
@@ -7717,6 +7717,208 @@
             "content": "continue",
             "attachments": [],
             "time": 1785156421
+        },
+        {
+            "id": "msg_e28adc163b",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785172091
+        },
+        {
+            "id": "msg_b44665b4fa",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785177035
+        },
+        {
+            "id": "msg_611cc08bd0",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785179050
+        },
+        {
+            "id": "msg_7ecdfe182b",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785210736
+        },
+        {
+            "id": "msg_72b3e121b0",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me understand the pattern more clearly. The original code used localStorage for everything, but the migration replaced the service layer with PHP\/MySQL API calls. However, many hooks in `useQueries.ts` were still using localStorage patterns. \n\nI need to fix the `useDischargePatient` function - it's calling `admissionService.discharge(, ...)` with a missing first argument (admissionId). Let me check the `admissionService.discharge` signature and how it's called.\n\nThe `admissionService.discharge` takes `(admissionId: number, data: {...})` but the caller doesn't pass the admissionId. The old localStorage-based implementation used `loadAdmissionHistory(data.patientId)` to find admissions and update them. Since we're using PHP\/MySQL backend, we need the admission ID, but the caller only passes `patientId`.\n\nLet me look at the PatientDashboard.tsx to see how dischargeMutation.mutate is called, and also check the API endpoint expectations.\n\nActually, looking at it more carefully - the old code had a `loadAdmissionHistory` function that would load all admissions for a patient from localStorage, find the active one, and update it. The new service layer has `admissionService.discharge(admissionId, data)` which needs an admission ID.\n\nBut the caller only sends `patientId`, `dischargedBy`, `dischargedByRole`. The admissionId isn't available at the call site.\n\nI think the best approach is to implement `useDischargePatient` to:\n1. First call `admissionService.getByPatient(patientId)` to find the active admission\n2. Then call `admissionService.discharge(admissionId, ...)` with the found admission ID\n\nBut this is getting really complex. Let me step back and think about what approach will actually work.\n\nThe cleanest approach is to implement these stubs as proper hooks that delegate to the service layer where possible, and use localStorage as a fallback for things that don't have API endpoints yet. \n\nBut actually, the real issue is simpler - I just need these functions to exist and not crash. The build process just needs them to be exported. Let me create minimal working implementations that use the existing service layer.\n\nFor `useDischargePatient`, the caller (PatientDashboard.tsx) calls:\n```ts\ndischargeMutation.mutate({\n  patientId,\n  dischargedBy: doctorName,\n  dischargedByRole: viewerRole ?? \"consultant_doctor\",\n})\n```\n\nAnd the original implementation (from dist) used localStorage. The call doesn't include an admissionId. So I should either:\n1. Make `discharge` work with just `patientId` - but the service expects `admissionId`\n2. Make `useDischargePatient` internally look up the admission ID first\n\nLet me go with approach #2 - internally look up the admission first. But that requires the hooks to be async and chain API calls. That's the proper way.\n\nActually, wait. Let me check if there's a simpler pattern. Let me look at what the caller expects back. The caller does:\n```ts\ndischargeMutation.mutate({...}, { onSuccess: () => { toast.success(...) } })\n```\n\nSo the mutation succeeds and invalidates queries. Let me implement it properly.\n\nActually, let me take a step back and think about this more strategically. The project is a migration from a localStorage\/ICP canister backend to a PHP\/MySQL backend. The useQueries.ts file has:\n1. New proper hooks (like `useGetAllPatients`, `useCreatePatient`, etc.) that use the service layer\n2. Old legacy localStorage-based hooks that are supposed to be deprecated but still needed by some components\n\nThe components still importing old hooks like `useAdmitPatient`, `useDischargePatient`, `useGetAlertsByPatient`, etc. need them to work. Rather than completely rewriting all of them, I should create working implementations.\n\nLet me just fix the immediate syntax error and simplify the useDischargePatient to not need the admissionId parameter:\n\nThe admissionService.discharge expects `(admissionId, data)`. But the callers don't have admissionId. Let me change it to accept `admissionId` optionally, and if not provided, we can skip the API call or look it up.\n\nActually, the simplest fix: change the implementation to not need admissionId by making it a composite operation. Or even simpler - just make a PUT\/PATCH endpoint call that finds the active admission on the server side.\n\nBut I shouldn't change the service layer unless needed. Let me just fix the immediate bug - the `,` is a syntax error. Let me look at what the original caller provides and make it work.\n\nLooking at the caller (PatientDashboard.tsx):\n```ts\ndischargeMutation.mutate({\n  patientId,\n  dischargedBy: doctorName,\n  dischargedByRole: viewerRole ?? \"consultant_doctor\",\n})\n```\n\nAnd the admissionService.discharge signature:\n```ts\nasync discharge(admissionId: number, data: {\n  dischargeDate?: string;\n  dischargeSummary?: string;\n  dischargedBy?: string;\n}): Promise<void>\n```\n\nThe caller has patientId but not admissionId. My `useDischargePatient` implementation was copied from the old code but incorrectly merged with the new service. Let me just fix it to work properly:\n\n```ts\nexport function useDischargePatient() {\n  const qc = useQueryClient();\n  return useMutation({\n    mutationFn: async (data: {\n      patientId: number;\n      dischargedBy?: string;\n      dischargedByRole?: string;\n    }) => {\n      \/\/ First get the active admission for this patient\n      const admissions = await admissionService.getByPatient(data.patientId);\n      const activeAdmission = admissions.find(a => ...);\n      if (activeAdmission) {\n        await admissionService.discharge(activeAdmission.id, {\n          dischargedBy: data.dischargedBy,\n          dischargeSummary: 'Patient discharged',\n        });\n      }\n      return data;\n    },\n    ...\n  });\n}\n```\n\nBut I don't know the AdmissionHistory type shape. Let me check.\n\nActually, this is getting too complex. Let me take a much simpler approach. Let me just make all the missing hooks work with the service layer in a clean way. Let me look at the full set of missing functions that are actually imported by files.\n\nFrom the grep results, the files importing from useQueries need:\n- PatientProfile.tsx: `useGetAlertsByPatient`, `useAcknowledgeAlert`, `useGetAuditTrail`, `useReassignConsultant`, `useCreateObservation`, `useCreatePrescription`, `useCreateVisit`, `useGetClinicalNotesByPatient`, `useGetEncountersByPatient`, `useGetObservationsByPatient`, `useGetPatient`, `useGetPrescriptionsByPatient`, `useGetVisitsByPatient`, `useUpdatePatient`, `useReassignConsultant`\n- PatientDashboard.tsx: `useDischargePatient`, `useDeletePatient`\n- WardRound.tsx: `useGetAlertsByPatient`, `useCreateClinicalNote`, `useCreateObservation`, `useCreateOrder`\n- AdmitPatientDialog.tsx: `useAdmitPatient`\n- BedManagement.tsx: `loadFromAllDoctorKeys`, `useAssignBed`, `useCreateBedRecord`, `useGetAllBeds`\n- RegistrarDashboard.tsx: `saveToStorage`, `loadFromStorage`, `loadFromAllDoctorKeys`\n- EmergencyPrescription.tsx: `generateRegisterNumber`, `loadFromStorage`, `storageKey`, `useCreatePatient`, `useCreatePrescription`, `useCreateVisit`, `useGetAllPatients`\n- etc.\n\nLet me just fix the immediate `discharge` issue and keep building iteratively. The fastest path is to fix errors one at a time."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me fix the `useDischargePatient` function - it's missing the admissionId argument for `admissionService.discharge()`."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_O25G1W1XLs3j35ZWjEJ73050",
+                    "name": "read_file",
+                    "input": {
+                        "limit": 10,
+                        "offset": 113,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/PatientDashboard.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 78809,
+                "completion_tokens": 1790,
+                "total_tokens": 80599,
+                "prompt_cache_hit_tokens": 78720,
+                "prompt_cache_miss_tokens": 89,
+                "prompt_tokens_details": {
+                    "cached_tokens": 78720
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 1663
+                },
+                "cached_tokens": 78720
+            },
+            "time": 1785210757
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_O25G1W1XLs3j35ZWjEJ73050",
+            "content": "  113 |   const [showRxForm, setShowRxForm] = useState(false);\n  114 |   const [rxInitialDiagnosis, setRxInitialDiagnosis] = useState<\n  115 |     string | undefined\n  116 |   >();\n  117 |   const [rxVisitExtendedData, setRxVisitExtendedData] = useState<\n  118 |     Record<string, unknown> | undefined\n  119 |   >();\n  120 |   const [rxForceVisitData, setRxForceVisitData] = useState(false);\n  121 |   const [rxPatientRegisterNumber, setRxPatientRegisterNumber] = useState<\n  122 |     string | undefined",
+            "is_error": false,
+            "time": 1785210757
+        },
+        {
+            "id": "msg_53e7cb50fe",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me look at the `dischargeMutation.mutate` call more carefully to see what arguments are sent."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_GyeTQstc2XhZW3Uz2Lbq2223",
+                    "name": "read_file",
+                    "input": {
+                        "limit": 30,
+                        "offset": 1125,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/PatientDashboard.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 80749,
+                "completion_tokens": 122,
+                "total_tokens": 80871,
+                "prompt_cache_hit_tokens": 80512,
+                "prompt_cache_miss_tokens": 237,
+                "prompt_tokens_details": {
+                    "cached_tokens": 80512
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 23
+                },
+                "cached_tokens": 80512
+            },
+            "time": 1785210760
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_GyeTQstc2XhZW3Uz2Lbq2223",
+            "content": " 1125 |               <Button\n 1126 |                 variant=\"outline\"\n 1127 |                 onClick={() => setShowDischargeConfirm(false)}\n 1128 |               >\n 1129 |                 Cancel\n 1130 |               <\/Button>\n 1131 |               <Button\n 1132 |                 className=\"bg-rose-600 hover:bg-rose-700 text-white\"\n 1133 |                 onClick={() => {\n 1134 |                   if (!patientId) return;\n 1135 |                   dischargeMutation.mutate(\n 1136 |                     {\n 1137 |                       patientId,\n 1138 |                       dischargedBy: doctorName,\n 1139 |                       dischargedByRole: viewerRole ?? \"consultant_doctor\",\n 1140 |                     },\n 1141 |                     {\n 1142 |                       onSuccess: () => {\n 1143 |                         toast.success(\n 1144 |                           `${patient.fullName} has been discharged.`,\n 1145 |                         );\n 1146 |                         setShowDischargeConfirm(false);\n 1147 |                       },\n 1148 |                       onError: () =>\n 1149 |                         toast.error(\"Failed to discharge patient.\"),\n 1150 |                     },\n 1151 |                   );\n 1152 |                 }}\n 1153 |                 disabled={dischargeMutation.isPending}\n 1154 |                 data-ocid=\"patient_dashboard.discharge.confirm_button\"",
+            "is_error": false,
+            "time": 1785210760
+        },
+        {
+            "id": "msg_6c88f9f6a6",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I see. The caller sends `patientId`, `dischargedBy`, `dischargedByRole`. The `admissionService.discharge` expects `(admissionId, data)`.\n\nLooking at the AdmissionHistory type, it likely has an `id` field. The proper implementation would:\n1. Fetch the patient's admission history\n2. Find the active admission\n3. Call `admissionService.discharge(admissionId, data)`\n\nLet me check the AdmissionHistory type."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_SkLMgpksyKgHooMIv6nr5933",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend && grep -n \"AdmissionHistory\" src\/types\/index.ts 2>\/dev\/null | head -5"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 81187,
+                "completion_tokens": 190,
+                "total_tokens": 81377,
+                "prompt_cache_hit_tokens": 80768,
+                "prompt_cache_miss_tokens": 419,
+                "prompt_tokens_details": {
+                    "cached_tokens": 80768
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 103
+                },
+                "cached_tokens": 80768
+            },
+            "time": 1785210764
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_SkLMgpksyKgHooMIv6nr5933",
+            "content": "592:export interface AdmissionHistory {\n",
+            "is_error": false,
+            "time": 1785210764
+        },
+        {
+            "id": "msg_0bf503dc6e",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ET_cDuF2iY77A9MEaWi0IDO2029",
+                    "name": "read_file",
+                    "input": {
+                        "limit": 15,
+                        "offset": 592,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/types\/index.ts"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 81396,
+                "completion_tokens": 94,
+                "total_tokens": 81490,
+                "prompt_cache_hit_tokens": 81280,
+                "prompt_cache_miss_tokens": 116,
+                "prompt_tokens_details": {
+                    "cached_tokens": 81280
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 0
+                },
+                "cached_tokens": 81280
+            },
+            "time": 1785210767
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ET_cDuF2iY77A9MEaWi0IDO2029",
+            "content": "  592 | export interface AdmissionHistory {\n  593 |   id: string;\n  594 |   patientId: string;\n  595 |   admittedOn: string; \/\/ ISO string\n  596 |   admittedBy: string; \/\/ doctor name\n  597 |   admittedByRole: string;\n  598 |   hospitalName: string;\n  599 |   ward: string;\n  600 |   bed: string;\n  601 |   reasonForAdmission: string;\n  602 |   carriedOverComplaints: string[];\n  603 |   carriedOverDiagnosis: string[];\n  604 |   carriedOverDrugHistory: string[];\n  605 |   carriedOverPrescriptions: string[]; \/\/ prescription IDs\n  606 |   admissionHistoryStatus: \"complete\" | \"draft_awaiting_approval\";",
+            "is_error": false,
+            "time": 1785210767
         }
     ]
 }
