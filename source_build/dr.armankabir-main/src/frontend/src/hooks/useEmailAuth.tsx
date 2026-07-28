@@ -438,3 +438,34 @@ export function useInactivityTimer(onLogout: () => void): InactivityTimerState {
 
   return { showWarning, secondsRemaining, resetTimer };
 }
+
+// ── Patient sign-up helpers ─────────────────────────────────────────────
+
+const PATIENT_SIGNUP_MAP_KEY = 'medicare_patient_signup_map';
+
+function loadSignUpMap(): Record<string, boolean> {
+  try {
+    const raw = localStorage.getItem(PATIENT_SIGNUP_MAP_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch { /* ignore */ }
+  return {};
+}
+
+function saveSignUpMap(map: Record<string, boolean>): void {
+  localStorage.setItem(PATIENT_SIGNUP_MAP_KEY, JSON.stringify(map));
+}
+
+export function setSignUpEnabled(registerNumber: string, enabled: boolean): void {
+  const map = loadSignUpMap();
+  if (enabled) {
+    map[registerNumber] = true;
+  } else {
+    delete map[registerNumber];
+  }
+  saveSignUpMap(map);
+}
+
+export function isSignUpEnabled(registerNumber: string): boolean {
+  const map = loadSignUpMap();
+  return map[registerNumber] === true;
+}
