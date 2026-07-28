@@ -697,28 +697,21 @@ export function useDischargePatient() {
       dischargedBy?: string;
       dischargedByRole?: string;
     }) => {
-      const key = storageKey('patients');
-      const patients = loadFromStorage<any>(key);
-      const updated = patients.map((p: any) =>
-        p.id === data.patientId
-          ? {
-              ...p,
-              status: 'Discharged',
-              isAdmitted: false,
-              patientType: 'outdoor',
-              dischargeDate: new Date().toISOString(),
-            }
-          : p,
+      // Find the active admission and discharge via the API
+      const admissions = await admissionService.getByPatient(data.patientId);
+      const activeAdmission = admissions.find(
+        (a) => a.status === 'active',
       );
-      saveToStorage(key, updated);
-
-      const admissions = loadAdmissionHistory(data.patientId);
-      const updatedAdmissions = admissions.map((a: any) =>
-        a.status === 'active'
-          ? { ...a, status: 'discharged', dischargedOn: new Date().toISOString() }
-          : a,
-      );
-      saveAdmissionHistory(data.patientId, updatedAdmissions);
+      if (activeAdmission) {
+        const admissionId = Number(activeAdmission.id);
+        if (admissionId > 0) {
+          await admissionService.discharge(admissionId, {
+            dischargedBy: data.dischargedBy,
+            dischargeSummary: 'Patient discharged',
+            dischargeDate: new Date().toISOString(),
+          });
+        }
+      }
       return data;
     },
     onSuccess: (_, vars) => {
