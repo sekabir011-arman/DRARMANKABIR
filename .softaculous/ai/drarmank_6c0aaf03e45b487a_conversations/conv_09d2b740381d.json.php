@@ -67,7 +67,7 @@
         }
     ],
     "created_at": 1785091298,
-    "updated_at": 1785327197,
+    "updated_at": 1785327552,
     "messages": [
         {
             "id": "msg_compact",
@@ -4902,6 +4902,116 @@
             "content": "continue",
             "attachments": [],
             "time": 1785327197
+        },
+        {
+            "id": "msg_ba4ca03ce3",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785327541
+        },
+        {
+            "id": "msg_c4f6d2f71d",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me start fixing the files one by one. I'll begin with `useQueries.ts` - the foundation that many other files depend on.\n\nThe strategy:\n1. `useQueries.ts` - Simplify `getDoctorEmail()` to only use `CANONICAL_EMAIL_KEY` (set by EmailAuthProvider on login), remove legacy fallbacks\n2. `useEmailAuth.tsx` - On login\/session restore, call `setCanonicalUserEmail()` so `getDoctorEmail()` works via the context\n3. Each component that reads legacy auth keys gets updated to use proper auth context or the simplified `getDoctorEmail()`\n\nLet me start:\n\n1. Fix `getDoctorEmail()` in `useQueries.ts` - just use CANONICAL_EMAIL_KEY directly, no fallback chain\n2. Add `setCanonicalUserEmail()` calls in `useEmailAuth.tsx` - in signIn and session restore\n3. Fix each component\n\nFor the serial display, I need to use `useEmailAuth` context to check permissions.\n\nFor components like PrescriptionPad, PrescriptionPadPreview, UpgradedPrescriptionEMR - they currently read `medicare_current_doctor` + `medicare_doctors_registry` to find the current doctor's profile. Since these are fallbacks for getting the doctor's name\/email for the prescription header, I should replace them with the email from `CANONICAL_EMAIL_KEY` or from the auth context.\n\nBut many of these are pure display components that don't have direct access to the auth context. The simplest approach:\n- Keep `getDoctorEmail()` but simplify it to only read `CANONICAL_EMAIL_KEY`\n- Keep `setCanonicalUserEmail()` \/ `clearCanonicalUserEmail()`\n- In `useEmailAuth.tsx`, call `setCanonicalUserEmail()` when login\/session restore happens\n- Remove the messier `medicare_current_doctor` \/ `medicare_doctors_registry` fallbacks from `getDoctorEmail()`\n- For `DischargeSummaryTab.tsx`, replace its local `getDoctorEmail()` with the imported one from useQueries\n- For `SerialDisplay.tsx`, wrap in a component that uses `useEmailAuth` or just check token via simpler means\n\nLet me start coding."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_eBQX2ESpKxKhc8MAIshN5777",
+                    "name": "todo_write",
+                    "input": {
+                        "todos": [
+                            {
+                                "priority": "high",
+                                "content": "Fix hooks\/useQueries.ts \u2014 remove legacy auth fallbacks from getDoctorEmail()",
+                                "status": "in_progress"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix hooks\/useEmailAuth.tsx \u2014 set\/clear CANONICAL_EMAIL_KEY in AuthProvider",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix components\/DischargeSummaryTab.tsx \u2014 use imported getDoctorEmail()",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix components\/PatientDashboard.tsx \u2014 replace staff_auth, medicare_current_doctor reads",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix components\/PrescriptionPad.tsx \u2014 replace medicare_current_doctor reads",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix components\/PrescriptionPadPreview.tsx \u2014 replace medicare_current_doctor reads",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix components\/UpgradedPrescriptionEMR.tsx \u2014 replace medicare_current_doctor reads",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix pages\/SerialDisplay.tsx \u2014 replace medicare_current_doctor and app_current_user_email reads",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix pages\/LandingPage.tsx \u2014 replace medicare_doctors_registry reads",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Verify ZERO remaining legacy auth key reads",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Rebuild frontend",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Final report",
+                                "status": "pending"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 80127,
+                "completion_tokens": 859,
+                "total_tokens": 80986,
+                "prompt_cache_hit_tokens": 80000,
+                "prompt_cache_miss_tokens": 127,
+                "prompt_tokens_details": {
+                    "cached_tokens": 80000
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 489
+                },
+                "cached_tokens": 80000
+            },
+            "time": 1785327552
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_eBQX2ESpKxKhc8MAIshN5777",
+            "content": "Todo list updated with 12 items.",
+            "is_error": false,
+            "time": 1785327552
         }
     ]
 }

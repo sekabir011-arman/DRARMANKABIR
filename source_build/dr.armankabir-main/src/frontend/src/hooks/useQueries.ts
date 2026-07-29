@@ -1,4 +1,12 @@
-/**
+export function getDoctorEmail(): string {
+  try {
+    const canonical = localStorage.getItem(CANONICAL_EMAIL_KEY);
+    if (canonical) return canonical;
+    return 'default';
+  } catch {
+    return 'default';
+  }
+}/**
  * getDoctorEmail — returns the current doctor's email for data keying.
  *
  * Uses the canonical email set by the auth provider on login.
