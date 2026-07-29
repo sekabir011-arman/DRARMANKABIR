@@ -58,17 +58,10 @@ function todayKeyLocal(): string {
   return `clinic_serials_${new Date().toISOString().slice(0, 10)}`;
 }
 
-/** Returns true if the current logged-in user is a Consultant Doctor or Staff */
-function canAddWalkIn(): boolean {
-  try {
-    const raw = storage.getItem("medicare_current_doctor");
-    if (!raw) return false;
-    const user = JSON.parse(raw) as { role?: string };
-    const allowedRoles = ["doctor", "consultant_doctor", "staff", "admin"];
-    return allowedRoles.includes(user.role ?? "");
-  } catch {
-    return false;
-  }
+/** Returns true if the given role is allowed to add walk-in patients. */
+function canAddWalkInByRole(role?: string | null): boolean {
+  const allowedRoles = ["doctor", "consultant_doctor", "staff", "admin"];
+  return !!role && allowedRoles.includes(role);
 }
 
 /** All patients from localStorage for search */
