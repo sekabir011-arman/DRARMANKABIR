@@ -7,22 +7,17 @@
     "todos": [
         {
             "priority": "high",
-            "content": "Audit and plan changes for each file with legacy auth keys",
+            "content": "Fix hooks\/useQueries.ts \u2014 remove legacy auth fallbacks from getDoctorEmail()",
             "status": "in_progress"
         },
         {
             "priority": "high",
-            "content": "Fix hooks\/useQueries.ts \u2014 remove legacy auth fallbacks from getDoctorEmail()",
+            "content": "Fix hooks\/useEmailAuth.tsx \u2014 set\/clear CANONICAL_EMAIL_KEY in AuthProvider",
             "status": "pending"
         },
         {
             "priority": "high",
-            "content": "Fix hooks\/useEmailAuth.tsx \u2014 add setCanonicalUserEmail() calls in AuthProvider",
-            "status": "pending"
-        },
-        {
-            "priority": "high",
-            "content": "Fix components\/DischargeSummaryTab.tsx \u2014 use getDoctorEmail() or context",
+            "content": "Fix components\/DischargeSummaryTab.tsx \u2014 use imported getDoctorEmail()",
             "status": "pending"
         },
         {
@@ -72,7 +67,7 @@
         }
     ],
     "created_at": 1785091298,
-    "updated_at": 1785215333,
+    "updated_at": 1785326556,
     "messages": [
         {
             "id": "msg_compact",
@@ -4696,6 +4691,210 @@
             "content": "  160 |       <div className=\"border-b pb-2 mb-3 text-center\">\n  161 |         <h2 className=\"font-bold text-base\">\n  162 |           Dr. Sirajul Islam Medical College Hospital\n  163 |         <\/h2>\n  164 |         <p className=\"text-sm text-gray-600\">Department of General Surgery<\/p>\n  165 |       <\/div>\n  166 |     );\n  167 |   }\n  168 |   \/\/ Chamber fallback \u2014 read full doctor profile from localStorage\n  169 |   const getDoctorProfileFallback = () => {\n  170 |     try {\n  171 |       const sessionId = storage.getItem(\"medicare_current_doctor\");\n  172 |       if (sessionId) {\n  173 |         const registry = JSON.parse(\n  174 |           storageAdapter.getItem(\"medicare_doctors_registry\") || \"[]\",\n  175 |         ) as Array<{ id: string; email: string }>;\n  176 |         const doc = registry.find((d) => d.id === sessionId);\n  177 |         if (doc?.email) {\n  178 |           const profile = JSON.parse(\n  179 |             storage.getItem(`doctor_profile_${doc.email}`) || \"null\",\n  180 |           );\n  181 |           if (profile) return profile;\n  182 |         }\n  183 |       }\n  184 |     } catch {\n  185 |       \/* ignore *\/\n  186 |     }\n  187 |     return null;\n  188 |   };\n  189 |   const profile = getDoctorProfileFallback();\n  190 |   return (\n  191 |     <div className=\"border-b pb-3 mb-3\">\n  192 |       <div className=\"flex justify-between items-start\">\n  193 |         <div>\n  194 |           <h2 className=\"font-bold text-base\">",
             "is_error": false,
             "time": 1785215333
+        },
+        {
+            "id": "msg_ccc1b2c0ba",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785326531
+        },
+        {
+            "id": "msg_9269ff2454",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me understand the approach before making changes. The goal is:\n\n1. Remove ALL reads of `staff_auth`, `medicare_current_doctor`, `medicare_doctors_registry`, `app_current_user_email` from the source.\n2. Replace with the authenticated user from the API\/auth context.\n3. Keep `CANONICAL_EMAIL_KEY` as a lightweight email cache for data keying purposes (since many functions need the email to build localStorage keys for business data which we're NOT migrating yet).\n\nLet me plan the changes for each file:\n\n### 1. `hooks\/useQueries.ts` - `getDoctorEmail()` function\n- Remove fallback chain to `staff_auth`, `medicare_current_doctor`, `medicare_doctors_registry`\n- Keep only the `CANONICAL_EMAIL_KEY` read (it's set by the auth context)\n- The `setCanonicalUserEmail` and `clearCanonicalUserEmail` helpers can stay (they're used to cache the current email)\n\n### 2. `hooks\/useEmailAuth.tsx`\n- Add a call to `setCanonicalUserEmail()` when login succeeds\n- Add a call to `clearCanonicalUserEmail()` when logout happens\n- Keep the `PATIENT_SIGNUP_MAP_KEY` since it's not auth-related, it's a UI helper\n\n### 3. `components\/DischargeSummaryTab.tsx`\n- Replace the local `getDoctorEmail()` function that reads `staff_auth` with the imported `getDoctorEmail()` from `useQueries.ts`\n\n### 4. `components\/PrescriptionPad.tsx`, `PrescriptionPadPreview.tsx`, `UpgradedPrescriptionEMR.tsx`\n- The `getDoctorProfileFallback()` function reads `medicare_current_doctor` and `medicare_doctors_registry`\n- Replace with getting the current doctor's email from `getDoctorEmail()` (which reads `CANONICAL_EMAIL_KEY`)\n\n### 5. `components\/PatientDashboard.tsx`\n- Multiple reads of `medicare_current_doctor` and `medicare_doctors_registry` - these are all within the `PatientDashboard` component which already has access to the auth context via its parent\n- Need to refactor to use an injected or context-based approach\n\nActually, looking more carefully, `PatientDashboard.tsx` is the component file (4743 lines). The `PatientDashboard` component receives `currentRole` and `viewerRole` as props. But the doctor email resolution is happening inside for prescription pad display.\n\nLet me think about the approach differently. The component `PatientDashboard` already has access to the doctor info via `currentDoctor` from `useEmailAuth()` in `App.tsx`. But this component is also used from `PatientProfileWrapper` in `App.tsx` which provides `currentRole` and `viewerRole`.\n\nThe challenge is that `PatientDashboard.tsx` (the component) is shared between doctor view and patient view. The doctor email resolution is needed for keying localStorage data like `visit_form_data_*`.\n\nLet me read the imports and the relevant section of PatientDashboard.tsx to understand the structure.\n\nActually, wait. I need to be more careful. The `components\/PatientDashboard.tsx` is imported by several places:\n\nFrom `App.tsx` line 222: `<PatientDashboard currentRole={dashboardRole} viewerRole={role} \/>`\nFrom `pages\/PatientDashboard.tsx` line 1075: `<PrescriptionPadPreview ... \/>`\n\nWait, `pages\/PatientDashboard.tsx` is a thin wrapper that likely renders `components\/PatientDashboard.tsx`. Let me check.\n\nActually, looking at the grep results:\n- `pages\/PatientDashboard.tsx` - 1166 lines\n- `components\/PatientDashboard.tsx` - 4743 lines\n\nThese are different files. Let me check:\n\nLet me focus on what's practical. The key insight is:\n\n1. `getDoctorEmail()` in `useQueries.ts` is the central function that resolves the doctor's email for data keying\n2. It needs to return the email of the currently authenticated doctor\n3. Currently it falls back through multiple localStorage keys\n4. The clean fix: make it only read `CANONICAL_EMAIL_KEY` (which is set by auth context) and return `'default'` as fallback\n\nThen I need to ensure that `CANONICAL_EMAIL_KEY` is properly set by the auth context on login and cleared on logout.\n\nFor the serial display, `canAddWalkIn()` needs to check the authenticated role. But `SerialDisplay.tsx` doesn't seem to have access to `useEmailAuth()`. Let me check.\n\nLet me also check `PrescriptionPad.tsx` imports to see what's already available.\n\nActually, let me take a more practical approach. I'll:\n\n1. First fix `useQueries.ts` - simplify `getDoctorEmail()`\n2. Fix `useEmailAuth.tsx` - set\/clear canonical email on login\/logout\n3. Fix `DischargeSummaryTab.tsx` - use imported `getDoctorEmail()` \n4. Fix `PrescriptionPad.tsx`, `PrescriptionPadPreview.tsx`, `UpgradedPrescriptionEMR.tsx` - use `getDoctorEmail()` instead of localStorage chain\n5. Fix `SerialDisplay.tsx` - use auth context\n6. Fix `PatientDashboard.tsx` - remove legacy auth key reads\n7. Fix `LandingPage.tsx` - remove `medicare_doctors_registry` reads\n8. Verify no remaining legacy keys\n\nLet me start with the changes."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me now understand the component structure before making changes:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_fZpWxjIAjjCyDVHSaCnK3900",
+                    "name": "read_file",
+                    "input": {
+                        "offset": 1,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/PatientDashboard.tsx",
+                        "limit": 30
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 79022,
+                "completion_tokens": 1306,
+                "total_tokens": 80328,
+                "prompt_cache_hit_tokens": 0,
+                "prompt_cache_miss_tokens": 79022,
+                "prompt_tokens_details": {
+                    "cached_tokens": 0
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 1198
+                }
+            },
+            "time": 1785326546
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_fZpWxjIAjjCyDVHSaCnK3900",
+            "content": "    1 | \/**\n    2 |  * PatientDashboard page \u2014 route-level wrapper.\n    3 |  * Handles data fetching, modals (visit form, prescription EMR),\n    4 |  * and renders the inner PatientDashboardInner component.\n    5 |  *\/\n    6 | import { Badge } from \"@\/components\/ui\/badge\";\n    7 | import { Button } from \"@\/components\/ui\/button\";\n    8 | import {\n    9 |   Dialog,\n   10 |   DialogContent,\n   11 |   DialogHeader,\n   12 |   DialogTitle,\n   13 | } from \"@\/components\/ui\/dialog\";\n   14 | import { ScrollArea } from \"@\/components\/ui\/scroll-area\";\n   15 | import { Skeleton } from \"@\/components\/ui\/skeleton\";\n   16 | import { format } from \"date-fns\";\n   17 | import {\n   18 |   AlertCircle,\n   19 |   ArrowLeft,\n   20 |   BedDouble,\n   21 |   ChevronRight,\n   22 |   Droplets,\n   23 |   LogOut,\n   24 |   MapPin,\n   25 |   Phone,\n   26 |   User,\n   27 | } from \"lucide-react\";\n   28 | import { useEffect, useMemo, useState } from \"react\";\n   29 | import { toast } from \"sonner\";\n   30 | import AdmitPatientDialog from \"..\/components\/AdmitPatientDialog\";",
+            "is_error": false,
+            "time": 1785326546
+        },
+        {
+            "id": "msg_fe4098689c",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me understand the architecture better. The `pages\/PatientDashboard.tsx` is a page-level wrapper, and `components\/PatientDashboard.tsx` is the inner component. The `PatientDashboard` component in `pages\/PatientDashboard.tsx` likely renders `components\/PatientDashboard.tsx` as `PatientDashboardInner` or similar.\n\nNow let me look at what I need to understand about `SerialDisplay.tsx` - does it have access to auth context?"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_Mv3tuZ2lBtSse4FzVYDy3552",
+                    "name": "read_file",
+                    "input": {
+                        "limit": 20,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/pages\/SerialDisplay.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 80635,
+                "completion_tokens": 178,
+                "total_tokens": 80813,
+                "prompt_cache_hit_tokens": 80256,
+                "prompt_cache_miss_tokens": 379,
+                "prompt_tokens_details": {
+                    "cached_tokens": 80256
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 96
+                },
+                "cached_tokens": 80256
+            },
+            "time": 1785326550
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_Mv3tuZ2lBtSse4FzVYDy3552",
+            "content": "    1 | import {\n    2 |   AlertTriangle,\n    3 |   Maximize2,\n    4 |   MonitorPlay,\n    5 |   Plus,\n    6 |   Search,\n    7 |   UserPlus,\n    8 |   Users,\n    9 |   Volume2,\n   10 |   VolumeX,\n   11 |   Wifi,\n   12 |   WifiOff,\n   13 |   X,\n   14 | } from \"lucide-react\";\n   15 | import { AnimatePresence, motion } from \"motion\/react\";\n   16 | import { storage } from \"..\/lib\/storageAdapter\";\n   17 | import {\n   18 |   Component,\n   19 |   type ErrorInfo,\n   20 |   type ReactNode,",
+            "is_error": false,
+            "time": 1785326550
+        },
+        {
+            "id": "msg_90f66259d8",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I have a clear picture of all the files. Let me start making changes. I'll work on each file in a logical order:\n\n1. First fix `hooks\/useQueries.ts` - simplify `getDoctorEmail()` \n2. Then fix `hooks\/useEmailAuth.tsx` - set\/clear canonical email\n3. Then fix each component that reads legacy auth keys\n\nLet me start."
+                },
+                {
+                    "type": "text",
+                    "text": "Now I have a clear picture. Let me start making the changes, working from the foundation up.\n\n**Step 1**: Fix `useQueries.ts` - simplify `getDoctorEmail()` to remove legacy auth key fallbacks."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_EcS3sOHn7VOIH18Ob5oi9850",
+                    "name": "todo_write",
+                    "input": {
+                        "todos": [
+                            {
+                                "priority": "high",
+                                "content": "Fix hooks\/useQueries.ts \u2014 remove legacy auth fallbacks from getDoctorEmail()",
+                                "status": "in_progress"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix hooks\/useEmailAuth.tsx \u2014 set\/clear CANONICAL_EMAIL_KEY in AuthProvider",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix components\/DischargeSummaryTab.tsx \u2014 use imported getDoctorEmail()",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix components\/PatientDashboard.tsx \u2014 replace staff_auth, medicare_current_doctor reads",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix components\/PrescriptionPad.tsx \u2014 replace medicare_current_doctor reads",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix components\/PrescriptionPadPreview.tsx \u2014 replace medicare_current_doctor reads",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix components\/UpgradedPrescriptionEMR.tsx \u2014 replace medicare_current_doctor reads",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix pages\/SerialDisplay.tsx \u2014 replace medicare_current_doctor and app_current_user_email reads",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Fix pages\/LandingPage.tsx \u2014 replace medicare_doctors_registry reads",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Verify ZERO remaining legacy auth key reads",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "high",
+                                "content": "Rebuild frontend",
+                                "status": "pending"
+                            },
+                            {
+                                "priority": "medium",
+                                "content": "Final report",
+                                "status": "pending"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 80982,
+                "completion_tokens": 500,
+                "total_tokens": 81482,
+                "prompt_cache_hit_tokens": 80768,
+                "prompt_cache_miss_tokens": 214,
+                "prompt_tokens_details": {
+                    "cached_tokens": 80768
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 84
+                },
+                "cached_tokens": 80768
+            },
+            "time": 1785326556
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_EcS3sOHn7VOIH18Ob5oi9850",
+            "content": "Todo list updated with 12 items.",
+            "is_error": false,
+            "time": 1785326556
         }
     ]
 }

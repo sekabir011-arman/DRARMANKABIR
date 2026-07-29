@@ -551,23 +551,6 @@ export function getDoctorEmail(): string {
   try {
     const canonical = localStorage.getItem(CANONICAL_EMAIL_KEY);
     if (canonical) return canonical;
-    const raw = localStorage.getItem('staff_auth');
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed?.email) {
-        localStorage.setItem(CANONICAL_EMAIL_KEY, parsed.email);
-        return parsed.email;
-      }
-    }
-    const sessionId = localStorage.getItem('medicare_current_doctor');
-    if (sessionId) {
-      const registry = JSON.parse(localStorage.getItem('medicare_doctors_registry') || '[]');
-      const doctor = registry.find((d: any) => d.id === sessionId);
-      if (doctor?.email) {
-        localStorage.setItem(CANONICAL_EMAIL_KEY, doctor.email);
-        return doctor.email;
-      }
-    }
     return 'default';
   } catch {
     return 'default';
