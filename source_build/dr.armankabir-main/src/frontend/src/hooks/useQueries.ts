@@ -1,6 +1,13 @@
 export function getDoctorEmail(): string {
   try {
     const canonical = localStorage.getItem(CANONICAL_EMAIL_KEY);
+    return canonical ?? 'default';
+  } catch {
+    return 'default';
+  }
+}export function getDoctorEmail(): string {
+  try {
+    const canonical = localStorage.getItem(CANONICAL_EMAIL_KEY);
     if (canonical) return canonical;
     return 'default';
   } catch {
