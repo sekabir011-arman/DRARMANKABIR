@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { storage } from "../lib/storageAdapter";
+import { useEmailAuth } from "../hooks/useEmailAuth";
 import {
   Component,
   type ErrorInfo,
