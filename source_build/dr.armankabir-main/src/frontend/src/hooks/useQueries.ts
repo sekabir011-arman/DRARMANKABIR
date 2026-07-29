@@ -1,4 +1,18 @@
 /**
+ * getDoctorEmail — returns the current doctor's email for data keying.
+ *
+ * Uses the canonical email set by the auth provider on login.
+ * Falls back to 'default' if not available (e.g., patient-only session).
+ * DOES NOT fall back to legacy localStorage auth keys.
+ */
+export function getDoctorEmail(): string {
+  try {
+    const canonical = localStorage.getItem(CANONICAL_EMAIL_KEY);
+    return canonical || 'default';
+  } catch {
+    return 'default';
+  }
+}/**
  * React Query hooks — PHP/MySQL Backend
  *
  * All CRUD operations now target the PHP/MySQL API via the service layer.
