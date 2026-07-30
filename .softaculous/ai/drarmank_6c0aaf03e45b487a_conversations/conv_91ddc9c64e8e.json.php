@@ -82,7 +82,7 @@
         }
     ],
     "created_at": 1785408838,
-    "updated_at": 1785433286,
+    "updated_at": 1785434356,
     "messages": [
         {
             "id": "msg_compact",
@@ -9842,6 +9842,13 @@
             "content": "4495-                authorName={(() => {\n4496-                  try {\n4497-                    const session = storage.getItem(\n4498:                      \"medicare_current_doctor\",\n4499-                    );\n4500-                    if (!session)\n4501-                      return currentRole === \"patient\"\n4502-                        ? patient.fullName\n4503-                        : \"Unknown\";\n4504-                    const registry: Array<{ id: string; name: string }> =\n4505-                      JSON.parse(\n4506-                        storageAdapter.getItem(\"medicare_doctors_registry\") ||\n4507-                          \"[]\",\n4508-                      );\n4509-                    return (\n4510-                      registry.find((d) => d.id === session)?.name ?? \"Unknown\"\n4511-                    );\n4512-                  } catch {\n4513-                    return \"Unknown\";\n4514-                  }\n4515-                })()}\n4516-                currentUser={{\n4517-                  name: (() => {\n4518-                    try {\n4519-                      const session = storage.getItem(\n4520:                        \"medicare_current_doctor\",\n4521-                      );\n4522-                      if (!session)\n4523-                        return currentRole === \"patient\"\n4524-                          ? patient.fullName\n4525-                          : \"Unknown\";\n4526-                      const registry: Array<{ id: string; name: string }> =\n4527-                        JSON.parse(\n4528-                          storageAdapter.getItem(\"medicare_doctors_registry\") ||\n4529-                            \"[]\",\n4530-                        );\n4531-                      return (\n4532-                        registry.find((d) => d.id === session)?.name ??\n4533-                        \"Unknown\"\n4534-                      );\n4535-                    } catch {\n4536-                      return \"Unknown\";\n4537-                    }\n4538-                  })(),\n4539-                  role: viewerRole ?? \"doctor\",\n4540-                  email: (() => {\n4541-                    try {\n4542-                      const session = storage.getItem(\n4543:                        \"medicare_current_doctor\",\n4544-                      );\n4545-                      if (!session) return \"\";\n4546-                      const registry: Array<{ id: string; email?: string }> =\n4547-                        JSON.parse(\n4548-                          storageAdapter.getItem(\"medicare_doctors_registry\") ||\n4549-                            \"[]\",\n4550-                        );\n4551-                      return (\n4552-                        (\n4553-                          registry.find((d) => d.id === session) as {\n4554-                            email?: string;\n4555-                          }\n4556-                        )?.email ?? session\n4557-                      );\n4558-                    } catch {\n4559-                      return \"\";\n4560-                    }\n4561-                  })(),\n4562-                }}\n4563-                admissionDate={\n",
             "is_error": false,
             "time": 1785433286
+        },
+        {
+            "id": "msg_320406f9e2",
+            "role": "user",
+            "content": "CONTINUE",
+            "attachments": [],
+            "time": 1785434356
         }
     ]
 }
