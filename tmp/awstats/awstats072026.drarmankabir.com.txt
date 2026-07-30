@@ -48,10 +48,10 @@ END_MAP
 # MonthHostsKnown   = Number of hosts known
 # MonthHostsUnKnown = Number of hosts unknown
 BEGIN_GENERAL 8
-LastLine 20260729142144 41 7590 10301562393693
+LastLine 20260730174444 37 6874 13309930969968
 FirstTime 0
 LastTime 0
-LastUpdate 20260729231021 41 0 41 0 0
+LastUpdate 20260730214310 37 0 37 0 0
 TotalVisits 0                   
 TotalUnique 0                   
 MonthHostsKnown 0                   
@@ -60,44 +60,44 @@ END_GENERAL
 
 # Misc ID - Pages - Hits - Bandwidth
 BEGIN_MISC 10
-RealPlayerSupport 0 0 0
-WindowsMediaPlayerSupport 0 0 0
-TotalMisc 0 0 0
-JavascriptDisabled 0 0 0
-AddToFavourites 0 20 0
 DirectorSupport 0 0 0
-PDFSupport 0 0 0
+AddToFavourites 0 20 0
 QuickTimeSupport 0 0 0
-JavaEnabled 0 0 0
+TotalMisc 0 0 0
 FlashSupport 0 0 0
+PDFSupport 0 0 0
+WindowsMediaPlayerSupport 0 0 0
+RealPlayerSupport 0 0 0
+JavaEnabled 0 0 0
+JavascriptDisabled 0 0 0
 END_MISC
 
 # Hour - Pages - Hits - Bandwidth - Not viewed Pages - Not viewed Hits - Not viewed Bandwidth
 BEGIN_TIME 24
 0 0 0 0 48 57 43725
-1 0 0 0 28 30 23850
-2 0 0 0 42 50 39750
-3 0 0 0 49 51 40545
-4 0 0 0 29 31 23850
+1 0 0 0 30 32 25440
+2 0 0 0 43 51 40545
+3 0 0 0 51 53 42135
+4 0 0 0 30 32 24645
 5 0 0 0 31 31 24645
-6 0 0 0 27 28 22707
-7 0 0 0 38 44 34980
-8 0 0 0 31 34 27030
-9 0 0 0 35 37 29514
+6 0 0 0 29 30 24297
+7 0 0 0 39 45 35775
+8 0 0 0 32 35 27825
+9 0 0 0 36 38 30309
 10 0 0 0 43 43 34185
-11 0 0 0 31 34 27030
-12 0 0 0 32 35 27825
-13 0 0 0 39 43 34185
+11 0 0 0 34 38 30210
+12 0 0 0 33 36 28620
+13 0 0 0 42 46 36570
 14 0 0 0 29 30 24297
-15 0 0 0 36 38 30210
-16 0 0 0 90 90 72444
-17 0 0 0 47 50 38955
-18 0 0 0 58 63 50979
-19 0 0 0 47 53 42234
-20 0 0 0 40 43 34185
-21 0 0 0 34 37 29415
-22 0 0 0 192 193 153435
-23 0 0 0 316 320 255294
+15 0 0 0 38 40 31800
+16 0 0 0 94 94 75624
+17 0 0 0 52 55 42930
+18 0 0 0 59 64 51774
+19 0 0 0 48 54 43029
+20 0 0 0 41 44 34980
+21 0 0 0 36 39 31005
+22 0 0 0 193 194 154230
+23 0 0 0 317 321 256089
 END_TIME
 
 # Domain - Pages - Hits - Bandwidth
@@ -193,7 +193,7 @@ END_KEYWORDS
 
 # Errors - Hits - Bandwidth
 BEGIN_ERRORS 2
-301 1433 1134465
+301 1470 1163880
 403 12 14904
 END_ERRORS
 
@@ -222,8 +222,8 @@ END_SIDER
 
 # Payload Range - Payload Frequency
 BEGIN_FILESIZE 3
+500-1K 1484
 0-44 6
-500-1K 1447
 1K-2K 12
 END_FILESIZE
 
