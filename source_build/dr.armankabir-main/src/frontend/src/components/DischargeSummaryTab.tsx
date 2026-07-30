@@ -71,10 +71,12 @@ function formatDate(ts: number) {
 
 function getDoctorEmail(): string {
   try {
-    const raw = storage.getItem("staff_auth");
-    if (raw) return (JSON.parse(raw) as { email?: string }).email ?? "default";
-  } catch {}
-  return "default";
+    // Use shared helper that resolves email from auth context (no legacy localStorage keys)
+    const { getDoctorEmail: resolve } = require("../hooks/useQueries");
+    return resolve();
+  } catch {
+    return "default";
+  }
 }
 
 function loadAdmissionDate(patientId: string): string | null {

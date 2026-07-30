@@ -82,7 +82,7 @@
         }
     ],
     "created_at": 1785408838,
-    "updated_at": 1785424615,
+    "updated_at": 1785425403,
     "messages": [
         {
             "id": "msg_compact",
@@ -5648,6 +5648,13 @@
             "content": "    1 | \/**\n    2 |  * DischargeSummaryTab \u2014 Auto-generated discharge summary for admitted patients.\n    3 |  * Enhanced: \"Generate Discharge Summary\" button pulls all localStorage data.\n    4 |  * Finalize & Print locks the summary; Download PDF uses window.print().\n    5 |  *\/\n    6 | import { Badge } from \"@\/components\/ui\/badge\";\n    7 | import { Button } from \"@\/components\/ui\/button\";\n    8 | import { format } from \"date-fns\";\n    9 | import {\n   10 |   CheckSquare,\n   11 |   ClipboardCheck,\n   12 |   Download,\n   13 |   FileText,\n   14 |   Lock,\n   15 |   Printer,\n   16 |   RefreshCw,\n   17 |   Square,\n   18 |   Unlock,\n   19 | } from \"lucide-react\";\n   20 | import { useState } from \"react\";\n   21 | import { toast } from \"sonner\";\n   22 | import { storage } from \"..\/lib\/storageAdapter\";\n   23 | import type {\n   24 |   ClinicalNote,\n   25 |   Encounter,\n   26 |   Patient,\n   27 |   Prescription,\n   28 |   Visit,\n   29 | } from \"..\/types\";\n   30 |",
             "is_error": false,
             "time": 1785424615
+        },
+        {
+            "id": "msg_db53619942",
+            "role": "user",
+            "content": "CONTINUE",
+            "attachments": [],
+            "time": 1785425403
         }
     ]
 }
