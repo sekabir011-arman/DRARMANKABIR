@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { getPrescriptionHeaderImage } from "../hooks/useQueries";
+import { getDoctorEmail, getPrescriptionHeaderImage } from "../hooks/useQueries";
 import type { Prescription } from "../types";
 import type { PrescriptionHeaderType } from "../types";
 import { getPrescriptionHeaderText } from "./PrescriptionHeaderPanel";

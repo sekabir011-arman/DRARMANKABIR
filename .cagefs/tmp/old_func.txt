@@ -1,0 +1,21 @@
+  // Chamber fallback — read full doctor profile from localStorage
+  const getDoctorProfileFallback = () => {
+    try {
+      const sessionId = storage.getItem("medicare_current_doctor");
+      if (sessionId) {
+        const registry = JSON.parse(
+          storageAdapter.getItem("medicare_doctors_registry") || "[]",
+        ) as Array<{ id: string; email: string }>;
+        const doc = registry.find((d) => d.id === sessionId);
+        if (doc?.email) {
+          const profile = JSON.parse(
+            storage.getItem(`doctor_profile_${doc.email}`) || "null",
+          );
+          if (profile) return profile;
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+    return null;
+  };

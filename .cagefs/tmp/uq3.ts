@@ -562,7 +562,7 @@ export function getVisitFormData(visitId: string | number | null, email?: string
     const raw = localStorage.getItem(`visit_form_data_${id}_${usedEmail}`);
     if (raw) return JSON.parse(raw);
   } catch { /* ignore */ }
-  for (let i = 0; i < localStorage.length; i++) {
+  for (let i = ; i < localStorage.length; i++) {
     const key = localStorage.key(i);
     if (key?.startsWith(`visit_form_data_${id}_`)) {
       try {

@@ -523,6 +523,7 @@ function SerialDisplayInner() {
   const { currentDoctor } = useEmailAuth();
   const allowWalkIn = canAddWalkInByRole(currentDoctor?.role);
   const [showWalkIn, setShowWalkIn] = useState(false);
+  const allowWalkIn = canAddWalkIn();
   const prevNowServingIdRef = useRef<string | null>(null);
   // Real-time clock
   useEffect(() => {
