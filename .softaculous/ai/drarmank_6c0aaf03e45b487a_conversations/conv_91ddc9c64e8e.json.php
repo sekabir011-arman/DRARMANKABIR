@@ -82,7 +82,7 @@
         }
     ],
     "created_at": 1785408838,
-    "updated_at": 1785421094,
+    "updated_at": 1785421701,
     "messages": [
         {
             "id": "msg_compact",
@@ -4826,6 +4826,13 @@
             "content": "Path outside project directory",
             "is_error": true,
             "time": 1785421094
+        },
+        {
+            "id": "msg_5f02f1961e",
+            "role": "user",
+            "content": "CONTINUE",
+            "attachments": [],
+            "time": 1785421701
         }
     ]
 }
