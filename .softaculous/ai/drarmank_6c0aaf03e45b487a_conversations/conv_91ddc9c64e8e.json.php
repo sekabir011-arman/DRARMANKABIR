@@ -82,7 +82,7 @@
         }
     ],
     "created_at": 1785408838,
-    "updated_at": 1785427766,
+    "updated_at": 1785429137,
     "messages": [
         {
             "id": "msg_compact",
@@ -7412,6 +7412,13 @@
             "content": " 3605 |                     <\/h3>\n 3606 |                   <\/div>\n 3607 |                   <AdmissionTimeline\n 3608 |                     patientId={String(patientId)}\n 3609 |                     doctorEmail={(() => {\n 3610 |                       try {\n 3611 |                         const session = storage.getItem(\n 3612 |                           \"medicare_current_doctor\",\n 3613 |                         );\n 3614 |                         if (!session) return \"default\";\n 3615 |                         const registry: Array<{ id: string; email: string }> =\n 3616 |                           JSON.parse(\n 3617 |                             storageAdapter.getItem(\"medicare_doctors_registry\") ||\n 3618 |                               \"[]\",\n 3619 |                           );\n 3620 |                         return (\n 3621 |                           registry.find((d) => d.id === session)?.email ??\n 3622 |                           \"default\"\n 3623 |                         );\n 3624 |                       } catch {\n 3625 |                         return \"default\";\n 3626 |                       }\n 3627 |                     })()}\n 3628 |                   \/>\n 3629 |                 <\/div>",
             "is_error": false,
             "time": 1785427766
+        },
+        {
+            "id": "msg_c8ffeb7b65",
+            "role": "user",
+            "content": "CONTINUE",
+            "attachments": [],
+            "time": 1785429137
         }
     ]
 }
