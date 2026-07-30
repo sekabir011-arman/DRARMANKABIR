@@ -82,7 +82,7 @@
         }
     ],
     "created_at": 1785408838,
-    "updated_at": 1785425425,
+    "updated_at": 1785426167,
     "messages": [
         {
             "id": "msg_compact",
@@ -5931,6 +5931,13 @@
             "content": "   78 | function formatDate(ts: number) {\n   79 |   return format(new Date(Number(ts \/ 1_000_000n)), \"d MMM yyyy\");\n   80 | }\n   81 | \n   82 | function getDoctorEmail(): string {\n   83 |   try {\n   84 |     \/\/ Use shared helper that resolves email from auth context (no legacy localStorage keys)\n   85 |     const { getDoctorEmail: resolve } = require(\"..\/hooks\/useQueries\");\n   86 |     return resolve();\n   87 |   } catch {\n   88 |     return \"default\";\n   89 |   }\n   90 | }\n   91 | \n   92 | function loadAdmissionDate(patientId: string): string | null {\n   93 |   try {\n   94 |     for (let i = 0; i < storage.length; i++) {\n   95 |       const k = storage.key(i);\n   96 |       if (!k?.startsWith(\"admissionHistory_\")) continue;\n   97 |       const arr = JSON.parse(storage.getItem(k) ?? \"[]\") as Array<{",
             "is_error": false,
             "time": 1785425425
+        },
+        {
+            "id": "msg_c848d6e7b1",
+            "role": "user",
+            "content": "CONTINUE",
+            "attachments": [],
+            "time": 1785426167
         }
     ]
 }

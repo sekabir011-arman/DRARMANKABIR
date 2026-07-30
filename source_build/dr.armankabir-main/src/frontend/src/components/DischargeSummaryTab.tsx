@@ -79,14 +79,8 @@ function formatDate(ts: number) {
   return format(new Date(Number(ts / 1_000_000n)), "d MMM yyyy");
 }
 
-function getDoctorEmail(): string {
-  try {
-    // Use shared helper that resolves email from auth context (no legacy localStorage keys)
-    const { getDoctorEmail: resolve } = require("../hooks/useQueries");
-    return resolve();
-  } catch {
-    return "default";
-  }
+function getDoctorEmail_(): string {
+  return getDoctorEmail();
 }
 
 function loadAdmissionDate(patientId: string): string | null {
