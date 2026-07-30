@@ -1,4 +1,13 @@
-/**
+function getDoctorEmail(): string {
+  try {
+    const raw = storage.getItem("doctor_profile");
+    if (raw) {
+      const profile = JSON.parse(raw) as { email?: string };
+      if (profile?.email) return profile.email;
+    }
+  } catch {}
+  return "default";
+}/**
  * DischargeSummaryTab — Auto-generated discharge summary for admitted patients.
  * Enhanced: "Generate Discharge Summary" button pulls all localStorage data.
  * Finalize & Print locks the summary; Download PDF uses window.print().
