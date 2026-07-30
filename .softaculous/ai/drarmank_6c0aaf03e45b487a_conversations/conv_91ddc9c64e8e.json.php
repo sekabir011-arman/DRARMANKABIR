@@ -82,7 +82,7 @@
         }
     ],
     "created_at": 1785408838,
-    "updated_at": 1785429189,
+    "updated_at": 1785432143,
     "messages": [
         {
             "id": "msg_compact",
@@ -7905,6 +7905,281 @@
             "content": " 4429 |                     } catch {\n 4430 |                       return \"Unknown\";\n 4431 |                     }\n 4432 |                   })()}\n 4433 |                   viewerRole={viewerRole ?? \"doctor\"}\n 4434 |                   latestVitals={latestVitals}\n 4435 |                   patientWeightKg={patient.weight}\n 4436 |                   prescriptions={prescriptions}\n 4437 |                   latestVisit={latestVisit}\n 4438 |                 \/>\n 4439 |               ) : (\n 4440 |                 <div className=\"text-center py-12 bg-white rounded-xl border border-indigo-100\">\n 4441 |                   <p className=\"text-sm text-gray-400\">\n 4442 |                     Daily Progress Note is only available for admitted patients.\n 4443 |                   <\/p>\n 4444 |                 <\/div>\n 4445 |               )}\n 4446 |             <\/TabsContent>\n 4447 | \n 4448 |             {\/* \u2500\u2500 SOAP NOTES (classic daily progress) \u2500\u2500 *\/}\n 4449 |             <TabsContent value=\"soap_notes\">\n 4450 |               <DailyProgress\n 4451 |                 patientId={patientId}\n 4452 |                 doctorEmail={(() => {\n 4453 |                   try {\n 4454 |                     const session = storage.getItem(\n 4455 |                       \"medicare_current_doctor\",\n 4456 |                     );\n 4457 |                     if (!session) return \"default\";\n 4458 |                     const registry: Array<{ id: string; email: string }> =",
             "is_error": false,
             "time": 1785429189
+        },
+        {
+            "id": "msg_c6e88fdba7",
+            "role": "user",
+            "content": "CONTINUE",
+            "attachments": [],
+            "time": 1785432121
+        },
+        {
+            "id": "msg_6651eb0bab",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me continue fixing the remaining IIFEs in PatientDashboard.tsx. I need to fix:\n\n1. Line 4411-4432: `authorName` IIFE (first one)\n2. Line 4452-4468: `doctorEmail` IIFE (second one)\n3. Line 4471-4489: `authorName` IIFE (third one)\n4. Line 4528-4548: `authorName` IIFE (fourth one)\n5. Line 455-4571: `name` IIFE in currentUser\n6. Line 4573-4592: `email` IIFE in currentUser\n\nLet me do these one by one with edit_file."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me fix the remaining IIFEs. Starting with **authorName** (first one):"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_eydWs3fZL1WJlQUmEQOT4065",
+                    "name": "read_file",
+                    "input": {
+                        "limit": 25,
+                        "offset": 4411,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/components\/PatientDashboard.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 65736,
+                "completion_tokens": 266,
+                "total_tokens": 66002,
+                "prompt_tokens_details": {
+                    "cached_tokens": 59904
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 150
+                },
+                "prompt_cache_hit_tokens": 59904,
+                "prompt_cache_miss_tokens": 5832,
+                "cached_tokens": 59904
+            },
+            "time": 1785432125
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_eydWs3fZL1WJlQUmEQOT4065",
+            "content": " 4411 |                   authorName={(() => {\n 4412 |                     try {\n 4413 |                       const email = getDoctorEmail();\n 4414 |                       if (email) {\n 4415 |                         const p = JSON.parse(storage.getItem(`doctor_profile_${email}`) || \"null\");\n 4416 |                         if (p?.name) return p.name;\n 4417 |                       }\n 4418 |                     } catch {}\n 4419 |                     return currentRole === \"patient\"\n 4420 |                       ? patient?.fullName ?? \"Unknown\"\n 4421 |                       : \"Unknown\";\n 4422 |                   })()}\n 4423 |                   viewerRole={viewerRole ?? \"doctor\"}\n 4424 |                   latestVitals={latestVitals}\n 4425 |                   patientWeightKg={patient.weight}\n 4426 |                   prescriptions={prescriptions}\n 4427 |                   latestVisit={latestVisit}\n 4428 |                 \/>\n 4429 |               ) : (\n 4430 |                 <div className=\"text-center py-12 bg-white rounded-xl border border-indigo-100\">\n 4431 |                   <p className=\"text-sm text-gray-400\">\n 4432 |                     Daily Progress Note is only available for admitted patients.\n 4433 |                   <\/p>\n 4434 |                 <\/div>\n 4435 |               )}",
+            "is_error": false,
+            "time": 1785432125
+        },
+        {
+            "id": "msg_aa55240ec2",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "This already looks fixed! The perl script actually worked. Let me check the remaining ones."
+                },
+                {
+                    "type": "text",
+                    "text": "The first one is already fixed! Let me check the remaining ones:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_krfryVyYP12R4lPsBE6r9171",
+                    "name": "read_file",
+                    "input": {
+                        "limit": 100,
+                        "offset": 444,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/components\/PatientDashboard.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 66304,
+                "completion_tokens": 129,
+                "total_tokens": 66433,
+                "prompt_tokens_details": {
+                    "cached_tokens": 65920
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 18
+                },
+                "prompt_cache_hit_tokens": 65920,
+                "prompt_cache_miss_tokens": 384,
+                "cached_tokens": 65920
+            },
+            "time": 1785432128
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_krfryVyYP12R4lPsBE6r9171",
+            "content": "  444 |           data-ocid=\"red_flag_monitor.refresh_button\"\n  445 |         >\n  446 |           Refresh\n  447 |         <\/button>\n  448 |       <\/div>\n  449 |     );\n  450 |   }\n  451 | \n  452 |   return (\n  453 |     <div className=\"space-y-3\" data-ocid=\"red_flag_monitor.panel\">\n  454 |       {visCrit.length > 0 && (\n  455 |         <div className=\"bg-red-50 border-2 border-red-400 rounded-xl overflow-hidden\">\n  456 |           <div className=\"bg-red-500 px-4 py-2 flex items-center justify-between\">\n  457 |             <div className=\"flex items-center gap-2 text-white\">\n  458 |               <AlertTriangle className=\"w-4 h-4\" \/>\n  459 |               <span className=\"font-bold text-sm\">\n  460 |                 \ud83d\udea8 RED FLAGS DETECTED ({visCrit.length})\n  461 |               <\/span>\n  462 |             <\/div>\n  463 |             <button\n  464 |               type=\"button\"\n  465 |               onClick={runChecks}\n  466 |               className=\"text-xs text-white\/80 hover:text-white underline\"\n  467 |               data-ocid=\"red_flag_monitor.refresh_button\"\n  468 |             >\n  469 |               \u21bb Refresh\n  470 |             <\/button>\n  471 |           <\/div>\n  472 |           <div className=\"px-4 py-3 space-y-3\">\n  473 |             <div className=\"border-b border-red-200\" \/>\n  474 |             {visCrit.map((alert) => {\n  475 |               const banner = AI_SUGGESTION_BANNERS[alert.alertType];\n  476 |               return (\n  477 |                 <div\n  478 |                   key={alert.id}\n  479 |                   className=\"space-y-1.5\"\n  480 |                   data-ocid={`red_flag_monitor.critical.${alert.alertType}`}\n  481 |                 >\n  482 |                   <div className=\"flex items-start justify-between gap-2\">\n  483 |                     <div className=\"flex-1\">\n  484 |                       <p className=\"text-sm font-semibold text-red-800\">\n  485 |                         \u2022 {alert.message}\n  486 |                       <\/p>\n  487 |                       <p className=\"text-xs text-red-600 mt-0.5\">\n  488 |                         {alert.details}\n  489 |                       <\/p>\n  490 |                     <\/div>\n  491 |                     <button\n  492 |                       type=\"button\"\n  493 |                       onClick={() => dismissRfAlert(alert.id)}\n  494 |                       className=\"text-red-400 hover:text-red-600 shrink-0\"\n  495 |                       title=\"Dismiss for this session\"\n  496 |                       data-ocid=\"red_flag_monitor.dismiss_button\"\n  497 |                     >\n  498 |                       <XCircle className=\"w-4 h-4\" \/>\n  499 |                     <\/button>\n  500 |                   <\/div>\n  501 |                   {banner && (\n  502 |                     <div\n  503 |                       className={`rounded-lg px-3 py-2 border text-xs flex items-start gap-1.5 ${banner.color}`}\n  504 |                     >\n  505 |                       <span className=\"shrink-0\">{banner.icon}<\/span>\n  506 |                       <span className=\"font-medium text-amber-800 flex-1\">\n  507 |                         {banner.text}\n  508 |                       <\/span>\n  509 |                       <button\n  510 |                         type=\"button\"\n  511 |                         onClick={() => dismissRfAlert(`${alert.id}_banner`)}\n  512 |                         className=\"ml-auto shrink-0 text-amber-500 hover:text-amber-700\"\n  513 |                         title=\"Dismiss for this session\"\n  514 |                       >\n  515 |                         <XCircle className=\"w-3.5 h-3.5\" \/>\n  516 |                       <\/button>\n  517 |                     <\/div>\n  518 |                   )}\n  519 |                 <\/div>\n  520 |               );\n  521 |             })}\n  522 |           <\/div>\n  523 |         <\/div>\n  524 |       )}\n  525 |       {visWarn.length > 0 && (\n  526 |         <div className=\"bg-amber-50 border border-amber-300 rounded-xl overflow-hidden\">\n  527 |           <div className=\"bg-amber-400 px-4 py-2 flex items-center gap-2 text-amber-900\">\n  528 |             <AlertTriangle className=\"w-4 h-4\" \/>\n  529 |             <span className=\"font-bold text-sm\">\n  530 |               \u26a0\ufe0f WARNINGS ({visWarn.length})\n  531 |             <\/span>\n  532 |           <\/div>\n  533 |           <div className=\"px-4 py-3 space-y-2\">\n  534 |             {visWarn.map((alert) => (\n  535 |               <div\n  536 |                 key={alert.id}\n  537 |                 className=\"flex items-start justify-between gap-2\"\n  538 |                 data-ocid={`red_flag_monitor.warning.${alert.alertType}`}\n  539 |               >\n  540 |                 <div className=\"flex-1\">\n  541 |                   <p className=\"text-sm font-semibold text-amber-800\">\n  542 |                     \u2022 {alert.message}\n  543 |                   <\/p>",
+            "is_error": false,
+            "time": 1785432128
+        },
+        {
+            "id": "msg_5cfd598249",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The first authorName and doctorEmail IIFEs are already fixed by our changes. Let me check the remaining lines that still contain medicare_current_doctor:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_Eln2MfnBoVcAK1mtZDUv5947",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && grep -n -B2 -A12 '\"medicare_current_doctor\"' components\/PatientDashboard.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 67637,
+                "completion_tokens": 121,
+                "total_tokens": 67758,
+                "prompt_tokens_details": {
+                    "cached_tokens": 66176
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 32
+                },
+                "prompt_cache_hit_tokens": 66176,
+                "prompt_cache_miss_tokens": 1461,
+                "cached_tokens": 66176
+            },
+            "time": 1785432131
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_Eln2MfnBoVcAK1mtZDUv5947",
+            "content": "4443-                  try {\n4444-                    const session = storage.getItem(\n4445:                      \"medicare_current_doctor\",\n4446-                    );\n4447-                    if (!session) return \"default\";\n4448-                    const registry: Array<{ id: string; email: string }> =\n4449-                      JSON.parse(\n4450-                        storageAdapter.getItem(\"medicare_doctors_registry\") ||\n4451-                          \"[]\",\n4452-                      );\n4453-                    const doc = registry.find((d) => d.id === session);\n4454-                    return doc?.email ?? \"default\";\n4455-                  } catch {\n4456-                    return \"default\";\n4457-                  }\n--\n4462-                  try {\n4463-                    const session = storage.getItem(\n4464:                      \"medicare_current_doctor\",\n4465-                    );\n4466-                    if (!session)\n4467-                      return currentRole === \"patient\"\n4468-                        ? patient.fullName\n4469-                        : \"Unknown\";\n4470-                    const registry: Array<{ id: string; name: string }> =\n4471-                      JSON.parse(\n4472-                        storageAdapter.getItem(\"medicare_doctors_registry\") ||\n4473-                          \"[]\",\n4474-                      );\n4475-                    const doc = registry.find((d) => d.id === session);\n4476-                    return doc?.name ?? \"Unknown\";\n--\n4519-                  try {\n4520-                    const session = storage.getItem(\n4521:                      \"medicare_current_doctor\",\n4522-                    );\n4523-                    if (!session)\n4524-                      return currentRole === \"patient\"\n4525-                        ? patient.fullName\n4526-                        : \"Unknown\";\n4527-                    const registry: Array<{ id: string; name: string }> =\n4528-                      JSON.parse(\n4529-                        storageAdapter.getItem(\"medicare_doctors_registry\") ||\n4530-                          \"[]\",\n4531-                      );\n4532-                    return (\n4533-                      registry.find((d) => d.id === session)?.name ?? \"Unknown\"\n--\n4541-                    try {\n4542-                      const session = storage.getItem(\n4543:                        \"medicare_current_doctor\",\n4544-                      );\n4545-                      if (!session)\n4546-                        return currentRole === \"patient\"\n4547-                          ? patient.fullName\n4548-                          : \"Unknown\";\n4549-                      const registry: Array<{ id: string; name: string }> =\n4550-                        JSON.parse(\n4551-                          storageAdapter.getItem(\"medicare_doctors_registry\") ||\n4552-                            \"[]\",\n4553-                        );\n4554-                      return (\n4555-                        registry.find((d) => d.id === session)?.name ??\n--\n4564-                    try {\n4565-                      const session = storage.getItem(\n4566:                        \"medicare_current_doctor\",\n4567-                      );\n4568-                      if (!session) return \"\";\n4569-                      const registry: Array<{ id: string; email?: string }> =\n4570-                        JSON.parse(\n4571-                          storageAdapter.getItem(\"medicare_doctors_registry\") ||\n4572-                            \"[]\",\n4573-                        );\n4574-                      return (\n4575-                        (\n4576-                          registry.find((d) => d.id === session) as {\n4577-                            email?: string;\n4578-                          }\n",
+            "is_error": false,
+            "time": 1785432132
+        },
+        {
+            "id": "msg_9a0d6f08d9",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "OK so there are 5 remaining IIFE blocks:\n\n1. Lines 4442-4458: `doctorEmail` IIFE for `DailyProgress` (line 4452)\n2. Lines 4461-4477: `authorName` IIFE for `DailyProgress` (line 4471)\n3. Lines 4519-4534: `authorName` IIFE for second `DailyProgress` (line 4528)\n4. Lines 4541-4556: `name` IIFE in `currentUser` (line 455)\n5. Lines 4564-4582: `email` IIFE in `currentUser` (line 4573)\n\nLet me read each context and fix them."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_HuywvUfkxxz4YhLUnVGI8436",
+                    "name": "read_file",
+                    "input": {
+                        "limit": 40,
+                        "offset": 443,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/components\/PatientDashboard.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 68517,
+                "completion_tokens": 251,
+                "total_tokens": 68768,
+                "prompt_tokens_details": {
+                    "cached_tokens": 67712
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 154
+                },
+                "prompt_cache_hit_tokens": 67712,
+                "prompt_cache_miss_tokens": 805,
+                "cached_tokens": 67712
+            },
+            "time": 1785432136
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_HuywvUfkxxz4YhLUnVGI8436",
+            "content": "  443 |           className=\"text-xs text-green-600 hover:text-green-800 underline\"\n  444 |           data-ocid=\"red_flag_monitor.refresh_button\"\n  445 |         >\n  446 |           Refresh\n  447 |         <\/button>\n  448 |       <\/div>\n  449 |     );\n  450 |   }\n  451 | \n  452 |   return (\n  453 |     <div className=\"space-y-3\" data-ocid=\"red_flag_monitor.panel\">\n  454 |       {visCrit.length > 0 && (\n  455 |         <div className=\"bg-red-50 border-2 border-red-400 rounded-xl overflow-hidden\">\n  456 |           <div className=\"bg-red-500 px-4 py-2 flex items-center justify-between\">\n  457 |             <div className=\"flex items-center gap-2 text-white\">\n  458 |               <AlertTriangle className=\"w-4 h-4\" \/>\n  459 |               <span className=\"font-bold text-sm\">\n  460 |                 \ud83d\udea8 RED FLAGS DETECTED ({visCrit.length})\n  461 |               <\/span>\n  462 |             <\/div>\n  463 |             <button\n  464 |               type=\"button\"\n  465 |               onClick={runChecks}\n  466 |               className=\"text-xs text-white\/80 hover:text-white underline\"\n  467 |               data-ocid=\"red_flag_monitor.refresh_button\"\n  468 |             >\n  469 |               \u21bb Refresh\n  470 |             <\/button>\n  471 |           <\/div>\n  472 |           <div className=\"px-4 py-3 space-y-3\">\n  473 |             <div className=\"border-b border-red-200\" \/>\n  474 |             {visCrit.map((alert) => {\n  475 |               const banner = AI_SUGGESTION_BANNERS[alert.alertType];\n  476 |               return (\n  477 |                 <div\n  478 |                   key={alert.id}\n  479 |                   className=\"space-y-1.5\"\n  480 |                   data-ocid={`red_flag_monitor.critical.${alert.alertType}`}\n  481 |                 >\n  482 |                   <div className=\"flex items-start justify-between gap-2\">",
+            "is_error": false,
+            "time": 1785432136
+        },
+        {
+            "id": "msg_f2da038f8b",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me find the exact line numbers for each remaining IIFE block in the file."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_bggfcwiGuEi2tw014EAj1383",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && grep -n \"medicare_current_doctor\\|medicare_doctors_registry\" components\/PatientDashboard.tsx > \/tmp\/remaining.txt && cat \/tmp\/remaining.txt"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 69261,
+                "completion_tokens": 121,
+                "total_tokens": 69382,
+                "prompt_tokens_details": {
+                    "cached_tokens": 68736
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 17
+                },
+                "prompt_cache_hit_tokens": 68736,
+                "prompt_cache_miss_tokens": 525,
+                "cached_tokens": 68736
+            },
+            "time": 1785432140
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_bggfcwiGuEi2tw014EAj1383",
+            "content": "4445:                      \"medicare_current_doctor\",\n4450:                        storageAdapter.getItem(\"medicare_doctors_registry\") ||\n4464:                      \"medicare_current_doctor\",\n4472:                        storageAdapter.getItem(\"medicare_doctors_registry\") ||\n4521:                      \"medicare_current_doctor\",\n4529:                        storageAdapter.getItem(\"medicare_doctors_registry\") ||\n4543:                        \"medicare_current_doctor\",\n4551:                          storageAdapter.getItem(\"medicare_doctors_registry\") ||\n4566:                        \"medicare_current_doctor\",\n4571:                          storageAdapter.getItem(\"medicare_doctors_registry\") ||\n",
+            "is_error": false,
+            "time": 1785432140
+        },
+        {
+            "id": "msg_3d10b816f1",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me read the complete context for each block.\n\nBlock 1: Lines 4438-4459 (doctorEmail IIFE for DailyProgress)\nLet me read around line 4438-4459."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_vAO2QOAUfCck7vNMVE0o7690",
+                    "name": "read_file",
+                    "input": {
+                        "limit": 40,
+                        "offset": 4438,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/components\/PatientDashboard.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 69534,
+                "completion_tokens": 140,
+                "total_tokens": 69674,
+                "prompt_tokens_details": {
+                    "cached_tokens": 69376
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 42
+                },
+                "prompt_cache_hit_tokens": 69376,
+                "prompt_cache_miss_tokens": 158,
+                "cached_tokens": 69376
+            },
+            "time": 1785432143
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_vAO2QOAUfCck7vNMVE0o7690",
+            "content": " 4438 |             {\/* \u2500\u2500 SOAP NOTES (classic daily progress) \u2500\u2500 *\/}\n 4439 |             <TabsContent value=\"soap_notes\">\n 4440 |               <DailyProgress\n 4441 |                 patientId={patientId}\n 4442 |                 doctorEmail={(() => {\n 4443 |                   try {\n 4444 |                     const session = storage.getItem(\n 4445 |                       \"medicare_current_doctor\",\n 4446 |                     );\n 4447 |                     if (!session) return \"default\";\n 4448 |                     const registry: Array<{ id: string; email: string }> =\n 4449 |                       JSON.parse(\n 4450 |                         storageAdapter.getItem(\"medicare_doctors_registry\") ||\n 4451 |                           \"[]\",\n 4452 |                       );\n 4453 |                     const doc = registry.find((d) => d.id === session);\n 4454 |                     return doc?.email ?? \"default\";\n 4455 |                   } catch {\n 4456 |                     return \"default\";\n 4457 |                   }\n 4458 |                 })()}\n 4459 |                 currentRole={currentRole}\n 4460 |                 viewerRole={viewerRole ?? \"doctor\"}\n 4461 |                 authorName={(() => {\n 4462 |                   try {\n 4463 |                     const session = storage.getItem(\n 4464 |                       \"medicare_current_doctor\",\n 4465 |                     );\n 4466 |                     if (!session)\n 4467 |                       return currentRole === \"patient\"\n 4468 |                         ? patient.fullName\n 4469 |                         : \"Unknown\";\n 4470 |                     const registry: Array<{ id: string; name: string }> =\n 4471 |                       JSON.parse(\n 4472 |                         storageAdapter.getItem(\"medicare_doctors_registry\") ||\n 4473 |                           \"[]\",\n 4474 |                       );\n 4475 |                     const doc = registry.find((d) => d.id === session);\n 4476 |                     return doc?.name ?? \"Unknown\";\n 4477 |                   } catch {",
+            "is_error": false,
+            "time": 1785432143
         }
     ]
 }

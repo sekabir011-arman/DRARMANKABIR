@@ -4410,25 +4410,15 @@ export default function PatientDashboardInner({
                     doctorEmail={getDoctorEmail()}
                   authorName={(() => {
                     try {
-                      const session = storage.getItem(
-                        "medicare_current_doctor",
-                      );
-                      if (!session)
-                        return currentRole === "patient"
-                          ? patient.fullName
-                          : "Unknown";
-                      const registry: Array<{ id: string; name: string }> =
-                        JSON.parse(
-                          storageAdapter.getItem("medicare_doctors_registry") ||
-                            "[]",
-                        );
-                      return (
-                        registry.find((d) => d.id === session)?.name ??
-                        "Unknown"
-                      );
-                    } catch {
-                      return "Unknown";
-                    }
+                      const email = getDoctorEmail();
+                      if (email) {
+                        const p = JSON.parse(storage.getItem(`doctor_profile_${email}`) || "null");
+                        if (p?.name) return p.name;
+                      }
+                    } catch {}
+                    return currentRole === "patient"
+                      ? patient?.fullName ?? "Unknown"
+                      : "Unknown";
                   })()}
                   viewerRole={viewerRole ?? "doctor"}
                   latestVitals={latestVitals}
