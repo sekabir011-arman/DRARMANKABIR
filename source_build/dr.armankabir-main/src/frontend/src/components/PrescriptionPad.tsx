@@ -453,7 +453,7 @@ export default function PrescriptionPad({
         const profile = JSON.parse(
           storage.getItem(`doctor_profile_${email}`) || "null",
         );
-        if (profile) return profile;
+        if (profile?.name) return profile.name;
       }
     } catch {
       /* ignore */
