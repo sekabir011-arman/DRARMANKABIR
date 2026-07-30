@@ -4407,25 +4407,7 @@ export default function PatientDashboardInner({
               {canViewDailyProgress ? (
                 <DailyProgressNote
                   patientId={String(patientId)}
-                  doctorEmail={(() => {
-                    try {
-                      const session = storage.getItem(
-                        "medicare_current_doctor",
-                      );
-                      if (!session) return "default";
-                      const registry: Array<{ id: string; email: string }> =
-                        JSON.parse(
-                          storageAdapter.getItem("medicare_doctors_registry") ||
-                            "[]",
-                        );
-                      return (
-                        registry.find((d) => d.id === session)?.email ??
-                        "default"
-                      );
-                    } catch {
-                      return "default";
-                    }
-                  })()}
+                    doctorEmail={getDoctorEmail()}
                   authorName={(() => {
                     try {
                       const session = storage.getItem(
