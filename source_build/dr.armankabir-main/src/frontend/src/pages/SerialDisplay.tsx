@@ -1,4 +1,9 @@
-import {
+/** Returns true if the current logged-in user is a Consultant Doctor or Staff */
+function canAddWalkIn(currentDoctor: { role?: string } | null): boolean {
+  if (!currentDoctor?.role) return false;
+  const allowedRoles = ["doctor", "consultant_doctor", "staff", "admin"];
+  return allowedRoles.includes(currentDoctor.role);
+}import {
   AlertTriangle,
   Maximize2,
   MonitorPlay,
