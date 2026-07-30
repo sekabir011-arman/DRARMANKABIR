@@ -29,6 +29,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { storage } from "../lib/storageAdapter";
+import { getDoctorEmail } from "../hooks/useQueries";
 import type {
   ClinicalNote,
   Encounter,
