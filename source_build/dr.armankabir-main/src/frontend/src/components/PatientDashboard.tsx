@@ -1468,7 +1468,7 @@ function HistoryTabContent({
                         const stored = getVisitFormData(v.id) || {};
                         stored.showToPatient = !showToPatient;
                         storage.setItem(
-                          `visit_form_data_${v.id}_${(storage.getItem("staff_auth") ? JSON.parse(storage.getItem("staff_auth") || "{}").email : null) || "default"}`,
+                          `visit_form_data_${v.id}_${getDoctorEmail()}`,
                           JSON.stringify(stored),
                         );
                         toast.success(
