@@ -1,4 +1,9 @@
 /** Returns true if the current logged-in user is a Consultant Doctor or Staff */
+function canAddWalkIn(currentDoctorRole?: string): boolean {
+  if (!currentDoctorRole) return false;
+  const allowedRoles = ["doctor", "consultant_doctor", "staff", "admin"];
+  return allowedRoles.includes(currentDoctorRole);
+}/** Returns true if the current logged-in user is a Consultant Doctor or Staff */
 function canAddWalkIn(role?: string): boolean {
   const allowedRoles = ["doctor", "consultant_doctor", "staff", "admin"];
   return allowedRoles.includes(role ?? "");
