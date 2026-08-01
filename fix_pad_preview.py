@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fix the remaining getDoctorDisplayName block in PrescriptionPadPreview.tsx."""
+"""Fix the getDoctorDisplayName legacy block in PrescriptionPadPreview.tsx."""
 import sys
 
 path = "source_build/dr.armankabir-main/src/frontend/src/components/PrescriptionPadPreview.tsx"
@@ -51,8 +51,8 @@ if count == 1:
         f.write(content)
     print("Replaced and saved")
 elif not count:
-    print("ERROR: block not found")
+    print("ERROR: block not found - check current state")
     sys.exit(1)
 else:
-    print("ERROR: multiple occurrences")
+    print("ERROR: multiple occurrences - aborting")
     sys.exit(1)
