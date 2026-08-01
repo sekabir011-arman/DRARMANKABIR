@@ -82,9 +82,6 @@ if count == 1:
     with open(path, "w", encoding="utf-8") as f:
         f.write(content)
     print("Replaced successfully")
-elif count == :
-    print("ERROR: block not found - file may be corrupted")
-    sys.exit(1)
-else:
-    print("ERROR: multiple occurrences - aborting")
+elif count != 1:
+    print("ERROR: expected exactly 1 occurrence, aborting")
     sys.exit(1)
