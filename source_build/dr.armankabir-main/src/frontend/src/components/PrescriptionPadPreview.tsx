@@ -12,6 +12,20 @@
       /* ignore */
     }
     return "Dr. Arman Kabir (ZOSID)";
+  }  // Get doctor name for signature
+  function getDoctorDisplayName(): string {
+    try {
+      const email = getDoctorEmail();
+      if (email) {
+        const profile = JSON.parse(
+          storage.getItem(`doctor_profile_${email}`) || "null",
+        );
+        if (profile?.name) return profile.name;
+      }
+    } catch {
+      /* ignore */
+    }
+    return "Dr. Arman Kabir (ZOSID)";
   }  function getDoctorDisplayName(): string {
     try {
       const email = getDoctorEmail();
