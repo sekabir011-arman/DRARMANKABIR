@@ -2,6 +2,37 @@
                   try {
                     const email = getDoctorEmail();
                     if (email) {
+                      const p = JSON.parse(
+                        storage.getItem(`doctor_profile_${email}`) || "null",
+                      );
+                      if (p?.name) return p.name;
+                    }
+                  } catch {}
+                  return currentRole === "patient"
+                    ? (patient?.fullName ?? "Unknown")
+                    : "Unknown";
+                })()}
+                currentUser={{
+                  name: (() => {
+                    try {
+                      const email = getDoctorEmail();
+                      if (email) {
+                        const p = JSON.parse(
+                          storage.getItem(`doctor_profile_${email}`) || "null",
+                        );
+                        if (p?.name) return p.name;
+                      }
+                    } catch {}
+                    return currentRole === "patient"
+                      ? (patient?.fullName ?? "Unknown")
+                      : "Unknown";
+                  })(),
+                  role: viewerRole ?? "doctor",
+                  email: getDoctorEmail(),
+                }}                authorName={(() => {
+                  try {
+                    const email = getDoctorEmail();
+                    if (email) {
                       const p = JSON.parse(storage.getItem(`doctor_profile_${email}`) || "null");
                       if (p?.name) return p.name;
                     }
