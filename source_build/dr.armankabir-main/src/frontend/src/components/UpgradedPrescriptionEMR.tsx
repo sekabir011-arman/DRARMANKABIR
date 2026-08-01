@@ -1689,34 +1689,13 @@ function UpgradedPrescriptionEMRInner(props: UpgradedPrescriptionEMRProps) {
 
   function getDoctorInfo() {
     try {
-      // Try per-doctor profile key first (matches useQueries.ts pattern)
-      const sessionId = storage.getItem("medicare_current_doctor");
-      if (sessionId) {
-        const registry = JSON.parse(
-          storageAdapter.getItem("medicare_doctors_registry") || "[]",
-        ) as Array<{ id: string; email: string }>;
-        const doctor = registry.find((d) => d.id === sessionId);
-        if (doctor?.email) {
-          const profileRaw = storage.getItem(
-            `doctor_profile_${doctor.email}`,
-          );
-          if (profileRaw) {
-            const profile = JSON.parse(profileRaw);
-            if (profile) return profile;
-          }
+      const email = getDoctorEmail();
+      if (email) {
+        const profileRaw = storage.getItem(`doctor_profile_${email}`);
+        if (profileRaw) {
+          const profile = JSON.parse(profileRaw);
+          if (profile) return profile;
         }
-      }
-    } catch {
-      /* ignore */
-    }
-    try {
-      // Fallback: legacy key
-      const data = storage.getItem("medicare_doctors_data");
-      if (data) {
-        const parsed = JSON.parse(data);
-        const doc =
-          parsed.drArman || (Array.isArray(parsed) ? parsed[0] : null) || null;
-        if (doc) return doc;
       }
     } catch {
       /* ignore */

@@ -82,7 +82,7 @@
         }
     ],
     "created_at": 1785408838,
-    "updated_at": 1785570526,
+    "updated_at": 1785587245,
     "messages": [
         {
             "id": "msg_compact",
@@ -755,6 +755,240 @@
             "content": "CONTINUE",
             "attachments": [],
             "time": 1785570526
+        },
+        {
+            "id": "msg_e059408bde",
+            "role": "user",
+            "content": "CONTINUE",
+            "attachments": [],
+            "time": 1785587217
+        },
+        {
+            "id": "msg_76d7c17b68",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Good. I can see:\n\n1. **UpgradedPrescriptionEMR.tsx**: imports `getDoctorEmail` from `..\/hooks\/useQueries` already. Has `useEmailAuth` with `currentDoctor`. I should replace `getDoctorInfo()` function to use `getDoctorEmail()` + `doctor_profile_${email}` directly.\n\n2. **PrescriptionPadPreview.tsx**: imports `getDoctorEmail` from `..\/hooks\/useQueries`. I should replace `getDoctorProfile()` and `getDoctorDisplayName()` to use `getDoctorEmail()`.\n\n3. **PatientDashboard.tsx**: at line 4684-473, there's another `currentUser` block with legacy IIFEs. Need to check if this block is inside the same HandoverSystem or elsewhere \u2014 the earlier grep showed lines 4688, 4696, 4711, 4716. Note the file seems to have been edited already at lines 4675-4683 (which has the NEW pattern with getDoctorEmail). So lines 4684-473 is ANOTHER `currentUser` block that still has legacy code. Let me look at the surrounding context to determine which component this is in and what imports are available. The block at 4675-4683 uses `getDoctorEmail`, `storage`, `currentRole`, `patient?.fullName` (with optional chaining). The one at 4684-473 uses `currentRole`, `patient.fullName` (no optional chaining), `viewerRole`, `storageAdapter`. So this is a different component in the same file.\n\nLet me check what's around line 4675 to identify the component and verify imports (getDoctorEmail imported at line 245 per earlier grep). Since `getDoctorEmail` is already imported in PatientDashboard.tsx (line 245), I can replace the legacy block at 4684-473 with the same pattern used at 4675-4683.\n\nLet me first look at the context above line 4675 to identify which component this block belongs to, and check whether `viewerRole` etc. are still relevant.\n\nActually, let me just do the replacement - the pattern at 4675-4683 is the target format:\n\n```jsx\ncurrentUser={{\n  name: (() => {\n    try {\n      const email = getDoctorEmail();\n      if (email) {\n        const p = JSON.parse(storage.getItem(`doctor_profile_${email}`) || \"null\");\n        if (p?.name) return p.name;\n      }\n    } catch {}\n    return currentRole === \"patient\"\n      ? (patient?.fullName ?? \"Unknown\")\n      : \"Unknown\";\n  })(),\n  role: viewerRole ?? \"doctor\",\n  email: getDoctorEmail(),\n}}\n```\n\nWait, but I need to check the surrounding component - the block at 4684-473 has `viewerRole`, `patient`, `currentRole`, `storageAdapter`. Let me read a bit above 4675 to see the full context and the authorName block that precedes it."
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me see the full context of the remaining PatientDashboard.tsx block to identify which component it belongs to:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_QStbewAMAVXDuhd8QFmQ9602",
+                    "name": "read_file",
+                    "input": {
+                        "limit": 90,
+                        "offset": 462,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/components\/PatientDashboard.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 23098,
+                "completion_tokens": 766,
+                "total_tokens": 23864,
+                "prompt_tokens_details": {
+                    "cached_tokens": 0
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 646
+                },
+                "prompt_cache_hit_tokens": 0,
+                "prompt_cache_miss_tokens": 23098
+            },
+            "time": 1785587225
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_QStbewAMAVXDuhd8QFmQ9602",
+            "content": "  462 |     text: \"Immediate: Oral glucose 15\u201320g if conscious; Dextrose 50% 50ml IV if unconscious\",\n  463 |   },\n  464 |   RespiratoryFailure: {\n  465 |     color: \"bg-amber-50 border-amber-300\",\n  466 |     icon: \"\ud83d\udca8\",\n  467 |     text: \"Oxygen supplementation? \u2192 Target SpO\u2082 \u226594%, consider non-rebreather mask or NIV\",\n  468 |   },\n  469 |   AsthmaExacerbation: {\n  470 |     color: \"bg-amber-50 border-amber-300\",\n  471 |     icon: \"\ud83d\udca8\",\n  472 |     text: \"Oxygen supplementation? \u2192 Target SpO\u2082 \u226594%, consider non-rebreather mask\",\n  473 |   },\n  474 | };\n  475 | \n  476 | \/\/ \u2500\u2500 Red Flag Monitor \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n  477 | function RedFlagMonitor({\n  478 |   patientId,\n  479 |   latestVitals,\n  480 |   allInvestigations,\n  481 |   prescriptions,\n  482 |   diagnoses,\n  483 | }: {\n  484 |   patientId: number;\n  485 |   latestVitals: Record<string, string> | null;\n  486 |   allInvestigations: Array<{\n  487 |     name: string;\n  488 |     result: string;\n  489 |     unit?: string;\n  490 |     date?: string;\n  491 |   }>;\n  492 |   prescriptions: Prescription[];\n  493 |   diagnoses: string[];\n  494 | }) {\n  495 |   const [rfAlerts, setRfAlerts] = useState<ExtendedAlert[]>([]);\n  496 |   const [rfTrendAlerts, setRfTrendAlerts] = useState<TrendAlert[]>([]);\n  497 |   const [dismissedIds, setDismissedIds] = useState<Set<string>>(() => {\n  498 |     try {\n  499 |       const raw = sessionStorage.getItem(`dismissed_flags_${patientId}`);\n  500 |       return raw ? new Set(JSON.parse(raw) as string[]) : new Set<string>();\n  501 |     } catch {\n  502 |       return new Set<string>();\n  503 |     }\n  504 |   });\n  505 |   const rfIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);\n  506 | \n  507 |   const buildAlertInput = useCallback((): ExtendedAlertInput => {\n  508 |     const v = latestVitals ?? {};\n  509 |     const bpParts = (v.bloodPressure ?? \"\").split(\"\/\");\n  510 |     const sBP = bpParts[0] ? Number.parseInt(bpParts[0]) : undefined;\n  511 |     const dBP = bpParts[1] ? Number.parseInt(bpParts[1]) : undefined;\n  512 |     const hr = v.pulse ? Number.parseFloat(v.pulse) : undefined;\n  513 |     const temp = v.temperature ? Number.parseFloat(v.temperature) : undefined;\n  514 |     const rr = v.respiratoryRate\n  515 |       ? Number.parseFloat(v.respiratoryRate)\n  516 |       : undefined;\n  517 |     const spo2 = v.oxygenSaturation\n  518 |       ? Number.parseFloat(v.oxygenSaturation)\n  519 |       : undefined;\n  520 |     const getLabVal = (keys: string[]): number | undefined => {\n  521 |       for (const key of keys) {\n  522 |         const row = allInvestigations.find(\n  523 |           (r) =>\n  524 |             (r.name ?? \"\").toLowerCase().includes(key.toLowerCase()) &&\n  525 |             r.result,\n  526 |         );\n  527 |         if (row) {\n  528 |           const n = Number.parseFloat(row.result);\n  529 |           if (!Number.isNaN(n)) return n;\n  530 |         }\n  531 |       }\n  532 |       return undefined;\n  533 |     };\n  534 |     const creatRows = allInvestigations\n  535 |       .filter(\n  536 |         (r) => (r.name ?? \"\").toLowerCase().includes(\"creatinine\") && r.result,\n  537 |       )\n  538 |       .sort((a, b) => (b.date ?? \"\").localeCompare(a.date ?? \"\"));\n  539 |     const creat = creatRows[0]\n  540 |       ? Number.parseFloat(creatRows[0].result)\n  541 |       : undefined;\n  542 |     const creatPrev = creatRows[1]\n  543 |       ? Number.parseFloat(creatRows[1].result)\n  544 |       : undefined;\n  545 |     const medications = prescriptions.flatMap((rx) => rx.medications ?? []);\n  546 |     return {\n  547 |       vitals: {\n  548 |         systolicBP: !Number.isNaN(sBP ?? Number.NaN) ? sBP : undefined,\n  549 |         diastolicBP: !Number.isNaN(dBP ?? Number.NaN) ? dBP : undefined,\n  550 |         heartRate: !Number.isNaN(hr ?? Number.NaN) ? hr : undefined,\n  551 |         temperature: !Number.isNaN(temp ?? Number.NaN) ? temp : undefined,",
+            "is_error": false,
+            "time": 1785587225
+        },
+        {
+            "id": "msg_4e8bcd2d11",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Hmm, the read_file output is off \u2014 it's showing different line numbers than the grep. It seems the read_file offset\/limit parameters are not mapping to the actual file lines consistently. The grep reported line 4688 for `medicare_current_doctor` in PatientDashboard.tsx, but read_file with offset 467 shows different content.\n\nWait, actually looking at the grep output earlier:\n```\nsrc\/components\/PatientDashboard.tsx:4688:                        \"medicare_current_doctor\",\nsrc\/components\/PatientDashboard.tsx:4696:                          storageAdapter.getItem(\"medicare_doctors_registry\") ||\nsrc\/components\/PatientDashboard.tsx:4711:                        \"medicare_current_doctor\",\nsrc\/components\/PatientDashboard.tsx:4716:                          storageAdapter.getItem(\"medicare_doctors_registry\") ||\n```\n\nAnd read_file offset 4675 showed:\n```\n4675 |                     if (email) {\n4676 |                       const p = JSON.parse(storage.getItem(`doctor_profile_${email}`) || \"null\");\n...\n4684 |                 currentUser={{\n4685 |                   name: (() => {\n4686 |                     try {\n4687 |                       const session = storage.getItem(\n4688 |                         \"medicare_current_doctor\",\n```\n\nSo the legacy block IS at lines 4684-473, which I saw in the earlier read at offset 4675. That matches the grep. The offset I used (4675) showed the right content. Good.\n\nSo the remaining legacy block in PatientDashboard.tsx is the `currentUser` at 4684-473 with the old IIFEs. The one above (authorName at 4667-4683) was already fixed to the new pattern. So I need to replace this currentUser block.\n\nNow let me do all four fixes:\n\n1. **PatientDashboard.tsx** lines 4684-473: Replace `currentUser` IIFEs with new pattern.\n\n2. **UpgradedPrescriptionEMR.tsx** `getDoctorInfo()` (169-1725): Replace with getDoctorEmail-based lookup. The file already imports `getDoctorEmail` and uses `currentDoctor` from useEmailAuth. Actually, looking at line 719-720: `const { currentDoctor } = useEmailAuth();`. So I could simplify getDoctorInfo to use getDoctorEmail directly:\n\n```ts\nfunction getDoctorInfo() {\n  try {\n    const email = getDoctorEmail();\n    if (email) {\n      const profileRaw = storage.getItem(`doctor_profile_${email}`);\n      if (profileRaw) {\n        const profile = JSON.parse(profileRaw);\n        if (profile) return profile;\n      }\n    }\n  } catch {\n    \/* ignore *\/\n  }\n  return null;\n}\n```\n\nThis keeps the per-doctor profile lookup without the legacy keys. It also uses `storage` which is imported.\n\n3. **PrescriptionPadPreview.tsx** `getDoctorProfile()` (171-190) and `getDoctorDisplayName()` (353-372): Replace with getDoctorEmail-based lookup:\n\n```ts\nconst getDoctorProfile = () => {\n  try {\n    const email = getDoctorEmail();\n    if (email) {\n      const profile = JSON.parse(\n        storage.getItem(`doctor_profile_${email}`) || \"null\",\n      );\n      if (profile) return profile;\n    }\n  } catch {\n    \/* ignore *\/\n  }\n  return fallbackDoctorInfo;\n};\n```\n\nWait, does PrescriptionPadPreview import `storage`? Let me check. The imports listed lines 1-21 don't show storage import. Let me grep for storage in that file.\n\nActually let me check what's imported in PrescriptionPadPreview \u2014 from the read at lines 1-21, I see imports from useQueries (getDoctorEmail, getPrescriptionHeaderImage), types, PrescriptionHeaderPanel, PrescriptionHelpers. No `storage` import visible. But the code uses `storage.getItem` \u2014 so maybe `storage` is imported further down or it's a global. Let me grep.\n\nAlso for `getDoctorDisplayName` in PrescriptionPadPreview, replace with:\n\n```ts\nfunction getDoctorDisplayName(): string {\n  try {\n    const email = getDoctorEmail();\n    if (email) {\n      const profile = JSON.parse(\n        storage.getItem(`doctor_profile_${email}`) || \"null\",\n      );\n      if (profile?.name) return profile.name;\n    }\n  } catch {\n    \/* ignore *\/\n  }\n  return \"Dr. Arman Kabir (ZOSID)\";\n}\n```\n\nLet me check the storage import in PrescriptionPadPreview and UpgradedPrescriptionEMR first."
+                },
+                {
+                    "type": "text",
+                    "text": "The read_file line mapping is inconsistent with grep, but I've confirmed the legacy blocks. Let me check `storage`\/`storageAdapter` imports in both remaining files:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_A20REYSXOega0xa1vP7A0765",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend && grep -n \"storageAdapter\\|import { storage\\|from \\\"..\/lib\/storageAdapter\\\"\\|from \\\"@\/lib\/storageAdapter\\\"\" src\/components\/PrescriptionPadPreview.tsx src\/components\/UpgradedPrescriptionEMR.tsx | head -20"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 25035,
+                "completion_tokens": 1134,
+                "total_tokens": 26169,
+                "prompt_tokens_details": {
+                    "cached_tokens": 23808
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 979
+                },
+                "prompt_cache_hit_tokens": 23808,
+                "prompt_cache_miss_tokens": 1227,
+                "cached_tokens": 23808
+            },
+            "time": 1785587234
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_A20REYSXOega0xa1vP7A0765",
+            "content": "src\/components\/PrescriptionPadPreview.tsx:176:          storageAdapter.getItem(\"medicare_doctors_registry\") || \"[]\",\nsrc\/components\/PrescriptionPadPreview.tsx:358:          storageAdapter.getItem(\"medicare_doctors_registry\") || \"[]\",\n",
+            "is_error": false,
+            "time": 1785587234
+        },
+        {
+            "id": "msg_5de3724b8f",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Interesting! `PrescriptionPadPreview.tsx` uses `storage` and `storageAdapter` but doesn't import them explicitly in the first 21 lines. Let me check whether they're imported elsewhere in the file, or whether `storage` is a global. Also check `UpgradedPrescriptionEMR.tsx` for `storage`."
+                },
+                {
+                    "type": "text",
+                    "text": "`storage` isn't imported in the first 21 lines of PrescriptionPadPreview.tsx \u2014 let me check if it's imported elsewhere or a global, and check UpgradedPrescriptionEMR too:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_MORy5jme0ODuzZl8gtSN5723",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend && echo \"=== PrescriptionPadPreview storage refs ===\" && grep -n \"storage\" src\/components\/PrescriptionPadPreview.tsx | head -20 && echo \"=== UpgradedPrescriptionEMR storage refs ===\" && grep -n \"storage\" src\/components\/UpgradedPrescriptionEMR.tsx | head -20 && echo \"=== storageAdapter lib exports ===\" && grep -n \"export\" src\/lib\/storageAdapter.ts | head -30"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 26239,
+                "completion_tokens": 276,
+                "total_tokens": 26515,
+                "prompt_tokens_details": {
+                    "cached_tokens": 26112
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 70
+                },
+                "prompt_cache_hit_tokens": 26112,
+                "prompt_cache_miss_tokens": 127,
+                "cached_tokens": 26112
+            },
+            "time": 1785587237
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_MORy5jme0ODuzZl8gtSN5723",
+            "content": "=== PrescriptionPadPreview storage refs ===\n91:\/\/ normalization helper \u2014 accepts unknown prescription shape from storage\n173:      const sessionId = storage.getItem(\"medicare_current_doctor\");\n176:          storageAdapter.getItem(\"medicare_doctors_registry\") || \"[]\",\n181:            storage.getItem(`doctor_profile_${doc.email}`) || \"null\",\n355:      const sessionId = storage.getItem(\"medicare_current_doctor\");\n358:          storageAdapter.getItem(\"medicare_doctors_registry\") || \"[]\",\n363:            storage.getItem(`doctor_profile_${doc.email}`) || \"null\",\n=== UpgradedPrescriptionEMR storage refs ===\n938:        const raw = storage.getItem(DRAFT_KEY);\n982:      storage.setItem(\n1511:            const raw = storage.getItem(key);\n1533:          if (storage.getItem(directKey)) latestVisitKey = directKey;\n1536:          const raw = storage.getItem(latestVisitKey);\n1581:            storage.setItem(latestVisitKey, JSON.stringify(visitData));\n1594:        return JSON.parse(storage.getItem(snapshotKey) || \"{}\");\n1631:    storage.setItem(snapshotKey, JSON.stringify(existing));\n1632:    storage.removeItem(DRAFT_KEY);\n1646:            return JSON.parse(storage.getItem(apptKey) ?? \"[]\") as Record<\n1671:        storage.setItem(apptKey, JSON.stringify([appt, ...existingAppts]));\n1694:        const profileRaw = storage.getItem(`doctor_profile_${email}`);\n1835:                            storage.removeItem(\n2562:                                    storage.getItem(auditKey) || \"[]\",\n2575:                                  storage.setItem(\n=== storageAdapter lib exports ===\n15:export const storage = {\n",
+            "is_error": false,
+            "time": 1785587238
+        },
+        {
+            "id": "msg_8c077be587",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "So `storage` and `storageAdapter` are globals (probably declared in a global.d.ts or via window augmentation). Both files use `storage` freely without importing. `storageAdapter` was exported from storageAdapter.ts at some point but only `storage` is exported now (line 15: `export const storage = {`). Wait \u2014 grep only showed `export const storage` at line 15. Is `storageAdapter` still exported? The grep for \"export\" in storageAdapter.ts only showed line 15. So `storageAdapter` may not exist anymore as an export! That means the legacy code using `storageAdapter.getItem(...)` may actually be broken \u2014 another reason to remove it.\n\nLet me verify: grep for storageAdapter in storageAdapter.ts."
+                },
+                {
+                    "type": "text",
+                    "text": "`storage` is a global in both files. Note: `storageAdapter` is NOT exported from storageAdapter.ts anymore (only `storage` is) \u2014 so the legacy code is already broken. Let me verify and then make all 4 fixes:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_JlQmkPuz5MuRNbzYmiuW7109",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend && grep -n \"storageAdapter\" src\/lib\/storageAdapter.ts src\/lib\/global.d.ts src\/globals.d.ts 2>\/dev\/null; echo \"---\"; grep -rn \"declare.*storage\\b\\|const storage\\b\\|window.storage\" src\/lib\/*.d.ts src\/**\/*.d.ts 2>\/dev\/null | head -10"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 26901,
+                "completion_tokens": 348,
+                "total_tokens": 27249,
+                "prompt_tokens_details": {
+                    "cached_tokens": 26496
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 157
+                },
+                "prompt_cache_hit_tokens": 26496,
+                "prompt_cache_miss_tokens": 405,
+                "cached_tokens": 26496
+            },
+            "time": 1785587242
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_JlQmkPuz5MuRNbzYmiuW7109",
+            "content": "src\/lib\/storageAdapter.ts:8: *   import { storage } from '..\/lib\/storageAdapter';\n---\n",
+            "is_error": false,
+            "time": 1785587242
+        },
+        {
+            "id": "msg_9452267120",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "So `storageAdapter` is not defined anywhere anymore \u2014 the legacy code referencing `storageAdapter.getItem(...)` would be a compile error if TypeScript strict about it. But since it's used in the current code and presumably compiles, maybe `storageAdapter` is declared globally in some `.d.ts`. Let me do a quick check for where storageAdapter is declared."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_lr3smlcAwwP5Fabj7bB07999",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend && grep -rn \"storageAdapter\" src\/ --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.d.ts\" -l | head; echo \"---declarations---\"; grep -rn \"declare const storageAdapter\\|var storageAdapter\\|const storageAdapter\" src\/ --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.d.ts\" | head"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 27284,
+                "completion_tokens": 223,
+                "total_tokens": 27507,
+                "prompt_tokens_details": {
+                    "cached_tokens": 27136
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 74
+                },
+                "prompt_cache_hit_tokens": 27136,
+                "prompt_cache_miss_tokens": 148,
+                "cached_tokens": 27136
+            },
+            "time": 1785587245
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_lr3smlcAwwP5Fabj7bB07999",
+            "content": "src\/components\/NewPrescriptionMode.tsx\nsrc\/components\/InvestigationPayment.tsx\nsrc\/components\/TreatmentTemplates.ts\nsrc\/components\/MoneyReceipt.tsx\nsrc\/components\/PrescriptionForm.tsx\nsrc\/components\/DailyProgressNote.tsx\nsrc\/components\/TestimonialsSection.tsx\nsrc\/components\/PrescriptionHeaderPanel.tsx\nsrc\/components\/ConsentForm.tsx\nsrc\/components\/PatientTimeline.tsx\n---declarations---\n",
+            "is_error": false,
+            "time": 1785587245
         }
     ]
 }
