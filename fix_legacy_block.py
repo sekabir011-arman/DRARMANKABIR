@@ -6,6 +6,7 @@ path = "source_build/dr.armankabir-main/src/frontend/src/components/PatientDashb
 with open(path, "r", encoding="utf-8") as f:
     content = f.read()
 
+# The legacy currentUser block (unique - contains medicare_current_doctor)
 old_block = '''                currentUser={{
                   name: (() => {
                     try {
