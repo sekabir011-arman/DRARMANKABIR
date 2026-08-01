@@ -82,7 +82,7 @@
         }
     ],
     "created_at": 1785408838,
-    "updated_at": 1785569522,
+    "updated_at": 1785570526,
     "messages": [
         {
             "id": "msg_compact",
@@ -748,6 +748,13 @@
             "content": "    1 | import { Button } from \"@\/components\/ui\/button\";\n    2 | import { Input } from \"@\/components\/ui\/input\";\n    3 | import { Label } from \"@\/components\/ui\/label\";\n    4 | import { Textarea } from \"@\/components\/ui\/textarea\";\n    5 | import { format } from \"date-fns\";\n    6 | import { Download, Edit2, Eye, Printer, Upload, X } from \"lucide-react\";\n    7 | import { useRef, useState } from \"react\";\n    8 | import {\n    9 |   getDoctorEmail,\n   10 |   getPrescriptionHeaderImage,\n   11 | } from \"..\/hooks\/useQueries\";\n   12 | import type { Prescription } from \"..\/types\";\n   13 | import { getPrescriptionHeaderText } from \".\/PrescriptionHeaderPanel\";\n   14 | import {\n   15 |   clearDoctorSignature,\n   16 |   getDoctorSignature,\n   17 |   getPrescriptionHeaderHtml,\n   18 |   getSignatureHtml,\n   19 |   numberAdviceLines,\n   20 |   setDoctorSignature,\n   21 | } from \".\/PrescriptionHelpers\";\n   22 | \n   23 | interface RxDrug {\n   24 |   id?: string;\n   25 |   drugForm?: string;\n   26 |   route?: string;\n   27 |   routeBn?: string;\n   28 |   drugName?: string;\n   29 |   brandName?: string;\n   30 |   nameType?: \"brand\" | \"generic\";\n   31 |   dose?: string;\n   32 |   duration?: string;\n   33 |   durationBn?: string;\n   34 |   instructions?: string;\n   35 |   instructionBn?: string;\n   36 |   frequency?: string;\n   37 |   frequencyBn?: string;\n   38 |   specialInstruction?: string;\n   39 |   specialInstructionBn?: string;\n   40 |   name?: string;\n   41 |   form?: string;\n   42 |   isPrn?: boolean;\n   43 |   prnCondition?: string;\n   44 | }\n   45 | \n   46 | interface ClinicalSummary {\n   47 |   cc?: string;\n   48 |   pmh?: string;\n   49 |   dh?: string;\n   50 |   oe?: string;\n   51 |   historyPersonal?: string;\n   52 |   historyFamily?: string;\n   53 |   historyImmunization?: string;\n   54 |   historyAllergy?: string;\n   55 |   historyOthers?: string;\n   56 |   investigation?: string;\n   57 |   adviceNewInv?: string;\n   58 |   adviceText?: string;\n   59 |   diagnosis?: string;\n   60 |   bloodGroup?: string;",
             "is_error": false,
             "time": 1785569522
+        },
+        {
+            "id": "msg_1a292f45b7",
+            "role": "user",
+            "content": "CONTINUE",
+            "attachments": [],
+            "time": 1785570526
         }
     ]
 }
