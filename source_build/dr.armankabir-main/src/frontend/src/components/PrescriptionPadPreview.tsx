@@ -170,18 +170,12 @@ function HeaderBlock({
   // Dynamic fallback — read from localStorage doctor profile
   const getDoctorProfile = () => {
     try {
-      const sessionId = storage.getItem("medicare_current_doctor");
-      if (sessionId) {
-        const registry = JSON.parse(
-          storageAdapter.getItem("medicare_doctors_registry") || "[]",
-        ) as Array<{ id: string; email: string }>;
-        const doc = registry.find((d) => d.id === sessionId);
-        if (doc?.email) {
-          const profile = JSON.parse(
-            storage.getItem(`doctor_profile_${doc.email}`) || "null",
-          );
-          if (profile) return profile;
-        }
+      const email = getDoctorEmail();
+      if (email) {
+        const profile = JSON.parse(
+          storage.getItem(`doctor_profile_${email}`) || "null",
+        );
+        if (profile) return profile;
       }
     } catch {
       /* ignore */

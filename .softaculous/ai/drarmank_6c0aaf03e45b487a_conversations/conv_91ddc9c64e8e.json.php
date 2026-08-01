@@ -82,7 +82,7 @@
         }
     ],
     "created_at": 1785408838,
-    "updated_at": 1785600235,
+    "updated_at": 1785603851,
     "messages": [
         {
             "id": "msg_compact",
@@ -5061,6 +5061,27 @@
             "content": "  345 |   const hasHistory =\n  346 |     historyPersonal ||\n  347 |     historyFamily ||\n  348 |     historyImmunization ||\n  349 |     historyAllergy ||\n  350 |     historyOthers;\n  351 | \n  352 |   \/\/ Get doctor name for signature\n  353 |   function getDoctorDisplayName(): string {\n  354 |     try {\n  355 |       const sessionId = storage.getItem(\"medicare_current_doctor\");\n  356 |       if (sessionId) {\n  357 |         const registry = JSON.parse(\n  358 |           storageAdapter.getItem(\"medicare_doctors_registry\") || \"[]\",\n  359 |         ) as Array<{ id: string; email: string }>;\n  360 |         const doc = registry.find((d) => d.id === sessionId);\n  361 |         if (doc?.email) {\n  362 |           const profile = JSON.parse(\n  363 |             storage.getItem(`doctor_profile_${doc.email}`) || \"null\",\n  364 |           );\n  365 |           if (profile?.name) return profile.name;\n  366 |         }\n  367 |       }\n  368 |     } catch {\n  369 |       \/* ignore *\/\n  370 |     }\n  371 |     return \"Dr. Arman Kabir (ZOSID)\";\n  372 |   }\n  373 | \n  374 |   const doctorDisplayName = getDoctorDisplayName();\n  375 | \n  376 |   function handleSignatureUpload(e: React.ChangeEvent<HTMLInputElement>) {\n  377 |     const file = e.target.files?.[0];\n  378 |     if (!file) return;\n  379 |     if (!file.type.startsWith(\"image\/\")) return;\n  380 |     if (file.size > 1024 * 1024) {\n  381 |       alert(\"Signature image must be under 1MB.\");\n  382 |       return;\n  383 |     }\n  384 |     const reader = new FileReader();\n  385 |     reader.onload = () => {\n  386 |       const dataUrl = reader.result as string;\n  387 |       setDoctorSignature(dataUrl);\n  388 |       setSignatureUrl(dataUrl);\n  389 |     };",
             "is_error": false,
             "time": 1785600235
+        },
+        {
+            "id": "msg_94c3eb926e",
+            "role": "user",
+            "content": "CONTINUE",
+            "attachments": [],
+            "time": 1785602006
+        },
+        {
+            "id": "msg_47c17a1014",
+            "role": "user",
+            "content": "CONTINUE",
+            "attachments": [],
+            "time": 1785602055
+        },
+        {
+            "id": "msg_478a630af6",
+            "role": "user",
+            "content": "CONTINUE",
+            "attachments": [],
+            "time": 1785603851
         }
     ]
 }
