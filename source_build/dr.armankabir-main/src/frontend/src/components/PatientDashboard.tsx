@@ -4507,49 +4507,20 @@ export default function PatientDashboardInner({
                 currentUser={{
                   name: (() => {
                     try {
-                      const session = storage.getItem(
-                        "medicare_current_doctor",
-                      );
-                      if (!session)
-                        return currentRole === "patient"
-                          ? patient.fullName
-                          : "Unknown";
-                      const registry: Array<{ id: string; name: string }> =
-                        JSON.parse(
-                          storageAdapter.getItem("medicare_doctors_registry") ||
-                            "[]",
+                      const email = getDoctorEmail();
+                      if (email) {
+                        const p = JSON.parse(
+                          storage.getItem(`doctor_profile_${email}`) || "null",
                         );
-                      return (
-                        registry.find((d) => d.id === session)?.name ??
-                        "Unknown"
-                      );
-                    } catch {
-                      return "Unknown";
-                    }
+                        if (p?.name) return p.name;
+                      }
+                    } catch {}
+                    return currentRole === "patient"
+                      ? (patient?.fullName ?? "Unknown")
+                      : "Unknown";
                   })(),
                   role: viewerRole ?? "doctor",
-                  email: (() => {
-                    try {
-                      const session = storage.getItem(
-                        "medicare_current_doctor",
-                      );
-                      if (!session) return "";
-                      const registry: Array<{ id: string; email?: string }> =
-                        JSON.parse(
-                          storageAdapter.getItem("medicare_doctors_registry") ||
-                            "[]",
-                        );
-                      return (
-                        (
-                          registry.find((d) => d.id === session) as {
-                            email?: string;
-                          }
-                        )?.email ?? session
-                      );
-                    } catch {
-                      return "";
-                    }
-                  })(),
+                  email: getDoctorEmail(),
                 }}
                 admissionDate={
                   ((patient as Record<string, unknown>)
