@@ -4407,18 +4407,46 @@ export default function PatientDashboardInner({
               {canViewDailyProgress ? (
                 <DailyProgressNote
                   patientId={String(patientId)}
-                    doctorEmail={getDoctorEmail()}
+                  doctorEmail={(() => {
+                    try {
+                      const session = storage.getItem(
+                        "medicare_current_doctor",
+                      );
+                      if (!session) return "default";
+                      const registry: Array<{ id: string; email: string }> =
+                        JSON.parse(
+                          storageAdapter.getItem("medicare_doctors_registry") ||
+                            "[]",
+                        );
+                      return (
+                        registry.find((d) => d.id === session)?.email ??
+                        "default"
+                      );
+                    } catch {
+                      return "default";
+                    }
+                  })()}
                   authorName={(() => {
                     try {
-                      const email = getDoctorEmail();
-                      if (email) {
-                        const p = JSON.parse(storage.getItem(`doctor_profile_${email}`) || "null");
-                        if (p?.name) return p.name;
-                      }
-                    } catch {}
-                    return currentRole === "patient"
-                      ? patient?.fullName ?? "Unknown"
-                      : "Unknown";
+                      const session = storage.getItem(
+                        "medicare_current_doctor",
+                      );
+                      if (!session)
+                        return currentRole === "patient"
+                          ? patient.fullName
+                          : "Unknown";
+                      const registry: Array<{ id: string; name: string }> =
+                        JSON.parse(
+                          storageAdapter.getItem("medicare_doctors_registry") ||
+                            "[]",
+                        );
+                      return (
+                        registry.find((d) => d.id === session)?.name ??
+                        "Unknown"
+                      );
+                    } catch {
+                      return "Unknown";
+                    }
                   })()}
                   viewerRole={viewerRole ?? "doctor"}
                   latestVitals={latestVitals}
@@ -4439,19 +4467,42 @@ export default function PatientDashboardInner({
             <TabsContent value="soap_notes">
               <DailyProgress
                 patientId={patientId}
-                doctorEmail={getDoctorEmail()}
+                doctorEmail={(() => {
+                  try {
+                    const session = storage.getItem(
+                      "medicare_current_doctor",
+                    );
+                    if (!session) return "default";
+                    const registry: Array<{ id: string; email: string }> =
+                      JSON.parse(
+                        storageAdapter.getItem("medicare_doctors_registry") ||
+                          "[]",
+                      );
+                    const doc = registry.find((d) => d.id === session);
+                    return doc?.email ?? "default";
+                  } catch {
+                    return "default";
+                  }
+                })()}
                 currentRole={currentRole}
                 viewerRole={viewerRole ?? "doctor"}
                 authorName={(() => {
                   try {
-                    const email = getDoctorEmail();
-                    if (email) {
-                      const p = JSON.parse(storage.getItem(`doctor_profile_${email}`) || "null");
-                      if (p?.name) return p.name;
-                    }
-                  } catch {}
-                  return currentRole === "patient" ? (patient?.fullName ?? "Unknown") : "Unknown";
-                })()}
+                    const session = storage.getItem(
+                      "medicare_current_doctor",
+                    );
+                    if (!session)
+                      return currentRole === "patient"
+                        ? patient.fullName
+                        : "Unknown";
+                    const registry: Array<{ id: string; name: string }> =
+                      JSON.parse(
+                        storageAdapter.getItem("medicare_doctors_registry") ||
+                          "[]",
+                      );
+                    const doc = registry.find((d) => d.id === session);
+                    return doc?.name ?? "Unknown";
+                  } catch {
                     return "Unknown";
                   }
                 })()}
@@ -4494,15 +4545,24 @@ export default function PatientDashboardInner({
                 viewerRole={viewerRole ?? "doctor"}
                 authorName={(() => {
                   try {
-                    const email = getDoctorEmail();
-                    if (email) {
-                      const p = JSON.parse(storage.getItem(`doctor_profile_${email}`) || "null");
-                      if (p?.name) return p.name;
-                    }
-                  } catch {}
-                  return currentRole === "patient"
-                    ? (patient?.fullName ?? "Unknown")
-                    : "Unknown";
+                    const session = storage.getItem(
+                      "medicare_current_doctor",
+                    );
+                    if (!session)
+                      return currentRole === "patient"
+                        ? patient.fullName
+                        : "Unknown";
+                    const registry: Array<{ id: string; name: string }> =
+                      JSON.parse(
+                        storageAdapter.getItem("medicare_doctors_registry") ||
+                          "[]",
+                      );
+                    return (
+                      registry.find((d) => d.id === session)?.name ?? "Unknown"
+                    );
+                  } catch {
+                    return "Unknown";
+                  }
                 })()}
                 currentUser={{
                   name: (() => {
