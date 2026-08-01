@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """Fix the legacy currentUser block in PatientDashboard.tsx."""
-import re
+import sys
 
 path = "source_build/dr.armankabir-main/src/frontend/src/components/PatientDashboard.tsx"
 with open(path, "r", encoding="utf-8") as f:
     content = f.read()
 
-# The legacy currentUser block (unique - contains medicare_current_doctor)
 old_block = '''                currentUser={{
                   name: (() => {
                     try {
@@ -84,5 +83,7 @@ if count == 1:
     print("Replaced successfully")
 elif count == :
     print("ERROR: block not found - file may be corrupted")
+    sys.exit(1)
 else:
     print("ERROR: multiple occurrences - aborting")
+    sys.exit(1)
