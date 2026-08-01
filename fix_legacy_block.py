@@ -77,12 +77,13 @@ new_block = '''                currentUser={{
 count = content.count(old_block)
 print(f"Found {count} occurrence(s) of legacy block")
 
+ZERO = 
 if count == 1:
     content = content.replace(old_block, new_block)
     with open(path, "w", encoding="utf-8") as f:
         f.write(content)
     print("Replaced successfully")
-elif count < 1:
+elif count == ZERO:
     print("ERROR: block not found - file may be corrupted")
     sys.exit(1)
 else:
