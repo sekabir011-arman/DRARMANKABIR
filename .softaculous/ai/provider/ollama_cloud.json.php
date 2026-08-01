@@ -1,9 +1,13 @@
 <?php exit(); ?>
 {
-    "fetched_at": 1785415806,
+    "fetched_at": 1785554900,
     "models": {
         "deepseek-v4-flash": {
             "name": "deepseek-v4-flash",
+            "context_window": 128000
+        },
+        "deepseek-v4-flash:0731": {
+            "name": "deepseek-v4-flash:0731",
             "context_window": 128000
         },
         "deepseek-v4-pro": {
@@ -30,10 +34,6 @@
             "name": "gpt-oss:20b",
             "context_window": 128000
         },
-        "kimi-k2.5": {
-            "name": "kimi-k2.5",
-            "context_window": 128000
-        },
         "kimi-k2.6": {
             "name": "kimi-k2.6",
             "context_window": 128000
@@ -44,10 +44,6 @@
         },
         "kimi-k3": {
             "name": "kimi-k3",
-            "context_window": 128000
-        },
-        "minimax-m2.5": {
-            "name": "minimax-m2.5",
             "context_window": 128000
         },
         "minimax-m2.7": {
