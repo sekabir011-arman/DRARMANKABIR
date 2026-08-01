@@ -1,38 +1,4 @@
-                currentUser={{
-                  name: (() => {
-                    try {
-                      const email = getDoctorEmail();
-                      if (email) {
-                        const p = JSON.parse(
-                          storage.getItem(`doctor_profile_${email}`) || "null",
-                        );
-                        if (p?.name) return p.name;
-                      }
-                    } catch {}
-                    return currentRole === "patient"
-                      ? (patient?.fullName ?? "Unknown")
-                      : "Unknown";
-                  })(),
-                  role: viewerRole ?? "doctor",
-                  email: getDoctorEmail(),
-                }}                currentUser={{
-                  name: (() => {
-                    try {
-                      const email = getDoctorEmail();
-                      if (email) {
-                        const p = JSON.parse(
-                          storage.getItem(`doctor_profile_${email}`) || "null",
-                        );
-                        if (p?.name) return p.name;
-                      }
-                    } catch {}
-                    return currentRole === "patient"
-                      ? (patient?.fullName ?? "Unknown")
-                      : "Unknown";
-                  })(),
-                  role: viewerRole ?? "doctor",
-                  email: getDoctorEmail(),
-                }}/**
+/**
  * PatientDashboard — inner tabbed dashboard component
  * Renders the 9 colored navigation tabs and their content.
  * Used by pages/PatientDashboard.tsx after patient data is loaded.
@@ -4541,20 +4507,49 @@ export default function PatientDashboardInner({
                 currentUser={{
                   name: (() => {
                     try {
-                      const email = getDoctorEmail();
-                      if (email) {
-                        const p = JSON.parse(
-                          storage.getItem(`doctor_profile_${email}`) || "null",
+                      const session = storage.getItem(
+                        "medicare_current_doctor",
+                      );
+                      if (!session)
+                        return currentRole === "patient"
+                          ? patient.fullName
+                          : "Unknown";
+                      const registry: Array<{ id: string; name: string }> =
+                        JSON.parse(
+                          storageAdapter.getItem("medicare_doctors_registry") ||
+                            "[]",
                         );
-                        if (p?.name) return p.name;
-                      }
-                    } catch {}
-                    return currentRole === "patient"
-                      ? (patient?.fullName ?? "Unknown")
-                      : "Unknown";
+                      return (
+                        registry.find((d) => d.id === session)?.name ??
+                        "Unknown"
+                      );
+                    } catch {
+                      return "Unknown";
+                    }
                   })(),
                   role: viewerRole ?? "doctor",
-                  email: getDoctorEmail(),
+                  email: (() => {
+                    try {
+                      const session = storage.getItem(
+                        "medicare_current_doctor",
+                      );
+                      if (!session) return "";
+                      const registry: Array<{ id: string; email?: string }> =
+                        JSON.parse(
+                          storageAdapter.getItem("medicare_doctors_registry") ||
+                            "[]",
+                        );
+                      return (
+                        (
+                          registry.find((d) => d.id === session) as {
+                            email?: string;
+                          }
+                        )?.email ?? session
+                      );
+                    } catch {
+                      return "";
+                    }
+                  })(),
                 }}
                 admissionDate={
                   ((patient as Record<string, unknown>)
