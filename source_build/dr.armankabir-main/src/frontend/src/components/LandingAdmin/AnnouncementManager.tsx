@@ -18,7 +18,7 @@ export interface Announcement {
 interface AnnouncementManagerProps {
   isAdmin: boolean;
   announcements: Announcement[];
-  onAnnouncements Change: (announcements: Announcement[]) => void;
+  onAnnouncementsChange: (announcements: Announcement[]) => void;
 }
 
 export const AnnouncementManager: React.FC<AnnouncementManagerProps> = ({
