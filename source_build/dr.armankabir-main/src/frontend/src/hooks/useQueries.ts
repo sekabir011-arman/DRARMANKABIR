@@ -554,7 +554,7 @@ export function getDoctorEmail(email?: string): string {
 export function storageKey(prefix: string, email?: string): string {
   return `${prefix}_${getDoctorEmail(email)}`;
 }
-}
+
 export function getVisitFormData(visitId: string | number | null, email?: string): Record<string, any> | null {
   if (!visitId) return null;
   const id = String(visitId);
