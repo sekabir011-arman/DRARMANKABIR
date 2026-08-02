@@ -1,4 +1,5 @@
 /**
+ * DischargeSummaryTab — Auto-generated discharge summary for admitted patients./**
  * DischargeSummaryTab — Auto-generated discharge summary for admitted patients.
  * Enhanced: "Generate Discharge Summary" button pulls all localStorage data.
  * Finalize & Print locks the summary; Download PDF uses window.print().
