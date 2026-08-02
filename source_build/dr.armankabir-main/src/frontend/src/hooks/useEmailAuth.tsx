@@ -95,6 +95,9 @@ interface EmailAuthContextValue {
     role?: string;
     specialization?: string;
     phone?: string;
+    designation?: string;
+    degree?: string;
+    hospital_name?: string;
   }) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;

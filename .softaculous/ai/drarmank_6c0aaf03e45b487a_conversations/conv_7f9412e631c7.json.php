@@ -82,7 +82,7 @@
         }
     ],
     "created_at": 1785674206,
-    "updated_at": 1785693319,
+    "updated_at": 1785693403,
     "messages": [
         {
             "id": "msg_compact",
@@ -1516,6 +1516,13 @@
             "content": "Edited source_build\/dr.armankabir-main\/src\/frontend\/src\/services\/auth.ts (1 replacement)\n-   \/** Sign up a new staff account *\/\n-   async signUp(data: {\n-     email: string;\n-     password: string;\n-     full_name: string;\n-     role?: string;\n-     specialization?: string;\n-     phone?: string;\n-   }): Promise<{ status: string; message: string }> {\n-     return post<{ status: string; message: string }>('\/auth\/register.php', data);\n-   },\n+   \/** Sign up a new staff account *\/\n+   async signUp(data: {\n+     email: string;\n+     password: string;\n+     full_name: string;\n+     role?: string;\n+     specialization?: string;\n+     phone?: string;\n+     designation?: string;\n+     degree?: string;\n+     hospital_name?: string;\n+   }): Promise<{ status: string; message: string }> {\n+     return post<{ status: string; message: string }>('\/auth\/register.php', data);\n+   },",
             "is_error": false,
             "time": 1785693319
+        },
+        {
+            "id": "msg_5aaffa8bd9",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785693403
         }
     ]
 }
