@@ -7,12 +7,10 @@ try {
     $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
     echo "TABLE_COUNT ".count($tables)."\n";
     echo "TABLES ".implode(",", array_slice($tables, , 60))."\n";
-    // check key tables exist
-    $need = ['patients','visits','prescriptions','appointments','admissions','beds','staff_users','patient_logins'];
+    $need = array('patients','visits','prescriptions','appointments','admissions','beds','staff_users','patient_logins');
     foreach ($need as $t) {
         echo ($t . "=" . (in_array($t, $tables) ? "YES" : "NO")) . "\n";
     }
-    // sample patients count
     if (in_array('patients', $tables)) {
         $c = $pdo->query("SELECT COUNT(*) FROM patients")->fetchColumn();
         echo "PATIENTS_COUNT ".$c."\n";
