@@ -60,6 +60,9 @@ export const authService = {
     role?: string;
     specialization?: string;
     phone?: string;
+    designation?: string;
+    degree?: string;
+    hospital_name?: string;
   }): Promise<{ status: string; message: string }> {
     return post<{ status: string; message: string }>('/auth/register.php', data);
   },
