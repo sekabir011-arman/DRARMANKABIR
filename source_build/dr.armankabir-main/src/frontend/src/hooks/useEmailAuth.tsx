@@ -102,6 +102,9 @@ interface EmailAuthContextValue {
     degree?: string;
     hospital_name?: string;
   }) => Promise<void>;
+    degree?: string;
+    hospital_name?: string;
+  }) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   updateProfile: (data: Partial<DoctorAccount>) => Promise<void>;
