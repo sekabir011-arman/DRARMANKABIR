@@ -1,4 +1,40 @@
-/**
+  const signUp = useCallback(
+    async (data: {
+      email: string;
+      password: string;
+      full_name: string;
+      role?: string;
+      specialization?: string;
+      phone?: string;
+      designation?: string;
+      degree?: string;
+      hospital_name?: string;
+    }) => {
+      setIsLoggingIn(true);
+      setAuthError(null);
+      try {
+        const result = await authService.signUp({
+          email: data.email,
+          password: data.password,
+          full_name: data.full_name,
+          role: data.role ?? "doctor",
+          specialization: data.specialization ?? "",
+          phone: data.phone ?? "",
+          designation: data.designation,
+          degree: data.degree,
+          hospital_name: data.hospital_name,
+        });
+        throw new Error(result.message || "Account created! Please wait for admin approval before logging in.");
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : "Sign up failed.";
+        setAuthError(msg);
+        throw e;
+      } finally {
+        setIsLoggingIn(false);
+      }
+    },
+    [],
+  );/**
  * Email Auth Hook — PHP/MySQL Backend
  *
  * All authentication is handled server-side via the PHP API.
