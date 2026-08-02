@@ -20,6 +20,7 @@ export interface DoctorAccount {
   photo_url?: string;
   signature_url?: string;
   bmdc_registration?: string;
+  created_at?: string;
 }
 
 export interface PatientAccount {
