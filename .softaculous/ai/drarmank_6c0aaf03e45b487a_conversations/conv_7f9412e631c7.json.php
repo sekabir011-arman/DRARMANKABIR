@@ -57,7 +57,7 @@
         }
     ],
     "created_at": 1785674206,
-    "updated_at": 1785680083,
+    "updated_at": 1785688984,
     "messages": [
         {
             "id": "msg_compact",
@@ -2538,6 +2538,20 @@
             "content": "}\/**\n * DischargeSummaryTab \u2014 Auto-generated discharge summary for admitted patients.\n * Enhanced: \"Generate Discharge Summary\" button pulls all localStorage data.\n * Finalize & Print locks the summary; Download PDF uses window.print().\n *\/\nimport { Badge } from \"@\/components\/ui\/badge\";\nimport { Button } from \"@\/components\/ui\/button\";\n",
             "is_error": false,
             "time": 1785680083
+        },
+        {
+            "id": "msg_1f612a7af1",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785680227
+        },
+        {
+            "id": "msg_594cfaa8a8",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785688984
         }
     ]
 }
