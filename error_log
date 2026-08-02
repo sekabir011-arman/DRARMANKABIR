@@ -109,3 +109,5 @@ Stack trace:
   thrown in Command line code on line 2
 [26-Jul-2026 15:08:27 UTC] PHP Parse error:  syntax error, unexpected token ";" in Command line code on line 6
 [02-Aug-2026 13:19:33 UTC] PHP Parse error:  syntax error, unexpected token ";" in /tmp/analyze.php on line 3
+[02-Aug-2026 13:30:40 UTC] PHP Parse error:  syntax error, unexpected token "," in /home/drarmank/scripts/analyze_bundle.php on line 11
+[02-Aug-2026 13:30:43 UTC] PHP Parse error:  syntax error, unexpected token "," in /home/drarmank/scripts/analyze_bundle.php on line 11
