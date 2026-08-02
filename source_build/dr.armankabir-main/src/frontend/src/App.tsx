@@ -34,6 +34,17 @@ import { motion } from "motion/react";
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Layout from "./Layout";
 import { useAdminAuth } from "./hooks/useAdminAuth";
+import {
+  appendAuditLog,
+  loadPatientRegistry,
+  loadRegistry,
+  ROLE_HIERARCHY_ORDER,
+  savePatientRegistry,
+  saveRegistry,
+  STAFF_ROLE_COLORS,
+  STAFF_ROLE_LABELS,
+} from "./hooks/useAdminSave";
+import type { StaffRole } from "./types";
 import { storage } from "@/lib/storageAdapter";
 
 const AppointmentPayment = lazy(() => import("./pages/AppointmentPayment"));

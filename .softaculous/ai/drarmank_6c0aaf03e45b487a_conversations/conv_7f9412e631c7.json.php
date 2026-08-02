@@ -82,7 +82,7 @@
         }
     ],
     "created_at": 1785674206,
-    "updated_at": 1785691569,
+    "updated_at": 1785691874,
     "messages": [
         {
             "id": "msg_compact",
@@ -4366,6 +4366,13 @@
             "content": "   30 |   useRouterState,\n   31 | } from \"@tanstack\/react-router\";\n   32 | import { Bell, CheckCircle2, Loader2, ShieldCheck, Stethoscope, User, UserCheck, X, XCircle } from \"lucide-react\";\n   33 | import { motion } from \"motion\/react\";\n   34 | import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from \"react\";\n   35 | import Layout from \".\/Layout\";\n   36 | import { useAdminAuth } from \".\/hooks\/useAdminAuth\";\n   37 | import { storage } from \"@\/lib\/storageAdapter\";\n   38 | \n   39 | const AppointmentPayment = lazy(() => import(\".\/pages\/AppointmentPayment\"));\n   40 | const Appointments = lazy(() => import(\".\/pages\/Appointments\"));\n   41 | const AuditLog = lazy(() => import(\".\/pages\/AuditLog\"));\n   42 | const BedManagement = lazy(() => import(\".\/pages\/BedManagement\"));\n   43 | const Dashboard = lazy(() => import(\".\/pages\/Dashboard\"));\n   44 | const EmergencyPrescription = lazy(\n   45 |   () => import(\".\/pages\/EmergencyPrescription\"),\n   46 | );\n   47 | const InvestigationPaymentPage = lazy(\n   48 |   () => import(\".\/pages\/InvestigationPaymentPage\"),\n   49 | );\n   50 | const LandingPage = lazy(() => import(\".\/pages\/LandingPage\"));\n   51 | const OtherPayment = lazy(() => import(\".\/pages\/OtherPayment\"));\n   52 | const OutstandingBalances = lazy(() => import(\".\/pages\/OutstandingBalances\"));\n   53 | const PatientDashboard = lazy(() => import(\".\/pages\/PatientDashboard\"));\n   54 | const Patients = lazy(() => import(\".\/pages\/Patients\"));\n   55 | const ProcedurePayment = lazy(() => import(\".\/pages\/ProcedurePayment\"));\n   56 | const RegistrarDashboard = lazy(() => import(\".\/pages\/RegistrarDashboard\"));\n   57 | const SerialDisplay = lazy(() => import(\".\/pages\/SerialDisplay\"));\n   58 | const Settings = lazy(() => import(\".\/pages\/Settings\"));\n   59 | const Staff = lazy(() => import(\".\/pages\/Staff\"));\n   60 | const TotalIncome = lazy(() => import(\".\/pages\/TotalIncome\"));\n   61 | const VisitPage = lazy(() => import(\".\/pages\/VisitPage\"));\n   62 | const WardRound = lazy(() => import(\".\/pages\/WardRound\"));\n   63 | \/\/ Note: ROLE_HIERARCHY_ORDER, STAFF_ROLE_COLORS, STAFF_ROLE_LABELS, StaffRole \n   64 | \/\/ were removed as they are not used in this file.\n   65 | \n   66 | \/\/ \u2500\u2500 Route tree \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n   67 | \n   68 | function RootLayoutComponent() {\n   69 |   const state = useRouterState();",
             "is_error": false,
             "time": 1785691569
+        },
+        {
+            "id": "msg_8d9165bfe8",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785691874
         }
     ]
 }
