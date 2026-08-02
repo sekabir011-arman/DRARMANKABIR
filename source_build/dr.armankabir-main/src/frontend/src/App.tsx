@@ -34,7 +34,20 @@ import { motion } from "motion/react";
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Layout from "./Layout";
 import { useAdminAuth } from "./hooks/useAdminAuth";
+import { storage } from "@/lib/storageAdapter";
 import {
+  appendAuditLog,
+  loadPatientRegistry,
+  loadRegistry,
+  savePatientRegistry,
+  saveRegistry,
+  STAFF_ROLE_LABELS,
+} from "./hooks/useAdminSave";
+import {
+  ROLE_HIERARCHY_ORDER,
+  STAFF_ROLE_COLORS,
+} from "./types";
+import type { StaffRole } from "./types";
   appendAuditLog,
   loadPatientRegistry,
   loadRegistry,
