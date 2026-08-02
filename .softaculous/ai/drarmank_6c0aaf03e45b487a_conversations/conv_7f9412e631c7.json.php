@@ -57,7 +57,7 @@
         }
     ],
     "created_at": 1785674206,
-    "updated_at": 1785690558,
+    "updated_at": 1785690833,
     "messages": [
         {
             "id": "msg_compact",
@@ -2915,6 +2915,13 @@
             "content": "    1 |                   return currentRole === \"patient\" ? (patient?.fullName ?? \"Unknown\") : \"Unknown\";\n    2 |                 })()}\n    3 |                 prescriptions={prescriptions}                  return currentRole === \"patient\" ? (patient?.fullName ?? \"Unknown\") : \"Unknown\";\n    4 |                 })()}\n    5 |                 prescriptions={prescriptions}\n    6 |               \/>\/**\n    7 |  * PatientDashboard \u2014 inner tabbed dashboard component\n    8 |  * Renders the 9 colored navigation tabs and their content.\n    9 |  * Used by pages\/PatientDashboard.tsx after patient data is loaded.\n   10 |  *\/\n   11 | import { Badge } from \"@\/components\/ui\/badge\";\n   12 | import { Button } from \"@\/components\/ui\/button\";\n   13 | import { Input } from \"@\/components\/ui\/input\";\n   14 | import { Label } from \"@\/components\/ui\/label\";\n   15 | import { ScrollArea } from \"@\/components\/ui\/scroll-area\";\n   16 | import { Skeleton } from \"@\/components\/ui\/skeleton\";\n   17 | import { Switch } from \"@\/components\/ui\/switch\";\n   18 | import { Tabs, TabsContent, TabsList, TabsTrigger } from \"@\/components\/ui\/tabs\";\n   19 | import { Textarea } from \"@\/components\/ui\/textarea\";\n   20 | import { format } from \"date-fns\";\n   21 | import {\n   22 |   Activity,\n   23 |   AlertCircle,\n   24 |   AlertTriangle,\n   25 |   Baby,\n   26 |   Bell,\n   27 |   BookOpen,\n   28 |   Calendar,\n   29 |   CheckCircle2,\n   30 |   ChevronDown,\n   31 |   Clock,\n   32 |   Download,\n   33 |   ExternalLink,\n   34 |   Eye,\n   35 |   EyeOff,\n   36 |   FileText,\n   37 |   FlaskConical,\n   38 |   Heart,\n   39 |   HeartPulse,\n   40 |   Lightbulb,",
             "is_error": false,
             "time": 1785690558
+        },
+        {
+            "id": "msg_789fd9f441",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785690833
         }
     ]
 }
