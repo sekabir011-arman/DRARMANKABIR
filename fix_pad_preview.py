@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fix getDoctorDisplayName legacy auth block in PrescriptionPadPreview.tsx."""
+"""Fix the legacy getDoctorDisplayName block in PrescriptionPadPreview.tsx."""
 import sys
 
 path = "source_build/dr.armankabir-main/src/frontend/src/components/PrescriptionPadPreview.tsx"
@@ -49,9 +49,12 @@ if count == 1:
     content = content.replace(old_name, new_name)
     with open(path, "w", encoding="utf-8") as f:
         f.write(content)
-    print("Saved successfully")
+    print("Replaced and saved")
 elif not count:
-    print("ERROR: block not found")
+    print("Block not found - checking if already fixed")
+    if "storageAdapter" not in content:
+        print("Already clean - no legacy refs remain")
+        sys.exit()
     sys.exit(1)
 else:
     print("ERROR: multiple occurrences - aborting")
