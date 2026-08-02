@@ -1,5 +1,7 @@
                   return currentRole === "patient" ? (patient?.fullName ?? "Unknown") : "Unknown";
                 })()}
+                prescriptions={prescriptions}                  return currentRole === "patient" ? (patient?.fullName ?? "Unknown") : "Unknown";
+                })()}
                 prescriptions={prescriptions}
               />/**
  * PatientDashboard — inner tabbed dashboard component
