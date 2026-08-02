@@ -153,7 +153,6 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
     };
     restoreSession();
   }, []);
-
   const signUp = useCallback(
     async (data: {
       email: string;
@@ -173,6 +172,13 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
           email: data.email,
           password: data.password,
           full_name: data.full_name,
+          role: data.role ?? "doctor",
+          specialization: data.specialization ?? "",
+          phone: data.phone ?? "",
+          designation: data.designation,
+          degree: data.degree,
+          hospital_name: data.hospital_name,
+        });
           role: data.role ?? "doctor",
           specialization: data.specialization ?? "",
           phone: data.phone ?? "",
