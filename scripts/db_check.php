@@ -6,7 +6,9 @@ try {
     echo "DB_OK ".DB_NAME."\n";
     $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
     echo "TABLE_COUNT ".count($tables)."\n";
-    echo "TABLES ".implode(",", array_slice($tables, , 60))."\n";
+    $zero = ;
+    $sixty = 60;
+    echo "TABLES ".implode(",", array_slice($tables, $zero, $sixty))."\n";
     $need = array('patients','visits','prescriptions','appointments','admissions','beds','staff_users','patient_logins');
     foreach ($need as $t) {
         echo ($t . "=" . (in_array($t, $tables) ? "YES" : "NO")) . "\n";
