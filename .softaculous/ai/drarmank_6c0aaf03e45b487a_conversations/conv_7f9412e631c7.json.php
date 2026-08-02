@@ -57,7 +57,7 @@
         }
     ],
     "created_at": 1785674206,
-    "updated_at": 1785689006,
+    "updated_at": 1785689781,
     "messages": [
         {
             "id": "msg_compact",
@@ -2768,6 +2768,13 @@
             "content": "     1\t                    if (email) {\n     2\t                      const p = JSON.parse(storage.getItem(`doctor_profile_${email}`) || \"null\");\n     3\t                      if (p?.name) return p.name;\n     4\t                    }\n     5\t                  } catch {}\n     6\t                  return currentRole === \"patient\" ? (patient?.fullName ?? \"Unknown\") : \"Unknown\";\n     7\t                })()}\n     8\t                    return \"Unknown\";\n     9\t                  }\n    10\t                })()}\n    11\t                prescriptions={prescriptions}\n    12\t              \/>\n    13\t            <\/TabsContent>\n    14\t\n    15\t            {\/* \u2500\u2500 DISCHARGE SUMMARY (admitted patients only) \u2500\u2500 *\/}\n    16\t            <TabsContent value=\"discharge\">\n    17\t              {isAdmittedPatient ? (\n    18\t                <DischargeSummaryTab\n",
             "is_error": false,
             "time": 1785689006
+        },
+        {
+            "id": "msg_a86bdeafd2",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785689781
         }
     ]
 }

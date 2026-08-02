@@ -4452,9 +4452,6 @@ export default function PatientDashboardInner({
                   } catch {}
                   return currentRole === "patient" ? (patient?.fullName ?? "Unknown") : "Unknown";
                 })()}
-                    return "Unknown";
-                  }
-                })()}
                 prescriptions={prescriptions}
               />
             </TabsContent>
