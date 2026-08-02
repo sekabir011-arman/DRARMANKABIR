@@ -6,58 +6,83 @@
     "mode": "build",
     "todos": [
         {
-            "content": "Audit source: inventory all localStorage usage (business vs UI prefs)",
-            "status": "in_progress",
-            "priority": "high"
+            "content": "PHASE : Restore compilation (~700 type errors across 50 files)",
+            "priority": "high",
+            "status": "in_progress"
         },
         {
-            "content": "Audit source: inventory legacy code (canister, ICP, sync, hybridStorage, phpAuthToken, medicare_*)",
-            "status": "pending",
-            "priority": "high"
+            "content": "a: Fix lib core (storageAdapter return bug, api.ts, hybridStorage refs)",
+            "priority": "high",
+            "status": "in_progress"
         },
         {
-            "content": "Feature 1: Patients CRUD \u2014 verify PHP API path, remove legacy storage, verify compile",
-            "status": "pending",
-            "priority": "high"
+            "content": "b: Fix App.tsx (missing useAdminSave\/types imports, type mismatches)",
+            "priority": "high",
+            "status": "pending"
         },
         {
-            "content": "Feature 2: Visits CRUD \u2014 verify PHP API path, remove legacy storage, verify compile",
-            "status": "pending",
-            "priority": "high"
+            "content": "c: Fix Layout.tsx (dup imports, missing hook destructure, pathname, isOnline)",
+            "priority": "high",
+            "status": "pending"
         },
         {
-            "content": "Feature 3: Prescriptions CRUD \u2014 verify PHP API path, remove legacy storage, verify compile",
-            "status": "pending",
-            "priority": "high"
+            "content": "d: Fix AIAssistantPanel bigint errors + remaining component errors",
+            "priority": "high",
+            "status": "pending"
         },
         {
-            "content": "Feature 4: Appointments\/Admissions\/Beds \u2014 verify PHP API path, remove legacy storage",
-            "status": "pending",
-            "priority": "medium"
+            "content": "e: Fix pages (LandingPage, Staff, PatientProfile, PatientDashboard, BedManagement, Settings, WardRound, etc.)",
+            "priority": "high",
+            "status": "pending"
         },
         {
-            "content": "Feature 5: Auth \u2014 PHP sessions with HttpOnly cookies, remove localStorage tokens",
-            "status": "pending",
-            "priority": "high"
+            "content": "f: Verify full tsc passes + baseline build succeeds",
+            "priority": "high",
+            "status": "pending"
         },
         {
-            "content": "Feature 6: Remove legacy modules (canister, ICP, hybridStorage, storageAdapter, sync queue)",
-            "status": "pending",
-            "priority": "high"
+            "content": "Feature 1: Patients CRUD \u2014 PHP API verified, no localStorage, compile OK",
+            "priority": "high",
+            "status": "pending"
         },
         {
-            "content": "Feature 7: Build source, deploy new bundle, update index.html, remove obsolete assets",
-            "status": "pending",
-            "priority": "high"
+            "content": "Feature 2: Visits CRUD \u2014 PHP API verified, no localStorage, compile OK",
+            "priority": "high",
+            "status": "pending"
+        },
+        {
+            "content": "Feature 3: Prescriptions CRUD \u2014 PHP API verified, no localStorage, compile OK",
+            "priority": "high",
+            "status": "pending"
+        },
+        {
+            "content": "Feature 4: Appointments\/Admissions\/Beds \u2014 PHP API, no localStorage",
+            "priority": "medium",
+            "status": "pending"
+        },
+        {
+            "content": "Feature 5: Auth \u2014 PHP sessions HttpOnly cookies only, no localStorage tokens",
+            "priority": "high",
+            "status": "pending"
+        },
+        {
+            "content": "Feature 6: Remove legacy modules (canister\/ICP\/hybridStorage\/sync queue\/storageAdapter business data)",
+            "priority": "high",
+            "status": "pending"
+        },
+        {
+            "content": "Feature 7: Build + deploy new bundle, update index.html, clean obsolete assets",
+            "priority": "high",
+            "status": "pending"
         },
         {
             "content": "Generate final migration report",
-            "status": "pending",
-            "priority": "medium"
+            "priority": "medium",
+            "status": "pending"
         }
     ],
     "created_at": 1785674206,
-    "updated_at": 1785690833,
+    "updated_at": 1785691406,
     "messages": [
         {
             "id": "msg_compact",
@@ -2922,6 +2947,960 @@
             "content": "continue",
             "attachments": [],
             "time": 1785690833
+        },
+        {
+            "id": "msg_6c0f4a0db3",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The PatientDashboard.tsx has pre-import garbage at the top (lines 1-6). The file starts with garbage before the `\/**` comment at line 6. I need to remove lines 1-5 (the duplicated fragment). The real file starts at line 6 with `\/**`.\n\nLet me remove lines 1-5:\n```\n                  return currentRole === \"patient\" ? (patient?.fullName ?? \"Unknown\") : \"Unknown\";\n                })()}\n                prescriptions={prescriptions}                  return currentRole === \"patient\" ? (patient?.fullName ?? \"Unknown\") : \"Unknown\";\n                })()}\n                prescriptions={prescriptions}\n              \/>\/**\n```"
+                },
+                {
+                    "type": "text",
+                    "text": "The file has pre-import garbage (lines 1\u20135). Let me remove it:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_x0ltwyAwqvG7lvkwau912354",
+                    "name": "edit_file",
+                    "input": {
+                        "new_string": "\/**\n * PatientDashboard \u2014 inner tabbed dashboard component",
+                        "old_string": "                  return currentRole === \"patient\" ? (patient?.fullName ?? \"Unknown\") : \"Unknown\";\n                })()}\n                prescriptions={prescriptions}                  return currentRole === \"patient\" ? (patient?.fullName ?? \"Unknown\") : \"Unknown\";\n                })()}\n                prescriptions={prescriptions}\n              \/>\/**\n * PatientDashboard \u2014 inner tabbed dashboard component",
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/components\/PatientDashboard.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 60078,
+                "completion_tokens": 341,
+                "total_tokens": 60419,
+                "prompt_cache_hit_tokens": 58752,
+                "prompt_cache_miss_tokens": 1326,
+                "prompt_tokens_details": {
+                    "cached_tokens": 58752
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 140
+                },
+                "cached_tokens": 58752
+            },
+            "time": 1785690837
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_x0ltwyAwqvG7lvkwau912354",
+            "content": "Edited source_build\/dr.armankabir-main\/src\/frontend\/src\/components\/PatientDashboard.tsx (1 replacement)\n- \n+ \/**\n+  * PatientDashboard \u2014 inner tabbed dashboard component",
+            "is_error": false,
+            "time": 1785690838
+        },
+        {
+            "id": "msg_a9fe9fb4eb",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ET_DybmfCL1zzDGdWiicZ7p7355",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend && export PATH=\/opt\/alt\/alt-nodejs22\/root\/usr\/bin:$PATH; timeout 180 .\/node_modules\/.bin\/tsc --noEmit 2>&1 | head -40; echo \"---TOTAL---\"; timeout 180 .\/node_modules\/.bin\/tsc --noEmit 2>&1 | wc -l"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 60473,
+                "completion_tokens": 140,
+                "total_tokens": 60613,
+                "prompt_cache_hit_tokens": 60416,
+                "prompt_cache_miss_tokens": 57,
+                "prompt_tokens_details": {
+                    "cached_tokens": 60416
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 0
+                },
+                "cached_tokens": 60416
+            },
+            "time": 1785690841
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ET_DybmfCL1zzDGdWiicZ7p7355",
+            "content": "Command timed out after 30s\n",
+            "is_error": true,
+            "time": 1785690871
+        },
+        {
+            "id": "msg_9c4758880e",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ET_gLWjLexQ8JtJ3FYMnXJY6770",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend && export PATH=\/opt\/alt\/alt-nodejs22\/root\/usr\/bin:$PATH; timeout 240 .\/node_modules\/.bin\/tsc --noEmit 2>&1 | head -40; echo \"DONE\"",
+                        "timeout": 260
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 60633,
+                "completion_tokens": 131,
+                "total_tokens": 60764,
+                "prompt_cache_hit_tokens": 60544,
+                "prompt_cache_miss_tokens": 89,
+                "prompt_tokens_details": {
+                    "cached_tokens": 60544
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 0
+                },
+                "cached_tokens": 60544
+            },
+            "time": 1785690874
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ET_gLWjLexQ8JtJ3FYMnXJY6770",
+            "content": "src\/App.tsx(217,53): error TS2304: Cannot find name 'StaffRole'.\nsrc\/App.tsx(245,40): error TS2304: Cannot find name 'StaffRole'.\nsrc\/App.tsx(283,9): error TS2353: Object literal may only specify known properties, and 'designation' does not exist in type '{ email: string; password: string; full_name: string; role?: string | undefined; specialization?: string | undefined; phone?: string | undefined; }'.\nsrc\/App.tsx(418,52): error TS2304: Cannot find name 'StaffRole'.\nsrc\/App.tsx(424,18): error TS2304: Cannot find name 'ROLE_HIERARCHY_ORDER'.\nsrc\/App.tsx(428,61): error TS2304: Cannot find name 'STAFF_ROLE_COLORS'.\nsrc\/App.tsx(430,24): error TS2304: Cannot find name 'STAFF_ROLE_LABELS'.\nsrc\/App.tsx(772,69): error TS2304: Cannot find name 'StaffRole'.\nsrc\/App.tsx(775,65): error TS2304: Cannot find name 'StaffRole'.\nsrc\/App.tsx(778,22): error TS2304: Cannot find name 'loadRegistry'.\nsrc\/App.tsx(780,7): error TS2304: Cannot find name 'loadPatientRegistry'.\nsrc\/App.tsx(792,17): error TS2304: Cannot find name 'loadRegistry'.\nsrc\/App.tsx(796,7): error TS2304: Cannot find name 'saveRegistry'.\nsrc\/App.tsx(799,46): error TS2304: Cannot find name 'STAFF_ROLE_LABELS'.\nsrc\/App.tsx(804,17): error TS2304: Cannot find name 'loadRegistry'.\nsrc\/App.tsx(808,7): error TS2304: Cannot find name 'saveRegistry'.\nsrc\/App.tsx(814,17): error TS2304: Cannot find name 'loadPatientRegistry'.\nsrc\/App.tsx(818,7): error TS2304: Cannot find name 'savePatientRegistry'.\nsrc\/App.tsx(826,17): error TS2304: Cannot find name 'loadPatientRegistry'.\nsrc\/App.tsx(830,7): error TS2304: Cannot find name 'savePatientRegistry'.\nsrc\/App.tsx(841,17): error TS2304: Cannot find name 'loadRegistry'.\nsrc\/App.tsx(844,40): error TS2304: Cannot find name 'StaffRole'.\nsrc\/App.tsx(847,7): error TS2304: Cannot find name 'saveRegistry'.\nsrc\/App.tsx(849,7): error TS2304: Cannot find name 'appendAuditLog'.\nsrc\/App.tsx(853,38): error TS2304: Cannot find name 'STAFF_ROLE_LABELS'.\nsrc\/App.tsx(853,81): error TS2304: Cannot find name 'STAFF_ROLE_LABELS'.\nsrc\/App.tsx(859,28): error TS2304: Cannot find name 'STAFF_ROLE_LABELS'.\nsrc\/App.tsx(859,71): error TS2304: Cannot find name 'STAFF_ROLE_LABELS'.\nsrc\/App.tsx(867,25): error TS2304: Cannot find name 'loadRegistry'.\nsrc\/App.tsx(889,32): error TS2339: Property 'name' does not exist on type 'DoctorAccount'.\nsrc\/App.tsx(899,30): error TS2304: Cannot find name 'STAFF_ROLE_LABELS'.\nsrc\/App.tsx(899,60): error TS2304: Cannot find name 'StaffRole'.\nsrc\/App.tsx(903,43): error TS2339: Property 'createdAt' does not exist on type 'DoctorAccount'.\nsrc\/App.tsx(916,44): error TS2304: Cannot find name 'StaffRole'.\nsrc\/App.tsx(927,28): error TS2304: Cannot find name 'ROLE_HIERARCHY_ORDER'.\nsrc\/App.tsx(931,71): error TS2304: Cannot find name 'STAFF_ROLE_COLORS'.\nsrc\/App.tsx(933,34): error TS2304: Cannot find name 'STAFF_ROLE_LABELS'.\nsrc\/App.tsx(955,52): error TS2345: Argument of type 'number' is not assignable to parameter of type 'string'.\nsrc\/App.tsx(980,30): error TS2339: Property 'name' does not exist on type 'PatientAccount'.\nsrc\/App.tsx(992,30): error TS2551: Property 'registerNumber' does not exist on type 'PatientAccount'. Did you mean 'register_number'?\nDONE\n",
+            "is_error": false,
+            "time": 1785690976
+        },
+        {
+            "id": "msg_d11ea17655",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "App.tsx has many errors \u2014 missing imports (StaffRole, ROLE_HIERARCHY_ORDER, STAFF_ROLE_COLORS, STAFF_ROLE_LABELS, loadRegistry, loadPatientRegistry, saveRegistry, savePatientRegistry, appendAuditLog). These are from removed legacy modules. Let me get the full error list and understand what's happening."
+                },
+                {
+                    "type": "text",
+                    "text": "App.tsx is missing imports for removed legacy modules. Let me get the complete error list:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_5GLVX8DZLbJtN0Zpv89D9489",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend && export PATH=\/opt\/alt\/alt-nodejs22\/root\/usr\/bin:$PATH; timeout 240 .\/node_modules\/.bin\/tsc --noEmit 2>&1 | grep -v \"^src\/App.tsx\" | head -40; echo \"---TOTAL ERRORS---\"; timeout 240 .\/node_modules\/.bin\/tsc --noEmit 2>&1 | wc -l; echo \"---APP ERRORS---\"; timeout 240 .\/node_modules\/.bin\/tsc --noEmit 2>&1 | grep -c \"^src\/App.tsx\"",
+                        "timeout": 300
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 61817,
+                "completion_tokens": 304,
+                "total_tokens": 62121,
+                "prompt_cache_hit_tokens": 60672,
+                "prompt_cache_miss_tokens": 1145,
+                "prompt_tokens_details": {
+                    "cached_tokens": 60672
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 77
+                },
+                "cached_tokens": 60672
+            },
+            "time": 1785690981
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_5GLVX8DZLbJtN0Zpv89D9489",
+            "content": "Command timed out after 120s\nsrc\/Layout.tsx(1,10): error TS2300: Duplicate identifier 'Badge'.\nsrc\/Layout.tsx(96,10): error TS2300: Duplicate identifier 'Badge'.\nsrc\/Layout.tsx(111,10): error TS2300: Duplicate identifier 'Badge'.\nsrc\/Layout.tsx(245,17): error TS2304: Cannot find name 'currentDoctor'.\nsrc\/Layout.tsx(247,59): error TS2304: Cannot find name 'isAdmin'.\nsrc\/Layout.tsx(248,56): error TS2304: Cannot find name 'isAdmin'.\nsrc\/Layout.tsx(249,63): error TS2304: Cannot find name 'isAdmin'.\nsrc\/Layout.tsx(250,59): error TS2304: Cannot find name 'isAdmin'.\nsrc\/Layout.tsx(252,73): error TS2304: Cannot find name 'isAdmin'.\nsrc\/Layout.tsx(286,16): error TS2304: Cannot find name 'pathname'.\nsrc\/Layout.tsx(293,7): error TS2304: Cannot find name 'pathname'.\nsrc\/Layout.tsx(374,24): error TS2345: Argument of type 'number' is not assignable to parameter of type 'SetStateAction<undefined>'.\nsrc\/Layout.tsx(382,23): error TS2304: Cannot find name 'currentDoctor'.\nsrc\/Layout.tsx(383,10): error TS2304: Cannot find name 'currentDoctor'.\nsrc\/Layout.tsx(383,39): error TS2304: Cannot find name 'currentDoctor'.\nsrc\/Layout.tsx(385,25): error TS2304: Cannot find name 'currentDoctor'.\nsrc\/Layout.tsx(386,21): error TS2304: Cannot find name 'currentDoctor'.\nsrc\/Layout.tsx(387,26): error TS2304: Cannot find name 'currentDoctor'.\nsrc\/Layout.tsx(387,62): error TS2304: Cannot find name 'currentDoctor'.\nsrc\/Layout.tsx(389,26): error TS2304: Cannot find name 'currentDoctor'.\nsrc\/Layout.tsx(390,26): error TS2304: Cannot find name 'currentDoctor'.\nsrc\/Layout.tsx(407,9): error TS2304: Cannot find name 'pathname'.\nsrc\/Layout.tsx(408,9): error TS2304: Cannot find name 'pathname'.\nsrc\/Layout.tsx(416,9): error TS2304: Cannot find name 'pathname'.\nsrc\/Layout.tsx(419,40): error TS2304: Cannot find name 'pathname'.\nsrc\/Layout.tsx(552,39): error TS2304: Cannot find name 'currentDoctor'.\nsrc\/Layout.tsx(578,9): error TS2304: Cannot find name 'isOnline'.\nsrc\/Layout.tsx(861,16): error TS2304: Cannot find name 'isAdmin'.\nsrc\/Layout.tsx(898,20): error TS18048: 'dueMedCount' is possibly 'undefined'.\nsrc\/Layout.tsx(1103,16): error TS2304: Cannot find name 'isAdmin'.\nsrc\/Layout.tsx(1349,12): error TS2304: Cannot find name 'isAdmin'.\nsrc\/components\/AIAssistantPanel.tsx(201,30): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.\nsrc\/components\/AIAssistantPanel.tsx(201,30): error TS2365: Operator '\/' cannot be applied to types 'string' and 'bigint'.\nsrc\/components\/AIAssistantPanel.tsx(206,41): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.\nsrc\/components\/AIAssistantPanel.tsx(206,55): error TS2363: The right-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.\nsrc\/components\/AIAssistantPanel.tsx(210,16): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.\nsrc\/components\/AIAssistantPanel.tsx(210,37): error TS2363: The right-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.\nsrc\/components\/AIAssistantPanel.tsx(231,18): error TS2352: Conversion of type 'Medication' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.\n  Index signature for type 'string' is missing in type 'Medication'.\nsrc\/components\/AIAssistantPanel.tsx(239,99): error TS2352: Conversion of type 'Patient' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.\n---TOTAL ERRORS---\n",
+            "is_error": true,
+            "time": 1785691101
+        },
+        {
+            "id": "msg_1a9cc3e9e8",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The typecheck is slow (runs twice). There are many errors across Layout.tsx, App.tsx, AIAssistantPanel.tsx etc. This is a large migration. The errors seem to come from a partially-completed migration where legacy helpers were removed but not all references updated.\n\nGiven the scale, let me think about the right approach:\n\n1. There are ~10 compile error files with many errors each\n2. The dist folder from Jul 28 is the built PHP version (unminified, vite build)\n3. The source has corruption + half-finished migration\n\nThe most reliable path: the source dist (built Jul 28) IS the PHP version. But we need to migrate the *source*, per the requirements (feature by feature, remove legacy, etc).\n\nLet me get the full picture of errors first - count errors per file."
+                },
+                {
+                    "type": "text",
+                    "text": "Many errors across Layout.tsx, App.tsx, AIAssistantPanel. Let me get the full per-file error count to scope the work:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_06fHJ1SDAezN3Jp71ox88358",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend && export PATH=\/opt\/alt\/alt-nodejs22\/root\/usr\/bin:$PATH; timeout 280 .\/node_modules\/.bin\/tsc --noEmit 2>&1 | grep -oE \"^src\/[^(]+\" | sort | uniq -c | sort -rn; echo \"DONE\"",
+                        "timeout": 300
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 63250,
+                "completion_tokens": 351,
+                "total_tokens": 63601,
+                "prompt_cache_hit_tokens": 62080,
+                "prompt_cache_miss_tokens": 1170,
+                "prompt_tokens_details": {
+                    "cached_tokens": 62080
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 174
+                },
+                "cached_tokens": 62080
+            },
+            "time": 1785691106
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_06fHJ1SDAezN3Jp71ox88358",
+            "content": "     93 src\/pages\/LandingPage.tsx\n     68 src\/App.tsx\n     65 src\/pages\/Staff.tsx\n     65 src\/pages\/PatientProfile.tsx\n     47 src\/pages\/PatientDashboard.tsx\n     45 src\/components\/PatientDashboard.tsx\n     31 src\/Layout.tsx\n     25 src\/pages\/BedManagement.tsx\n     20 src\/components\/UpgradedPrescriptionEMR.tsx\n     18 src\/components\/PrescriptionPadPreview.tsx\n     17 src\/pages\/Settings.tsx\n     14 src\/pages\/WardRound.tsx\n     14 src\/components\/DischargeSummaryTab.tsx\n     13 src\/components\/AIAssistantPanel.tsx\n     12 src\/components\/PatientTabs.tsx\n     11 src\/pages\/EmergencyPrescription.tsx\n     11 src\/pages\/dashboards\/AdminDashboard.tsx\n      9 src\/components\/PrescriptionPad.tsx\n      8 src\/pages\/Patients.tsx\n      8 src\/pages\/dashboards\/StaffDashboard.tsx\n      8 src\/components\/PatientSummaryCard.tsx\n      8 src\/components\/HistoryFeatures.tsx\n      6 src\/components\/AdminFrontPagePanel.tsx\n      5 src\/pages\/VisitPage.tsx\n      5 src\/components\/ReferralLetter.tsx\n      5 src\/components\/PatientForm.tsx\n      5 src\/components\/ClassroomSettings.tsx\n      4 src\/pages\/RegistrarDashboard.tsx\n      4 src\/pages\/dashboards\/InternDashboard.tsx\n      4 src\/components\/PatientTimeline.tsx\n      4 src\/components\/HandoverSystem.tsx\n      3 src\/pages\/dashboards\/MedicalOfficerDashboard.tsx\n      3 src\/pages\/dashboards\/ConsultantDashboard.tsx\n      3 src\/lib\/clinicalIntelligence.ts\n      3 src\/components\/VisitForm.tsx\n      2 src\/pages\/OtherPayment.tsx\n      2 src\/pages\/InvestigationPaymentPage.tsx\n      2 src\/pages\/dashboards\/NurseDashboard.tsx\n      2 src\/lib\/hybridStorage.ts\n      2 src\/hooks\/useQueries.ts\n      2 src\/components\/VitalVerification.tsx\n      2 src\/components\/PrescriptionForm.tsx\n      2 src\/components\/ConsentForm.tsx\n      1 src\/services\/users.ts\n      1 src\/services\/staff.ts\n      1 src\/lib\/storageAdapter.ts\n      1 src\/hooks\/useAdminSave.ts\n      1 src\/components\/ProcedureLog.tsx\n      1 src\/components\/PrescriptionEnhancements.tsx\n      1 src\/components\/NewPrescriptionMode.tsx\n      1 src\/components\/ClinicalAlertsPanel.tsx\n      1 src\/components\/AdmitPatientDialog.tsx\nDONE\n",
+            "is_error": false,
+            "time": 1785691170
+        },
+        {
+            "id": "msg_026db1a4d3",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785691253
+        },
+        {
+            "id": "msg_cc20006151",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The source tree is in a broken state with ~700 type errors across ~50 files. This is a much bigger problem than the migration itself. The prior \"migration\" work left the source in a non-compiling state \u2014 many files reference removed legacy modules (registry functions, StaffRole constants, loadRegistry, saveRegistry, etc.) and there's leftover corruption from the earlier edit attempts.\n\nLet me step back and think about the strategy here.\n\nThe migration goal is:\n1. Server-first PHP\/MySQL \u2014 services already do this\n2. Remove business data localStorage \u2014 many components still read\/write business data to localStorage\n3. Remove legacy code (canister, ICP, sync queue, hybridStorage, api.ts)\n4. Every page uses services \u2192 apiClient \u2192 PHP API\n5. Auth via PHP sessions only\n6. React Query invalidation\n7. Build and deploy\n8. Feature-by-feature\n\nThe immediate blocker: **the source does not compile**. There are ~700 type errors. The file corruption (pre-import garbage, duplicated lines) from previous sessions has damaged files, and references to removed legacy modules remain (e.g., `loadRegistry`, `saveRegistry`, `STAFF_ROLE_LABELS`, `StaffRole` in App.tsx; `currentDoctor`, `pathname`, `isAdmin` in Layout.tsx).\n\nWait \u2014 Layout.tsx errors like `Cannot find name 'currentDoctor'`, `'pathname'`, `'isAdmin'` suggest that Layout.tsx had props or context destructured that got removed. Let me look at Layout.tsx to understand.\n\nAlso `AIAssistantPanel.tsx` errors about `bigint` \u2014 these are type errors from the legacy `1_000_000n` BigInt conversions.\n\nThe scale is significant but let me be systematic. The key question: should I fix all ~700 type errors first (restore compilation), then do the migration feature-by-feature? The user said \"verify compilation\" after each feature \u2014 so compilation is the gate.\n\nActually, wait. Let me reconsider. The instructions say \"Do NOT modify unrelated features.\" But the source is broken \u2014 it can't build at all. Restoring the build is a prerequisite. The type errors are largely caused by:\n1. Corruption from previous edits (pre-import garbage) \u2014 I fixed 4 files\n2. References to removed legacy modules (registry functions, StaffRole, etc.) \u2014 these need restoration or proper replacement\n\nLet me examine what's actually missing in App.tsx, Layout.tsx, and the others. The `loadRegistry`\/`saveRegistry`\/`loadPatientRegistry`\/`savePatientRegistry`\/`STAFF_ROLE_LABELS`\/`ROLE_HIERARCHY_ORDER`\/`StaffRole`\/`appendAuditLog` \u2014 these were likely in a removed `lib\/api.ts` or a legacy helpers module. Let me check what those functions were.\n\nLet me first look at the git history to see if there's a commit where the code compiled. The dist from Jul 28 was built and works. So the source at Jul 28 compiled. Since then, edits have broken it. Let me check whether the current broken state is in git or if I can restore from git.\n\nActually earlier I saw: `git status --short` showed no modifications to useQueries.ts etc. \u2014 meaning the corruption is COMMITTED. The auto-snapshot commits contain the broken state. So git can't help restore to a clean state easily \u2014 unless an earlier commit has the clean version.\n\nLet me check: is there a commit around Jul 28 (when dist was built) where the source compiled? The dist was built Jul 28 from source. Let me find the commit closest to Jul 28 that has the pre-corruption source.\n\nActually, a smarter approach: the dist (Jul 28) contains the COMPILED version of the source from that date. The source files for the parts that matter (services, hooks, lib) are visible in dist (unminified). I can reconstruct from dist if needed.\n\nBut first, let me understand the current App.tsx and Layout.tsx errors better. Let me look at what's missing.\n\nLet me look at App.tsx around the errors, and check imports."
+                },
+                {
+                    "type": "text",
+                    "text": "The source tree has ~700 type errors \u2014 it cannot build. This is the true starting point: **the previous migration work left the source non-compiling**. Before any feature work, I must restore compilation. Let me understand the root causes in the biggest files."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_VqPg4PN5lCKhgs08oUki4642",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && echo \"=== App.tsx imports (top 60 lines) ===\"; sed -n '1,60p' App.tsx | grep -n \"^import\\|^} from\\|from '\" | head -40; echo \"\"; echo \"=== does App.tsx import useQueries legacy? ===\"; grep -n \"loadRegistry\\|saveRegistry\\|loadPatientRegistry\\|savePatientRegistry\\|appendAuditLog\\|ROLE_HIERARCHY_ORDER\\|STAFF_ROLE\\|StaffRole\" App.tsx | head -20"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 63814,
+                "completion_tokens": 1123,
+                "total_tokens": 64937,
+                "prompt_cache_hit_tokens": 60032,
+                "prompt_cache_miss_tokens": 3782,
+                "prompt_tokens_details": {
+                    "cached_tokens": 60032
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 892
+                },
+                "cached_tokens": 60032
+            },
+            "time": 1785691266
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_VqPg4PN5lCKhgs08oUki4642",
+            "content": "=== App.tsx imports (top 60 lines) ===\n1:import { EmailAuthProvider, useEmailAuth, useInactivityTimer } from \".\/hooks\/useEmailAuth\";\n2:import type { DoctorAccount, PatientAccount } from \".\/services\/auth\";\n3:import { Badge } from \"@\/components\/ui\/badge\";\n4:import { Button } from \"@\/components\/ui\/button\";\n5:import {\n10:} from \"@\/components\/ui\/dialog\";\n11:import { Input } from \"@\/components\/ui\/input\";\n12:import { Label } from \"@\/components\/ui\/label\";\n13:import {\n19:} from \"@\/components\/ui\/select\";\n20:import { Toaster } from \"@\/components\/ui\/sonner\";\n21:import { Switch } from \"@\/components\/ui\/switch\";\n22:import { Tabs, TabsContent, TabsList, TabsTrigger } from \"@\/components\/ui\/tabs\";\n23:import { useQueryClient } from \"@tanstack\/react-query\";\n24:import {\n31:} from \"@tanstack\/react-router\";\n32:import { Bell, CheckCircle2, Loader2, ShieldCheck, Stethoscope, User, UserCheck, X, XCircle } from \"lucide-react\";\n33:import { motion } from \"motion\/react\";\n34:import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from \"react\";\n35:import Layout from \".\/Layout\";\n36:import { useAdminAuth } from \".\/hooks\/useAdminAuth\";\n37:import { storage } from \"@\/lib\/storageAdapter\";\n\n=== does App.tsx import useQueries legacy? ===\n63:\/\/ Note: ROLE_HIERARCHY_ORDER, STAFF_ROLE_COLORS, STAFF_ROLE_LABELS, StaffRole \n217:  const role = (currentDoctor?.role ?? \"doctor\") as StaffRole;\n219:  \/\/ granular StaffRole separately so permission-gated actions use the real role.\n245:  const [suRole, setSuRole] = useState<StaffRole>(\"doctor\");\n418:              onValueChange={(v) => setSuRole(v as StaffRole)}\n424:                {ROLE_HIERARCHY_ORDER.map((r) => (\n428:                        className={`w-2 h-2 rounded-full ${(STAFF_ROLE_COLORS[r] ?? \"\").split(\" \")[0]}`}\n430:                      {STAFF_ROLE_LABELS[r]}\n772:  const [approvalRoles, setApprovalRoles] = useState<Record<string, StaffRole>>(\n775:  const [reassignMap, setReassignMap] = useState<Record<string, StaffRole>>({});\n778:    setStaffAccounts(loadRegistry().filter((d) => d.status === \"pending\"));\n780:      loadPatientRegistry().filter((p) => p.status === \"pending\"),\n792:    const reg = loadRegistry();\n796:      saveRegistry(reg);\n799:        toast.success(`Account approved as ${STAFF_ROLE_LABELS[role]}`),\n804:    const reg = loadRegistry();\n808:      saveRegistry(reg);\n814:    const reg = loadPatientRegistry();\n818:      savePatientRegistry(reg);\n826:    const reg = loadPatientRegistry();\n",
+            "is_error": false,
+            "time": 1785691266
+        },
+        {
+            "id": "msg_5bc53a9ed8",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ET_ECpEh6RllSJSWGh8qMHk0025",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && sed -n '60,75p' App.tsx; echo \"=== StaffRole\/registry definitions anywhere? ===\"; grep -rln \"export.*ROLE_HIERARCHY_ORDER\\|export.*STAFF_ROLE_LABELS\\|export type StaffRole\\|export.*loadRegistry\" --include=\"*.ts\" --include=\"*.tsx\" . | grep -v node_modules | head"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 65640,
+                "completion_tokens": 151,
+                "total_tokens": 65791,
+                "prompt_cache_hit_tokens": 64896,
+                "prompt_cache_miss_tokens": 744,
+                "prompt_tokens_details": {
+                    "cached_tokens": 64896
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 0
+                },
+                "cached_tokens": 64896
+            },
+            "time": 1785691270
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ET_ECpEh6RllSJSWGh8qMHk0025",
+            "content": "const TotalIncome = lazy(() => import(\".\/pages\/TotalIncome\"));\nconst VisitPage = lazy(() => import(\".\/pages\/VisitPage\"));\nconst WardRound = lazy(() => import(\".\/pages\/WardRound\"));\n\/\/ Note: ROLE_HIERARCHY_ORDER, STAFF_ROLE_COLORS, STAFF_ROLE_LABELS, StaffRole \n\/\/ were removed as they are not used in this file.\n\n\/\/ \u2500\u2500 Route tree \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nfunction RootLayoutComponent() {\n  const state = useRouterState();\n  const pathname = state.location.pathname;\n  const currentPageName =\n    pathname === \"\/\" || pathname === \"\/Patients\"\n      ? \"Patients\"\n      : pathname === \"\/Dashboard\"\n        ? \"Dashboard\"\n=== StaffRole\/registry definitions anywhere? ===\n.\/types\/index.ts\n.\/hooks\/useAdminSave.ts\n",
+            "is_error": false,
+            "time": 1785691270
+        },
+        {
+            "id": "msg_c187758968",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "So the situation is clear: the previous migration removed `ROLE_HIERARCHY_ORDER`, `STAFF_ROLE_COLORS`, `STAFF_ROLE_LABELS`, `StaffRole`, `loadRegistry`, `saveRegistry`, `loadPatientRegistry`, `savePatientRegistry`, `appendAuditLog` from their source files but **left callers referencing them in App.tsx**. This left the code broken.\n\nLet me check what's in types\/index.ts and hooks\/useAdminSave.ts for StaffRole definitions."
+                },
+                {
+                    "type": "text",
+                    "text": "The previous migration removed definitions but left callers \u2014 a half-finished refactor. Let me find the intended replacements:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_KJ0lhCJYB7PWeGE2JFkt0568",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && echo \"=== StaffRole in types ===\"; grep -n \"StaffRole\\|ROLE_HIERARCHY\\|STAFF_ROLE\" types\/index.ts | head -20; echo \"\"; echo \"=== useAdminSave.ts ===\"; cat hooks\/useAdminSave.ts; echo \"\"; echo \"=== does dist have these consts? ===\"; grep -o \"STAFF_ROLE_LABELS\\s*=\\s*{[^}]*}\" ..\/dist\/assets\/useQueries-as31P-wC.js 2>\/dev\/null | head -c 500"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 65988,
+                "completion_tokens": 319,
+                "total_tokens": 66307,
+                "prompt_cache_hit_tokens": 65664,
+                "prompt_cache_miss_tokens": 324,
+                "prompt_tokens_details": {
+                    "cached_tokens": 65664
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 109
+                },
+                "cached_tokens": 65664
+            },
+            "time": 1785691275
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_KJ0lhCJYB7PWeGE2JFkt0568",
+            "content": "=== StaffRole in types ===\n6:export type StaffRole =\n23:export function isConsultantType(role: StaffRole): boolean {\n34:export function canVerifyVitals(role: StaffRole): boolean {\n44:export const STAFF_ROLE_LABELS: Record<\n45:  Exclude<StaffRole, \"admin\" | \"patient\" | \"doctor\">,\n62:export const ROLE_HIERARCHY_ORDER: Exclude<StaffRole, \"admin\" | \"patient\">[] = [\n75:export const STAFF_ROLE_COLORS: Record<\n76:  Exclude<StaffRole, \"admin\" | \"patient\">,\n94:export const STAFF_ROLE_ACTIVE_BG: Record<\n95:  Exclude<StaffRole, \"patient\">,\n114:export const STAFF_ROLE_BORDER_COLOR: Record<\n115:  Exclude<StaffRole, \"patient\">,\n134:export const STAFF_ROLE_TEXT_COLOR: Record<\n135:  Exclude<StaffRole, \"patient\">,\n322:  createdByRole: StaffRole;\n361:  recordedByRole: StaffRole;\n377:  orderedByRole: StaffRole;\n398:  authorRole: StaffRole;\n416:  changedByRole: StaffRole;\n723:  createdByRole: StaffRole;\n\n=== useAdminSave.ts ===\n\/**\n * Admin Save Operations \u2014 PHP\/MySQL Backend\n *\n * All admin operations go through the PHP API via authService and auditService.\n * No localStorage used for any data storage.\n *\/\n\nimport type { StaffRole } from \"..\/types\";\nimport { authService } from \"..\/services\/auth\";\nimport { staffService } from \"..\/services\/staff\";\nimport { patientService } from \"..\/services\/patients\";\nimport { auditService } from \"..\/services\/audit\";\nimport type { AuditLogEntry } from \"..\/services\/audit\";\nimport { post } from \"..\/lib\/apiClient\";\n\n\/\/ Re-export types for convenience\nexport type { AuditLogEntry } from \"..\/services\/audit\";\nexport type { DoctorAccount, PatientAccount } from \"..\/services\/auth\";\n\n\/\/ \u2500\u2500 In-memory state (temporary bridge \u2014 will be fully async) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\/** In-memory doctor registry (mirrors server state) *\/\nlet _doctorRegistry: any[] = [];\n\/** In-memory patient registry (mirrors server state) *\/\nlet _patientRegistry: any[] = [];\n\/** In-memory audit log cache *\/\nlet _auditLogCache: AuditLogEntry[] = [];\n\n\/\/ \u2500\u2500 Fetch helpers (async \u2014 call on app start to populate cache) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\/** Fetch doctor registry from PHP API via staffService and populate cache *\/\nexport async function fetchRegistry(): Promise<any[]> {\n  try {\n    const users = await staffService.getAll();\n    _doctorRegistry = users;\n  } catch {\n    _doctorRegistry = [];\n  }\n  return _doctorRegistry;\n}\n\n\/** Fetch patient registry from PHP API via patientService and populate cache *\/\nexport async function fetchPatientRegistry(): Promise<any[]> {\n  try {\n    const patients = await patientService.getAll();\n    _patientRegistry = patients;\n  } catch {\n    _patientRegistry = [];\n  }\n  return _patientRegistry;\n}\n\n\/** Fetch audit log from PHP API via auditService and populate cache *\/\nexport async function fetchAuditLog(): Promise<AuditLogEntry[]> {\n  try {\n    _auditLogCache = await auditService.getAll();\n  } catch {\n    _auditLogCache = [];\n  }\n  return _auditLogCache;\n}\n\n\/\/ \u2500\u2500 Synchronous read accessors (used by existing UI code) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\/** Get cached doctor registry (synchronous) *\/\nexport function loadRegistry(): any[] {\n  return _doctorRegistry;\n}\n\n\/** Get cached patient registry (synchronous) *\/\nexport function loadPatientRegistry(): any[] {\n  return _patientRegistry;\n}\n\n\/** Get cached audit log (synchronous) *\/\nexport function getAuditLog(): AuditLogEntry[] {\n  return _auditLogCache;\n}\n\n\/\/ \u2500\u2500 Synchronous write helpers (update cache, server persist via API) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\/** Save doctor registry (updates cache + delegates to PHP API) *\/\nexport function saveRegistry(registry: any[]): boolean {\n  _doctorRegistry = registry;\n  return true;\n}\n\n\/** Save patient registry (updates cache + delegates to PHP API) *\/\nexport function savePatientRegistry(registry: any[]): boolean {\n  _patientRegistry = registry;\n  return true;\n}\n\n\/\/ \u2500\u2500 Audit helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\/** Append an entry to the in-memory audit log cache *\/\nexport function appendAuditLog(entry: {\n  timestamp?: string;\n  userRole: string;\n  userName: string;\n  action: string;\n  target: string;\n}): void {\n  const logEntry: AuditLogEntry = {\n    id: Date.now(),\n    timestamp: entry.timestamp ?? new Date().toISOString(),\n    userRole: entry.userRole,\n    userName: entry.userName,\n    action: entry.action,\n    target: entry.target,\n    details: JSON.stringify({\n      userRole: entry.userRole,\n      userName: entry.userName,\n    }),\n  };\n  _auditLogCache.push(logEntry);\n  \/\/ Fire-and-forget persist to PHP API\n  post(\"\/audit\/create.php\", {\n    action: entry.action,\n    target: entry.target,\n    details: JSON.stringify({\n      userRole: entry.userRole,\n      userName: entry.userName,\n    }),\n  }).catch(() => {});\n}\n\n\/\/ \u2500\u2500 Constants \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nexport const STAFF_ROLE_LABELS: Record<StaffRole, string> = {\n  admin: \"Admin\",\n  consultant_doctor: \"Consultant Doctor\",\n  assistant_professor: \"Assistant Professor\",\n  associate_professor: \"Associate Professor\",\n  professor: \"Professor\",\n  medical_officer: \"Medical Officer\",\n  assistant_registrar: \"Assistant Registrar\",\n  registrar: \"Registrar\",\n  intern_doctor: \"Intern Doctor\",\n  nurse: \"Nurse\",\n  reception: \"Reception\",\n  staff: \"Staff\",\n  doctor: \"Doctor\",\n  patient: \"Patient\",\n};\n\n\/\/ \u2500\u2500 Enhanced save wrappers (compatibility shims) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\/**\n * Save doctor registry with error handling (delegated to PHP API).\n *\/\nexport const enhancedSaveRegistry = async (\n  registry: any[],\n): Promise<boolean> => {\n  try {\n    \/\/ Registry updates go through authService operations\n    saveRegistry(registry);\n    return true;\n  } catch {\n    return false;\n  }\n};\n\n\/**\n * Save patient registry with error handling (delegated to PHP API).\n *\/\nexport const enhancedSavePatientRegistry = async (\n  registry: any[],\n): Promise<boolean> => {\n  try {\n    savePatientRegistry(registry);\n    return true;\n  } catch {\n    return false;\n  }\n};\n\n\/\/ \u2500\u2500 Admin actions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\/**\n * Admin action: Approve staff account.\n *\/\nexport const approveStaffAccount = async (\n  accountId: number,\n  selectedRole: StaffRole,\n): Promise<boolean> => {\n  try {\n    await authService.approveAccount(accountId, selectedRole);\n    await appendAuditLog({\n      userRole: \"admin\",\n      userName: \"Admin\",\n      action: `Approved account as ${STAFF_ROLE_LABELS[selectedRole] ?? selectedRole}`,\n      target: `Account #${accountId}`,\n    });\n    return true;\n  } catch (err) {\n    console.error(\"[Admin] Failed to approve staff:\", err);\n    return false;\n  }\n};\n\n\/**\n * Admin action: Reject staff account.\n *\/\nexport const rejectStaffAccount = async (\n  accountId: number,\n): Promise<boolean> => {\n  try {\n    await authService.rejectAccount(accountId);\n    await appendAuditLog({\n      userRole: \"admin\",\n      userName: \"Admin\",\n      action: \"Rejected account\",\n      target: `Account #${accountId}`,\n    });\n    return true;\n  } catch (err) {\n    console.error(\"[Admin] Failed to reject staff:\", err);\n    return false;\n  }\n};\n\n\/**\n * Admin action: Approve patient account.\n *\/\nexport const approvePatientAccount = async (\n  patientId: number,\n): Promise<boolean> => {\n  try {\n    await authService.approvePatient(patientId);\n    await appendAuditLog({\n      userRole: \"admin\",\n      userName: \"Admin\",\n      action: \"Approved patient account\",\n      target: `Patient #${patientId}`,\n    });\n    return true;\n  } catch (err) {\n    console.error(\"[Admin] Failed to approve patient:\", err);\n    return false;\n  }\n};\n\n\/**\n * Admin action: Reject patient account.\n *\/\nexport const rejectPatientAccount = async (\n  patientId: number,\n): Promise<boolean> => {\n  try {\n    await authService.rejectPatient(patientId);\n    await appendAuditLog({\n      userRole: \"admin\",\n      userName: \"Admin\",\n      action: \"Rejected patient account\",\n      target: `Patient #${patientId}`,\n    });\n    return true;\n  } catch (err) {\n    console.error(\"[Admin] Failed to reject patient:\", err);\n    return false;\n  }\n};\n\n\/**\n * Admin action: Reassign staff role.\n *\/\nexport const reassignStaffRole = async (\n  accountId: number,\n  newRole: StaffRole,\n): Promise<boolean> => {\n  try {\n    await authService.reassignRole(accountId, newRole);\n    await appendAuditLog({\n      userRole: \"admin\",\n      userName: \"Admin\",\n      action: `Role changed to ${STAFF_ROLE_LABELS[newRole]}`,\n      target: `Account #${accountId}`,\n    });\n    return true;\n  } catch (err) {\n    console.error(\"[Admin] Failed to reassign role:\", err);\n    return false;\n  }\n};\n\n\/**\n * Verify PHP API connectivity.\n *\/\nexport const verifyStorageCapacity = async (): Promise<{\n  available: boolean;\n  percentUsed: number | null;\n  message: string;\n}> => {\n  try {\n    \/\/ Check if the server is reachable\n    await post(\"\/auth\/verify.php\");\n    return {\n      available: true,\n      percentUsed: null,\n      message: \"Server storage available\",\n    };\n  } catch {\n    return {\n      available: false,\n      percentUsed: null,\n      message: \"Server unreachable - check your connection\",\n    };\n  }\n};\n\n=== does dist have these consts? ===\n",
+            "is_error": false,
+            "time": 1785691275
+        },
+        {
+            "id": "msg_a3dc25b5a1",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The `useAdminSave.ts` file contains all the replacement functions: `loadRegistry`, `saveRegistry`, `loadPatientRegistry`, `savePatientRegistry`, `appendAuditLog`, `STAFF_ROLE_LABELS`. But `ROLE_HIERARCHY_ORDER` and `STAFF_ROLE_COLORS` are in `types\/index.ts`. And `StaffRole` is also in `types\/index.ts`.\n\nSo App.tsx is missing imports from `.\/hooks\/useAdminSave` and `.\/types`. Let me check what App.tsx currently imports from these."
+                },
+                {
+                    "type": "text",
+                    "text": "`useAdminSave.ts` already contains the replacements. App.tsx is just missing the imports. Let me check the full set of missing symbols in App.tsx and what it imports:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_h8TxLHZqIgMHVhf83a6H3807",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && echo \"=== App.tsx: all imports of hooks\/useAdminSave, types, storageAdapter ===\"; grep -n \"useAdminSave\\|from \\\"\\.\/types\\|from \\\"@\/lib\/storageAdapter\\|from \\\"\\.\/hooks\/useQueries\" App.tsx; echo \"\"; echo \"=== App.tsx: unique missing symbols ===\"; grep -oE \"Cannot find name '[^']+'\" \/dev\/null 2>\/dev\/null; timeout 280 .\/node_modules\/.bin\/tsc --noEmit 2>&1 | grep \"^src\/App.tsx\" | grep -oE \"Cannot find name '[^']+'\" | sort -u",
+                        "timeout": 300
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 68585,
+                "completion_tokens": 386,
+                "total_tokens": 68971,
+                "prompt_cache_hit_tokens": 66304,
+                "prompt_cache_miss_tokens": 2281,
+                "prompt_tokens_details": {
+                    "cached_tokens": 66304
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 121
+                },
+                "cached_tokens": 66304
+            },
+            "time": 1785691280
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_h8TxLHZqIgMHVhf83a6H3807",
+            "content": "=== App.tsx: all imports of hooks\/useAdminSave, types, storageAdapter ===\n37:import { storage } from \"@\/lib\/storageAdapter\";\n\n=== App.tsx: unique missing symbols ===\n",
+            "is_error": false,
+            "time": 1785691280
+        },
+        {
+            "id": "msg_1eeea63aee",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ET_hi5zOzVLAqm9lIhq436s4275",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend && export PATH=\/opt\/alt\/alt-nodejs22\/root\/usr\/bin:$PATH; timeout 280 .\/node_modules\/.bin\/tsc --noEmit 2>&1 | grep \"^src\/App.tsx\" | grep -oE \"Cannot find name '[^']+'|does not exist on type '[^']+'|not assignable to parameter of type '[^']+'|Property '[^']+' does not exist\" | sort | uniq -c | sort -rn",
+                        "timeout": 300
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 69026,
+                "completion_tokens": 186,
+                "total_tokens": 69212,
+                "prompt_cache_hit_tokens": 68864,
+                "prompt_cache_miss_tokens": 162,
+                "prompt_tokens_details": {
+                    "cached_tokens": 68864
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 0
+                },
+                "cached_tokens": 68864
+            },
+            "time": 1785691284
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ET_hi5zOzVLAqm9lIhq436s4275",
+            "content": "     11 Property 'registerNumber' does not exist\n      9 Cannot find name 'STAFF_ROLE_LABELS'\n      9 Cannot find name 'StaffRole'\n      7 Property 'name' does not exist\n      6 Cannot find name 'loadRegistry'\n      4 Cannot find name 'loadPatientRegistry'\n      4 Cannot find name 'appendAuditLog'\n      3 not assignable to parameter of type 'string'\n      3 Cannot find name 'STAFF_ROLE_COLORS'\n      3 Cannot find name 'saveRegistry'\n      3 Cannot find name 'ROLE_HIERARCHY_ORDER'\n      2 Cannot find name 'savePatientRegistry'\n      1 Property 'createdAt' does not exist\n",
+            "is_error": false,
+            "time": 1785691346
+        },
+        {
+            "id": "msg_e3e6ef3bcd",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "App.tsx needs:\n1. Import from `.\/types`: `StaffRole`, `ROLE_HIERARCHY_ORDER`, `STAFF_ROLE_COLORS`\n2. Import from `.\/hooks\/useAdminSave`: `STAFF_ROLE_LABELS`, `loadRegistry`, `saveRegistry`, `loadPatientRegistry`, `savePatientRegistry`, `appendAuditLog`\n3. `Property 'registerNumber' does not exist` on PatientAccount \u2014 the type uses `register_number` (snake_case). App.tsx uses `registerNumber`. \n4. `Property 'name' does not exist` on DoctorAccount\/PatientAccount \u2014 types use `full_name`.\n5. `Property 'createdAt' does not exist` on DoctorAccount.\n\nLet me check the current App.tsx imports area and see what's already imported from useAdminSave (maybe partially). Let me look at App.tsx around lines 200-260 to understand the currentDoctor usage and what types it uses.\n\nActually, the cleanest approach here: App.tsx references legacy registry functions (`loadRegistry`, `saveRegistry`, etc.) that are synchronous localStorage-style APIs. The `useAdminSave.ts` module provides them as in-memory cache. But better: App.tsx should use React Query + services directly. However, per the user's directive \"Do NOT modify unrelated features\" and \"work feature by feature\", the first priority is **restore compilation** \u2014 the minimum change to make the code build, then refactor features one at a time.\n\nGiven the scale (~700 errors), let me be pragmatic: add the missing imports to App.tsx so it compiles, and fix the type mismatches (registerNumber \u2192 register_number, name \u2192 full_name) minimally.\n\nBut wait \u2014 this is a big surface. Let me reconsider the strategy. There are ~700 errors across 50 files. Many are likely:\n1. Missing imports of `useAdminSave` helpers and `types` constants (App.tsx, Layout.tsx, Staff.tsx, dashboards, etc.)\n2. Type mismatches from BigInt \u2192 number (AIAssistantPanel, etc.)\n3. `currentDoctor`\/`isAdmin`\/`pathname` missing in Layout.tsx \u2014 this is a bigger structural issue\n4. `storage.length`\/`storage.key` issues in storageAdapter (the `return ;` bug I saw earlier)\n\nLet me look at Layout.tsx to understand the currentDoctor\/isAdmin\/pathname errors."
+                },
+                {
+                    "type": "text",
+                    "text": "App.tsx needs imports restored. But first let me understand the Layout.tsx structural errors (`currentDoctor`, `isAdmin`, `pathname` missing) \u2014 that's a bigger issue:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_r67XQBZdCNatWZNR0usl7274",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && echo \"=== Layout.tsx: first 120 lines ===\"; sed -n '1,120p' Layout.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 69369,
+                "completion_tokens": 650,
+                "total_tokens": 70019,
+                "prompt_cache_hit_tokens": 69120,
+                "prompt_cache_miss_tokens": 249,
+                "prompt_tokens_details": {
+                    "cached_tokens": 69120
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 519
+                },
+                "cached_tokens": 69120
+            },
+            "time": 1785691353
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_r67XQBZdCNatWZNR0usl7274",
+            "content": "=== Layout.tsx: first 120 lines ===\nimport { Badge } from \"@\/components\/ui\/badge\";\nimport { Button } from \"@\/components\/ui\/button\";\nimport { cn } from \"@\/lib\/utils\";\nimport { Link, useRouterState } from \"@tanstack\/react-router\";\nimport {\n  AlertTriangle,\n  BarChart3,\n  Bed,\n  CalendarDays,\n  CheckCircle2,\n  ChevronDown,\n  ChevronRight,\n  ClipboardList,\n  Clock,\n  DollarSign,\n  FlaskConical,\n  Hospital,\n  LayoutDashboard,\n  Loader2,\n  Menu,\n  PanelLeftClose,\n  PanelLeftOpen,\n  Pill,\n  PlusCircle,\n  RefreshCw,\n  ShieldAlert,\n  Siren,\n  Stethoscope,\n  UserCircle,\n  Users,\n  Wifi,\n  WifiOff,\n  X,\n} from \"lucide-react\";\nimport { useEffect, useRef, useState } from \"react\";\nimport {\n  type EmergencyNotification,\n  acknowledgeEmergencyNotification,\n  getUnacknowledgedEmergencyNotifications,\n} from \".\/components\/patientDashboardTypes\";\nimport { useAdminAuth } from \".\/hooks\/useAdminAuth\";\nimport { useEmailAuth } from \".\/hooks\/useEmailAuth\";\nimport { useOnlineStatus } from \".\/hooks\/useOnlineStatus\";\nimport { getPermissionsForRole } from \".\/hooks\/useRolePermissions\";\nimport {\n  STAFF_ROLE_ACTIVE_BG,\n  STAFF_ROLE_BORDER_COLOR,\n  STAFF_ROLE_COLORS,\n  STAFF_ROLE_LABELS,\n  STAFF_ROLE_TEXT_COLOR,\n} from \".\/types\";\nimport type { StaffRole } from \".\/types\";\nimport { storage } from \"@\/lib\/storageAdapter\";\n\n\/\/ Roles\nconst MED_ALERT_ROLES: StaffRole[] = [\"nurse\", \"intern_doctor\"];\nconst EMERGENCY_RX_ROLES: StaffRole[] = [\n  \"consultant_doctor\",\n  \"medical_officer\",\n  \"doctor\",\n  \"admin\",\n  \"assistant_professor\",\n  \"associate_professor\",\n  \"professor\",\n  \"registrar\",\n  \"assistant_registrar\",\n];\nconst WARD_ROUND_ROLES: StaffRole[] = [\n  \"doctor\",\n  \"consultant_doctor\",\n  \"medical_officer\",\n  \"intern_doctor\",\n  \"nurse\",\n  \"admin\",\n  \"assistant_professor\",\n  \"associate_professor\",\n  \"professor\",\n  \"registrar\",\n  \"assistant_registrar\",\n];\nconst BED_ROLES: StaffRole[] = [\n  \"admin\",\n  \"doctor\",\n  \"consultant_doctor\",\n  \"medical_officer\",\n  \"staff\",\n  \"registrar\",\n  \"assistant_registrar\",\n];\nconst STAFF_MGMT_ROLES: StaffRole[] = [\"admin\", \"consultant_doctor\"];\n\ninterface LayoutProps {\n  children: React.ReactNode;\n  currentPageName: string;\n}\nimport { Badge } from \"@\/components\/ui\/badge\";\nfunction loadBool(key: string, def: boolean): boolean {\n  try {\n    const v = storage.getItem(key);\n    if (v === null) return def;\n    return v === \"true\";\n  } catch {\n    return def;\n  }\n}\nfunction saveBool(key: string, val: boolean) {\n  try {\n    storage.setItem(key, String(val));\n  } catch {}\n}\nimport { Badge } from \"@\/components\/ui\/badge\";\nfunction getPendingApprovalCount(): number {\n  try {\n    const registry = JSON.parse(\n      storage.getItem(\"registry\") ?? \"[]\",\n    ) as Array<{ approvalStatus?: string; status?: string }>;\n    const patientRegistry = JSON.parse(\n      storage.getItem(\"patient_registry\") ?? \"[]\",\n    ) as Array<{ approvalStatus?: string; status?: string }>;\n    const staffPending = registry.filter(\n",
+            "is_error": false,
+            "time": 1785691353
+        },
+        {
+            "id": "msg_4b4a36b85d",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Layout.tsx has duplicate `import { Badge }` statements and pre-import garbage embedded mid-file (the `loadBool`\/`saveBool` functions injected between imports). This is corruption from previous edit attempts. The file structure is broken.\n\nI need to see the whole Layout.tsx to understand its real structure. It's a large file. Let me check its size and see the corruption more comprehensively."
+                },
+                {
+                    "type": "text",
+                    "text": "Layout.tsx has mid-file corruption too (duplicate Badge imports, injected functions between imports). Let me assess the full scope of this corruption pattern:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_RoCxi1d2ZGLyKyBU2ek94719",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && echo \"=== Layout.tsx size ===\"; wc -l Layout.tsx; echo \"\"; echo \"=== duplicate Badge imports ===\"; grep -n \"^import { Badge }\" Layout.tsx; echo \"\"; echo \"=== all import statements with line numbers ===\"; grep -n \"^import\" Layout.tsx; echo \"\"; echo \"=== mid-file injections: loadBool\/saveBool\/getPendingApprovalCount ===\"; grep -n \"function loadBool\\|function saveBool\\|function getPendingApprovalCount\\|^function \\|^const .* = (\\|^export \" Layout.tsx | head -30"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 70854,
+                "completion_tokens": 314,
+                "total_tokens": 71168,
+                "prompt_cache_hit_tokens": 70016,
+                "prompt_cache_miss_tokens": 838,
+                "prompt_tokens_details": {
+                    "cached_tokens": 70016
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 84
+                },
+                "cached_tokens": 70016
+            },
+            "time": 1785691358
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_RoCxi1d2ZGLyKyBU2ek94719",
+            "content": "=== Layout.tsx size ===\n1760 Layout.tsx\n\n=== duplicate Badge imports ===\n1:import { Badge } from \"@\/components\/ui\/badge\";\n96:import { Badge } from \"@\/components\/ui\/badge\";\n111:import { Badge } from \"@\/components\/ui\/badge\";\n\n=== all import statements with line numbers ===\n1:import { Badge } from \"@\/components\/ui\/badge\";\n2:import { Button } from \"@\/components\/ui\/button\";\n3:import { cn } from \"@\/lib\/utils\";\n4:import { Link, useRouterState } from \"@tanstack\/react-router\";\n5:import {\n35:import { useEffect, useRef, useState } from \"react\";\n36:import {\n41:import { useAdminAuth } from \".\/hooks\/useAdminAuth\";\n42:import { useEmailAuth } from \".\/hooks\/useEmailAuth\";\n43:import { useOnlineStatus } from \".\/hooks\/useOnlineStatus\";\n44:import { getPermissionsForRole } from \".\/hooks\/useRolePermissions\";\n45:import {\n52:import type { StaffRole } from \".\/types\";\n53:import { storage } from \"@\/lib\/storageAdapter\";\n96:import { Badge } from \"@\/components\/ui\/badge\";\n111:import { Badge } from \"@\/components\/ui\/badge\";\n\n=== mid-file injections: loadBool\/saveBool\/getPendingApprovalCount ===\n97:function loadBool(key: string, def: boolean): boolean {\n106:function saveBool(key: string, val: boolean) {\n112:function getPendingApprovalCount(): number {\n132:function getUnpaidInvoicesCount(): number {\n155:function getPendingHandoverCount(): number {\n168:function getAdmittedPatientCount(): number {\n206:function NavBadge({ count }: { count: number }) {\n215:export default function Layout({ children, currentPageName }: LayoutProps) {\n1424:function DesktopHospitalDropdown({\n1600:function MobileNavLink({\n1680:function SidebarIconItem({\n",
+            "is_error": false,
+            "time": 1785691358
+        },
+        {
+            "id": "msg_83038dfcb3",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ET_GLAvCFoHFJJVtMItzDlc3440",
+                    "name": "read_file",
+                    "input": {
+                        "limit": 105,
+                        "offset": 90,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/Layout.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 71599,
+                "completion_tokens": 95,
+                "total_tokens": 71694,
+                "prompt_cache_hit_tokens": 71168,
+                "prompt_cache_miss_tokens": 431,
+                "prompt_tokens_details": {
+                    "cached_tokens": 71168
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 0
+                },
+                "cached_tokens": 71168
+            },
+            "time": 1785691361
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ET_GLAvCFoHFJJVtMItzDlc3440",
+            "content": "   90 | const STAFF_MGMT_ROLES: StaffRole[] = [\"admin\", \"consultant_doctor\"];\n   91 | \n   92 | interface LayoutProps {\n   93 |   children: React.ReactNode;\n   94 |   currentPageName: string;\n   95 | }\n   96 | import { Badge } from \"@\/components\/ui\/badge\";\n   97 | function loadBool(key: string, def: boolean): boolean {\n   98 |   try {\n   99 |     const v = storage.getItem(key);\n  100 |     if (v === null) return def;\n  101 |     return v === \"true\";\n  102 |   } catch {\n  103 |     return def;\n  104 |   }\n  105 | }\n  106 | function saveBool(key: string, val: boolean) {\n  107 |   try {\n  108 |     storage.setItem(key, String(val));\n  109 |   } catch {}\n  110 | }\n  111 | import { Badge } from \"@\/components\/ui\/badge\";\n  112 | function getPendingApprovalCount(): number {\n  113 |   try {\n  114 |     const registry = JSON.parse(\n  115 |       storage.getItem(\"registry\") ?? \"[]\",\n  116 |     ) as Array<{ approvalStatus?: string; status?: string }>;\n  117 |     const patientRegistry = JSON.parse(\n  118 |       storage.getItem(\"patient_registry\") ?? \"[]\",\n  119 |     ) as Array<{ approvalStatus?: string; status?: string }>;\n  120 |     const staffPending = registry.filter(\n  121 |       (a) => a.approvalStatus === \"pending\" || a.status === \"pending\",\n  122 |     ).length;\n  123 |     const patientPending = patientRegistry.filter(\n  124 |       (a) => a.approvalStatus === \"pending\" || a.status === \"pending\",\n  125 |     ).length;\n  126 |     return staffPending + patientPending;\n  127 |   } catch {\n  128 |     return 0;\n  129 |   }\n  130 | }\n  131 | \n  132 | function getUnpaidInvoicesCount(): number {\n  133 |   try {\n  134 |     const keys = [\n  135 |       \"appointment_payments\",\n  136 |       \"investigation_payments\",\n  137 |       \"procedure_payments\",\n  138 |       \"other_payments\",\n  139 |     ];\n  140 |     let total = 0;\n  141 |     for (const key of keys) {\n  142 |       const items = JSON.parse(storage.getItem(key) ?? \"[]\") as Array<{\n  143 |         status?: string;\n  144 |       }>;\n  145 |       total += items.filter(\n  146 |         (i) => i.status === \"unpaid\" || i.status === \"pending\",\n  147 |       ).length;\n  148 |     }\n  149 |     return total;\n  150 |   } catch {\n  151 |     return 0;\n  152 |   }\n  153 | }\n  154 | \n  155 | function getPendingHandoverCount(): number {\n  156 |   try {\n  157 |     const handovers = JSON.parse(\n  158 |       storage.getItem(\"handovers\") ?? \"[]\",\n  159 |     ) as Array<{ acknowledged?: boolean; acknowledgmentStatus?: string }>;\n  160 |     return handovers.filter(\n  161 |       (h) => h.acknowledged === false || h.acknowledgmentStatus === \"pending\",\n  162 |     ).length;\n  163 |   } catch {\n  164 |     return 0;\n  165 |   }\n  166 | }\n  167 | \n  168 | function getAdmittedPatientCount(): number {\n  169 |   try {\n  170 |     \/\/ Try direct patients key first\n  171 |     const direct = JSON.parse(\n  172 |       storage.getItem(\"patients\") ?? \"[]\",\n  173 |     ) as Array<{ isAdmitted?: boolean; patientType?: string; status?: string }>;\n  174 |     if (direct.length > 0) {\n  175 |       return direct.filter(\n  176 |         (p) =>\n  177 |           p.isAdmitted === true ||\n  178 |           p.patientType === \"admitted\" ||\n  179 |           p.status === \"Admitted\",\n  180 |       ).length;\n  181 |     }\n  182 |     \/\/ Fallback: scan patients_* keys\n  183 |     let count = 0;\n  184 |     for (let i = 0; i < storage.length; i++) {\n  185 |       const k = storage.key(i);\n  186 |       if (!k?.startsWith(\"patients_\")) continue;\n  187 |       const arr = JSON.parse(storage.getItem(k) ?? \"[]\") as Array<{\n  188 |         isAdmitted?: boolean;\n  189 |         patientType?: string;\n  190 |         status?: string;\n  191 |       }>;\n  192 |       count += arr.filter(\n  193 |         (p) =>\n  194 |           p.isAdmitted === true ||",
+            "is_error": false,
+            "time": 1785691361
+        },
+        {
+            "id": "msg_df438d7a65",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The Layout.tsx file has corruption: duplicate `import { Badge }` at lines 96 and 111, and injected localStorage-dependent functions (loadBool, saveBool, getPendingApprovalCount, getUnpaidInvoicesCount, getPendingHandoverCount, getAdmittedPatientCount) that read business data from localStorage \u2014 exactly what the migration wants to REMOVE.\n\nThis is a massive job. The scale of work here is enormous \u2014 ~700 type errors across ~50 files, plus this whole legacy localStorage reading logic embedded in components.\n\nLet me step back and think about the best strategy.\n\n**Key decision**: The source is in a broken, half-migrated state. There are two paths:\n\n**Path A: Fix compilation first** (restore imports, remove corruption, make it build), then do feature-by-feature migration of localStorage \u2192 PHP API.\n\n**Path B: Check if there's a known-good committed version** of the source that compiled (e.g., the Jul 28 dist was built from source that compiled). Find that commit and reset to it, then do the migration cleanly.\n\nPath B is far better if a clean commit exists. The dist was built Jul 28. Let me check git log for the state around Jul 28, and find a commit where tsc would pass. The commits I saw are \"Auto-snapshot\" commits which are automated. Let me look at the git history more carefully \u2014 find the commit that matches the Jul 28 dist build.\n\nActually \u2014 the critical question: does the Jul 28 dist source correspond to a specific commit? The dist has `index-4RGdMRea.js` from Jul 28. Let me check git log dates around Jul 28 and diff.\n\nLet me find a commit where the frontend compiled. I can try: check out various commits and run tsc. But that's expensive. Alternative: look at the git history of the most-corrupted files (useQueries.ts) and find the version that matches the dist behavior (PHP version with no legacy localStorage).\n\nActually, wait. Let me reconsider. The corruption I found:\n1. `useQueries.ts` \u2014 stray `}` (fixed) \u2014 but earlier the git diff showed the HEAD version had massive duplicated legacy content. The current working tree differs from what I saw in git diff... Actually the git diff I saw was `git diff 7bcfd808 HEAD` showing what changed between commits, not working tree. The working tree is at HEAD (git status showed no changes to useQueries.ts).\n\nWait, but the read_file of useQueries.ts showed a clean file starting with `\/**` and the legacy helpers at the end. The tsc errors said `useQueries.ts(557,1): error TS1128` which I fixed (stray `}`). After fixing, useQueries errors dropped to 2 remaining.\n\nLet me check what the 2 remaining useQueries errors are, plus understand the working tree state vs HEAD.\n\nActually, my earlier `git status --short src\/frontend\/src\/hooks\/useQueries.ts` returned empty = no changes vs HEAD. But then I edited it (removed stray `}`). So now it differs from HEAD but that's my fix.\n\nHmm, but the git diff I saw showed the HEAD commit 5ff6ab83 having MASSIVE legacy content in useQueries.ts... but the actual file on disk has the clean PHP version with legacy helpers at the end. Let me re-verify: maybe the git diff output was truncated\/confusing. The diff showed `-` lines (removed) which were legacy content being removed between commits \u2014 that means HEAD has LESS legacy than 7bcfd808. OK that makes sense: HEAD already removed a lot.\n\nSo the current working tree = HEAD = mostly-migrated but broken (missing imports, corruption).\n\n**My strategy**: Fix the broken imports\/restore compilation. This is Phase . Then do feature-by-feature migration.\n\nGiven ~700 errors, let me categorize:\n- App.tsx (68): missing imports from useAdminSave + types; type mismatches (registerNumber vs register_number, name vs full_name)\n- Layout.tsx (31): duplicate Badge imports, missing currentDoctor\/isAdmin\/pathname (these come from useAdminAuth\/useEmailAuth hooks? or props?), storageAdapter.length bug\n- LandingPage.tsx (93): ?\n- Staff.tsx (65): ?\n- PatientProfile.tsx (65): ?\n- PatientDashboard.tsx (47) + components\/PatientDashboard.tsx (45): ?\n- etc.\n\nLet me check what `currentDoctor`, `isAdmin`, `pathname` should be in Layout.tsx. These were probably derived from `useAdminAuth()` and `useEmailAuth()` hooks. Let me check those hooks."
+                },
+                {
+                    "type": "text",
+                    "text": "Layout.tsx has deep corruption \u2014 duplicate imports plus injected localStorage-dependent count functions. This is a big restoration job. Let me understand the intended sources of `currentDoctor`\/`isAdmin`\/`pathname`:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_Knaa6V7WDxmRoLOpV5AW3995",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && echo \"=== useEmailAuth exports ===\"; grep -n \"export\" hooks\/useEmailAuth.ts | head -20; echo \"\"; echo \"=== useAdminAuth exports ===\"; grep -n \"export\" hooks\/useAdminAuth.ts | head -20; echo \"\"; echo \"=== useOnlineStatus exports ===\"; grep -n \"export\" hooks\/useOnlineStatus.ts | head; echo \"\"; echo \"=== Layout.tsx: what does the component body use? (lines 215-260) ===\"; sed -n '215,260p' Layout.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 72795,
+                "completion_tokens": 1242,
+                "total_tokens": 74037,
+                "prompt_cache_hit_tokens": 71680,
+                "prompt_cache_miss_tokens": 1115,
+                "prompt_tokens_details": {
+                    "cached_tokens": 71680
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 1007
+                },
+                "cached_tokens": 71680
+            },
+            "time": 1785691375
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_Knaa6V7WDxmRoLOpV5AW3995",
+            "content": "=== useEmailAuth exports ===\n\n=== useAdminAuth exports ===\n\n=== useOnlineStatus exports ===\n3:export function useOnlineStatus() {\n\n=== Layout.tsx: what does the component body use? (lines 215-260) ===\nexport default function Layout({ children, currentPageName }: LayoutProps) {\n  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);\n  const [dueMedCount, setDueMedCount] = useState();\n  \/\/ Emergency Rx notifications for nurses\n  const [emergencyNotifs, setEmergencyNotifs] = useState<\n    EmergencyNotification[]\n  >([]);\n  const [showEmergencyAlert, setShowEmergencyAlert] = useState(false);\n\n  \/\/ Notification badge counts\n  const [pendingApprovalCount, setPendingApprovalCount] = useState(0);\n  const [unpaidInvoicesCount, setUnpaidInvoicesCount] = useState(0);\n  const [pendingHandoverCount, setPendingHandoverCount] = useState(0);\n  const [admittedPatientCount, setAdmittedPatientCount] = useState(0);\n\n  \/\/ Hospital Management group \u2014 lazy init from localStorage\n  const [hospitalGroupOpen, setHospitalGroupOpen] = useState(() =>\n    loadBool(\"sidebar_hospital_group_open\", true),\n  );\n  \/\/ Payment sub-group \u2014 lazy init from localStorage\n  const [paymentGroupOpen, setPaymentGroupOpen] = useState(() =>\n    loadBool(\"sidebar_payment_group_open\", true),\n  );\n\n  \/\/ Mobile sidebar \u2014 icon-only by default, expand to full\n  const [mobileSidebarExpanded, setMobileSidebarExpanded] = useState(() =>\n    loadBool(\"mobile_sidebar_expanded\", false),\n  );\n\n\n  const role = (currentDoctor?.role ?? \"staff\") as StaffRole;\n  const rolePerms = getPermissionsForRole(role);\n  const canWardRound = WARD_ROUND_ROLES.includes(role) || isAdmin;\n  const canBedManagement = BED_ROLES.includes(role) || isAdmin;\n  const canEmergencyRx = EMERGENCY_RX_ROLES.includes(role) || isAdmin;\n  const canStaffMgmt = STAFF_MGMT_ROLES.includes(role) || isAdmin;\n  const showMedAlertBell = MED_ALERT_ROLES.includes(role);\n  const canRegistrarDashboard = rolePerms.canViewAllAdmittedPatients || isAdmin;\n\n  const toggleHospitalGroup = () => {\n    const next = !hospitalGroupOpen;\n    setHospitalGroupOpen(next);\n    saveBool(\"sidebar_hospital_group_open\", next);\n  };\n  const togglePaymentGroup = () => {\n    const next = !paymentGroupOpen;\n\ngrep: hooks\/useEmailAuth.ts: No such file or directory\ngrep: hooks\/useAdminAuth.ts: No such file or directory\n",
+            "is_error": false,
+            "time": 1785691375
+        },
+        {
+            "id": "msg_90fa893828",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The hooks `useEmailAuth.ts` and `useAdminAuth.ts` don't exist! Let me find where they're defined."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_DgfoXzSjgi3HcS50NDmN8950",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && echo \"=== find useEmailAuth \/ useAdminAuth ===\"; find . -name \"useEmailAuth*\" -o -name \"useAdminAuth*\" | grep -v node_modules; echo \"\"; echo \"=== where is useAdminAuth imported from? ===\"; grep -rn \"useAdminAuth\" --include=\"*.tsx\" --include=\"*.ts\" . | grep \"import\" | head; echo \"\"; echo \"=== hooks dir listing ===\"; ls hooks\/"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 74647,
+                "completion_tokens": 197,
+                "total_tokens": 74844,
+                "prompt_cache_hit_tokens": 73984,
+                "prompt_cache_miss_tokens": 663,
+                "prompt_tokens_details": {
+                    "cached_tokens": 73984
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 27
+                },
+                "cached_tokens": 73984
+            },
+            "time": 1785691379
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_DgfoXzSjgi3HcS50NDmN8950",
+            "content": "=== find useEmailAuth \/ useAdminAuth ===\n.\/hooks\/useAdminAuth.tsx\n.\/hooks\/useEmailAuth.tsx\n\n=== where is useAdminAuth imported from? ===\n.\/Layout.tsx:41:import { useAdminAuth } from \".\/hooks\/useAdminAuth\";\n.\/App.tsx:36:import { useAdminAuth } from \".\/hooks\/useAdminAuth\";\n.\/pages\/Settings.tsx:59:import { useAdminAuth } from \"..\/hooks\/useAdminAuth\";\n.\/pages\/AuditLog.tsx:49:import { useAdminAuth } from \"..\/hooks\/useAdminAuth\";\n.\/pages\/Staff.tsx:45:import { useAdminAuth } from \"..\/hooks\/useAdminAuth\";\n.\/pages\/Dashboard.tsx:1:import { useAdminAuth } from \"..\/hooks\/useAdminAuth\";\n.\/pages\/PatientProfile.tsx:94:import { useAdminAuth } from \"..\/hooks\/useAdminAuth\";\n\n=== hooks dir listing ===\nuseAdminAuth.tsx\nuseAdminSave.ts\nuseDoctorContent.tsx\nuseEmailAuth.tsx\nuseMigration.ts\nuse-mobile.tsx\nuseOnlineStatus.ts\nuseQueries.ts\nuseQueries.ts.bak\nuseRolePermissions.tsx\nuseSiteConfig.tsx\n",
+            "is_error": false,
+            "time": 1785691379
+        },
+        {
+            "id": "msg_b3d7146f9b",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The hooks are `.tsx` files, but imported as `.\/hooks\/useAdminAuth` (without extension) \u2014 that's fine with TS module resolution. Let me check what they export."
+                },
+                {
+                    "type": "text",
+                    "text": "Hooks exist as `.tsx`. Let me check their exports:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_OE6YE4JRb13uqjhBOgPX7901",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && echo \"=== useAdminAuth.tsx exports ===\"; grep -n \"export\\|return {\" hooks\/useAdminAuth.tsx | head -30; echo \"\"; echo \"=== useEmailAuth.tsx exports ===\"; grep -n \"export\\|return {\" hooks\/useEmailAuth.tsx | head -30"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 75124,
+                "completion_tokens": 186,
+                "total_tokens": 75310,
+                "prompt_cache_hit_tokens": 74752,
+                "prompt_cache_miss_tokens": 372,
+                "prompt_tokens_details": {
+                    "cached_tokens": 74752
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 40
+                },
+                "cached_tokens": 74752
+            },
+            "time": 1785691382
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_OE6YE4JRb13uqjhBOgPX7901",
+            "content": "=== useAdminAuth.tsx exports ===\n11:export function useAdminAuth() {\n35:  return { isAdmin, adminLogin, adminLogout };\n\n=== useEmailAuth.tsx exports ===\n22:export interface AuditLogEntry {\n48:export function isConsultantLevel(role: StaffRole): boolean {\n61:export function getAuthToken(): string | null {\n73:export function getPatientToken(): string | null {\n77:export function setPatientToken(token: string): void {\n81:export function clearPatientToken(): void {\n127:export function EmailAuthProvider({ children }: { children: React.ReactNode }) {\n348:export function useEmailAuth(): EmailAuthContextValue {\n367:export interface InactivityTimerState {\n373:export function useInactivityTimer(onLogout: () => void): InactivityTimerState {\n439:  return { showWarning, secondsRemaining, resetTimer };\n451:  return {};\n458:export function setSignUpEnabled(registerNumber: string, enabled: boolean): void {\n468:export function isSignUpEnabled(registerNumber: string): boolean {\n",
+            "is_error": false,
+            "time": 1785691383
+        },
+        {
+            "id": "msg_13cafda8b0",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I understand the auth layer:\n- `useAdminAuth()` returns `{ isAdmin, adminLogin, adminLogout }`\n- `useEmailAuth()` returns an EmailAuthContextValue \u2014 let me check what that contains (probably `currentDoctor`)\n\nLayout.tsx is missing:\n1. `const { isAdmin } = useAdminAuth()` \u2014 needs to be in the component body\n2. `const { currentDoctor } = useEmailAuth()` \u2014 needs to be in the component body\n3. `const pathname = ...` \u2014 from `useRouterState()` or `useLocation()`\n4. Duplicate Badge imports \u2014 remove\n5. `dueMedCount` state typed as `useState()` \u2192 should be `useState()`\n\nLet me look at Layout.tsx more fully to see what's in the component body and what's missing. Let me also check the EmailAuthContextValue type."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_vlY4BtfjzGykyxXwG7J19676",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && echo \"=== useEmailAuth EmailAuthContextValue ===\"; sed -n '90,130p' hooks\/useEmailAuth.tsx; echo \"\"; echo \"=== Layout.tsx body: search for useEmailAuth\/useAdminAuth\/useRouterState\/currentDoctor\/pathname usage ===\"; grep -n \"useEmailAuth\\|useAdminAuth\\|useRouterState\\|useLocation\\|currentDoctor\\|pathname\\|isOnline\" Layout.tsx | head -40"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 75553,
+                "completion_tokens": 358,
+                "total_tokens": 75911,
+                "prompt_cache_hit_tokens": 75264,
+                "prompt_cache_miss_tokens": 289,
+                "prompt_tokens_details": {
+                    "cached_tokens": 75264
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 192
+                },
+                "cached_tokens": 75264
+            },
+            "time": 1785691388
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_vlY4BtfjzGykyxXwG7J19676",
+            "content": "=== useEmailAuth EmailAuthContextValue ===\n  authError: string | null;\n  signUp: (data: {\n    email: string;\n    password: string;\n    full_name: string;\n    role?: string;\n    specialization?: string;\n    phone?: string;\n  }) => Promise<void>;\n  signIn: (email: string, password: string) => Promise<void>;\n  signOut: () => Promise<void>;\n  updateProfile: (data: Partial<DoctorAccount>) => Promise<void>;\n  getPendingAccounts: () => Promise<DoctorAccount[]>;\n  approveAccount: (id: number, role?: string) => Promise<void>;\n  approveAccountWithRole: (id: number, role: StaffRole) => Promise<void>;\n  rejectAccount: (id: number) => Promise<void>;\n  reassignRole: (id: number, role: StaffRole) => Promise<void>;\n  \/\/ Patient auth\n  patientSignUp: (data: {\n    registerNumber: string;\n    phone: string;\n    password: string;\n  }) => Promise<void>;\n  patientSignIn: (phone: string, password: string) => Promise<void>;\n  patientSignOut: () => void;\n  getPendingPatients: () => Promise<PatientAccount[]>;\n  approvePatient: (id: number) => Promise<void>;\n  rejectPatient: (id: number) => Promise<void>;\n  updatePatientCredentials: (\n    registerNumber: string,\n    newPhone?: string,\n    newPassword?: string,\n  ) => Promise<void>;\n}\n\nconst EmailAuthContext = createContext<EmailAuthContextValue | null>(null);\n\nexport function EmailAuthProvider({ children }: { children: React.ReactNode }) {\n  const [currentDoctor, setCurrentDoctor] = useState<DoctorAccount | null>(null);\n  const [currentPatient, setCurrentPatient] = useState<PatientAccount | null>(null);\n  const [isInitializing, setIsInitializing] = useState(true);\n\n=== Layout.tsx body: search for useEmailAuth\/useAdminAuth\/useRouterState\/currentDoctor\/pathname usage ===\n4:import { Link, useRouterState } from \"@tanstack\/react-router\";\n41:import { useAdminAuth } from \".\/hooks\/useAdminAuth\";\n42:import { useEmailAuth } from \".\/hooks\/useEmailAuth\";\n245:  const role = (currentDoctor?.role ?? \"staff\") as StaffRole;\n284:  \/\/ Also refresh on route change (pathname dep is intentional)\n286:    const _p = pathname; \/\/ reference pathname to satisfy linter intent\n293:  }, [pathname]);\n382:  const displayName = currentDoctor\n383:    ? `${currentDoctor.designation} ${currentDoctor.name}`.trim()\n385:  const displayDegree = currentDoctor?.degree || \"Patient Management\";\n386:  const roleLabel = currentDoctor\n387:    ? (STAFF_ROLE_LABELS[currentDoctor.role as StaffRole] ?? currentDoctor.role)\n389:  const roleColorClass = currentDoctor\n390:    ? (STAFF_ROLE_COLORS[currentDoctor.role as StaffRole] ?? \"\")\n407:        pathname === \"\/\" ||\n408:        pathname === \"\/Dashboard\"\n416:        pathname === \"\/Patients\"\n419:    return currentPageName === name || pathname === `\/${name}`;\n552:                  const doctorEmail = currentDoctor?.email ?? \"unknown\";\n578:      {!isOnline && (\n",
+            "is_error": false,
+            "time": 1785691388
+        },
+        {
+            "id": "msg_71d769da77",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ET_NpnlRneSr2JYD43onjEd5335",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && sed -n '127,140p' hooks\/useEmailAuth.tsx; echo \"=== EmailAuthContextValue start ===\"; sed -n '75,92p' hooks\/useEmailAuth.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 76655,
+                "completion_tokens": 111,
+                "total_tokens": 76766,
+                "prompt_cache_hit_tokens": 75904,
+                "prompt_cache_miss_tokens": 751,
+                "prompt_tokens_details": {
+                    "cached_tokens": 75904
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 0
+                },
+                "cached_tokens": 75904
+            },
+            "time": 1785691392
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ET_NpnlRneSr2JYD43onjEd5335",
+            "content": "export function EmailAuthProvider({ children }: { children: React.ReactNode }) {\n  const [currentDoctor, setCurrentDoctor] = useState<DoctorAccount | null>(null);\n  const [currentPatient, setCurrentPatient] = useState<PatientAccount | null>(null);\n  const [isInitializing, setIsInitializing] = useState(true);\n  const [isLoggingIn, setIsLoggingIn] = useState(false);\n  const [authError, setAuthError] = useState<string | null>(null);\n\n  \/\/ Restore session on mount by verifying with the server (cookie-based)\n  useEffect(() => {\n    const restoreSession = async () => {\n      try {\n        const user = await authService.verifySession();\n        if (user) {\n          setCurrentDoctor(user);\n=== EmailAuthContextValue start ===\n}\n\nexport function setPatientToken(token: string): void {\n  _patientToken = token;\n}\n\nexport function clearPatientToken(): void {\n  _patientToken = null;\n}\n\ninterface EmailAuthContextValue {\n  currentDoctor: DoctorAccount | null;\n  currentPatient: PatientAccount | null;\n  isInitializing: boolean;\n  isLoggingIn: boolean;\n  authError: string | null;\n  signUp: (data: {\n    email: string;\n",
+            "is_error": false,
+            "time": 1785691392
+        },
+        {
+            "id": "msg_f9fc562cb2",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I understand the auth context. `useEmailAuth()` returns `{ currentDoctor, currentPatient, isInitializing, isLoggingIn, authError, signUp, signIn, signOut, ... }`.\n\nLayout.tsx needs in its body:\n- `const { currentDoctor } = useEmailAuth();`\n- `const { isAdmin } = useAdminAuth();`\n- `const { isOnline } = useOnlineStatus();` (imported at line 43)\n- `const pathname = ...` from useRouterState\n\nThe `pathname` is currently missing. `useRouterState` is imported. In tanstack router, `useRouterState({ select: s => s.location.pathname })` or the newer `useLocation()`. Let me check how App.tsx does it: `const state = useRouterState(); const pathname = state.location.pathname;`.\n\nGiven the scale of this restoration, this is going to be a long but methodical process. Let me create a proper plan and be systematic:\n\n**Phase : Restore compilation** (fix ~700 errors)\n1. App.tsx \u2014 restore missing imports (useAdminSave helpers, types consts), fix type mismatches\n2. Layout.tsx \u2014 remove duplicate imports, add missing hook destructuring, fix useState() typing\n3. Fix storageAdapter `return ;` bug\n4. Fix AIAssistantPanel bigint errors\n5. Fix the rest file-by-file\n\n**Then Phase 1-8: feature-by-feature migration.**\n\nThis is huge. Let me be efficient. First, let me fix the small core lib issues (storageAdapter `return ;` bug), then App.tsx, Layout.tsx.\n\nActually \u2014 let me reconsider the priority. The user's migration spec is clear. The compile restore is prerequisite (requirement 9: verify compilation after each feature). \n\nLet me start systematically. First fix storageAdapter (the `return ;` bug on line ~48)."
+                },
+                {
+                    "type": "text",
+                    "text": "Now I have the full picture. `useEmailAuth()` provides `currentDoctor`, `useAdminAuth()` provides `isAdmin`. Layout.tsx is missing the destructuring. Let me set up a systematic plan and start restoring compilation."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_CNyR4Aj6fJODUKjZ2uuk3144",
+                    "name": "todo_write",
+                    "input": {
+                        "todos": [
+                            {
+                                "content": "PHASE : Restore compilation (~700 type errors across 50 files)",
+                                "priority": "high",
+                                "status": "in_progress"
+                            },
+                            {
+                                "content": "a: Fix lib core (storageAdapter return bug, api.ts, hybridStorage refs)",
+                                "priority": "high",
+                                "status": "in_progress"
+                            },
+                            {
+                                "content": "b: Fix App.tsx (missing useAdminSave\/types imports, type mismatches)",
+                                "priority": "high",
+                                "status": "pending"
+                            },
+                            {
+                                "content": "c: Fix Layout.tsx (dup imports, missing hook destructure, pathname, isOnline)",
+                                "priority": "high",
+                                "status": "pending"
+                            },
+                            {
+                                "content": "d: Fix AIAssistantPanel bigint errors + remaining component errors",
+                                "priority": "high",
+                                "status": "pending"
+                            },
+                            {
+                                "content": "e: Fix pages (LandingPage, Staff, PatientProfile, PatientDashboard, BedManagement, Settings, WardRound, etc.)",
+                                "priority": "high",
+                                "status": "pending"
+                            },
+                            {
+                                "content": "f: Verify full tsc passes + baseline build succeeds",
+                                "priority": "high",
+                                "status": "pending"
+                            },
+                            {
+                                "content": "Feature 1: Patients CRUD \u2014 PHP API verified, no localStorage, compile OK",
+                                "priority": "high",
+                                "status": "pending"
+                            },
+                            {
+                                "content": "Feature 2: Visits CRUD \u2014 PHP API verified, no localStorage, compile OK",
+                                "priority": "high",
+                                "status": "pending"
+                            },
+                            {
+                                "content": "Feature 3: Prescriptions CRUD \u2014 PHP API verified, no localStorage, compile OK",
+                                "priority": "high",
+                                "status": "pending"
+                            },
+                            {
+                                "content": "Feature 4: Appointments\/Admissions\/Beds \u2014 PHP API, no localStorage",
+                                "priority": "medium",
+                                "status": "pending"
+                            },
+                            {
+                                "content": "Feature 5: Auth \u2014 PHP sessions HttpOnly cookies only, no localStorage tokens",
+                                "priority": "high",
+                                "status": "pending"
+                            },
+                            {
+                                "content": "Feature 6: Remove legacy modules (canister\/ICP\/hybridStorage\/sync queue\/storageAdapter business data)",
+                                "priority": "high",
+                                "status": "pending"
+                            },
+                            {
+                                "content": "Feature 7: Build + deploy new bundle, update index.html, clean obsolete assets",
+                                "priority": "high",
+                                "status": "pending"
+                            },
+                            {
+                                "content": "Generate final migration report",
+                                "priority": "medium",
+                                "status": "pending"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 77045,
+                "completion_tokens": 1022,
+                "total_tokens": 78067,
+                "prompt_cache_hit_tokens": 76672,
+                "prompt_cache_miss_tokens": 373,
+                "prompt_tokens_details": {
+                    "cached_tokens": 76672
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 411
+                },
+                "cached_tokens": 76672
+            },
+            "time": 1785691403
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_CNyR4Aj6fJODUKjZ2uuk3144",
+            "content": "Todo list updated with 15 items.",
+            "is_error": false,
+            "time": 1785691403
+        },
+        {
+            "id": "msg_bdf331bbfc",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "text",
+                    "text": "First, the storageAdapter `return ;` bug (broken `length` getter):"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ET_JNr7GR7G6DOC2aMedxAY0883",
+                    "name": "read_file",
+                    "input": {
+                        "limit": 15,
+                        "offset": 44,
+                        "path": "source_build\/dr.armankabir-main\/src\/frontend\/src\/lib\/storageAdapter.ts"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 78078,
+                "completion_tokens": 113,
+                "total_tokens": 78191,
+                "prompt_cache_hit_tokens": 76928,
+                "prompt_cache_miss_tokens": 1150,
+                "prompt_tokens_details": {
+                    "cached_tokens": 76928
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 0
+                },
+                "cached_tokens": 76928
+            },
+            "time": 1785691406
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ET_JNr7GR7G6DOC2aMedxAY0883",
+            "content": "   44 |       \/\/ ignore\n   45 |     }\n   46 |   },\n   47 | \n   48 |   get length(): number {\n   49 |     try {\n   50 |       return localStorage.length;\n   51 |     } catch {\n   52 |       return ;\n   53 |     }\n   54 |   },\n   55 | \n   56 |   key(index: number): string | null {\n   57 |     try {\n   58 |       return localStorage.key(index);",
+            "is_error": false,
+            "time": 1785691406
         }
     ]
 }
