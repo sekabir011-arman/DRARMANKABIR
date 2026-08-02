@@ -159,6 +159,9 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
       role?: string;
       specialization?: string;
       phone?: string;
+      designation?: string;
+      degree?: string;
+      hospital_name?: string;
     }) => {
       setIsLoggingIn(true);
       setAuthError(null);
@@ -170,6 +173,9 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
           role: data.role ?? "doctor",
           specialization: data.specialization ?? "",
           phone: data.phone ?? "",
+          designation: data.designation,
+          degree: data.degree,
+          hospital_name: data.hospital_name,
         });
         throw new Error(result.message || "Account created! Please wait for admin approval before logging in.");
       } catch (e: unknown) {
