@@ -38,6 +38,19 @@ import {
   appendAuditLog,
   loadPatientRegistry,
   loadRegistry,
+  savePatientRegistry,
+  saveRegistry,
+} from "./hooks/useAdminSave";
+import {
+  ROLE_HIERARCHY_ORDER,
+  STAFF_ROLE_COLORS,
+  STAFF_ROLE_LABELS,
+} from "./types";
+import type { StaffRole } from "./types";
+import { storage } from "@/lib/storageAdapter";
+  appendAuditLog,
+  loadPatientRegistry,
+  loadRegistry,
   ROLE_HIERARCHY_ORDER,
   savePatientRegistry,
   saveRegistry,

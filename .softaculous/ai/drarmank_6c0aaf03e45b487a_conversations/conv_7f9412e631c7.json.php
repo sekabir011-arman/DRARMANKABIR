@@ -82,7 +82,7 @@
         }
     ],
     "created_at": 1785674206,
-    "updated_at": 1785691874,
+    "updated_at": 1785692710,
     "messages": [
         {
             "id": "msg_compact",
@@ -4373,6 +4373,486 @@
             "content": "continue",
             "attachments": [],
             "time": 1785691874
+        },
+        {
+            "id": "msg_761db102cf",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785692152
+        },
+        {
+            "id": "msg_56659e7e60",
+            "role": "user",
+            "content": "continue",
+            "attachments": [],
+            "time": 1785692645
+        },
+        {
+            "id": "msg_83f8f72601",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Let me look at what App.tsx needs. It uses:\n- `StaffRole` (type)\n- `ROLE_HIERARCHY_ORDER`, `STAFF_ROLE_COLORS`, `STAFF_ROLE_LABELS` (from types or useAdminSave)\n- `loadRegistry`, `saveRegistry`, `loadPatientRegistry`, `savePatientRegistry`, `appendAuditLog` (from useAdminSave)\n- `DoctorAccount` has `name` and `createdAt` properties? Let me check the DoctorAccount type.\n\nLet me check the current App.tsx usage more carefully and add the imports."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me check the DoctorAccount type used in App.tsx and the exact missing properties:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_g6RWm9VVztAAj8LIy3uB4435",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && echo \"=== App.tsx: lines 770-100 (registry logic) ===\"; sed -n '770,100p' App.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 77122,
+                "completion_tokens": 246,
+                "total_tokens": 77368,
+                "prompt_cache_hit_tokens": 77056,
+                "prompt_cache_miss_tokens": 66,
+                "prompt_tokens_details": {
+                    "cached_tokens": 77056
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 129
+                },
+                "cached_tokens": 77056
+            },
+            "time": 1785692649
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_g6RWm9VVztAAj8LIy3uB4435",
+            "content": "=== App.tsx: lines 770-100 (registry logic) ===\n          <Button\n",
+            "is_error": false,
+            "time": 1785692649
+        },
+        {
+            "id": "msg_dd7bae40cb",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ET_FnrdZc7dCAk3bw6Xt43r1495",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && sed -n '760,830p' App.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 77398,
+                "completion_tokens": 79,
+                "total_tokens": 77477,
+                "prompt_cache_hit_tokens": 77312,
+                "prompt_cache_miss_tokens": 86,
+                "prompt_tokens_details": {
+                    "cached_tokens": 77312
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 0
+                },
+                "cached_tokens": 77312
+            },
+            "time": 1785692652
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ET_FnrdZc7dCAk3bw6Xt43r1495",
+            "content": "              <Label>Confirm *<\/Label>\n              <Input\n                type=\"password\"\n                placeholder=\"Repeat\"\n                value={suConfirm}\n                onChange={(e) => setSuConfirm(e.target.value)}\n                data-ocid=\"patient_auth.signup.input\"\n              \/>\n            <\/div>\n          <\/div>\n          <Button\n            type=\"submit\"\n            disabled={isLoggingIn}\n            className=\"w-full h-11 font-semibold mt-1 bg-teal-600 hover:bg-teal-700\"\n            data-ocid=\"patient_auth.signup.submit_button\"\n          >\n            {isLoggingIn ? (\n              <Loader2 className=\"w-4 h-4 mr-2 animate-spin\" \/>\n            ) : null}\n            {isLoggingIn ? \"Creating account...\" : \"Create Patient Account\"}\n          <\/Button>\n          <p className=\"text-xs text-muted-foreground text-center\">\n            Your name will be auto-filled from your clinic record. Accounts\n            require doctor approval.\n          <\/p>\n        <\/form>\n      <\/TabsContent>\n    <\/Tabs>\n  );\n}\n\n\/\/ \u2500\u2500 Pending Approvals Panel \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nfunction PendingApprovalsPanel() {\n  const [staffAccounts, setStaffAccounts] = useState<DoctorAccount[]>([]);\n  const [patientAccounts, setPatientAccounts] = useState<PatientAccount[]>([]);\n  const [approvalRoles, setApprovalRoles] = useState<Record<string, StaffRole>>(\n    {},\n  );\n  const [reassignMap, setReassignMap] = useState<Record<string, StaffRole>>({});\n\n  const refresh = useCallback(() => {\n    setStaffAccounts(loadRegistry().filter((d) => d.status === \"pending\"));\n    setPatientAccounts(\n      loadPatientRegistry().filter((p) => p.status === \"pending\"),\n    );\n  }, []);\n\n  useEffect(() => {\n    refresh();\n    const iv = setInterval(refresh, 5000);\n    return () => clearInterval(iv);\n  }, [refresh]);\n\n  const approveStaff = (acc: DoctorAccount) => {\n    const role = approvalRoles[acc.id] ?? acc.role ?? \"doctor\";\n    const reg = loadRegistry();\n    const idx = reg.findIndex((d) => d.id === acc.id);\n    if (idx >= 0) {\n      reg[idx] = { ...reg[idx], status: \"approved\", role };\n      saveRegistry(reg);\n      refresh();\n      import(\"sonner\").then(({ toast }) =>\n        toast.success(`Account approved as ${STAFF_ROLE_LABELS[role]}`),\n      );\n    }\n  };\n  const rejectStaff = (id: string) => {\n    const reg = loadRegistry();\n    const idx = reg.findIndex((d) => d.id === id);\n    if (idx >= 0) {\n",
+            "is_error": false,
+            "time": 1785692652
+        },
+        {
+            "id": "msg_e69006a246",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "I see the issue. The `PendingApprovalsPanel` uses `loadRegistry()`, `saveRegistry()`, etc. from `useAdminSave`. The `useAdminSave` module has `loadRegistry`, `saveRegistry`, `loadPatientRegistry`, `savePatientRegistry`, `appendAuditLog`, `STAFF_ROLE_LABELS`, `ROLE_HIERARCHY_ORDER`? Let me check what useAdminSave exports: `STAFF_ROLE_LABELS` yes, `loadRegistry` yes, `saveRegistry` yes, `loadPatientRegistry` yes, `savePatientRegistry` yes, `appendAuditLog` yes. But `ROLE_HIERARCHY_ORDER` and `STAFF_ROLE_COLORS` are in `types\/index.ts`.\n\nLet me check types\/index.ts for ROLE_HIERARCHY_ORDER and STAFF_ROLE_COLORS - from the earlier grep, types\/index.ts has:\n- line 6: `export type StaffRole`\n- line 44: `export const STAFF_ROLE_LABELS`\n- line 62: `export const ROLE_HIERARCHY_ORDER`\n- line 75: `export const STAFF_ROLE_COLORS`\n\nSo the fix for App.tsx is to add:\n```ts\nimport { useAdminAuth } from \".\/hooks\/useAdminAuth\";\nimport {\n  loadRegistry,\n  saveRegistry,\n  loadPatientRegistry,\n  savePatientRegistry,\n  appendAuditLog,\n  STAFF_ROLE_LABELS,\n} from \".\/hooks\/useAdminSave\";\nimport {\n  ROLE_HIERARCHY_ORDER,\n  STAFF_ROLE_COLORS,\n  STAFF_ROLE_LABELS as TYPES_STAFF_ROLE_LABELS,\n} from \".\/types\";\nimport type { StaffRole } from \".\/types\";\n```\n\nWait, but STAFF_ROLE_LABELS is exported from both useAdminSave and types. Since types\/index.ts has `export type StaffRole` and `export const STAFF_ROLE_LABELS`, we can just import everything from types. But useAdminSave also has its own STAFF_ROLE_LABELS. To avoid conflicts, we should import STAFF_ROLE_LABELS from types only, and the registry helpers from useAdminSave.\n\nActually wait, let me check what types\/index.ts STAFF_ROLE_LABELS looks like \u2014 it's `Record<Exclude<StaffRole, \"admin\" | \"patient\" | \"doctor\">, string>`? Let me look. Actually from the grep: \n\n```\n44:export const STAFF_ROLE_LABELS: Record<\n45:  Exclude<StaffRole, \"admin\" | \"patient\" | \"doctor\">,\n```\n\nHmm that excludes \"admin\" | \"patient\" | \"doctor\". But App.tsx uses `STAFF_ROLE_LABELS[role]` where role is StaffRole including \"doctor\". That could cause a type error. Let me check the exact usage and the type.\n\nActually, useAdminSave's STAFF_ROLE_LABELS is `Record<StaffRole, string>` \u2014 full coverage. That's what App.tsx needs since it uses arbitrary roles. But useAdminSave's is imported for the registry helpers anyway, so we can import STAFF_ROLE_LABELS from useAdminSave too.\n\nBut ROLE_HIERARCHY_ORDER and STAFF_ROLE_COLORS are only in types. Let me check those types:\n- `ROLE_HIERARCHY_ORDER: Exclude<StaffRole, \"admin\" | \"patient\">[]` \n- `STAFF_ROLE_COLORS: Record<Exclude<StaffRole, \"admin\" | \"patient\">, ...>`\n\nApp.tsx uses:\n- line 424: `ROLE_HIERARCHY_ORDER.map((r) => (` \u2014 r is StaffRole (excluding admin\/patient)\n- line 428: `STAFF_ROLE_COLORS[r] ?? \"\"` \u2014 indexed by r\n- line 430: `STAFF_ROLE_LABELS[r]` \u2014 indexed by r\n\nSo importing ROLE_HIERARCHY_ORDER, STAFF_ROLE_COLORS from types and STAFF_ROLE_LABELS from types works since r excludes admin\/patient\/doctor... wait ROLE_HIERARCHY_ORDER excludes admin|patient but includes doctor. And STAFF_ROLE_COLORS excludes admin|patient too. So STAFF_ROLE_LABELS from types excludes admin|patient|doctor, meaning `STAFF_ROLE_LABELS[r]` where r could be \"doctor\" would fail.\n\nBest to import STAFF_ROLE_LABELS from useAdminSave (full Record<StaffRole, string>). Let me verify App.tsx uses `STAFF_ROLE_LABELS[role]` at line 430 where role comes from ROLE_HIERARCHY_ORDER iteration... r could be \"doctor\". So useAdminSave's STAFF_ROLE_LABELS is the right one.\n\nOK let me make the edit. Also check line 283: `designation` doesn't exist in signUp data \u2014 signUp type is `{ email, password, full_name, role?, specialization?, phone? }`. The usage passes `designation`. Let me look."
+                },
+                {
+                    "type": "text",
+                    "text": "Now let me check App.tsx line 283 (signUp with `designation`) and the type errors on DoctorAccount\/PatientAccount:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_h0m0RYkHOe1H2GPKomJy0627",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && sed -n '270,295p' App.tsx; echo \"=== 885-995 (name\/createdAt\/registerNumber errors) ===\"; sed -n '885,900p' App.tsx; echo \"...\"; sed -n '950,995p' App.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 78099,
+                "completion_tokens": 1273,
+                "total_tokens": 79372,
+                "prompt_cache_hit_tokens": 77440,
+                "prompt_cache_miss_tokens": 659,
+                "prompt_tokens_details": {
+                    "cached_tokens": 77440
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 1117
+                },
+                "cached_tokens": 77440
+            },
+            "time": 1785692663
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_h0m0RYkHOe1H2GPKomJy0627",
+            "content": "  const [suErrors, setSuErrors] = useState<Record<string, string>>({});\n  const [suSuccess, setSuSuccess] = useState(\"\");\n\n  const handleSignIn = async (e: React.FormEvent) => {\n    e.preventDefault();\n    setSiError(\"\");\n    if (!siEmail || !siPassword) {\n      setSiError(\"Please enter email and password.\");\n      return;\n    }\n    try {\n      await signIn(siEmail, siPassword);\n    } catch (err: unknown) {\n      setSiError(err instanceof Error ? err.message : \"Sign in failed.\");\n    }\n  };\n\n  const handleSignUp = async (e: React.FormEvent) => {\n    e.preventDefault();\n    const errs: Record<string, string> = {};\n    if (!suName.trim()) errs.name = \"Full name is required.\";\n    if (!suEmail.trim()) errs.email = \"Email is required.\";\n    if (!suPassword) errs.password = \"Password is required.\";\n    else if (suPassword.length < 6)\n      errs.password = \"Password must be at least 6 characters.\";\n    if (suPassword !== suConfirm) errs.confirm = \"Passwords do not match.\";\n=== 885-995 (name\/createdAt\/registerNumber errors) ===\n        ),\n      );\n    }\n  };\n\n  \/\/ All approved staff for reassignment section\n  const approvedStaff = loadRegistry().filter((d) => d.status === \"approved\");\n\n  const hasAny = staffAccounts.length > 0 || patientAccounts.length > 0;\n\n  return (\n    <div className=\"space-y-6\">\n      {hasAny ? (\n        <>\n          {staffAccounts.length > 0 && (\n            <div>\n...\n                        <SelectContent>\n                          {ROLE_HIERARCHY_ORDER.map((r) => (\n                            <SelectItem key={r} value={r} className=\"text-xs\">\n                              <span className=\"flex items-center gap-1.5\">\n                                <span\n                                  className={`w-2 h-2 rounded-full ${(STAFF_ROLE_COLORS[r] ?? \"\").split(\" \")[0]}`}\n                                \/>\n                                {STAFF_ROLE_LABELS[r]}\n                              <\/span>\n                            <\/SelectItem>\n                          ))}\n                        <\/SelectContent>\n                      <\/Select>\n                    <\/div>\n                    <div className=\"flex gap-2\">\n                      <Button\n                        size=\"sm\"\n                        variant=\"outline\"\n                        className=\"flex-1 text-emerald-700 border-emerald-300 hover:bg-emerald-50 gap-1.5\"\n                        onClick={() => approveStaff(acc)}\n                        data-ocid=\"admin.approve.button\"\n                      >\n                        <CheckCircle2 className=\"w-3.5 h-3.5\" \/>\n                        Approve\n                      <\/Button>\n                      <Button\n                        size=\"sm\"\n                        variant=\"outline\"\n                        className=\"flex-1 text-red-700 border-red-300 hover:bg-red-50 gap-1.5\"\n                        onClick={() => rejectStaff(acc.id)}\n                        data-ocid=\"admin.reject.button\"\n                      >\n                        <XCircle className=\"w-3.5 h-3.5\" \/>\n                        Reject\n                      <\/Button>\n                    <\/div>\n                  <\/div>\n                ))}\n              <\/div>\n            <\/div>\n          )}\n          {patientAccounts.length > 0 && (\n            <div>\n              <p className=\"text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2\">\n                Patient Accounts ({patientAccounts.length})\n              <\/p>\n",
+            "is_error": false,
+            "time": 1785692663
+        },
+        {
+            "id": "msg_174d9c4de2",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ET_bqj2vPanU7YWJP9pUeIr6391",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && sed -n '296,320p' App.tsx; echo \"=== DoctorAccount usage .name\/.createdAt ===\"; sed -n '830,870p' App.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 80138,
+                "completion_tokens": 106,
+                "total_tokens": 80244,
+                "prompt_cache_hit_tokens": 79360,
+                "prompt_cache_miss_tokens": 778,
+                "prompt_tokens_details": {
+                    "cached_tokens": 79360
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 0
+                },
+                "cached_tokens": 79360
+            },
+            "time": 1785692667
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ET_bqj2vPanU7YWJP9pUeIr6391",
+            "content": "    if (Object.keys(errs).length > 0) {\n      setSuErrors(errs);\n      return;\n    }\n    setSuErrors({});\n    setSuSuccess(\"\");\n    try {\n      await signUp({\n        full_name: suName.trim(),\n        email: suEmail.trim(),\n        password: suPassword,\n        designation: suDesignation,\n        degree: suDegree.trim(),\n        specialization: suSpecialization.trim(),\n        hospital_name: suHospital.trim(),\n        phone: suPhone.trim(),\n        role: suRole,\n      });\n    } catch (err: unknown) {\n      const msg = err instanceof Error ? err.message : \"Sign up failed.\";\n      if (\n        msg.includes(\"approval\") ||\n        msg.includes(\"pending\") ||\n        msg.includes(\"re-submitted\")\n      )\n=== DoctorAccount usage .name\/.createdAt ===\n    if (idx >= 0) {\n      reg[idx] = { ...reg[idx], status: \"rejected\" };\n      saveRegistry(reg);\n      refresh();\n      import(\"sonner\").then(({ toast }) => toast.success(\"Account rejected\"));\n    }\n  };\n  const approvePatient = (id: string) => {\n    const reg = loadPatientRegistry();\n    const idx = reg.findIndex((p) => p.id === id);\n    if (idx >= 0) {\n      reg[idx] = { ...reg[idx], status: \"approved\" };\n      savePatientRegistry(reg);\n      refresh();\n      import(\"sonner\").then(({ toast }) =>\n        toast.success(\"Patient account approved\"),\n      );\n    }\n  };\n  const rejectPatient = (id: string) => {\n    const reg = loadPatientRegistry();\n    const idx = reg.findIndex((p) => p.id === id);\n    if (idx >= 0) {\n      reg[idx] = { ...reg[idx], status: \"rejected\" };\n      savePatientRegistry(reg);\n      refresh();\n      import(\"sonner\").then(({ toast }) =>\n        toast.success(\"Patient account rejected\"),\n      );\n    }\n  };\n\n  const doReassign = (id: string) => {\n    const newRole = reassignMap[id];\n    if (!newRole) return;\n    const reg = loadRegistry();\n    const idx = reg.findIndex((d) => d.id === id);\n    if (idx >= 0) {\n      const oldRole = reg[idx].role as StaffRole;\n      const staffName = reg[idx].name;\n      reg[idx] = { ...reg[idx], role: newRole };\n",
+            "is_error": false,
+            "time": 1785692667
+        },
+        {
+            "id": "msg_ea7e34bdc2",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I understand the App.tsx issues. The `PendingApprovalsPanel` uses legacy `loadRegistry`, `saveRegistry`, etc. from `useAdminSave` (which provides them). I need to:\n\n1. Import from `.\/hooks\/useAdminSave`: `loadRegistry`, `saveRegistry`, `loadPatientRegistry`, `savePatientRegistry`, `appendAuditLog`, `STAFF_ROLE_LABELS`\n2. Import from `.\/types`: `StaffRole`, `ROLE_HIERARCHY_ORDER`, `STAFF_ROLE_COLORS`\n\nLet me check the exact error at line 283 - the signUp call has extra fields `designation`, `degree`, `hospital_name` not in the type. The `signUp` type in useEmailAuth is `{ email, password, full_name, role?, specialization?, phone? }`. I need to add those optional fields to the type.\n\nAlso errors:\n- `DoctorAccount` doesn't have `name`, `createdAt` \u2014 used at line 889 (`reg[idx].name`), 903 (`createdAt`)\n- `PatientAccount` doesn't have `name`, `registerNumber` \u2014 line 980, 992\n\nThese are type mismatches between the legacy in-memory registry shape (which had `name`, `createdAt`, `registerNumber`) and the new `DoctorAccount`\/`PatientAccount` types (which have `full_name`, etc.).\n\nSince `loadRegistry()` returns `any[]`, the issue is that `staffAccounts` is typed `DoctorAccount[]` but the code uses `.name` on it. Let me check line 889 context and the DoctorAccount interface \u2014 it has `full_name` not `name`. \n\nThe cleanest fix here: since `loadRegistry` returns `any[]`, `reg[idx].name` would be `any` \u2014 no error. But line 889 uses `staffName = reg[idx].name` \u2014 reg is from loadRegistry which is any[], so that's fine. The errors at 889\/903\/980\/992 must be on `acc`\/`p` params which are typed `DoctorAccount[]`\/`PatientAccount[]`.\n\nLet me look at exactly which lines error. From tsc:\n- App.tsx(889,32): Property 'name' does not exist on type 'DoctorAccount'\n- App.tsx(899,30): STAFF_ROLE_LABELS\n- App.tsx(903,43): Property 'createdAt' does not exist on type 'DoctorAccount'\n- App.tsx(980,30): Property 'name' does not exist on type 'PatientAccount'\n- App.tsx(992,30): Property 'registerNumber' does not exist on type 'PatientAccount'\n\nLet me view those exact lines."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me see the exact erroring lines in App.tsx for the DoctorAccount\/PatientAccount type mismatches:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_Nd77hYBZmjrATzLH9gDN2896",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && sed -n '886,905p' App.tsx; echo \"=== 975-995 ===\"; sed -n '975,995p' App.tsx"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 80784,
+                "completion_tokens": 707,
+                "total_tokens": 81491,
+                "prompt_cache_hit_tokens": 80128,
+                "prompt_cache_miss_tokens": 656,
+                "prompt_tokens_details": {
+                    "cached_tokens": 80128
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 583
+                },
+                "cached_tokens": 80128
+            },
+            "time": 1785692674
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_Nd77hYBZmjrATzLH9gDN2896",
+            "content": "      );\n    }\n  };\n\n  \/\/ All approved staff for reassignment section\n  const approvedStaff = loadRegistry().filter((d) => d.status === \"approved\");\n\n  const hasAny = staffAccounts.length > 0 || patientAccounts.length > 0;\n\n  return (\n    <div className=\"space-y-6\">\n      {hasAny ? (\n        <>\n          {staffAccounts.length > 0 && (\n            <div>\n              <p className=\"text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2\">\n                Staff \/ Doctor ({staffAccounts.length})\n              <\/p>\n              <div className=\"space-y-3\">\n                {staffAccounts.map((acc) => (\n=== 975-995 ===\n                      <Button\n                        size=\"sm\"\n                        variant=\"outline\"\n                        className=\"flex-1 text-red-700 border-red-300 hover:bg-red-50 gap-1.5\"\n                        onClick={() => rejectStaff(acc.id)}\n                        data-ocid=\"admin.reject.button\"\n                      >\n                        <XCircle className=\"w-3.5 h-3.5\" \/>\n                        Reject\n                      <\/Button>\n                    <\/div>\n                  <\/div>\n                ))}\n              <\/div>\n            <\/div>\n          )}\n          {patientAccounts.length > 0 && (\n            <div>\n              <p className=\"text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2\">\n                Patient Accounts ({patientAccounts.length})\n              <\/p>\n",
+            "is_error": false,
+            "time": 1785692674
+        },
+        {
+            "id": "msg_e2a4bc54ba",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ET_ZSxHMjaQusejl5xHW5vJ4871",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && grep -n \"\\.name\\b\\|\\.createdAt\\|\\.registerNumber\" App.tsx | sed -n '1,30p'"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 81816,
+                "completion_tokens": 97,
+                "total_tokens": 81913,
+                "prompt_cache_hit_tokens": 81408,
+                "prompt_cache_miss_tokens": 408,
+                "prompt_tokens_details": {
+                    "cached_tokens": 81408
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 0
+                },
+                "cached_tokens": 81408
+            },
+            "time": 1785692677
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ET_ZSxHMjaQusejl5xHW5vJ4871",
+            "content": "290:    if (!suName.trim()) errs.name = \"Full name is required.\";\n433:              {suErrors.name && (\n434:                <p className=\"text-xs text-destructive\">{suErrors.name}<\/p>\n869:      const staffName = reg[idx].name;\n913:                          {acc.name}\n927:                            {new Date(acc.createdAt).toLocaleDateString()}\n1004:                        {acc.name}\n1016:                        {acc.registerNumber && (\n1018:                            {acc.registerNumber}\n1071:                    {acc.name}\n1209:        userName: currentDoctor.name,\n1218:        userName: currentPatient.name,\n1363:                          recordedBy: currentDoctor.name,\n1427:      if (currentPatient.registerNumber) {\n1437:              if (p.registerNumber === currentPatient.registerNumber) {\n1520:    if (!currentPatient?.registerNumber) return \"\";\n1530:          if (p.registerNumber === currentPatient.registerNumber) {\n1597:                  {currentPatient.name}\n2007:    if (currentPatient.registerNumber) {\n2017:            (p) => p.registerNumber === currentPatient.registerNumber,\n2034:  }, [currentPatient.registerNumber]);\n2042:            Welcome, {currentPatient.name}!\n2044:          {currentPatient.registerNumber ? (\n2049:                  {currentPatient.registerNumber}\n",
+            "is_error": false,
+            "time": 1785692677
+        },
+        {
+            "id": "msg_eabadb0c09",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The type errors are:\n- `acc.name` (line 913, 1004, 1071) \u2014 acc is DoctorAccount which has `full_name` not `name`\n- `acc.createdAt` (927) \u2014 DoctorAccount has no `createdAt`\n- `acc.registerNumber` (1016, 1018) \u2014 this is in the patientAccounts map, so acc is PatientAccount which has `register_number` not `registerNumber`\n- `currentDoctor.name` (1209, 1363) \u2014 DoctorAccount has `full_name`\n- `currentPatient.name` (1218) \u2014 PatientAccount has `full_name`\n- `currentPatient.registerNumber` (1427, 1437, 152, 153, 1597, 2007, 2017, 2034, 2042, 2044, 2049) \u2014 PatientAccount has `register_number`\n\nThe cleanest approach: since these are display uses, I can either:\n1. Add `name`, `createdAt`, `registerNumber` as optional fields to the DoctorAccount\/PatientAccount interfaces in services\/auth.ts (backwards compat), OR\n2. Change usage sites to `full_name`\/`register_number`.\n\nSince DoctorAccount\/PatientAccount are the source of truth types used across the app, and many files reference `.name`, `.registerNumber`, `.createdAt` \u2014 the safest minimal change that keeps the app working with the PHP API is to add the legacy alias fields to the interfaces. But the requirement says \"MySQL is the ONLY source of truth\" \u2014 the PHP API returns what it returns. Let me check what the PHP API returns for these fields.\n\nActually, let me check the services\/auth.ts DoctorAccount interface \u2014 it has `full_name`, `name_bn`, `photo_url`, `signature_url`, `bmdc_registration`. But the PHP API may return more fields. Let me check what login.php returns. Actually, a more surgical approach: add optional alias fields `name?`, `createdAt?`, `registerNumber?` to the interfaces, marked as derived aliases. That avoids touching dozens of usage sites.\n\nLet me check the PHP API auth to see what it actually returns, to keep types aligned with reality."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me check what the PHP auth API actually returns to keep types aligned:"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_QNudgCo3OyCVMBsVYZfd0279",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/api\/auth && ls; echo \"=== login.php user fields ===\"; grep -n \"full_name\\|name_bn\\|register_number\\|created_at\\|SELECT\" login.php | head -20"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 82214,
+                "completion_tokens": 576,
+                "total_tokens": 82790,
+                "prompt_cache_hit_tokens": 81792,
+                "prompt_cache_miss_tokens": 422,
+                "prompt_tokens_details": {
+                    "cached_tokens": 81792
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 471
+                },
+                "cached_tokens": 81792
+            },
+            "time": 1785692684
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_QNudgCo3OyCVMBsVYZfd0279",
+            "content": "admin_login.php\napprove.php\nerror_log\nlogin.php\nlogout.php\nmiddleware.php\npatients\npending.php\nreassign_role.php\nregister.php\nreject.php\nupdate_profile.php\nverify.php\n=== login.php user fields ===\n41:    $stmt = $db->prepare('SELECT id, email, password_hash, full_name, name_bn, role, specialization, phone, photo_url, signature_url, bmdc_registration, is_active, registration_status FROM users WHERE email = :email LIMIT 1');\n106:            'full_name' => $user['full_name'],\n107:            'name_bn' => $user['name_bn'],\n",
+            "is_error": false,
+            "time": 1785692684
+        },
+        {
+            "id": "msg_551b4353ab",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "tool_use",
+                    "id": "call_00_ET_PP8o0BNbsed2y8c1l9uA5333",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/api\/auth && sed -n '95,135p' login.php"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 82945,
+                "completion_tokens": 65,
+                "total_tokens": 83010,
+                "prompt_cache_hit_tokens": 82688,
+                "prompt_cache_miss_tokens": 257,
+                "prompt_tokens_details": {
+                    "cached_tokens": 82688
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 0
+                },
+                "cached_tokens": 82688
+            },
+            "time": 1785692687
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_ET_PP8o0BNbsed2y8c1l9uA5333",
+            "content": "    \/\/ Log successful login\n    logAudit($user['id'], null, 'login', 'user', $user['id']);\n    \n    \/\/ Return user info (excluding password hash)\n    unset($user['password_hash']);\n    \n    successResponse([\n        'token' => $token,\n        'user' => [\n            'id' => (int)$user['id'],\n            'email' => $user['email'],\n            'full_name' => $user['full_name'],\n            'name_bn' => $user['name_bn'],\n            'role' => $user['role'],\n            'specialization' => $user['specialization'],\n            'phone' => $user['phone'],\n            'photo_url' => $user['photo_url'],\n            'signature_url' => $user['signature_url'],\n            'bmdc_registration' => $user['bmdc_registration'],\n        ],\n    ], 'Login successful');\n    \n} catch (\\Exception $e) {\n    error_log('Login error: ' . $e->getMessage());\n    errorResponse('Login failed. Please try again.', 500);\n}\n",
+            "is_error": false,
+            "time": 1785692687
+        },
+        {
+            "id": "msg_a16e9d98d1",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The PHP API returns `full_name`, `name_bn`, etc. The `DoctorAccount` interface in `services\/auth.ts` matches. The legacy `.name`, `.createdAt`, `.registerNumber` usage in App.tsx is stale \u2014 those are localStorage-era fields. Since the registry comes from `loadRegistry()` which returns `any[]` (from `useAdminSave`), the type of `reg[idx]` is `any` so those are OK. But `staffAccounts` is typed `DoctorAccount[]` and the JSX uses `acc.name`, `acc.createdAt` \u2014 which don't exist on DoctorAccount.\n\nThe cleanest fix given the PHP API: update App.tsx to use `full_name` instead of `name`, and for `createdAt`\/`registerNumber` \u2014 those fields simply don't exist on the API types. But the UI displays them...\n\nWait \u2014 the bigger question: this App.tsx PendingApprovalsPanel uses `loadRegistry()` which returns `any[]` cached from `staffService.getAll()`. So `acc.name` would be undefined at runtime since API returns `full_name`. This is legacy UI that needs updating to the new API field names.\n\nGiven the migration goal (server-first, PHP API), I should update App.tsx to use the correct API field names: `full_name`, `register_number`, and remove `createdAt` (or map from API). But this is the \"restore compilation\" phase \u2014 I should make minimal changes that compile AND are correct against the PHP API.\n\nLet me make the changes:\n1. Add imports to App.tsx: `useAdminSave` helpers + types constants\n2. Fix `signUp` call \u2014 remove `designation`, `degree`, `hospital_name` (not in API type) \u2014 check what register.php accepts\n3. Fix `.name` \u2192 `full_name`, `.createdAt` \u2192 remove or map, `.registerNumber` \u2192 `register_number`\n\nLet me check register.php to see accepted fields."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_M6m86wbEEEuDXVKKCzYT2264",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/api\/auth && grep -n \"full_name\\|designation\\|degree\\|hospital_name\\|specialization\\|phone\\|role\" register.php | head -20; echo \"=== pending.php user fields ===\"; grep -n \"SELECT\\|full_name\\|created_at\\|name_bn\" pending.php | head"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 83258,
+                "completion_tokens": 531,
+                "total_tokens": 83789,
+                "prompt_cache_hit_tokens": 82944,
+                "prompt_cache_miss_tokens": 314,
+                "prompt_tokens_details": {
+                    "cached_tokens": 82944
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 418
+                },
+                "cached_tokens": 82944
+            },
+            "time": 1785692694
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_M6m86wbEEEuDXVKKCzYT2264",
+            "content": "9: *   \"full_name\": \"...\",\n11: *   \"designation\": \"Dr.|Prof.|Mr.|Ms.|...\",\n12: *   \"degree\": \"...\",\n13: *   \"hospital_name\": \"...\",\n14: *   \"role\": \"doctor|nurse|reception|...\",\n15: *   \"specialization\": \"...\",\n16: *   \"phone\": \"...\",\n34:$missing = validateRequired($input, ['email', 'password', 'full_name']);\n43:$fullName = trim($input['full_name']);\n45:$role = trim($input['role'] ?? 'doctor');\n46:$specialization = trim($input['specialization'] ?? '');\n47:$phone = sanitizePhone($input['phone'] ?? '');\n60:\/\/ Validate role\n67:if (!in_array($role, $allowedRoles)) {\n68:    errorResponse('Invalid role specified', 400);\n86:                    full_name = :full_name,\n88:                    role = :role,\n89:                    specialization = :specialization,\n90:                    phone = :phone,\n100:                ':full_name' => $fullName,\n=== pending.php user fields ===\n25:        SELECT id, email, full_name, name_bn, role, specialization, phone, \n26:               bmdc_registration, registration_status, created_at\n29:        ORDER BY created_at DESC\n",
+            "is_error": false,
+            "time": 1785692694
+        },
+        {
+            "id": "msg_5443eb5a7f",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "The register.php accepts: email, password, full_name, designation, degree, hospital_name, role, specialization, phone. So `signUp` in authService needs `designation`, `degree`, `hospital_name` added to the type. The `signUp` service method's type only accepts `{ email, password, full_name, role?, specialization?, phone? }`. I need to extend it.\n\nLet me look at authService.signUp and useEmailAuth signUp type. The App.tsx calls `signUp({...})` with full_name, email, password, designation, degree, specialization, hospital_name, phone, role.\n\nThe `signUp` in useEmailAuth has type `{ email, password, full_name, role?, specialization?, phone? }` \u2014 missing designation, degree, hospital_name. That's the error at 283.\n\nFor DoctorAccount `.name` and `.createdAt` \u2014 those are used in PendingApprovalsPanel where `acc` is `DoctorAccount`. The DoctorAccount interface has `full_name` not `name`, and no `createdAt`. I have two choices:\n1. Add `name`, `createdAt`, `registerNumber` as optional fields to DoctorAccount\/PatientAccount interfaces\n2. Change the usage sites to use `full_name` etc.\n\nGiven the requirement to be server-first and match PHP API, I should update the usage sites to use `full_name`, `register_number`, and for `createdAt` add an optional field to the interface (since pending.php returns created_at).\n\nLet me check what fields are used and their types. Also `registerNumber` on PatientAccount \u2014 the interface has `register_number`. The App.tsx uses `acc.registerNumber` and `currentPatient.registerNumber` extensively.\n\nThe cleanest minimal fix to restore compilation: add optional aliases to the interfaces:\n- DoctorAccount: `name?: string` (alias for full_name), `createdAt?: string` (from created_at)\n- PatientAccount: `name?: string`, `registerNumber?: string` (alias for register_number)\n\nBut wait \u2014 requirement 4 says remove legacy code. These aliases are just type-level compatibility. But better to fix the call sites to use the canonical names since the PHP API is the source of truth. However, there are many call sites (`.name`, `.registerNumber` appear ~20 times in App.tsx). Given the scope and to restore compilation quickly, adding optional alias fields to the interfaces is pragmatic and matches what the PHP API returns (created_at \u2192 createdAt via mapping, register_number \u2192 registerNumber).\n\nActually wait \u2014 let me check what the API returns. pending.php returns `registration_status, created_at` (snake_case). The frontend types use camelCase. Let me check if there's a mapping somewhere. The services layer probably maps. Let me check the patients service and auth pending mapping.\n\nActually, let me just be pragmatic here. The task is to restore compilation as Phase , then migrate features. For App.tsx:\n1. Add imports: `useAdminSave` functions + types constants\n2. Extend signUp type to accept designation\/degree\/hospital_name\n3. Add optional alias fields to DoctorAccount\/PatientAccount\n\nLet me check the patients service to see how fields map."
+                },
+                {
+                    "type": "text",
+                    "text": "Let me check how the frontend maps API snake_case fields (to decide alias approach):"
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_2cXnhksmAuyID1znNbqC7819",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/source_build\/dr.armankabir-main\/src\/frontend\/src && echo \"=== services\/patients.ts ===\"; cat services\/patients.ts; echo \"\"; echo \"=== services\/staff.ts ===\"; cat services\/staff.ts"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 84093,
+                "completion_tokens": 799,
+                "total_tokens": 84892,
+                "prompt_cache_hit_tokens": 83712,
+                "prompt_cache_miss_tokens": 381,
+                "prompt_tokens_details": {
+                    "cached_tokens": 83712
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 681
+                },
+                "cached_tokens": 83712
+            },
+            "time": 1785692703
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_2cXnhksmAuyID1znNbqC7819",
+            "content": "=== services\/patients.ts ===\n\/**\n * Patient Service\n *\n * CRUD operations for patient records.\n * All data is persisted in MySQL via the PHP API.\n * \n * Data flow:\n *   Frontend (camelCase) \u2192 Service (maps to camelCase) \u2192 PHP API (reads camelCase)\n *   PHP API (returns snake_case) \u2192 Service (maps to camelCase) \u2192 Frontend DTO\n *\/\n\nimport { get, post, del } from '..\/lib\/apiClient';\nimport type { Patient } from '..\/types';\nimport { mapListFromApi, mapFromApi, mapToApi, type Mapping, toNumber, parseJsonArray } from '..\/lib\/mappers';\n\n\/\/ \u2500\u2500 Patient API mapping: camelCase DTO \u2194 snake_case API \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nconst patientMapping: Mapping<Patient> = {\n  id: 'id',\n  fullName: 'full_name',\n  nameBn: 'name_bn',\n  dateOfBirth: 'date_of_birth',\n  gender: 'gender',\n  phone: 'phone',\n  email: 'email',\n  address: 'address',\n  bloodGroup: 'blood_group',\n  weight: 'weight',\n  height: 'height',\n  allergies: 'allergies',\n  chronicConditions: 'chronic_conditions',\n  pastSurgicalHistory: 'past_surgical_history',\n  patientType: 'patient_type',\n  createdAt: 'created_at',\n  registerNumber: 'register_number',\n  photo: 'photo_url',\n  department: 'department',\n  bedNumber: 'bed_number',\n  ward: 'ward',\n  hospitalName: 'hospital_name',\n  admittedOn: 'admitted_on',\n  admissionDate: 'admission_date',\n  dischargeDate: 'discharge_date',\n  isAdmitted: 'is_admitted',\n  status: 'status',\n  signUpEnabled: 'sign_up_enabled',\n  edd: 'edd',\n  lmpDate: 'lmp_date',\n  consultantAssignment: 'consultant_assignment',\n  registrationComplete: 'registration_complete',\n};\n\nconst patientTransforms = {\n  id: (v: any) => toNumber(v),\n  weight: (v: any) => toNumber(v),\n  height: (v: any) => toNumber(v),\n  allergies: (v: any) => parseJsonArray(v),\n  chronicConditions: (v: any) => parseJsonArray(v),\n  isAdmitted: (v: any) => v === 1 || v === true || v === '1',\n  registrationComplete: (v: any) => v === 1 || v === true || v === '1',\n  signUpEnabled: (v: any) => v === 1 || v === true || v === '1',\n};\n\n\/\/ \u2500\u2500 Request DTOs (camelCase) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nexport interface CreatePatientData {\n  fullName: string;\n  nameBn?: string | null;\n  dateOfBirth?: string | null;\n  gender?: string;\n  phone?: string | null;\n  email?: string | null;\n  address?: string | null;\n  bloodGroup?: string | null;\n  weight?: number | null;\n  height?: number | null;\n  allergies?: string[];\n  chronicConditions?: string[];\n  pastSurgicalHistory?: string | null;\n  patientType?: string;\n  photo?: string | null;\n}\n\nexport interface UpdatePatientData extends Partial<CreatePatientData> {\n  id: number;\n}\n\nexport const patientService = {\n  \/** Get all patients (with optional limit) *\/\n  async getAll(limit = 100, page = 1): Promise<{ items: Patient[]; total: number }> {\n    const result = await get<{ items: Record<string, any>[]; pagination: { total: number } }>(\n      '\/patients\/list.php',\n      { limit: String(limit), page: String(page) }\n    );\n    return {\n      items: mapListFromApi<Patient>(result.items, patientMapping, patientTransforms),\n      total: result.pagination?.total ,\n    };\n  },\n\n  \/** Search patients by query *\/\n  async search(query: string): Promise<Patient[]> {\n    const result = await get<{ items: Record<string, any>[] }>('\/patients\/list.php', {\n      search: query,\n      limit: '50',\n    });\n    return mapListFromApi<Patient>(result.items, patientMapping, patientTransforms);\n  },\n\n  \/** Get a single patient by ID *\/\n  async getById(id: number): Promise<Patient | null> {\n    try {\n      const result = await get<Record<string, any>>('\/patients\/get.php', { id: String(id) });\n      return mapFromApi<Patient>(result, patientMapping, patientTransforms);\n    } catch {\n      return null;\n    }\n  },\n\n  \/** Create a new patient *\/\n  async create(data: CreatePatientData): Promise<Patient> {\n    \/\/ PHP API reads camelCase (e.g., $input['fullName'])\n    const payload: Record<string, any> = {\n      fullName: data.fullName,\n      nameBn: data.nameBn || null,\n      dateOfBirth: data.dateOfBirth || null,\n      gender: data.gender ?? 'male',\n      phone: data.phone || null,\n      email: data.email || null,\n      address: data.address || null,\n      bloodGroup: data.bloodGroup || null,\n      weight: data.weight ?? null,\n      height: data.height ?? null,\n      allergies: data.allergies ?? [],\n      chronicConditions: data.chronicConditions ?? [],\n      pastSurgicalHistory: data.pastSurgicalHistory || null,\n      patientType: data.patientType ?? 'outdoor',\n      photo: data.photo || null,\n    };\n    const result = await post<Record<string, any>>('\/patients\/create.php', payload);\n    return mapFromApi<Patient>(result, patientMapping, patientTransforms)!;\n  },\n\n  \/** Update an existing patient *\/\n  async update(data: UpdatePatientData): Promise<Patient> {\n    \/\/ PHP API reads camelCase (e.g., $input['fullName'])\n    const payload: Record<string, any> = { id: data.id };\n    if (data.fullName !== undefined) payload.fullName = data.fullName;\n    if (data.nameBn !== undefined) payload.nameBn = data.nameBn;\n    if (data.dateOfBirth !== undefined) payload.dateOfBirth = data.dateOfBirth;\n    if (data.gender !== undefined) payload.gender = data.gender;\n    if (data.phone !== undefined) payload.phone = data.phone;\n    if (data.email !== undefined) payload.email = data.email;\n    if (data.address !== undefined) payload.address = data.address;\n    if (data.bloodGroup !== undefined) payload.bloodGroup = data.bloodGroup;\n    if (data.weight !== undefined) payload.weight = data.weight;\n    if (data.height !== undefined) payload.height = data.height;\n    if (data.allergies !== undefined) payload.allergies = data.allergies;\n    if (data.chronicConditions !== undefined) payload.chronicConditions = data.chronicConditions;\n    if (data.pastSurgicalHistory !== undefined) payload.pastSurgicalHistory = data.pastSurgicalHistory;\n    if (data.patientType !== undefined) payload.patientType = data.patientType;\n    if (data.photo !== undefined) payload.photo = data.photo;\n    const result = await post<Record<string, any>>('\/patients\/update.php', payload);\n    return mapFromApi<Patient>(result, patientMapping, patientTransforms)!;\n  },\n\n  \/** Delete a patient *\/\n  async delete(id: number): Promise<void> {\n    await del('\/patients\/delete.php', { id });\n  },\n};\n\n=== services\/staff.ts ===\n\/**\n * Staff Service\n *\n * CRUD operations for staff\/user management.\n * All data is persisted in MySQL via the PHP API.\n *\/\n\nimport { get, post, del } from '..\/lib\/apiClient';\nimport type { UserProfile, StaffRole } from '..\/types';\n\nexport interface CreateStaffData {\n  email: string;\n  fullName: string;\n  role: StaffRole;\n  specialization?: string;\n  phone?: string;\n  password?: string;\n}\n\nexport interface UpdateStaffData extends Partial<CreateStaffData> {\n  id: number;\n}\n\nexport const staffService = {\n  \/** Get all staff members *\/\n  async getAll(params?: { role?: string; limit?: number }): Promise<UserProfile[]> {\n    const result = await get<{ items: UserProfile[] }>('\/staff\/list.php', params as any);\n    return result.items ?? [];\n  },\n\n  \/** Get a single staff member by ID *\/\n  async getById(id: number): Promise<UserProfile | null> {\n    try {\n      return await get<UserProfile>('\/staff\/get.php', { id: String(id) });\n    } catch {\n      return null;\n    }\n  },\n\n  \/** Create a new staff member *\/\n  async create(data: CreateStaffData): Promise<UserProfile> {\n    return post<UserProfile>('\/staff\/create.php', {\n      email: data.email,\n      full_name: data.fullName,\n      role: data.role,\n      specialization: data.specialization ?? '',\n      phone: data.phone ?? '',\n      password: data.password,\n    });\n  },\n\n  \/** Update an existing staff member *\/\n  async update(data: UpdateStaffData): Promise<UserProfile> {\n    return post<UserProfile>('\/staff\/update.php', {\n      id: data.id,\n      email: data.email,\n      full_name: data.fullName,\n      role: data.role,\n      specialization: data.specialization,\n      phone: data.phone,\n    });\n  },\n\n  \/** Delete a staff member *\/\n  async delete(id: number): Promise<void> {\n    await del('\/staff\/delete.php', { id });\n  },\n\n  \/** Search staff members *\/\n  async search(query: string): Promise<UserProfile[]> {\n    const result = await get<{ items: UserProfile[] }>('\/staff\/list.php', { search: query });\n    return result.items ?? [];\n  },\n};\n",
+            "is_error": false,
+            "time": 1785692703
+        },
+        {
+            "id": "msg_2c6ef318b2",
+            "role": "assistant",
+            "parts": [
+                {
+                    "type": "reasoning",
+                    "text": "Now I understand the architecture. The services are well-designed with camelCase DTO \u2194 snake_case mapping. The `DoctorAccount` type has `full_name` (snake_case) directly from PHP. But App.tsx uses `acc.name`, `acc.createdAt`, `acc.registerNumber`, `currentPatient.name`, `currentPatient.registerNumber` \u2014 those are legacy localStorage-era fields.\n\nThe cleanest fix consistent with the migration: \n- For `DoctorAccount`\/`PatientAccount` types used in App.tsx: since `loadRegistry()` returns `any[]`, the `acc` in `staffAccounts` is typed `DoctorAccount[]` (from `useState<DoctorAccount[]>`). The `.name`\/`.createdAt` don't exist on DoctorAccount.\n\nOptions:\n1. Change `staffAccounts` state type to `any[]` \u2014 pragmatic but loses type safety\n2. Add `name`\/`createdAt` optional alias fields to DoctorAccount, `name`\/`registerNumber` to PatientAccount \u2014 matches what the registry items actually contain\n\nActually, the pending approvals in App.tsx load from `loadRegistry()` which is populated by `fetchRegistry()` \u2192 `staffService.getAll()` \u2192 `UserProfile[]`. Let me check what UserProfile looks like and what pending.php returns (which has `created_at`, `full_name`, `name_bn`, `registration_status`).\n\nThe cleanest: since these are the SAME entities, add optional compatibility fields to the interfaces. But actually per the migration goal \"Remove all legacy code\", the right fix is to update App.tsx to use the correct field names: `full_name`, `register_number`, and remove `createdAt` (or use it from API mapping).\n\nLet me look at what UserProfile type contains and what pending.php returns, then decide. Given the size, adding alias fields to the DTO interfaces is the minimal, correct approach \u2014 PHP returns `created_at` and App expects `createdAt`. Let me check pending.php response shape."
+                },
+                {
+                    "type": "tool_use",
+                    "id": "call_00_bdDdepaVeLI3VCvcGO3H6003",
+                    "name": "bash",
+                    "input": {
+                        "command": "cd \/home\/drarmank\/public_html\/api\/auth && sed -n '20,45p' pending.php; echo \"=== patients\/pending.php ===\"; cat patients\/pending.php 2>\/dev\/null | head -40"
+                    }
+                }
+            ],
+            "model": "deepseek-v4-flash-free",
+            "provider": "opencode_zen",
+            "usage": {
+                "prompt_tokens": 87037,
+                "completion_tokens": 508,
+                "total_tokens": 87545,
+                "prompt_cache_hit_tokens": 84864,
+                "prompt_cache_miss_tokens": 2173,
+                "prompt_tokens_details": {
+                    "cached_tokens": 84864
+                },
+                "completion_tokens_details": {
+                    "reasoning_tokens": 418
+                },
+                "cached_tokens": 84864
+            },
+            "time": 1785692710
+        },
+        {
+            "role": "tool_result",
+            "tool_call_id": "call_00_bdDdepaVeLI3VCvcGO3H6003",
+            "content": "\ntry {\n    $db = Database::getInstance();\n    \n    $stmt = $db->query('\n        SELECT id, email, full_name, name_bn, role, specialization, phone, \n               bmdc_registration, registration_status, created_at\n        FROM users \n        WHERE registration_status = \"pending\"\n        ORDER BY created_at DESC\n    ');\n    $pending = $stmt->fetchAll();\n    \n    successResponse([\n        'users' => $pending,\n        'total' => count($pending),\n    ], 'Pending registrations retrieved');\n    \n} catch (\\Exception $e) {\n    error_log('Pending list error: ' . $e->getMessage());\n    errorResponse('Failed to fetch pending registrations', 500);\n}\n=== patients\/pending.php ===\n<?php\n\/**\n * Get Pending Patient Logins API\n * \n * GET \/api\/auth\/patients\/pending.php\n * Headers: Authorization: Bearer <staff-token>\n * \n * Returns all patient logins with 'pending' status.\n *\/\n\nrequire_once __DIR__ . '\/..\/..\/database.php';\nrequire_once __DIR__ . '\/..\/..\/helpers.php';\nrequire_once __DIR__ . '\/..\/middleware.php';\n\nhandleCors();\nrequireMethod('GET');\n\n$user = requireAuth();\n\ntry {\n    $db = Database::getInstance();\n    \n    $stmt = $db->query('\n        SELECT pl.id, pl.patient_id, pl.phone, pl.status, pl.created_at,\n               p.full_name, p.name_bn, p.register_number, p.gender, p.date_of_birth, p.photo_url\n        FROM patient_login pl\n        JOIN patients p ON pl.patient_id = p.id\n        WHERE pl.status = \"pending\"\n        ORDER BY pl.created_at DESC\n    ');\n    $patients = $stmt->fetchAll();\n    \n    \/\/ Sanitize output\n    $result = array_map(function ($p) {\n        return [\n            'id' => (int)$p['id'],\n            'patient_id' => (int)$p['patient_id'],\n            'phone' => $p['phone'],\n            'status' => $p['status'],\n            'full_name' => $p['full_name'],\n",
+            "is_error": false,
+            "time": 1785692710
         }
     ]
 }
