@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fix the legacy getDoctorDisplayName block in PrescriptionPadPreview.tsx."""
+"""Fix getDoctorDisplayName legacy auth block in PrescriptionPadPreview.tsx."""
 import sys
 
 path = "source_build/dr.armankabir-main/src/frontend/src/components/PrescriptionPadPreview.tsx"
@@ -43,15 +43,15 @@ new_name = '''  function getDoctorDisplayName(): string {
   }'''
 
 count = content.count(old_name)
-print(f"Found {count} occurrence(s) of legacy getDoctorDisplayName block")
+print(f"getDoctorDisplayName block: {count} occurrence(s)")
 
 if count == 1:
     content = content.replace(old_name, new_name)
     with open(path, "w", encoding="utf-8") as f:
         f.write(content)
-    print("Replaced successfully")
+    print("Saved successfully")
 elif not count:
-    print("ERROR: block not found - already fixed?")
+    print("ERROR: block not found")
     sys.exit(1)
 else:
     print("ERROR: multiple occurrences - aborting")
