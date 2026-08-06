@@ -1,94 +1,70 @@
 <?php
 /**
- * Dr. Arman Kabir Care - Application Configuration
- * 
- * Security: Never commit this file to version control.
- * On cPanel, place this outside public_html or protect with .htaccess.
+ * Application Configuration (hardened)
  *
- * NOTE: putenv() is disabled on this server. We read .env directly and
- * define constants. For maximum security, set real env vars via cPanel.
+ * NOTE: This file must NOT contain production secrets. Set them via cPanel
+ * environment variables or an .env file placed outside the web root.
+ *
+ * This refactor replaced embedded defaults with placeholders and uses the
+ * cfg() helper to read environment values. If a required secret is missing,
+ * the app will log a warning and endpoints will return a generic error.
  */
 
-// ─── Environment Detection ─────────────────────────────────────────────────
-// First check OS-level environment variables (set via cPanel or .env file)
-// Then fall back to .env file outside public_html
-// Finally use hardcoded defaults
+require_once __DIR__ . '/config_loader.php';
 
-$envConfig = [];
-
-// 1. Check OS environment variables first (set via cPanel or actual env)
-$envVars = ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASS', 'JWT_SECRET', 'APP_URL'];
-foreach ($envVars as $var) {
-    $val = getenv($var);
-    if ($val !== false && $val !== '') {
-        $envConfig[$var] = $val;
-    }
-}
-
-// 2. Load from .env file if OS env vars are not set
-$dotenvFile = __DIR__ . '/../.env';
-if (file_exists($dotenvFile)) {
-    $lines = file($dotenvFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($lines as $line) {
-        $line = trim($line);
-        if ($line === '' || str_starts_with($line, '#')) continue;
-        if (str_contains($line, '=')) {
-            [$key, $value] = explode('=', $line, 2);
-            $key = trim($key);
-            $value = trim($value, " \t\n\r\0\x0B\"'");
-            // Only set if not already defined from OS env vars
-            if (!isset($envConfig[$key])) {
-                $envConfig[$key] = $value;
-            }
-        }
-    }
-}
-
-/**
- * Get configuration value: OS env > .env file > default
- */
-function cfg(string $key, mixed $default = null): mixed {
-    global $envConfig;
-    return $envConfig[$key] ?? $default;
-}
-
-// Store globally so other files can access env config directly
-$GLOBALS['env_config'] = $envConfig;
-
-// ─── Error Reporting (set early to prevent warnings from leaking to output) ─
+// Error reporting (do NOT display errors to end users)
 error_reporting(E_ALL);
 ini_set('display_errors', '0');
 ini_set('log_errors', '1');
-ini_set('error_log', __DIR__ . '/../logs/php-error.log');
+// Ensure logs directory is outside public_html in deployment. Default here is ../logs
+if (!ini_get('error_log')) {
+    ini_set('error_log', __DIR__ . '/../logs/php-error.log');
+}
 
-// ─── Database Configuration ────────────────────────────────────────────────
-if (!defined('DB_HOST')) define('DB_HOST', cfg('DB_HOST', '127.0.0.1'));
-if (!defined('DB_NAME')) define('DB_NAME', cfg('DB_NAME', 'drarmank_drarmank_care'));
-if (!defined('DB_USER')) define('DB_USER', cfg('DB_USER', 'drarmank_drarmank_care_user'));
-if (!defined('DB_PASS')) define('DB_PASS', cfg('DB_PASS', 'zosid01197247219'));
-if (!defined('DB_CHARSET')) define('DB_CHARSET', 'utf8mb4');
+// Database configuration — read from environment via cfg(); use placeholder defaults
+if (!defined('DB_HOST')) define('DB_HOST', cfg('DB_HOST', null));
+if (!defined('DB_NAME')) define('DB_NAME', cfg('DB_NAME', null));
+if (!defined('DB_USER')) define('DB_USER', cfg('DB_USER', null));
+if (!defined('DB_PASS')) define('DB_PASS', cfg('DB_PASS', null));
+if (!defined('DB_CHARSET')) define('DB_CHARSET', cfg('DB_CHARSET', 'utf8mb4'));
 
-// ─── Application Configuration ─────────────────────────────────────────────
-if (!defined('APP_NAME')) define('APP_NAME', 'Dr. Arman Kabir Care');
-if (!defined('APP_VERSION')) define('APP_VERSION', '2.0.0');
-if (!defined('APP_URL')) define('APP_URL', cfg('APP_URL', 'https://drarmankabir.com'));
-if (!defined('API_URL')) define('API_URL', APP_URL . '/api');
+// Application configuration
+if (!defined('APP_NAME')) define('APP_NAME', cfg('APP_NAME', 'Dr. Arman Kabir Care'));
+if (!defined('APP_VERSION')) define('APP_VERSION', cfg('APP_VERSION', '2.0.0'));
+if (!defined('APP_URL')) define('APP_URL', cfg('APP_URL', null));
+if (!defined('API_URL')) define('API_URL', (APP_URL ? APP_URL : '') . '/api');
 
-// ─── Security Configuration ────────────────────────────────────────────────
-if (!defined('JWT_SECRET')) define('JWT_SECRET', cfg('JWT_SECRET', 'change-this-to-a-random-secret-in-production'));
-if (!defined('JWT_EXPIRY')) define('JWT_EXPIRY', 86400); // 24 hours in seconds
-if (!defined('SESSION_LIFETIME')) define('SESSION_LIFETIME', 86400 * 7); // 7 days
-if (!defined('CSRF_TOKEN_LIFETIME')) define('CSRF_TOKEN_LIFETIME', 3600); // 1 hour
+// Security configuration
+if (!defined('JWT_SECRET')) define('JWT_SECRET', cfg('JWT_SECRET', null));
+if (!defined('JWT_EXPIRY')) define('JWT_EXPIRY', intval(cfg('JWT_EXPIRY', 86400)));
+if (!defined('SESSION_LIFETIME')) define('SESSION_LIFETIME', intval(cfg('SESSION_LIFETIME', 86400 * 7)));
+if (!defined('CSRF_TOKEN_LIFETIME')) define('CSRF_TOKEN_LIFETIME', intval(cfg('CSRF_TOKEN_LIFETIME', 3600)));
 
-// ─── Upload Configuration ──────────────────────────────────────────────────
-if (!defined('UPLOAD_DIR')) define('UPLOAD_DIR', __DIR__ . '/uploads');
-if (!defined('UPLOAD_URL')) define('UPLOAD_URL', '/uploads');
-if (!defined('MAX_UPLOAD_SIZE')) define('MAX_UPLOAD_SIZE', 10 * 1024 * 1024); // 10MB
-if (!defined('ALLOWED_EXTENSIONS')) define('ALLOWED_EXTENSIONS', ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx']);
+// Uploads
+if (!defined('UPLOAD_DIR')) define('UPLOAD_DIR', cfg('UPLOAD_DIR', __DIR__ . '/uploads'));
+if (!defined('UPLOAD_URL')) define('UPLOAD_URL', cfg('UPLOAD_URL', '/uploads'));
+if (!defined('MAX_UPLOAD_SIZE')) define('MAX_UPLOAD_SIZE', intval(cfg('MAX_UPLOAD_SIZE', 10 * 1024 * 1024)));
+if (!defined('ALLOWED_EXTENSIONS')) define('ALLOWED_EXTENSIONS', cfg('ALLOWED_EXTENSIONS', ['jpg','jpeg','png','gif','webp','pdf','doc','docx']));
 
-// ─── Rate Limiting ─────────────────────────────────────────────────────────
-if (!defined('RATE_LIMIT_MAX')) define('RATE_LIMIT_MAX', 100);
-if (!defined('RATE_LIMIT_WINDOW')) define('RATE_LIMIT_WINDOW', 60); // seconds
+// Rate limiting
+if (!defined('RATE_LIMIT_MAX')) define('RATE_LIMIT_MAX', intval(cfg('RATE_LIMIT_MAX', 100)));
+if (!defined('RATE_LIMIT_WINDOW')) define('RATE_LIMIT_WINDOW', intval(cfg('RATE_LIMIT_WINDOW', 60)));
 
-// ─── Timezone ──────────────────────────────────────────────────────────────
-date_default_timezone_set('Asia/Dhaka');
+// Timezone
+date_default_timezone_set(cfg('TIMEZONE', 'Asia/Dhaka'));
+
+// Minimal runtime checks: if required secrets are missing, log a warning so admins can act.
+$required = [
+    'DB_HOST' => DB_HOST,
+    'DB_NAME' => DB_NAME,
+    'DB_USER' => DB_USER,
+    'DB_PASS' => DB_PASS,
+    'JWT_SECRET' => JWT_SECRET,
+];
+foreach ($required as $k => $v) {
+    if ($v === null || $v === '') {
+        error_log("CONFIG WARNING: Required config $k is not set. Set via cPanel env or .env outside webroot.");
+    }
+}
+
+// End of config.php
