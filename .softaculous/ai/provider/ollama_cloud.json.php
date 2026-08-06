@@ -1,13 +1,13 @@
 <?php exit(); ?>
 {
-    "fetched_at": 1785774441,
+    "fetched_at": 1786003665,
     "models": {
-        "deepseek-v4-flash": {
-            "name": "deepseek-v4-flash",
-            "context_window": 128000
-        },
         "deepseek-v4-flash:0731": {
             "name": "deepseek-v4-flash:0731",
+            "context_window": 128000
+        },
+        "deepseek-v4-flash:preview": {
+            "name": "deepseek-v4-flash:preview",
             "context_window": 128000
         },
         "deepseek-v4-pro": {

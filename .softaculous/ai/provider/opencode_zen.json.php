@@ -1,6 +1,6 @@
 <?php exit(); ?>
 {
-    "fetched_at": 1785774442,
+    "fetched_at": 1786003666,
     "models": {
         "deepseek-v4-flash-free": {
             "name": "deepseek-v4-flash-free",
@@ -12,6 +12,10 @@
         },
         "ling-3.0-flash-free": {
             "name": "ling-3.0-flash-free",
+            "context_window": 128000
+        },
+        "longcat-2.0-free": {
+            "name": "longcat-2.0-free",
             "context_window": 128000
         },
         "mimo-v2.5-free": {

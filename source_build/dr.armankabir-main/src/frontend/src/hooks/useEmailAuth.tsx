@@ -1,40 +1,4 @@
-  const signUp = useCallback(
-    async (data: {
-      email: string;
-      password: string;
-      full_name: string;
-      role?: string;
-      specialization?: string;
-      phone?: string;
-      designation?: string;
-      degree?: string;
-      hospital_name?: string;
-    }) => {
-      setIsLoggingIn(true);
-      setAuthError(null);
-      try {
-        const result = await authService.signUp({
-          email: data.email,
-          password: data.password,
-          full_name: data.full_name,
-          role: data.role ?? "doctor",
-          specialization: data.specialization ?? "",
-          phone: data.phone ?? "",
-          designation: data.designation,
-          degree: data.degree,
-          hospital_name: data.hospital_name,
-        });
-        throw new Error(result.message || "Account created! Please wait for admin approval before logging in.");
-      } catch (e: unknown) {
-        const msg = e instanceof Error ? e.message : "Sign up failed.";
-        setAuthError(msg);
-        throw e;
-      } finally {
-        setIsLoggingIn(false);
-      }
-    },
-    [],
-  );/**
+/**
  * Email Auth Hook — PHP/MySQL Backend
  *
  * All authentication is handled server-side via the PHP API.
@@ -54,6 +18,7 @@ import {
 import type { StaffRole } from "../types";
 import { authService } from "../services/auth";
 import type { DoctorAccount, PatientAccount } from "../services/auth";
+import { settingsService } from "../services/settings";
 
 export interface AuditLogEntry {
   id: string;
@@ -135,18 +100,6 @@ interface EmailAuthContextValue {
     degree?: string;
     hospital_name?: string;
   }) => Promise<void>;
-    degree?: string;
-    hospital_name?: string;
-  }) => Promise<void>;
-    degree?: string;
-    hospital_name?: string;
-  }) => Promise<void>;
-    degree?: string;
-    hospital_name?: string;
-  }) => Promise<void>;
-    degree?: string;
-    hospital_name?: string;
-  }) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   updateProfile: (data: Partial<DoctorAccount>) => Promise<void>;
@@ -198,6 +151,7 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
     };
     restoreSession();
   }, []);
+
   const signUp = useCallback(
     async (data: {
       email: string;
@@ -224,14 +178,10 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
           degree: data.degree,
           hospital_name: data.hospital_name,
         });
-          role: data.role ?? "doctor",
-          specialization: data.specialization ?? "",
-          phone: data.phone ?? "",
-          designation: data.designation,
-          degree: data.degree,
-          hospital_name: data.hospital_name,
-        });
-        throw new Error(result.message || "Account created! Please wait for admin approval before logging in.");
+        throw new Error(
+          result.message ||
+            "Account created! Please wait for admin approval before logging in.",
+        );
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : "Sign up failed.";
         setAuthError(msg);
@@ -321,7 +271,8 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         throw new Error(
-          result.message || "Account created! Please wait for doctor approval before logging in.",
+          result.message ||
+            "Account created! Please wait for doctor approval before logging in.",
         );
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : "Sign up failed.";
@@ -371,8 +322,12 @@ export function EmailAuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const updatePatientCredentials = useCallback(
-    async (_registerNumber: string, _newPhone?: string, _newPassword?: string) => {
-      // Patient credential update handled by PHP backend
+    async (registerNumber: string, newPhone?: string, newPassword?: string) => {
+      await authService.updatePatientCredentials(
+        registerNumber,
+        newPhone,
+        newPassword,
+      );
     },
     [],
   );
@@ -463,7 +418,7 @@ export function useInactivityTimer(onLogout: () => void): InactivityTimerState {
         setSecondsRemaining((s) => {
           if (s <= 1) {
             if (countdownRef.current) clearInterval(countdownRef.current);
-            return 0;
+            return ;
           }
           return s - 1;
         });
@@ -502,33 +457,29 @@ export function useInactivityTimer(onLogout: () => void): InactivityTimerState {
   return { showWarning, secondsRemaining, resetTimer };
 }
 
-// ── Patient sign-up helpers ─────────────────────────────────────────────
+// ── Patient sign-up helpers (MySQL-backed) ─────────────────────────────────
 
-const PATIENT_SIGNUP_MAP_KEY = 'medicare_patient_signup_map';
+const PATIENT_SIGNUP_SETTING_PREFIX = "patient_signup_enabled_";
 
-function loadSignUpMap(): Record<string, boolean> {
+function signupSettingKey(registerNumber: string): string {
+  return PATIENT_SIGNUP_SETTING_PREFIX + registerNumber.trim();
+}
+
+export async function setSignUpEnabled(
+  registerNumber: string,
+  enabled: boolean,
+): Promise<void> {
+  const key = signupSettingKey(registerNumber);
+  await settingsService.set(key, enabled ? "1" : "");
+}
+
+export async function isSignUpEnabled(
+  registerNumber: string,
+): Promise<boolean> {
   try {
-    const raw = localStorage.getItem(PATIENT_SIGNUP_MAP_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch { /* ignore */ }
-  return {};
-}
-
-function saveSignUpMap(map: Record<string, boolean>): void {
-  localStorage.setItem(PATIENT_SIGNUP_MAP_KEY, JSON.stringify(map));
-}
-
-export function setSignUpEnabled(registerNumber: string, enabled: boolean): void {
-  const map = loadSignUpMap();
-  if (enabled) {
-    map[registerNumber] = true;
-  } else {
-    delete map[registerNumber];
+    const value = await settingsService.getByKey(signupSettingKey(registerNumber));
+    return value === "1";
+  } catch {
+    return false;
   }
-  saveSignUpMap(map);
-}
-
-export function isSignUpEnabled(registerNumber: string): boolean {
-  const map = loadSignUpMap();
-  return map[registerNumber] === true;
 }
