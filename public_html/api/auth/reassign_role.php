@@ -1,15 +1,18 @@
 <?php
 /**
- * Reassign User Role API
- * 
+ * Reassign User Role API (modernized)
+ *
  * POST /api/auth/reassign_role.php
  * Headers: Authorization: Bearer <admin-token>
  * Body: { "user_id": 123, "role": "consultant_doctor" }
- * 
- * Only admins can reassign roles.
+ *
+ * Only admins can reassign roles. All changes are persisted to the central
+ * MySQL database (phpMyAdmin / cPanel) — no local or canister storage is used.
  */
 
-require_once __DIR__ . '/../database.php';
+require_once __DIR__ . '/../../config_loader.php';
+require_once __DIR__ . '/../response.php';
+require_once __DIR__ . '/../db_helper.php';
 require_once __DIR__ . '/../helpers.php';
 require_once __DIR__ . '/middleware.php';
 
@@ -17,15 +20,15 @@ handleCors();
 requireMethod('POST');
 
 $user = requireAdmin();
-
 $input = getJsonInput();
+
 $missing = validateRequired($input, ['user_id', 'role']);
 if ($missing) {
-    errorResponse('Missing required fields', 400, ['missing_fields' => $missing]);
+    Response::error('Missing required fields', ['missing_fields' => $missing], 400);
 }
 
-$targetUserId = (int)$input['user_id'];
-$newRole = trim($input['role']);
+$targetUserId = (int) ($input['user_id']);
+$newRole = trim((string) ($input['role'] ?? ''));
 
 $allowedRoles = [
     'admin', 'consultant_doctor', 'medical_officer', 'intern_doctor',
@@ -33,46 +36,52 @@ $allowedRoles = [
     'assistant_registrar', 'registrar',
     'assistant_professor', 'associate_professor', 'professor'
 ];
-if (!in_array($newRole, $allowedRoles)) {
-    errorResponse('Invalid role', 400);
+if ($newRole === '' || !in_array($newRole, $allowedRoles, true)) {
+    Response::error('Invalid role', [], 400);
 }
 
 try {
-    $db = Database::getInstance();
-    
-    // Find the user
-    $stmt = $db->prepare('SELECT id, email, full_name, role FROM users WHERE id = :id LIMIT 1');
-    $stmt->execute([':id' => $targetUserId]);
-    $targetUser = $stmt->fetch();
-    
+    DB::beginTransaction();
+
+    $targetUser = DB::fetchOne('SELECT id, email, full_name, role FROM users WHERE id = :id LIMIT 1', [':id' => $targetUserId]);
+
     if (!$targetUser) {
-        errorResponse('User not found', 404);
+        DB::rollback();
+        Response::error('User not found', [], 404);
     }
-    
-    $oldRole = $targetUser['role'];
-    
-    // Update role
-    $stmt = $db->prepare('UPDATE users SET role = :role, updated_at = NOW() WHERE id = :id');
-    $stmt->execute([
-        ':role' => $newRole,
-        ':id' => $targetUserId,
-    ]);
-    
-    // Log audit
-    logAudit($user['id'], null, 'update', 'user', $targetUserId,
-        ['role' => $oldRole],
-        ['role' => $newRole]
-    );
-    
-    successResponse([
+
+    $oldRole = $targetUser['role'] ?? null;
+
+    // No-op if same role
+    if ($oldRole === $newRole) {
+        DB::rollback();
+        Response::ok('No change required', [
+            'user_id' => $targetUserId,
+            'email' => $targetUser['email'] ?? null,
+            'full_name' => $targetUser['full_name'] ?? null,
+            'role' => $oldRole,
+            'changed' => false,
+        ]);
+    }
+
+    DB::execute('UPDATE users SET role = :role, updated_at = NOW() WHERE id = :id', [':role' => $newRole, ':id' => $targetUserId]);
+
+    // Audit log
+    logAudit((int)$user['id'], null, 'update', 'user', $targetUserId, ['role' => $oldRole], ['role' => $newRole]);
+
+    DB::commit();
+
+    Response::ok('Role reassigned successfully', [
         'user_id' => $targetUserId,
-        'email' => $targetUser['email'],
-        'full_name' => $targetUser['full_name'],
+        'email' => $targetUser['email'] ?? null,
+        'full_name' => $targetUser['full_name'] ?? null,
         'old_role' => $oldRole,
         'new_role' => $newRole,
-    ], 'Role reassigned successfully');
-    
-} catch (\Exception $e) {
+        'changed' => true,
+    ]);
+
+} catch (\Throwable $e) {
+    try { DB::rollback(); } catch (\Throwable $_) {}
     error_log('Reassign role error: ' . $e->getMessage());
-    errorResponse('Failed to reassign role', 500);
+    Response::error('Failed to reassign role', [], 500);
 }
