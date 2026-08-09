@@ -1,16 +1,16 @@
 <?php
 /**
- * Admin Content Login API
- * 
+ * Admin Content Login API (modernized)
+ *
  * POST /api/auth/admin_login.php
  * Body: { "username": "...", "password": "..." }
- * 
- * Replaces the hardcoded ADMIN_ACCOUNTS in the frontend JS.
- * Returns a session token stored in localStorage for admin content management.
- * Token is now stored server-side in admin_sessions for verification and revocation.
+ *
+ * Server-side session stored in admin_sessions. Returns standardized JSON response.
  */
 
-require_once __DIR__ . '/../database.php';
+require_once __DIR__ . '/../../config_loader.php';
+require_once __DIR__ . '/../response.php';
+require_once __DIR__ . '/../db_helper.php';
 require_once __DIR__ . '/../helpers.php';
 require_once __DIR__ . '/middleware.php';
 
@@ -22,61 +22,51 @@ $input = getJsonInput();
 
 $missing = validateRequired($input, ['username', 'password']);
 if ($missing) {
-    errorResponse('Missing required fields', 400, [
-        'missing_fields' => $missing,
-    ]);
+    Response::error('Missing required fields', ['missing_fields' => $missing], 400);
 }
 
 $username = trim($input['username']);
 $password = $input['password'];
 
 try {
-    $db = Database::getInstance();
-    
-    // Find admin account
-    $stmt = $db->prepare('SELECT * FROM admin_accounts WHERE username = :username AND is_active = 1 LIMIT 1');
-    $stmt->execute([':username' => $username]);
-    $admin = $stmt->fetch();
-    
-    if (!$admin) {
-        logAudit(null, null, 'failed_admin_login', 'admin', null, null, ['username' => $username, 'reason' => 'not_found']);
-        errorResponse('Invalid username or password', 401);
+    $admin = DB::fetchOne('SELECT id, username, password_hash, display_name, is_active FROM admin_accounts WHERE username = :username LIMIT 1', [':username' => $username]);
+
+    if (!$admin || empty($admin['is_active'])) {
+        logAudit(null, null, 'failed_admin_login', 'admin', $admin['id'] ?? null, null, ['username' => $username, 'reason' => 'not_found_or_inactive']);
+        Response::error('Invalid username or password', [], 401);
     }
-    
-    // Verify password (use timing-safe hash verification)
+
     if (!password_verify($password, $admin['password_hash'])) {
-        logAudit(null, null, 'failed_admin_login', 'admin', $admin['id'], null, ['reason' => 'invalid_password']);
-        errorResponse('Invalid username or password', 401);
+        logAudit(null, null, 'failed_admin_login', 'admin', (int)$admin['id'], null, ['reason' => 'invalid_password']);
+        Response::error('Invalid username or password', [], 401);
     }
-    
-    // Check if password needs rehash (if algorithm/cost changed)
-    if (password_needs_rehash($admin['password_hash'], PASSWORD_BCRYPT)) {
-        $newHash = password_hash($password, PASSWORD_BCRYPT);
-        $updateStmt = $db->prepare('UPDATE admin_accounts SET password_hash = :hash WHERE id = :id');
-        $updateStmt->execute([':hash' => $newHash, ':id' => $admin['id']]);
+
+    // Rehash if needed
+    if (password_needs_rehash($admin['password_hash'], PASSWORD_DEFAULT)) {
+        $newHash = password_hash($password, PASSWORD_DEFAULT);
+        DB::execute('UPDATE admin_accounts SET password_hash = :hash WHERE id = :id', [':hash' => $newHash, ':id' => (int)$admin['id']]);
     }
-    
+
     // Update last login
-    $updateStmt = $db->prepare('UPDATE admin_accounts SET last_login_at = NOW() WHERE id = :id');
-    $updateStmt->execute([':id' => $admin['id']]);
-    
-    // Create server-side session (stored in admin_sessions for verification)
-    $token = createAdminSession($admin['id']);
-    
-    // Log audit
-    logAudit(null, null, 'admin_login', 'admin', $admin['id']);
-    
-    successResponse([
+    DB::execute('UPDATE admin_accounts SET last_login_at = NOW() WHERE id = :id', [':id' => (int)$admin['id']]);
+
+    // Create server-side session
+    $token = createAdminSession((int)$admin['id']);
+
+    // Audit
+    logAudit(null, null, 'admin_login', 'admin', (int)$admin['id']);
+
+    Response::ok('Login successful', [
         'token' => $token,
         'admin' => [
             'id' => (int)$admin['id'],
-            'username' => $admin['username'],
-            'display_name' => $admin['display_name'],
+            'username' => $admin['username'] ?? null,
+            'display_name' => $admin['display_name'] ?? null,
         ],
         'is_admin' => true,
-    ], 'Login successful');
-    
-} catch (\Exception $e) {
+    ]);
+
+} catch (\Throwable $e) {
     error_log('Admin login error: ' . $e->getMessage());
-    errorResponse('Login failed. Please try again.', 500);
+    Response::error('Login failed. Please try again.', [], 500);
 }
