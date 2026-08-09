@@ -1,14 +1,16 @@
 <?php
 /**
- * Logout API
- * 
+ * Logout API (modernized)
+ *
  * POST /api/auth/logout.php
  * Headers: Authorization: Bearer <token>
- * 
- * Invalidates the current session.
+ *
+ * Invalidates the current session (all session tables) and clears cookie.
  */
 
-require_once __DIR__ . '/../database.php';
+require_once __DIR__ . '/../../config_loader.php';
+require_once __DIR__ . '/../response.php';
+require_once __DIR__ . '/../db_helper.php';
 require_once __DIR__ . '/../helpers.php';
 require_once __DIR__ . '/middleware.php';
 
@@ -19,12 +21,14 @@ $user = requireAuth();
 
 try {
     $token = getBearerToken();
-    destroySession($token);
-    
-    logAudit($user['id'], null, 'logout', 'user', $user['id']);
-    
-    successResponse(null, 'Logged out successfully');
-} catch (\Exception $e) {
+    if ($token) {
+        destroySession($token);
+    }
+
+    logAudit((int)$user['id'], null, 'logout', 'user', (int)$user['id']);
+
+    Response::ok('Logged out successfully', null);
+} catch (\Throwable $e) {
     error_log('Logout error: ' . $e->getMessage());
-    errorResponse('Logout failed', 500);
+    Response::error('Logout failed', [], 500);
 }
