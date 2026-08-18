@@ -1,21 +1,73 @@
 <?php
-require_once __DIR__ . '/../database.php';
+/**
+ * Get Visit API (modernized)
+ *
+ * GET /api/visits/get.php?id=123
+ * Headers: Authorization: Bearer <token>
+ *
+ * Returns a single visit record with selected patient and doctor fields. All
+ * reads come from the central MySQL (phpMyAdmin / cPanel). No local or canister
+ * storage is used.
+ */
+
+require_once __DIR__ . '/../../config_loader.php';
+require_once __DIR__ . '/../response.php';
+require_once __DIR__ . '/../db_helper.php';
 require_once __DIR__ . '/../helpers.php';
 require_once __DIR__ . '/../auth/middleware.php';
+
 handleCors();
 requireMethod('GET');
+
 $user = requireAuth();
-$id = (int)($_GET['id'] ?? null);
-if (!$id) errorResponse('Visit ID is required', 400);
+
+$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+if ($id <= 0) {
+    Response::error('Missing or invalid visit id', [], 400);
+}
+
 try {
-    $db = Database::getInstance();
-    $stmt = $db->prepare('SELECT v.*, p.full_name as patient_name, p.phone as patient_phone, u.full_name as doctor_name FROM visits v LEFT JOIN patients p ON v.patient_id = p.id LEFT JOIN users u ON v.created_by = u.id WHERE v.id = :id');
-    $stmt->execute([':id' => $id]);
-    $visit = $stmt->fetch();
-    if (!$visit) errorResponse('Visit not found', 404);
-    $visit['vital_signs'] = !empty($visit['vital_signs']) ? json_decode($visit['vital_signs'], true) : null;
-    successResponse($visit);
-} catch (\Exception $e) {
+    $sql = 'SELECT v.id, v.patient_id, v.visit_type, v.visit_date, v.chief_complaint, v.vital_signs, v.history_of_present_illness, v.physical_examination, v.diagnosis, v.notes, v.created_by, v.created_at, v.updated_at, '
+         . 'p.full_name AS patient_name, p.phone AS patient_phone, p.register_number AS patient_register_number, '
+         . 'u.full_name AS doctor_name '
+         . 'FROM visits v '
+         . 'LEFT JOIN patients p ON v.patient_id = p.id '
+         . 'LEFT JOIN users u ON v.created_by = u.id '
+         . 'WHERE v.id = :id LIMIT 1';
+
+    $visit = DB::fetchOne($sql, [':id' => $id]);
+
+    if (!$visit) {
+        Response::error('Visit not found', [], 404);
+    }
+
+    // Normalize output
+    $out = [];
+    $out['id'] = isset($visit['id']) ? (int)$visit['id'] : null;
+    $out['patient_id'] = isset($visit['patient_id']) ? (int)$visit['patient_id'] : null;
+    $out['patient_name'] = $visit['patient_name'] ?? null;
+    $out['patient_phone'] = $visit['patient_phone'] ?? null;
+    $out['patient_register_number'] = $visit['patient_register_number'] ?? null;
+    $out['visit_type'] = $visit['visit_type'] ?? null;
+    $out['visit_date'] = $visit['visit_date'] ?? null;
+    $out['chief_complaint'] = $visit['chief_complaint'] ?? null;
+    $out['vital_signs'] = [];
+    if (!empty($visit['vital_signs'])) {
+        $decoded = json_decode($visit['vital_signs'], true);
+        $out['vital_signs'] = $decoded !== null ? $decoded : [];
+    }
+    $out['history_of_present_illness'] = $visit['history_of_present_illness'] ?? null;
+    $out['physical_examination'] = $visit['physical_examination'] ?? null;
+    $out['diagnosis'] = $visit['diagnosis'] ?? null;
+    $out['notes'] = $visit['notes'] ?? null;
+    $out['created_by'] = isset($visit['created_by']) ? (int)$visit['created_by'] : null;
+    $out['doctor_name'] = $visit['doctor_name'] ?? null;
+    $out['created_at'] = $visit['created_at'] ?? null;
+    $out['updated_at'] = $visit['updated_at'] ?? null;
+
+    Response::ok('Visit retrieved', ['visit' => $out]);
+
+} catch (\Throwable $e) {
     error_log('Get visit error: ' . $e->getMessage());
-    errorResponse('Failed to fetch visit', 500);
+    Response::error('Failed to fetch visit', [], 500);
 }
