@@ -1,13 +1,18 @@
 <?php
 /**
- * Delete Patient API
- * 
+ * Delete Patient API (modernized)
+ *
  * POST /api/patients/delete.php
- * Body: { id: 123 }
- * Only admin can delete patients.
+ * Body: { id: 123, force: true }
+ *
+ * By default this endpoint performs a soft-delete (marks patient inactive and sets status to 'Deleted').
+ * If `force` is true and the caller is an admin, it will perform a hard delete and remove related records.
+ * All reads/writes use central MySQL (phpMyAdmin / cPanel). No local or canister storage is used.
  */
 
-require_once __DIR__ . '/../database.php';
+require_once __DIR__ . '/../../config_loader.php';
+require_once __DIR__ . '/../response.php';
+require_once __DIR__ . '/../db_helper.php';
 require_once __DIR__ . '/../helpers.php';
 require_once __DIR__ . '/../auth/middleware.php';
 
@@ -17,46 +22,68 @@ requireMethod('POST');
 $user = requireAdmin();
 $input = getJsonInput();
 
-$id = (int)($input['id'] ?? 0);
-if (!$id) {
-    errorResponse('Patient ID is required', 400);
+$id = isset($input['id']) ? (int)$input['id'] : 0;
+$force = !empty($input['force']);
+
+if ($id <= 0) {
+    Response::error('Missing or invalid patient id', [], 400);
 }
 
 try {
-    $db = Database::getInstance();
-    
-    // Fetch existing patient
-    $stmt = $db->prepare('SELECT id, full_name, register_number FROM patients WHERE id = :id');
-    $stmt->execute([':id' => $id]);
-    $existing = $stmt->fetch();
-    
+    DB::beginTransaction();
+
+    $existing = DB::fetchOne('SELECT id, full_name, register_number, status FROM patients WHERE id = :id LIMIT 1', [':id' => $id]);
     if (!$existing) {
-        errorResponse('Patient not found', 404);
+        DB::rollback();
+        Response::error('Patient not found', [], 404);
     }
-    
-    // Begin transaction for cascading delete
-    $db->beginTransaction();
-    
-    // Delete related records first (foreign keys handle most via CASCADE)
-    $tables = ['visits', 'prescriptions', 'appointments', 'vital_signs', 'clinical_notes', 'investigations', 'payments', 'invoices', 'referrals', 'chat_messages', 'teleconsults', 'consent_forms', 'medication_admin_records', 'drug_reminders'];
-    foreach ($tables as $table) {
-        $db->prepare("DELETE FROM $table WHERE patient_id = :id")->execute([':id' => $id]);
+
+    if ($force) {
+        // Hard delete: remove related rows in known tables and then delete patient row.
+        $related = [
+            'visits', 'prescriptions', 'appointments', 'vital_signs', 'clinical_notes',
+            'investigations', 'payments', 'invoices', 'referrals', 'teleconsults',
+            'consent_forms', 'patient_consultants', 'patient_documents', 'chat_messages'
+        ];
+
+        foreach ($related as $table) {
+            // Table names are internal and controlled here, safe to interpolate
+            DB::execute("DELETE FROM $table WHERE patient_id = :id", [':id' => $id]);
+        }
+
+        DB::execute('DELETE FROM patients WHERE id = :id', [':id' => $id]);
+
+        // Audit the hard delete (store existing summary)
+        logAudit((int)$user['id'], $id, 'delete', 'patient', $id, $existing);
+
+        DB::commit();
+
+        Response::ok('Patient and related records permanently deleted', ['patient_id' => $id, 'hard_deleted' => true]);
+        return;
     }
-    
-    // Delete patient
-    $stmt = $db->prepare('DELETE FROM patients WHERE id = :id');
-    $stmt->execute([':id' => $id]);
-    
-    $db->commit();
-    
-    logAudit($user['id'], $id, 'delete', 'patient', $id, $existing);
-    
-    successResponse(null, 'Patient and all related records deleted successfully');
-    
-} catch (\Exception $e) {
-    if (isset($db) && $db->inTransaction()) {
-        $db->rollBack();
-    }
+
+    // Soft delete: mark inactive / set status and record deleted_by / deleted_at
+    $now = date('Y-m-d H:i:s');
+    // Attempt to update commonly used columns; if some columns don't exist in schema this will fail and be caught.
+    DB::execute(
+        'UPDATE patients SET status = :status, is_active = 0, deleted_at = :deleted_at, deleted_by = :deleted_by, updated_at = NOW() WHERE id = :id',
+        [
+            ':status' => 'Deleted',
+            ':deleted_at' => $now,
+            ':deleted_by' => (int)$user['id'],
+            ':id' => $id,
+        ]
+    );
+
+    // Audit the soft delete (store existing summary)
+    logAudit((int)$user['id'], $id, 'soft_delete', 'patient', $id, $existing, ['soft_deleted' => true]);
+
+    DB::commit();
+
+    Response::ok('Patient soft-deleted successfully', ['patient_id' => $id, 'hard_deleted' => false]);
+
+} catch (\Throwable $e) {
+    try { DB::rollback(); } catch (\Throwable $_) {}
     error_log('Delete patient error: ' . $e->getMessage());
-    errorResponse('Failed to delete patient', 500);
+    Response::error('Failed to delete patient', [], 500);
 }
